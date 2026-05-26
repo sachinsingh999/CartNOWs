@@ -33,16 +33,22 @@ const Cart = () => {
           const qty = cartData[key];
 
           if (qty > 0) {
-            const productRes = await axios.get(
-              `${backendUrl}/api/product/single/${itemId}`
-            );
+            try {
+              const productRes = await axios.get(
+                `${backendUrl}/api/product/single/${itemId}`
+              );
 
-            items.push({
-              itemId,
-              size,
-              qty,
-              product: productRes.data.product,
-            });
+              if (productRes.data.success && productRes.data.product) {
+                items.push({
+                  itemId,
+                  size,
+                  qty,
+                  product: productRes.data.product,
+                });
+              }
+            } catch (err) {
+              console.log(`Failed to load cart item ${itemId}:`, err);
+            }
           }
         }
 

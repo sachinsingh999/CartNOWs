@@ -1,32 +1,49 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { getAverageRating } from "../utils/productRatings";
 
-const FilterSidebar = ({ productList, setFilteredList }) => {
+const CategoryFilterSidebar = ({ productList, setFilteredList }) => {
   const [category, setCategory] = useState("all");
   const [price, setPrice] = useState(200000);
   const [rating, setRating] = useState(0);
   const maxPrice = 200000;
+
+  // Dynamically compute the categories from the products in the collection
+  const categories = React.useMemo(() => {
+    return [
+      "all",
+      ...new Set(
+        productList
+          .map((item) => item.category)
+          .filter(Boolean)
+      ),
+    ];
+  }, [productList]);
 
   const applyFilter = (cat, pr, rat) => {
     let data = [...productList];
 
     // Category filter
     if (cat !== "all") {
-      data = data.filter(item =>
-        item.category.toLowerCase().includes(cat)
+      data = data.filter((item) =>
+        item.category?.toLowerCase() === cat.toLowerCase()
       );
     }
 
     // Price filter
-    data = data.filter(item => item.price <= pr);
+    data = data.filter((item) => item.price <= pr);
 
     // Rating filter
     if (rat > 0) {
-      data = data.filter(item => getAverageRating(item) >= rat);
+      data = data.filter((item) => getAverageRating(item) >= rat);
     }
 
     setFilteredList(data);
   };
+
+  // Re-apply filter when productList changes (e.g., initial fetch finishes)
+  useEffect(() => {
+    applyFilter(category, price, rating);
+  }, [productList]);
 
   const handleReset = () => {
     setCategory("all");
@@ -53,7 +70,7 @@ const FilterSidebar = ({ productList, setFilteredList }) => {
       <div className="mb-6">
         <p className="mb-3 text-sm font-semibold text-gray-800">Category</p>
         <div className="flex flex-wrap gap-2">
-          {["all", "men", "women", "kid"].map((cat) => (
+          {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => {
@@ -125,9 +142,8 @@ const FilterSidebar = ({ productList, setFilteredList }) => {
           ))}
         </div>
       </div>
-
     </div>
   );
 };
 
-export default FilterSidebar;
+export default CategoryFilterSidebar;

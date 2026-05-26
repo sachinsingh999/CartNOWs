@@ -21,30 +21,48 @@ const ProductDetail = () => {
 
   useEffect(() => {
     const fetchProduct = async () => {
-      const res = await fetch(`${backendUrl}/api/product/single/${id}`);
-      const data = await res.json();
-      setProduct(data.product);
-      setMainImg(data.product.images[0]);
+      try {
+        const res = await fetch(`${backendUrl}/api/product/single/${id}`);
+        const data = await res.json();
+        
+        if (data.success && data.product) {
+          setProduct(data.product);
+          setMainImg(data.product.images[0]);
 
-      const listRes = await axios.get(`${backendUrl}/api/product/list`);
-      if (listRes.data.success) {
-        const related = listRes.data.products
-          .filter(
-            (item) =>
-              item._id !== data.product._id &&
-              item.category?.toLowerCase() === data.product.category?.toLowerCase()
-          )
-          .slice(0, 3);
-        setRelatedProducts(related);
+          const listRes = await axios.get(`${backendUrl}/api/product/list`);
+          if (listRes.data.success) {
+            const related = listRes.data.products
+              .filter(
+                (item) =>
+                  item._id !== data.product._id &&
+                  item.category?.toLowerCase() === data.product.category?.toLowerCase()
+              )
+              .slice(0, 3);
+            setRelatedProducts(related);
+          }
+        } else {
+          setProduct(false);
+        }
+      } catch (error) {
+        console.error("Error fetching product:", error);
+        setProduct(false);
       }
     };
     fetchProduct();
   }, [id]);
 
-  if (!product) {
+  if (product === null) {
     return (
       <div className="h-64 flex items-center justify-center text-gray-500">
         Loading product...
+      </div>
+    );
+  }
+
+  if (product === false) {
+    return (
+      <div className="h-64 flex items-center justify-center text-gray-500">
+        Product not found
       </div>
     );
   }

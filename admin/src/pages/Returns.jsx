@@ -37,12 +37,13 @@ const Returns = ({ token }) => {
 
   const handleStatusUpdate = async (requestId, status) => {
     try {
+      const request = requests.find((r) => r._id === requestId);
       const response = await axios.post(
         `${backendUrl}/api/service/returns/admin/status`,
         {
           requestId,
           status,
-          adminNote: notes[requestId] || "",
+          adminNote: notes[requestId] ?? request?.adminNote ?? "",
         },
         { headers: { token } }
       );

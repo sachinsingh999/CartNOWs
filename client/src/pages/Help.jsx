@@ -37,7 +37,10 @@ const Help = () => {
   const token = localStorage.getItem("token");
 
   const fetchTickets = useCallback(async () => {
-    if (!token) return;
+    if (!token) {
+      setLoading(false);
+      return;
+    }
 
     try {
       const response = await axios.get(`${backendUrl}/api/service/help/user`, {

@@ -23,7 +23,7 @@ const placeOrder = async (req, res) => {
       address,
       paymentMethod,
       paymentStatus: "pending",
-      orderStatus: "placed",
+      orderStatus: "Order Placed",
       date: Date.now(),
     });
 

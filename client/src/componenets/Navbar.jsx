@@ -30,7 +30,11 @@ const Navbar = () => {
   );
 
   useEffect(() => {
-    if (!token) return;
+    if (!token) {
+      setUsername("");
+      setCartCount(0);
+      return;
+    }
 
     // ✅ FETCH PROFILE
     const fetchProfile = async () => {
@@ -76,7 +80,7 @@ const Navbar = () => {
 
     fetchProfile();
     fetchCartCount();
-  }, [token]);
+  }, [token, location.pathname]);
 
   useEffect(() => {
     setSearchValue(query);
