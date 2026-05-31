@@ -1,1 +1,68 @@
 @import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Smooth transition for theme switching */
+*, *::before, *::after {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, box-shadow, opacity;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+}
+
+/* Exclude Leaflet elements from universal transitions to prevent map rendering bugs */
+.leaflet-container,
+.leaflet-container *,
+.leaflet-zoom-animated,
+.leaflet-pane,
+.leaflet-pane *,
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-popup {
+  transition: none !important;
+}
+
+/* Reset default divIcon styling for the custom SVG marker */
+.leaflet-div-icon.custom-map-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Hide scrollbar for the category strip */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Add bottom padding on mobile so content clears the bottom nav */
+@media (max-width: 1023px) {
+  main {
+    padding-bottom: 4.5rem;
+  }
+}
+
+/* ── Toast type accent borders ── */
+.Toastify__toast--success  { border-left: 3px solid #22c55e !important; }
+.Toastify__toast--error    { border-left: 3px solid #ef4444 !important; }
+.Toastify__toast--warning  { border-left: 3px solid #f59e0b !important; }
+.Toastify__toast--info     { border-left: 3px solid #6366f1 !important; }
+
+/* Success progress bar */
+.Toastify__toast--success .Toastify__progress-bar { background: linear-gradient(to right, #22c55e, #4ade80) !important; }
+/* Error progress bar */
+.Toastify__toast--error   .Toastify__progress-bar { background: linear-gradient(to right, #ef4444, #f87171) !important; }
+/* Warning progress bar */
+.Toastify__toast--warning .Toastify__progress-bar { background: linear-gradient(to right, #f59e0b, #fbbf24) !important; }
+/* Info progress bar */
+.Toastify__toast--info    .Toastify__progress-bar { background: linear-gradient(to right, #6366f1, #818cf8) !important; }
+
+/* Icon color per type */
+.Toastify__toast--success .Toastify__toast-icon svg { fill: #22c55e; }
+.Toastify__toast--error   .Toastify__toast-icon svg { fill: #ef4444; }
+.Toastify__toast--warning .Toastify__toast-icon svg { fill: #f59e0b; }
+.Toastify__toast--info    .Toastify__toast-icon svg { fill: #6366f1; }
+
+/* Remove default toastify background so our custom class controls it */
+.Toastify__toast-container { padding: 0 12px 12px !important; }

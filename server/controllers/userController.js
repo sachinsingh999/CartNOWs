@@ -116,9 +116,7 @@ const adminLogin=(async (req, res) => {
 /* ================= GET USER PROFILE ================= */
 const getUserProfile = async (req, res) => {
   try {
-    const user = await userModel.findById(req.user._id).select(
-      "-password -cartData"
-    );
+    const user = await userModel.findById(req.user._id);
 
     if (!user) {
       return res.json({
@@ -127,9 +125,22 @@ const getUserProfile = async (req, res) => {
       });
     }
 
+    // Migrate older users who do not have a key yet
+    if (!user.deliveryVerificationKey) {
+      user.deliveryVerificationKey = Math.random().toString(36).substring(2, 8).toUpperCase();
+      await user.save();
+    }
+
+    const userProfile = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      deliveryVerificationKey: user.deliveryVerificationKey,
+    };
+
     res.json({
       success: true,
-      user,
+      user: userProfile,
     });
   } catch (error) {
     console.log("PROFILE ERROR 👉", error);

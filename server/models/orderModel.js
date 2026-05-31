@@ -28,6 +28,12 @@ const orderSchema = new mongoose.Schema(
       default: "Order Placed",
     },
 
+    deliverymanId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "deliveryman",
+      default: null,
+    },
+
     paymentMethod: {
       type: String,
       required: true,
@@ -36,6 +42,21 @@ const orderSchema = new mongoose.Schema(
     paymentStatus: {
       type: String,
       default: "pending",
+    },
+
+    couponCode: {
+      type: String,
+      default: null,
+    },
+
+    discount: {
+      type: Number,
+      default: 0,
+    },
+
+    verificationCode: {
+      type: String,
+      default: null,
     },
   },
   { timestamps: true }

@@ -52,9 +52,24 @@ const returnRequestSchema = new mongoose.Schema(
       default: "",
       trim: true,
     },
+    returnType: {
+      type: String,
+      enum: ["Refund", "Replacement", "Exchange"],
+      default: "Refund",
+    },
+    exchangeSize: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    deliverymanId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "deliveryman",
+      default: null,
+    },
     status: {
       type: String,
-      enum: ["Requested", "Approved", "Rejected", "Received", "Refunded"],
+      enum: ["Requested", "Approved", "Rejected", "Out for Pickup", "Picked Up", "Completed"],
       default: "Requested",
     },
     adminNote: {
@@ -62,9 +77,21 @@ const returnRequestSchema = new mongoose.Schema(
       default: "",
       trim: true,
     },
+    verificationCode: {
+      type: String,
+      default: null,
+    },
   },
   { timestamps: true }
 );
+
+// Pre-save hook to generate return verification code if not present
+returnRequestSchema.pre("save", function (next) {
+  if (!this.verificationCode) {
+    this.verificationCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+  }
+  next();
+});
 
 const returnRequestModel =
   mongoose.models.returnRequest ||

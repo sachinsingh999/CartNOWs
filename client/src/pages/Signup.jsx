@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import { backendUrl } from "../config";
 
 const inputClass =
-  "w-full rounded-md border border-gray-300 bg-white px-4 py-3 text-sm outline-none transition focus:border-gray-900 focus:ring-1 focus:ring-gray-900";
+  "w-full rounded-xl border border-gray-300 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 outline-none transition focus:border-indigo-650 dark:focus:border-indigo-500";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -30,8 +30,55 @@ const Signup = () => {
       );
 
       if (response.data.success) {
-        setToken(response.data.token);
-        localStorage.setItem("token", response.data.token);
+        const receivedToken = response.data.token;
+        setToken(receivedToken);
+        localStorage.setItem("token", receivedToken);
+
+        // Merge guest cart items into database cart
+        const guestCart = JSON.parse(localStorage.getItem("cart") || "{}");
+        for (const key in guestCart) {
+          const [itemId, size] = key.split("_");
+          const qty = guestCart[key];
+          try {
+            await axios.post(
+              `${backendUrl}/api/cart/add`,
+              { itemId, size, qty },
+              { headers: { Authorization: `Bearer ${receivedToken}` } }
+            );
+          } catch (mergeErr) {
+            console.error("Cart merge error:", mergeErr);
+          }
+        }
+        localStorage.removeItem("cart");
+
+        // Merge guest wishlist items into database wishlist
+        const guestWishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
+        if (guestWishlist.length > 0) {
+          try {
+            const currentWishlistRes = await axios.post(
+              `${backendUrl}/api/wishlist/get`,
+              {},
+              { headers: { Authorization: `Bearer ${receivedToken}` } }
+            );
+            if (currentWishlistRes.data.success) {
+              const serverWishlistIds = currentWishlistRes.data.wishlist || [];
+              const toMerge = guestWishlist.filter(id => !serverWishlistIds.includes(id));
+              
+              for (const productId of toMerge) {
+                await axios.post(
+                  `${backendUrl}/api/wishlist/toggle`,
+                  { productId },
+                  { headers: { Authorization: `Bearer ${receivedToken}` } }
+                );
+              }
+            }
+          } catch (mergeWishErr) {
+            console.error("Wishlist merge error:", mergeWishErr);
+          }
+        }
+        localStorage.removeItem("wishlist");
+
+        toast.success("Account created successfully!");
       } else {
         toast.error(response.data.message);
       }
@@ -47,23 +94,24 @@ const Signup = () => {
   }, [token, navigate]);
 
   return (
-    <div className="min-h-screen bg-gray-50 px-6 py-12">
-      <div className="mx-auto grid max-w-6xl overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm lg:grid-cols-[440px_1fr]">
-        <div className="flex items-center p-6 sm:p-10">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 px-6 py-12 transition-colors duration-200">
+      <div className="mx-auto grid max-w-6xl overflow-hidden rounded-3xl border border-slate-205 dark:border-slate-800 bg-white dark:bg-slate-900/40 backdrop-blur-md shadow-sm lg:grid-cols-[440px_1fr]">
+        
+        <div className="flex items-center p-6 sm:p-10 text-left bg-white dark:bg-transparent">
           <div className="w-full">
-            <p className="text-sm font-medium uppercase tracking-wide text-gray-500">
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-550 dark:text-slate-450">
               Create account
             </p>
-            <h2 className="mt-2 text-3xl font-bold text-gray-950">
+            <h2 className="mt-2 text-3xl font-extrabold text-slate-950 dark:text-slate-100 tracking-tight">
               Join CartNOW
             </h2>
-            <p className="mt-3 text-sm leading-6 text-gray-500">
+            <p className="mt-3 text-xs text-slate-500 dark:text-slate-450 font-medium">
               Save your cart, track orders, and write reviews after purchase.
             </p>
 
             <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">
+                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-350">
                   Full Name
                 </label>
                 <input
@@ -76,7 +124,7 @@ const Signup = () => {
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">
+                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-705 dark:text-slate-350">
                   Email
                 </label>
                 <input
@@ -90,7 +138,7 @@ const Signup = () => {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-700">
+                  <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-705 dark:text-slate-350">
                     Password
                   </label>
                   <input
@@ -103,7 +151,7 @@ const Signup = () => {
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-700">
+                  <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-705 dark:text-slate-350">
                     Confirm Password
                   </label>
                   <input
@@ -118,17 +166,17 @@ const Signup = () => {
 
               <button
                 type="submit"
-                className="w-full rounded-md bg-black py-3.5 text-sm font-semibold text-white transition hover:bg-gray-800"
+                className="w-full rounded-xl bg-black dark:bg-indigo-650 hover:bg-slate-805 dark:hover:bg-indigo-700 py-3.5 text-xs font-black uppercase tracking-wider text-white transition active:scale-98 cursor-pointer shadow"
               >
                 Sign Up
               </button>
             </form>
 
-            <p className="mt-6 text-center text-sm text-gray-500">
+            <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
               Already have an account?
               <button
                 onClick={() => navigate("/login")}
-                className="ml-1 font-semibold text-gray-950 hover:underline"
+                className="ml-1 font-bold text-slate-950 dark:text-slate-100 hover:underline cursor-pointer"
               >
                 Login
               </button>
@@ -143,7 +191,7 @@ const Signup = () => {
             className="absolute inset-0 h-full w-full object-cover"
           />
           <div className="absolute inset-0 bg-black/50" />
-          <div className="relative z-10 flex h-full flex-col justify-end p-10 text-white">
+          <div className="relative z-10 flex h-full flex-col justify-end p-10 text-white text-left">
             <p className="text-sm font-medium uppercase tracking-wide text-white/70">
               Shop better
             </p>
@@ -152,6 +200,7 @@ const Signup = () => {
             </h1>
           </div>
         </div>
+
       </div>
     </div>
   );

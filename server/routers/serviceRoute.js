@@ -1,6 +1,7 @@
 import express from "express";
 import adminAuth from "../middleware/adminAuth.js";
 import authUser from "../middleware/auth.js";
+import upload from "../middleware/multer.js";
 import {
   createHelpRequest,
   createReturnRequest,
@@ -10,9 +11,12 @@ import {
   getUserReturns,
   updateHelpRequest,
   updateReturnStatus,
+  tryOnGarment,
 } from "../controllers/serviceController.js";
 
 const serviceRouter = express.Router();
+
+serviceRouter.post("/tryon", authUser, upload.single("humanImage"), tryOnGarment);
 
 serviceRouter.post("/returns/create", authUser, createReturnRequest);
 serviceRouter.get("/returns/user", authUser, getUserReturns);

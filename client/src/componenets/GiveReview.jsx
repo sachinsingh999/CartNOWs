@@ -1,7 +1,9 @@
 import React, { useState } from "react";
+import { Star } from "lucide-react";
 
 const GiveReview = ({ onSubmit, loading }) => {
-  const [rating, setRating] = useState("");
+  const [rating, setRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
   const [comment, setComment] = useState("");
   const [error, setError] = useState("");
 
@@ -9,98 +11,104 @@ const GiveReview = ({ onSubmit, loading }) => {
     e.preventDefault();
     setError("");
 
-    if (!rating || !comment.trim()) {
-      setError("Please add a rating and review.");
+    if (rating === 0 || !comment.trim()) {
+      setError("Please select a rating and write a review.");
       return;
     }
 
     const success = await onSubmit({
-      rating: Number(rating),
+      rating,
       comment,
     });
 
     if (success) {
-      setRating("");
+      setRating(0);
       setComment("");
     }
   };
 
+  const getRatingLabel = (val) => {
+    switch (val) {
+      case 5: return "Excellent! Loved it.";
+      case 4: return "Good! Satisfied.";
+      case 3: return "Average. It's okay.";
+      case 2: return "Poor. Could be better.";
+      case 1: return "Terrible. Disliked it.";
+      default: return "";
+    }
+  };
+
   return (
-    <div className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-5 text-left">
+      <div>
+        <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+          Write a Review
+        </h3>
+        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+          Share your experience with fit, materials, or delivery.
+        </p>
+      </div>
 
-      <form onSubmit={handleSubmit} className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <div className="mb-5">
-          <h3 className="text-lg font-semibold text-gray-950">
-            Write a Review
-          </h3>
-          <p className="mt-1 text-sm text-gray-500">
-            Tell shoppers how it felt, fit, and held up.
-          </p>
-        </div>
+      {error && (
+        <p className="rounded-lg bg-red-50 dark:bg-red-950/20 px-3 py-2.5 text-xs font-semibold text-red-650 dark:text-red-400 border border-red-100 dark:border-red-900/50 animate-pulse">
+          {error}
+        </p>
+      )}
 
-        {error && (
-          <p className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">
-            {error}
-          </p>
-        )}
-
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-800 mb-2">
-            Rating
-          </label>
-          <select
-            value={rating}
-            onChange={(e) => setRating(e.target.value)}
-            className="w-full border border-gray-300 rounded-md px-3 py-2.5 text-sm outline-none transition focus:border-gray-900 focus:ring-1 focus:ring-gray-900 sm:w-64"
+      <div>
+        <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-350 mb-2">
+          Your Rating
+        </label>
+        <div className="flex flex-col gap-2">
+          <div 
+            className="flex items-center gap-1.5"
+            onMouseLeave={() => setHoverRating(0)}
           >
-            <option value="">Select</option>
-            <option value="5">★★★★★ Excellent</option>
-            <option value="4">★★★★☆ Good</option>
-            <option value="3">★★★☆☆ Average</option>
-            <option value="2">★★☆☆☆ Poor</option>
-            <option value="1">★☆☆☆☆ Bad</option>
-          </select>
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-800 mb-2">
-            Review
-          </label>
-          <textarea
-            rows="3"
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            placeholder="Share your experience"
-            className="w-full border border-gray-300 rounded-md px-3 py-3 text-sm resize-none outline-none transition focus:border-gray-900 focus:ring-1 focus:ring-gray-900"
-          />
-        </div>
-
-        <button
-          disabled={loading}
-          className="w-full rounded-md bg-black px-5 py-3 text-sm font-medium text-white transition hover:bg-gray-800 disabled:opacity-60 sm:w-auto"
-        >
-          {loading ? "Submitting..." : "Submit"}
-        </button>
-      </form>
-
-      <div className="grid grid-cols-1 gap-3 text-center text-xs sm:grid-cols-3">
-        <div className="rounded-lg border border-gray-200 bg-white p-4">
-          🚚
-          <p className="font-medium mt-1">Free Delivery</p>
-        </div>
-
-        <div className="rounded-lg border border-gray-200 bg-white p-4">
-          🔄
-          <p className="font-medium mt-1">Easy Returns</p>
-        </div>
-
-        <div className="rounded-lg border border-gray-200 bg-white p-4">
-          🔒
-          <p className="font-medium mt-1">Secure Pay</p>
+             {[1, 2, 3, 4, 5].map((star) => (
+              <button
+                key={star}
+                type="button"
+                onClick={() => setRating(star)}
+                onMouseEnter={() => setHoverRating(star)}
+                className="h-9 w-9 flex items-center justify-center active:scale-90 focus:outline-none cursor-pointer"
+              >
+                <Star
+                  size={26}
+                  className={`transition-all duration-150 origin-center cursor-pointer hover:scale-125 hover:rotate-6 ${
+                    star <= (hoverRating || rating)
+                      ? "fill-amber-400 stroke-amber-400 drop-shadow-[0_0_6px_rgba(251,191,36,0.6)]"
+                      : "stroke-slate-300 dark:stroke-slate-700 fill-transparent hover:stroke-slate-455"
+                  }`}
+                />
+              </button>
+            ))}
+          </div>
+          <p className="text-xs font-bold text-amber-700 dark:text-amber-500 h-5 transition-all duration-150">
+            {(hoverRating || rating) > 0 ? getRatingLabel(hoverRating || rating) : "\u00A0"}
+          </p>
         </div>
       </div>
 
-    </div>
+      <div>
+        <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-350 mb-2">
+          Your Review
+        </label>
+        <textarea
+          rows="4"
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          placeholder="What did you think of the product? Share details about quality and fit."
+          className="w-full border-2 border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm resize-none outline-none transition duration-205 focus:border-slate-900 dark:focus:border-indigo-500 dark:bg-slate-900 dark:text-white"
+        />
+      </div>
+
+      <button
+        disabled={loading}
+        className="w-full rounded-xl bg-slate-950 dark:bg-indigo-650 hover:bg-slate-800 dark:hover:bg-indigo-700 px-5 py-3.5 text-xs font-black uppercase tracking-wider text-white transition hover:shadow-lg disabled:opacity-60 active:scale-98 cursor-pointer"
+      >
+        {loading ? "Submitting Review..." : "Submit Review"}
+      </button>
+    </form>
   );
 };
 

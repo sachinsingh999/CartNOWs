@@ -1,75 +1,79 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { assets } from "../assets/assets";
+import { 
+  BarChart3,
+  PlusCircle, 
+  ClipboardList, 
+  ShoppingBag, 
+  RotateCcw, 
+  MessageSquare,
+  Users,
+  Megaphone,
+  Ticket
+} from "lucide-react";
 
 const linkClass = ({ isActive }) =>
-  `flex items-center gap-3 px-3 py-2 rounded-md transition
+  `flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs transition-all duration-200
    ${isActive
-     ? "bg-gray-200 text-gray-900"
-     : "text-gray-700 hover:bg-gray-100"}`;
+     ? "bg-slate-900 text-white shadow-md shadow-slate-900/10 scale-[1.02]"
+     : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"}`;
 
 const Sidebar = () => {
   return (
-    <aside className="min-h-screen bg-gray-100 border-r p-2 md:p-4
-                     w-14 md:w-56 transition-all duration-300">
+    <aside className="bg-white border-r border-slate-200/80 p-4 w-16 md:w-60 transition-all duration-300 space-y-2">
       
+      {/* Dashboard */}
+      <NavLink to="/" className={linkClass} end>
+        <BarChart3 size={18} className="shrink-0" />
+        <span className="hidden md:inline">Dashboard</span>
+      </NavLink>
+
       {/* Add Product */}
       <NavLink to="/add" className={linkClass}>
-        <img
-          src={assets.add_icon}
-          alt="Add Product"
-          className="w-5 h-5 flex-shrink-0"
-        />
-        {/* Text hidden on phone */}
-        <span className="hidden md:inline text-sm font-medium">
-          Add Product
-        </span>
+        <PlusCircle size={18} className="shrink-0" />
+        <span className="hidden md:inline">Add Product</span>
       </NavLink>
 
       {/* Product List */}
       <NavLink to="/list" className={linkClass}>
-        <img
-          src={assets.order_icon}
-          alt="Product List"
-          className="w-5 h-5 flex-shrink-0"
-        />
-        <span className="hidden md:inline text-sm font-medium">
-          Product List
-        </span>
+        <ClipboardList size={18} className="shrink-0" />
+        <span className="hidden md:inline">Product List</span>
       </NavLink>
 
       {/* Orders */}
       <NavLink to="/orders" className={linkClass}>
-        <img
-          src={assets.order_icon}
-          alt="Orders"
-          className="w-5 h-5 flex-shrink-0"
-        />
-        <span className="hidden md:inline text-sm font-medium">
-          Orders
-        </span>
+        <ShoppingBag size={18} className="shrink-0" />
+        <span className="hidden md:inline">Orders</span>
       </NavLink>
 
+      {/* Returns */}
       <NavLink to="/returns" className={linkClass}>
-        <img
-          src={assets.parcel_icon}
-          alt="Returns"
-          className="w-5 h-5 flex-shrink-0"
-        />
-        <span className="hidden md:inline text-sm font-medium">
-          Returns
-        </span>
+        <RotateCcw size={18} className="shrink-0" />
+        <span className="hidden md:inline">Returns</span>
       </NavLink>
 
+      {/* Deliverymen */}
+      <NavLink to="/deliverymen" className={linkClass}>
+        <Users size={18} className="shrink-0" />
+        <span className="hidden md:inline">Deliverymen</span>
+      </NavLink>
+
+      {/* Support */}
       <NavLink to="/support" className={linkClass}>
-        <img
-          src={assets.order_icon}
-          alt="Support"
-          className="w-5 h-5 flex-shrink-0"
-        />
-        <span className="hidden md:inline text-sm font-medium">
-          Support
-        </span>
+        <MessageSquare size={18} className="shrink-0" />
+        <span className="hidden md:inline">Support Tickets</span>
+      </NavLink>
+
+      {/* Sales & Promotions */}
+      <NavLink to="/sales" className={linkClass}>
+        <Megaphone size={18} className="shrink-0" />
+        <span className="hidden md:inline">Sales & Promos</span>
+      </NavLink>
+
+      {/* Coupons */}
+      <NavLink to="/coupons" className={linkClass}>
+        <Ticket size={18} className="shrink-0" />
+        <span className="hidden md:inline">Promo Coupons</span>
       </NavLink>
 
     </aside>

@@ -1,0 +1,91 @@
+[2026-05-31T15:39:06.763Z] Uncaught ReferenceError: SaleBanners is not defined at http://localhost:5173/src/pages/Home.jsx?t=1780241946461:339:28
+Stack: ReferenceError: SaleBanners is not defined
+    at Home (http://localhost:5173/src/pages/Home.jsx?t=1780241946461:339:28)
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:18509:20)
+    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:5654:24)
+    at updateFunctionComponent (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:7475:21)
+    at beginWork (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:8525:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:997:72)
+    at performUnitOfWork (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:12561:98)
+    at workLoopSync (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:12424:43)
+    at renderRootSync (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:12408:13)
+    at performWorkOnRoot (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:11827:37)
+
+[2026-05-31T15:39:15.713Z] Uncaught ReferenceError: SaleBanners is not defined at http://localhost:5173/src/pages/Home.jsx?t=1780241946461:339:28
+Stack: ReferenceError: SaleBanners is not defined
+    at Home (http://localhost:5173/src/pages/Home.jsx?t=1780241946461:339:28)
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:18509:20)
+    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:5654:24)
+    at updateFunctionComponent (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:7475:21)
+    at beginWork (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:8525:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:997:72)
+    at performUnitOfWork (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:12561:98)
+    at workLoopSync (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:12424:43)
+    at renderRootSync (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:12408:13)
+    at performWorkOnRoot (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:11827:37)
+
+[2026-05-31T15:44:48.848Z] Uncaught ReferenceError: getAverageRating is not defined at http://localhost:5173/src/pages/ProductCard.jsx?t=1780242288182:55:25
+Stack: ReferenceError: getAverageRating is not defined
+    at ProductCard (http://localhost:5173/src/pages/ProductCard.jsx?t=1780242288182:55:25)
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:18509:20)
+    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:5654:24)
+    at updateFunctionComponent (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:7475:21)
+    at beginWork (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:8525:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:997:72)
+    at performUnitOfWork (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:12561:98)
+    at workLoopSync (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:12424:43)
+    at renderRootSync (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:12408:13)
+    at performWorkOnRoot (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:11827:37)
+
+[2026-05-31T15:45:27.428Z] Uncaught ReferenceError: getAverageRating is not defined at http://localhost:5173/src/pages/ProductCard.jsx?t=1780242288182:55:25
+Stack: ReferenceError: getAverageRating is not defined
+    at ProductCard (http://localhost:5173/src/pages/ProductCard.jsx?t=1780242288182:55:25)
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:18509:20)
+    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:5654:24)
+    at updateFunctionComponent (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:7475:21)
+    at beginWork (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:8525:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:997:72)
+    at performUnitOfWork (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:12561:98)
+    at workLoopSync (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:12424:43)
+    at renderRootSync (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:12408:13)
+    at performWorkOnRoot (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:11827:37)
+
+[2026-05-31T15:45:43.310Z] Uncaught ReferenceError: getAverageRating is not defined at http://localhost:5173/src/pages/ProductCard.jsx?t=1780242288182:55:25
+Stack: ReferenceError: getAverageRating is not defined
+    at ProductCard (http://localhost:5173/src/pages/ProductCard.jsx?t=1780242288182:55:25)
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:18509:20)
+    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:5654:24)
+    at updateFunctionComponent (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:7475:21)
+    at beginWork (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:8525:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:997:72)
+    at performUnitOfWork (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:12561:98)
+    at workLoopSync (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:12424:43)
+    at renderRootSync (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:12408:13)
+    at performWorkOnRoot (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:11827:37)
+
+[2026-05-31T15:45:48.930Z] Uncaught ReferenceError: getAverageRating is not defined at http://localhost:5173/src/pages/ProductCard.jsx?t=1780242288182:55:25
+Stack: ReferenceError: getAverageRating is not defined
+    at ProductCard (http://localhost:5173/src/pages/ProductCard.jsx?t=1780242288182:55:25)
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:18509:20)
+    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:5654:24)
+    at updateFunctionComponent (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:7475:21)
+    at beginWork (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:8525:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:997:72)
+    at performUnitOfWork (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:12561:98)
+    at workLoopSync (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:12424:43)
+    at renderRootSync (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:12408:13)
+    at performWorkOnRoot (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:11827:37)
+
+[2026-05-31T15:45:50.407Z] Uncaught ReferenceError: getAverageRating is not defined at http://localhost:5173/src/pages/ProductCard.jsx?t=1780242288182:55:25
+Stack: ReferenceError: getAverageRating is not defined
+    at ProductCard (http://localhost:5173/src/pages/ProductCard.jsx?t=1780242288182:55:25)
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:18509:20)
+    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:5654:24)
+    at updateFunctionComponent (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:7475:21)
+    at beginWork (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:8525:20)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:997:72)
+    at performUnitOfWork (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:12561:98)
+    at workLoopSync (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:12424:43)
+    at renderRootSync (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:12408:13)
+    at performWorkOnRoot (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=ecc0dfee:11827:37)
+

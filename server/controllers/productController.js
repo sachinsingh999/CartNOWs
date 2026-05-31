@@ -1,5 +1,8 @@
 import productModel from "../models/productModel.js";
 import userModel from "../models/userModel.js";
+import axios from "axios";
+import { v2 as cloudinary } from "cloudinary";
+import fs from "fs";
 
 const addProducts = async (req, res) => {
   try {
@@ -39,8 +42,25 @@ const addProducts = async (req, res) => {
       req.files.image4?.[0]
     ].filter(Boolean);
 
-    // 🔥 KEY LINE (fixes your error)
-    const images = imageFiles.map(file => file.path);
+    let images = [];
+    try {
+      console.log("Uploading product images to Cloudinary...");
+      const uploadPromises = imageFiles.map(async (file) => {
+        const result = await cloudinary.uploader.upload(file.path, {
+          resource_type: "image",
+        });
+        // Cleanup local file after successful upload to Cloudinary
+        fs.unlink(file.path, (err) => {
+          if (err) console.log("Failed to delete local temp file:", err.message);
+        });
+        return result.secure_url;
+      });
+      images = await Promise.all(uploadPromises);
+    } catch (cloudinaryError) {
+      console.log("Cloudinary upload failed, falling back to local file paths:", cloudinaryError.message);
+      // Keep local files for local serving and map their relative paths
+      images = imageFiles.map(file => file.path);
+    }
 
     const parseList = (value) => {
       if (!value) return [];
@@ -270,4 +290,100 @@ const addProductReview = async (req, res) => {
   }
 };
 
-export {addProducts,listProducts,removeProduct,singleProduct,addProductReview}
+const updateStock = async (req, res) => {
+  try {
+    const { id, stock } = req.body;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Product ID required",
+      });
+    }
+
+    const updated = await productModel.findByIdAndUpdate(
+      id,
+      { stock: Number(stock) || 0 },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Stock updated successfully",
+      product: updated,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+const generateDescription = async (req, res) => {
+  try {
+    const { name, category, subCategory, collection, brand, price, sizes } = req.body;
+
+    if (!name) {
+      return res.json({ success: false, message: "Product name is required for generation" });
+    }
+
+    const promptText = `Write a highly engaging, professional e-commerce product description for a product named "${name}" in the category "${category || "Fashion"}" / "${subCategory || "Clothing"}", collection "${collection || "General"}", brand "${brand || "CartNOW"}". It is priced at ₹${price || 999} and available in sizes: ${sizes || "S, M, L"}. Write a engaging paragraph about features and comfort. Output ONLY the description text, no preamble or extra text.`;
+
+    // 1️⃣ Check for Gemini API Key in environment
+    const geminiKey = process.env.GEMINI_API_KEY;
+    if (geminiKey) {
+      try {
+        console.log("Generating description with Google Gemini API...");
+        const response = await axios.post(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${geminiKey}`,
+          {
+            contents: [{ parts: [{ text: promptText }] }]
+          }
+        );
+        if (response.data?.candidates?.[0]?.content?.parts?.[0]?.text) {
+          const desc = response.data.candidates[0].content.parts[0].text.trim();
+          return res.json({ success: true, description: desc });
+        }
+      } catch (geminiError) {
+        console.log("Gemini API call failed:", geminiError.message);
+      }
+    }
+
+    // 2️⃣ Instant high-quality e-commerce template-based NLP generation (Fallback)
+    console.log("Generating description with high-quality local NLP template...");
+    
+    let descriptionText = "";
+    const brandName = brand || "CartNOW";
+    const subCatName = subCategory || "Apparel";
+    const sizeStr = sizes ? `sizes: ${sizes}` : "standard sizes";
+
+    if (category?.toLowerCase() === "electronics") {
+      descriptionText = `Experience cutting-edge performance with the all-new ${name} by ${brandName}. Engineered for excellence, this premium ${subCatName} combines state-of-the-art technology with an ergonomic, durable design. Whether you are using it for work or leisure, it delivers seamless functionality, high durability, and top-tier reliability. Available now at ₹${price || 999} for premium tier consumers. Features include advanced efficiency, easy-to-use interface options, and industry-standard warranty protection.`;
+    } else if (category?.toLowerCase() === "beauty") {
+      descriptionText = `Reveal your natural radiance with the ${name} from ${brandName}. Formulated with high-quality, nourishing ingredients, this ${subCatName} is suitable for all skin types and designed to offer visible, long-lasting results. Perfect for daily routines, it hydrates, refreshes, and leaves a premium feel. Available in standard size options. Add this premium beauty essential to your self-care registry today!`;
+    } else if (category?.toLowerCase() === "home" || category?.toLowerCase() === "living") {
+      descriptionText = `Enhance your living space with the beautiful and functional ${name} by ${brandName}. Crafted from premium, eco-friendly materials, this ${subCatName} is designed to blend seamlessly into modern interiors while providing maximum utility and comfort. Durable and easy to clean, it adds an instant touch of class to any room. Available in various size specifications to fit your layout.`;
+    } else {
+      descriptionText = `Elevate your everyday style with the premium ${name} by ${brandName}. Masterfully tailored for the perfect fit, this ${subCatName} is crafted from an ultra-soft, breathable fabric blend to ensure all-day comfort. Featuring a modern, versatile silhouette, it is suitable for both casual outings and polished formal events. Easy to style and wash, it is available in ${sizeStr} to fit your exact measurements. A marquee fashion pick for the modern closet!`;
+    }
+
+    return res.json({
+      success: true,
+      description: descriptionText
+    });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
+export { addProducts, listProducts, removeProduct, singleProduct, addProductReview, updateStock, generateDescription }
