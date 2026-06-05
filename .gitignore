@@ -3,4 +3,4 @@ node_modules/
 dist/
 build/
 *.log
-dist/
+dist/server/browser-errors.log
