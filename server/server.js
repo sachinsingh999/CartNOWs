@@ -13,6 +13,7 @@ import aiRouter from "./routers/aiRoute.js";
 import saleRouter from "./routers/saleRoute.js";
 import wishlistRouter from "./routers/wishlistRouter.js";
 import couponRouter from "./routers/couponRouter.js";
+import coshopRouter from "./routers/coshopRouter.js";
 
 
 const app = express();
@@ -39,6 +40,7 @@ app.use('/api/ai', aiRouter);
 app.use('/api/sale', saleRouter);
 app.use('/api/wishlist', wishlistRouter);
 app.use('/api/coupon', couponRouter);
+app.use('/api/coshop', coshopRouter);
 
 
 import fs from "fs";

@@ -7,6 +7,7 @@ import Navbar from "./componenets/Navbar";
 import Men from "./pages/Men";
 import Women from "./pages/Women";
 import Kid from "./pages/Kid";
+import Category from "./pages/Category";
 import Footer from "./componenets/Footer";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -17,12 +18,12 @@ import Orderdetail from "./pages/Orderdetail";
 import Track from "./pages/Track";
 import { ToastContainer, Slide } from 'react-toastify';
 import Profile from "./pages/Profile";
+import { useLocation } from "react-router-dom";
 import Help from "./pages/Help";
 import TryOn from "./pages/TryOn";
 import Verify from "./pages/Verify";
 import OrderConfirmed from "./pages/OrderConfirmed";
 import Wishlist from "./pages/Wishlist";
-import CoShop from "./pages/CoShop";
 import AiAssistant from "./componenets/AiAssistant";
 import ScrollToTop from "./componenets/ScrollToTop";
 import ComparisonTray from "./componenets/ComparisonTray";
@@ -82,12 +83,12 @@ const App = () => {
           <Route path="/verify" element={<Verify />} />
           <Route path="/order-confirmed/:orderId" element={<OrderConfirmed />} />
           <Route path="/wishlist" element={<Wishlist />} />
-          <Route path="/coshop/:roomId" element={<CoShop />} />
+          <Route path="/category/:slug" element={<Category />} />
         </Routes>
       </main>
 
       <Footer />
-      <AiAssistant />
+      {location.pathname !== "/" && <AiAssistant />}
       <ComparisonTray />
 
     </div>

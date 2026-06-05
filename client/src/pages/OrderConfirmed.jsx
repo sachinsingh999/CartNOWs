@@ -341,10 +341,10 @@ const OrderConfirmed = () => {
               <div className="rounded-3xl border-2 border-amber-200 dark:border-amber-800/50 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 p-6 shadow-sm space-y-3">
                 <div className="flex items-center gap-2">
                   <KeyRound size={18} className="text-amber-600 dark:text-amber-400" />
-                  <h4 className="text-xs font-black uppercase tracking-wider text-amber-800 dark:text-amber-300">Delivery Verification Code</h4>
+                  <h4 className="text-xs font-black uppercase tracking-wider text-amber-800 dark:text-amber-300">User Secret Key for Delivery</h4>
                 </div>
                 <p className="text-[11px] text-amber-700 dark:text-amber-400 leading-relaxed font-semibold">
-                  Share this unique code with your delivery agent when your order arrives. Required to complete delivery.
+                  Share this unique secret key with your delivery agent when your order arrives. It is required to verify and complete your delivery.
                 </p>
                 <div className="flex items-center justify-between bg-white dark:bg-slate-900 rounded-2xl border border-amber-200 dark:border-amber-800/50 px-5 py-3.5 shadow-inner">
                   <span className="font-mono text-2xl font-black tracking-[0.3em] text-amber-700 dark:text-amber-300 select-all">
@@ -352,7 +352,7 @@ const OrderConfirmed = () => {
                   </span>
                   <button
                     onClick={handleCopyCode}
-                    title="Copy code"
+                    title="Copy secret key"
                     className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-200 transition font-bold text-xs cursor-pointer"
                   >
                     {codeCopied ? <Check size={16} className="text-emerald-500" /> : <Copy size={16} />}
@@ -361,7 +361,7 @@ const OrderConfirmed = () => {
                 </div>
                 <p className="text-[10px] text-amber-600 dark:text-amber-500 font-semibold flex items-center gap-1">
                   <ShieldCheck size={11} />
-                  Do not share this code until your package is in hand.
+                  Do not share this secret key until your package is in hand.
                 </p>
               </div>
             )}

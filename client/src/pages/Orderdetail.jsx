@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
   CalendarDays,
@@ -38,8 +38,10 @@ const Orderdetail = () => {
   });
   const [deliveryVerificationKey, setDeliveryVerificationKey] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
   const token = localStorage.getItem("token");
   const { t } = useLanguage();
+  const highlightOrderId = new URLSearchParams(location.search).get("orderId");
 
   const fetchOrders = useCallback(async () => {
     if (!token) return;
@@ -81,7 +83,9 @@ const Orderdetail = () => {
         });
       });
 
-      setOrderData(allOrdersItem.reverse());
+      // Sort items by order date in descending order (newest first)
+      allOrdersItem.sort((a, b) => new Date(b.date) - new Date(a.date));
+      setOrderData(allOrdersItem);
     }
 
     if (returnResponse.data.success) {
@@ -123,6 +127,18 @@ const Orderdetail = () => {
 
     loadOrders();
   }, [fetchOrders]);
+
+  useEffect(() => {
+    if (!loading && highlightOrderId) {
+      const timer = setTimeout(() => {
+        const elements = document.getElementsByClassName(`order-group-${highlightOrderId}`);
+        if (elements.length > 0) {
+          elements[0].scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [loading, highlightOrderId]);
 
   const getReturnRequest = (item) =>
     returnRequests.find(
@@ -175,6 +191,27 @@ const Orderdetail = () => {
       toast.error(error.response?.data?.message || error.message);
     } finally {
       setSubmittingReturn(false);
+    }
+  };
+
+  const handleCancelOrder = async (orderId) => {
+    if (!window.confirm("Are you sure you want to cancel this order?")) return;
+
+    try {
+      const response = await axios.post(
+        `${backendUrl}/api/order/cancel`,
+        { orderId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (response.data.success) {
+        toast.success("Order cancelled successfully!");
+        await fetchOrders();
+      } else {
+        toast.error(response.data.message);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message);
     }
   };
 
@@ -231,11 +268,17 @@ const Orderdetail = () => {
         )}
 
         <div className="space-y-6">
-          {orderData.map((item, index) => (
-            <div
-              key={`${item.orderId}-${item.productId || item.name}-${index}`}
-              className="group rounded-2xl border border-slate-200/60 dark:border-slate-800/80 bg-white dark:bg-slate-900/30 p-6 shadow-sm hover:shadow-md hover:border-indigo-500/20 dark:hover:border-indigo-500/20 transition-all duration-300 text-left"
-            >
+          {orderData.map((item, index) => {
+            const isHighlighted = highlightOrderId && String(item.orderId) === String(highlightOrderId);
+            return (
+              <div
+                key={`${item.orderId}-${item.productId || item.name}-${index}`}
+                className={`order-group-${item.orderId} group rounded-2xl border p-6 transition-all duration-500 text-left ${
+                  isHighlighted
+                    ? "border-orange-500 ring-2 ring-orange-500/15 bg-orange-500/[0.02] dark:bg-orange-500/[0.01] shadow-md shadow-orange-500/5 scale-[1.01]"
+                    : "border-slate-200/60 dark:border-slate-800/80 bg-white dark:bg-slate-900/30 hover:shadow-md hover:border-indigo-500/20 dark:hover:border-indigo-500/20"
+                }`}
+              >
               {(() => {
                 const returnRequest = getReturnRequest(item);
                 const canRequestReturn = item.status === "Delivered" && !returnRequest;
@@ -361,30 +404,38 @@ const Orderdetail = () => {
                       </p>
 
                       {/* Delivery Verification Code (only shown for active orders) */}
-                      {item.verificationCode && item.status !== "Delivered" && (
-                        <div className="mt-3 flex items-center gap-2 rounded-xl border border-amber-200 dark:border-amber-800/50 bg-amber-50 dark:bg-amber-950/20 px-3 py-2">
-                          <KeyRound size={13} className="text-amber-600 dark:text-amber-400 shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-[9px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-500">Delivery Code</p>
-                            <p className="font-mono font-black text-sm tracking-[0.2em] text-amber-700 dark:text-amber-300 select-all">
-                              {item.verificationCode}
-                            </p>
+                      {item.verificationCode && item.status !== "Delivered" && item.status !== "Cancelled" && (
+                        <div className="mt-3 rounded-xl border border-amber-200/65 dark:border-amber-900/40 bg-amber-50/40 dark:bg-amber-950/15 p-3 text-left space-y-2">
+                          <div className="flex items-center gap-2 text-amber-800 dark:text-amber-405 font-bold">
+                            <KeyRound size={13} className="shrink-0" />
+                            <span className="text-[10px] font-black uppercase tracking-wider">User Secret Key for Delivery</span>
                           </div>
-                          <button
-                            onClick={() => {
-                              navigator.clipboard.writeText(item.verificationCode);
-                              setCopiedCodeId(item.orderId);
-                              toast.success("Code copied!");
-                              setTimeout(() => setCopiedCodeId(null), 2000);
-                            }}
-                            className="text-amber-500 hover:text-amber-700 dark:hover:text-amber-300 transition cursor-pointer"
-                            title="Copy code"
-                          >
-                            {copiedCodeId === item.orderId
-                              ? <Check size={14} className="text-emerald-500" />
-                              : <Copy size={14} />
-                            }
-                          </button>
+                          <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
+                            Provide this secret key to the delivery agent to verify and complete your delivery. Do not share it until you receive the package.
+                          </p>
+                          <div className="flex items-center justify-between bg-white dark:bg-slate-900/50 rounded-xl border border-amber-200/50 dark:border-amber-800/30 px-3 py-2 shadow-inner">
+                            <span className="font-mono text-base font-black tracking-[0.25em] text-amber-700 dark:text-amber-305 select-all">
+                              {item.verificationCode}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                navigator.clipboard.writeText(item.verificationCode);
+                                setCopiedCodeId(item.orderId);
+                                toast.success("Secret key copied!");
+                                setTimeout(() => setCopiedCodeId(null), 2000);
+                              }}
+                              className="text-amber-500 hover:text-amber-700 dark:hover:text-amber-300 transition cursor-pointer flex items-center gap-1 text-[10px] font-bold"
+                              title="Copy Secret Key"
+                            >
+                              {copiedCodeId === item.orderId ? (
+                                <Check size={12} className="text-emerald-500" />
+                              ) : (
+                                <Copy size={12} />
+                              )}
+                              <span>{copiedCodeId === item.orderId ? "Copied" : "Copy"}</span>
+                            </button>
+                          </div>
                         </div>
                       )}
 
@@ -443,6 +494,17 @@ const Orderdetail = () => {
                         </button>
                       )}
 
+                      {/* Cancel Order Button */}
+                      {item.status !== "Delivered" && item.status !== "Cancelled" && (
+                        <button
+                          onClick={() => handleCancelOrder(item.orderId)}
+                          className="inline-flex items-center justify-center gap-2 rounded-xl border border-rose-250 dark:border-rose-900/50 bg-rose-50/30 dark:bg-rose-950/10 px-5 py-3 text-xs font-bold uppercase tracking-wider text-rose-650 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/20 hover:border-rose-350 dark:hover:border-rose-700 transition-all active:scale-95 cursor-pointer"
+                        >
+                          <XCircle className="h-4 w-4 text-rose-500" />
+                          <span>Cancel Order</span>
+                        </button>
+                      )}
+
                       <button
                         onClick={() => navigate("/help")}
                         className="inline-flex items-center justify-center gap-2 rounded-xl border border-indigo-200 dark:border-indigo-900/50 bg-indigo-50/20 dark:bg-indigo-950/10 px-5 py-3 text-xs font-bold uppercase tracking-wider text-indigo-650 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-all active:scale-95 cursor-pointer"
@@ -456,9 +518,10 @@ const Orderdetail = () => {
                 );
               })()}
             </div>
-          ))}
-        </div>
+          );
+        })}
       </div>
+    </div>
 
       {/* Return Request Modal */}
       {selectedReturnItem && (

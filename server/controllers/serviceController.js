@@ -6,6 +6,8 @@ import productModel from "../models/productModel.js";
 import { v2 as cloudinary } from "cloudinary";
 import axios from "axios";
 import fs from "fs";
+import { createNotification } from "../utils/notificationHelper.js";
+
 
 const sanitizeText = (value) => (typeof value === "string" ? value.trim() : "");
 
@@ -125,16 +127,29 @@ const updateReturnStatus = async (req, res) => {
       });
     }
 
-    const updates = {
-      status,
-      adminNote: sanitizeText(adminNote),
-    };
+    const returnReq = await returnRequestModel.findById(requestId);
+    if (!returnReq) {
+      return res.status(404).json({
+        success: false,
+        message: "Return request not found.",
+      });
+    }
 
-    if (returnType) updates.returnType = returnType;
-    if (exchangeSize !== undefined) updates.exchangeSize = sanitizeText(exchangeSize);
-    if (deliverymanId !== undefined) updates.deliverymanId = deliverymanId || null;
+    returnReq.status = status;
+    returnReq.adminNote = sanitizeText(adminNote);
+    if (returnType) returnReq.returnType = returnType;
+    if (exchangeSize !== undefined) returnReq.exchangeSize = sanitizeText(exchangeSize);
+    if (deliverymanId !== undefined) returnReq.deliverymanId = deliverymanId || null;
 
-    await returnRequestModel.findByIdAndUpdate(requestId, updates);
+    await returnReq.save();
+
+    // Trigger notification to customer
+    await createNotification(
+      returnReq.userId,
+      returnReq.orderId,
+      "Return Status Updated",
+      `The return status for your item "${returnReq.itemName}" has been updated to "${status}".`
+    );
 
     return res.json({ success: true, message: "Return status updated." });
   } catch (error) {
@@ -273,7 +288,7 @@ const tryOnGarment = async (req, res) => {
       const humanUpload = await cloudinary.uploader.upload(req.file.path, {
         resource_type: "image",
       });
-      humanUrl = humanUpload.secure_url;
+      humanUrl = huma9nUpload.secure_url;
     } finally {
       if (req.file && req.file.path) {
         fs.unlink(req.file.path, (err) => {

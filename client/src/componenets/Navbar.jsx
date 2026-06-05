@@ -19,37 +19,58 @@ import {
   HelpCircle,
   TrendingUp,
   Globe,
+  Bell,
+  CheckCheck,
+  PackageCheck,
+  KeyRound,
+  Truck,
+  Check,
+  Copy,
 } from "lucide-react";
 import axios from "axios";
 import { backendUrl } from "../config";
 import { useLanguage } from "../context/LanguageContext";
+import { toast } from "react-toastify";
+import Logo from "./Logo";
 
 /* ─────────────── Mobile Bottom Nav items ─────────────── */
 const BOTTOM_NAV = [
-  { label: "Home",    icon: Home,         to: "/" },
-  { label: "Shop",    icon: Tag,          to: "/product" },
-  { label: "Wishlist",icon: Heart,        to: "/wishlist" },
-  { label: "Orders",  icon: Package,      to: "/orderdetail" },
-  { label: "Account", icon: User,         to: null, isProfile: true },
+  { label: "Home", icon: Home, to: "/" },
+  { label: "Shop", icon: Tag, to: "/product" },
+  { label: "Wishlist", icon: Heart, to: "/wishlist" },
+  { label: "Orders", icon: Package, to: "/orderdetail" },
+  { label: "Account", icon: User, to: null, isProfile: true },
 ];
 
 /* ─────────────── Main Component ─────────────── */
+const CATEGORIES = [
+  { label: "Electronics", to: "/category/electronics", emoji: "🔌" },
+  { label: "Fashion", to: "/category/fashion", emoji: "👗" },
+  { label: "Home", to: "/category/home", emoji: "🏠" },
+  { label: "Beauty", to: "/category/beauty", emoji: "💄" },
+];
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { language, changeLanguage, t } = useLanguage();
 
   /* State */
-  const [cartCount, setCartCount]         = useState(0);
-  const [open, setOpen]                   = useState(false);
-  const [username, setUsername]           = useState("");
-  const [searchValue, setSearchValue]     = useState("");
+  const [cartCount, setCartCount] = useState(0);
+  const [open, setOpen] = useState(false);
+  const [notiOpen, setNotiOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [username, setUsername] = useState("");
+  const [searchValue, setSearchValue] = useState("");
   const [locationLabel, setLocationLabel] = useState("Use location");
   const [locationLoading, setLocationLoading] = useState(false);
-  const [cartBump, setCartBump]           = useState(false);
+  const [cartBump, setCartBump] = useState(false);
+  const [activeTab, setActiveTab] = useState("all");
+  const [copiedNotiId, setCopiedNotiId] = useState(null);
+  const [expandedNotis, setExpandedNotis] = useState({});
 
   /* Search autocomplete */
-  const [allProducts, setAllProducts]     = useState([]);
+  const [allProducts, setAllProducts] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
 
@@ -57,8 +78,9 @@ const Navbar = () => {
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
   /* Refs */
-  const profileRef  = useRef(null);
-  const searchRef   = useRef(null);
+  const profileRef = useRef(null);
+  const notiRef = useRef(null);
+  const searchRef = useRef(null);
   const mobileSearchInputRef = useRef(null);
 
   /* Dark mode */
@@ -79,6 +101,71 @@ const Navbar = () => {
 
   const token = localStorage.getItem("token");
 
+  const fetchNotifications = useCallback(async () => {
+    if (!token) return;
+    try {
+      const res = await axios.get(`${backendUrl}/api/user/notifications`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.data.success) {
+        setNotifications(res.data.notifications || []);
+        setUnreadCount((res.data.notifications || []).filter((n) => !n.isRead).length);
+      }
+    } catch (err) {
+      console.log("Error fetching notifications:", err);
+    }
+  }, [token]);
+
+  const handleMarkAllRead = async () => {
+    if (!token) return;
+    try {
+      const res = await axios.post(
+        `${backendUrl}/api/user/notifications/read`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (res.data.success) {
+        setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+        setUnreadCount(0);
+      }
+    } catch (err) {
+      console.log("Error marking notifications read:", err);
+    }
+  };
+
+  const handleMarkSingleRead = async (notiId, e) => {
+    if (e) e.stopPropagation();
+    if (!token) return;
+    try {
+      const res = await axios.post(
+        `${backendUrl}/api/user/notifications/read`,
+        { notificationId: notiId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (res.data.success) {
+        setNotifications((prev) =>
+          prev.map((n) => (n._id === notiId ? { ...n, isRead: true } : n))
+        );
+        setUnreadCount((prev) => Math.max(0, prev - 1));
+      }
+    } catch (err) {
+      console.log("Error marking notification read:", err);
+    }
+  };
+
+  const filteredNotifications = useMemo(() => {
+    if (activeTab === "unread") {
+      return notifications.filter((n) => !n.isRead);
+    }
+    return notifications;
+  }, [notifications, activeTab]);
+
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 15000);
+    return () => clearInterval(interval);
+  }, [fetchNotifications, location.pathname]);
+
   const query = useMemo(
     () => new URLSearchParams(location.search).get("q") || "",
     [location.search]
@@ -93,6 +180,7 @@ const Navbar = () => {
   useEffect(() => {
     const handler = (e) => {
       if (profileRef.current && !profileRef.current.contains(e.target)) setOpen(false);
+      if (notiRef.current && !notiRef.current.contains(e.target)) setNotiOpen(false);
       if (searchRef.current && !searchRef.current.contains(e.target)) {
         setShowSuggestions(false);
         setSearchFocused(false);
@@ -108,7 +196,7 @@ const Navbar = () => {
     try {
       const res = await axios.get(`${backendUrl}/api/product/list`);
       if (res.data.success) setAllProducts(res.data.products || []);
-    } catch {}
+    } catch { }
   }, [allProducts.length]);
 
   const suggestions = useMemo(() => {
@@ -182,7 +270,7 @@ const Navbar = () => {
             const cartData = res.data.cartData || {};
             setCartCount(Object.values(cartData).reduce((s, q) => s + q, 0));
           }
-        }).catch(() => {});
+        }).catch(() => { });
       }
     };
     window.addEventListener("storage", handleCartUpdate);
@@ -194,7 +282,7 @@ const Navbar = () => {
   }, [token]);
 
   useEffect(() => { setSearchValue(query); }, [query]);
-  useEffect(() => { setOpen(false); setMobileSearchOpen(false); }, [location.pathname]);
+  useEffect(() => { setOpen(false); setNotiOpen(false); setMobileSearchOpen(false); }, [location.pathname]);
 
   /* ── Handlers ── */
   const handleLogout = () => {
@@ -249,36 +337,21 @@ const Navbar = () => {
               {/* ── Logo ── */}
               <Link
                 to="/"
-                className="group flex shrink-0 items-center gap-2.5 select-none"
+                className="group flex shrink-0 items-center select-none"
               >
-                <div className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 shadow-md shadow-orange-500/20 transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg group-hover:shadow-orange-500/30">
-                  <img
-                    src="/cartnow-logo.svg"
-                    alt="CartNOW"
-                    className="h-full w-full object-cover"
-                    onError={(e) => { e.target.style.display = "none"; }}
-                  />
-                  <span className="absolute text-white font-black text-sm hidden [img:not([src])~&]:flex">C</span>
-                </div>
-                <div className="hidden sm:flex flex-col leading-none">
-                  <span className="text-[18px] font-black tracking-tight text-slate-900 dark:text-white">
-                    Cart<span className="bg-gradient-to-r from-orange-500 to-amber-400 bg-clip-text text-transparent">NOW</span>
-                  </span>
-                  <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 group-hover:text-orange-400 transition-colors">
-                    Everyday store
-                  </span>
-                </div>
+                <Logo
+                  className="h-9 sm:h-10 w-auto text-slate-900 dark:text-white transition-transform duration-300 group-hover:scale-105"
+                />
               </Link>
 
               {/* ── Desktop Search ── */}
-              <div ref={searchRef} className="relative hidden lg:flex flex-1 min-w-0">
+              <div ref={searchRef} className="relative hidden md:flex flex-1 min-w-0">
                 <form
                   onSubmit={(e) => { e.preventDefault(); submitSearch(); }}
-                  className={`flex w-full items-center overflow-hidden rounded-2xl border transition-all duration-300 ${
-                    searchFocused
+                  className={`flex w-full items-center overflow-hidden rounded-2xl border transition-all duration-300 ${searchFocused
                       ? "border-orange-400 bg-white dark:bg-slate-900 shadow-lg shadow-orange-500/10 ring-3 ring-orange-500/15"
                       : "border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60"
-                  }`}
+                    }`}
                 >
                   <Search className="ml-4 h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500" />
                   <input
@@ -422,6 +495,292 @@ const Navbar = () => {
                   <Heart size={16} className="text-rose-500" />
                 </Link>
 
+                {/* Notifications Bell */}
+                {token && (
+                  <div ref={notiRef} className="relative">
+                    <button
+                      onClick={() => setNotiOpen((p) => !p)}
+                      title="Notifications"
+                      className={`relative flex h-9 w-9 items-center justify-center rounded-xl border transition cursor-pointer hover:scale-105 active:scale-95 ${notiOpen
+                          ? "border-orange-400 bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400"
+                          : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900"
+                        }`}
+                    >
+                      <Bell size={16} className={unreadCount > 0 ? "animate-wiggle" : ""} />
+                      {unreadCount > 0 && (
+                        <span className="absolute right-0.5 top-0.5 flex h-2.5 w-2.5">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-500 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
+                        </span>
+                      )}
+                    </button>
+
+                    {/* Notifications Dropdown */}
+                    {notiOpen && (
+                      <div className="absolute right-0 top-[calc(100%+12px)] w-96 overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl z-50 ring-1 ring-black/5 dark:ring-white/10 animate-in fade-in slide-in-from-top-3 duration-200">
+                        {/* Header */}
+                        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-5 py-4 bg-slate-50 dark:bg-slate-900/50">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">Notifications</span>
+                            {unreadCount > 0 && (
+                              <span className="bg-orange-100 dark:bg-orange-950/40 text-orange-600 dark:text-orange-450 text-[10px] font-black px-2 py-0.5 rounded-full">
+                                {unreadCount} new
+                              </span>
+                            )}
+                          </div>
+                          {unreadCount > 0 && (
+                            <button
+                              onClick={handleMarkAllRead}
+                              className="text-[10px] font-bold text-orange-500 hover:text-orange-600 dark:hover:text-orange-455 flex items-center gap-1 transition cursor-pointer"
+                            >
+                              <CheckCheck size={12} />
+                              <span>Mark all read</span>
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Filter Tabs Header */}
+                        <div className="flex gap-1.5 px-4 py-2 border-b border-slate-100/50 dark:border-slate-800/30 bg-slate-50/30 dark:bg-slate-900/10">
+                          <button
+                            onClick={() => setActiveTab("all")}
+                            className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${activeTab === "all"
+                                ? "bg-slate-900 text-white dark:bg-white dark:text-slate-955 shadow-sm scale-105"
+                                : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-205 hover:bg-slate-150/40 dark:hover:bg-slate-800/20"
+                              }`}
+                          >
+                            All {notifications.length > 0 && `(${notifications.length})`}
+                          </button>
+                          <button
+                            onClick={() => setActiveTab("unread")}
+                            className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${activeTab === "unread"
+                                ? "bg-orange-500 text-white shadow-sm scale-105"
+                                : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-205 hover:bg-slate-150/40 dark:hover:bg-slate-800/20"
+                              }`}
+                          >
+                            Unread {unreadCount > 0 && `(${unreadCount})`}
+                          </button>
+                        </div>
+
+                        {/* List */}
+                        <div className="max-h-[350px] overflow-y-auto divide-y divide-slate-100/50 dark:divide-slate-800/30 scrollbar-hide">
+                          {filteredNotifications.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-12 text-center px-6">
+                              <div className="relative mb-4 flex h-14 w-14 items-center justify-center rounded-3xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/40 dark:to-slate-900/40 text-slate-400 dark:text-slate-500 border border-slate-200/50 dark:border-slate-800/50 shadow-md">
+                                <Bell size={24} className="text-slate-400 dark:text-slate-500" />
+                                {notifications.length === 0 && (
+                                  <span className="absolute -top-1 -right-1 flex h-3 w-3 rounded-full bg-gradient-to-br from-orange-400 to-amber-500 ring-2 ring-white dark:ring-slate-950" />
+                                )}
+                              </div>
+                              <p className="text-xs font-black text-slate-800 dark:text-slate-200">
+                                {activeTab === "unread" ? "No unread alerts" : "Inbox Clean & Clear"}
+                              </p>
+                              <p className="text-[10px] text-slate-450 dark:text-slate-505 mt-1 max-w-[200px] leading-relaxed">
+                                {activeTab === "unread"
+                                  ? "You have read all notifications. Switch to 'All' to view history."
+                                  : "You're all caught up! When order updates arrive, you'll see them here."}
+                              </p>
+                            </div>
+                          ) : (
+                            filteredNotifications.map((n) => {
+                              const getNotificationIcon = (title) => {
+                                const t = title.toLowerCase();
+                                if (t.includes("promo") || t.includes("coupon") || t.includes("discount")) {
+                                  return (
+                                    <div className="h-8.5 w-8.5 rounded-2xl bg-orange-500/10 dark:bg-orange-500/15 text-orange-600 dark:text-orange-400 flex items-center justify-center border border-orange-500/20 shrink-0 shadow-sm animate-pulse">
+                                      <Tag size={15} className="stroke-[2.5]" />
+                                    </div>
+                                  );
+                                }
+                                if (t.includes("delivered")) {
+                                  return (
+                                    <div className="h-8.5 w-8.5 rounded-2xl bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/20 shrink-0 shadow-sm">
+                                      <PackageCheck size={15} className="stroke-[2.5]" />
+                                    </div>
+                                  );
+                                }
+                                if (t.includes("key") || t.includes("code")) {
+                                  return (
+                                    <div className="h-8.5 w-8.5 rounded-2xl bg-amber-500/10 dark:bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-500/20 shrink-0 shadow-sm animate-pulse">
+                                      <KeyRound size={15} className="stroke-[2.5]" />
+                                    </div>
+                                  );
+                                }
+                                if (t.includes("delivery") || t.includes("shipped") || t.includes("claimed")) {
+                                  return (
+                                    <div className="h-8.5 w-8.5 rounded-2xl bg-indigo-500/10 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center border border-indigo-500/20 shrink-0 shadow-sm">
+                                      <Truck size={15} className="stroke-[2.5]" />
+                                    </div>
+                                  );
+                                }
+                                return (
+                                  <div className="h-8.5 w-8.5 rounded-2xl bg-slate-500/10 dark:bg-slate-500/15 text-slate-600 dark:text-slate-400 flex items-center justify-center border border-slate-500/20 shrink-0 shadow-sm">
+                                    <Package size={15} className="stroke-[2.5]" />
+                                  </div>
+                                );
+                              };
+
+                              const extractCode = (msg) => {
+                                const match = msg.match(/code ([A-Z0-9]{6})\b/i);
+                                return match ? match[1] : null;
+                              };
+
+                              const extractPromoCode = (msg) => {
+                                const match = msg.match(/code "([^"]+)"/i);
+                                return match ? match[1] : null;
+                              };
+
+                              return (
+                                <div
+                                  key={n._id}
+                                  onClick={() => {
+                                    if (n.orderId) {
+                                      navigate(`/orderdetail?orderId=${n.orderId}`);
+                                    } else {
+                                      navigate("/product");
+                                    }
+                                    setNotiOpen(false);
+                                  }}
+                                  className={`px-5 py-4 flex gap-3.5 text-left transition cursor-pointer hover:bg-orange-500/[0.03] dark:hover:bg-orange-500/[0.03] relative group ${!n.isRead
+                                      ? "bg-orange-500/[0.01] dark:bg-orange-500/[0.01] border-l-3 border-orange-500"
+                                      : "border-l-3 border-transparent"
+                                    }`}
+                                >
+                                  {getNotificationIcon(n.title)}
+                                  <div className="min-w-0 flex-1">
+                                    <div className="flex justify-between items-start gap-1">
+                                      <p className="text-xs font-black text-slate-900 dark:text-white leading-tight truncate">{n.title}</p>
+                                      <div className="flex items-center gap-1.5 shrink-0">
+                                        {!n.isRead && (
+                                          <>
+                                            <span className="h-2 w-2 rounded-full bg-orange-500 shadow-[0_0_8px_#ff5100] animate-pulse group-hover:hidden" />
+                                            <button
+                                              onClick={(e) => handleMarkSingleRead(n._id, e)}
+                                              className="hidden group-hover:flex p-1 rounded-lg bg-orange-100 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 border border-orange-200/30 hover:bg-orange-200/50 hover:scale-105 active:scale-95 transition cursor-pointer"
+                                              title="Mark as read"
+                                            >
+                                              <Check size={11} className="stroke-[2.5]" />
+                                            </button>
+                                          </>
+                                        )}
+                                      </div>
+                                    </div>
+                                    {(() => {
+                                      const isExpanded = !!expandedNotis[n._id];
+                                      const shouldTruncate = n.message.length > 60;
+                                      const displayText = shouldTruncate && !isExpanded
+                                        ? `${n.message.slice(0, 60)}...`
+                                        : n.message;
+                                      return (
+                                        <div>
+                                          <p
+                                            onClick={(e) => {
+                                              if (shouldTruncate) {
+                                                e.stopPropagation();
+                                                setExpandedNotis(prev => ({
+                                                  ...prev,
+                                                  [n._id]: !prev[n._id]
+                                                }));
+                                              }
+                                            }}
+                                            className={`text-[10.5px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed break-words ${shouldTruncate ? "cursor-pointer hover:text-slate-700 dark:hover:text-slate-350" : ""}`}
+                                            title={shouldTruncate ? (isExpanded ? "Click to collapse" : "Click to view more") : undefined}
+                                          >
+                                            {displayText}
+                                          </p>
+                                          {shouldTruncate && (
+                                            <button
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                setExpandedNotis(prev => ({
+                                                  ...prev,
+                                                  [n._id]: !prev[n._id]
+                                                }));
+                                              }}
+                                              className="mt-1 text-[9px] font-extrabold text-orange-500 hover:text-orange-600 transition cursor-pointer select-none inline-flex items-center gap-0.5"
+                                            >
+                                              {isExpanded ? "View Less" : "View More"}
+                                            </button>
+                                          )}
+                                        </div>
+                                      );
+                                    })()}
+
+                                    {/* Verification Key copyable widget */}
+                                    {n.title.toLowerCase().includes("verification") && (() => {
+                                      const code = extractCode(n.message);
+                                      if (!code) return null;
+                                      const isCopied = copiedNotiId === n._id;
+                                      return (
+                                        <div
+                                          onClick={(e) => e.stopPropagation()}
+                                          className="mt-2.5 flex items-center justify-between rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 dark:border-amber-500/30 px-3 py-2"
+                                        >
+                                          <div className="flex items-center gap-2">
+                                            <KeyRound size={12} className="text-amber-500 animate-pulse" />
+                                            <span className="font-bold text-[9px] uppercase tracking-wider text-amber-600 dark:text-amber-400">Key:</span>
+                                            <span className="font-mono font-black text-xs tracking-wider bg-amber-500/25 text-amber-700 dark:text-amber-300 px-1.5 py-0.5 rounded border border-amber-500/35">{code}</span>
+                                          </div>
+                                          <button
+                                            onClick={() => {
+                                              navigator.clipboard.writeText(code);
+                                              setCopiedNotiId(n._id);
+                                              toast.success("Verification code copied!");
+                                              setTimeout(() => setCopiedNotiId(null), 2000);
+                                            }}
+                                            className="flex items-center gap-1 text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded bg-amber-500 text-white hover:bg-amber-600 active:scale-95 transition cursor-pointer shadow-sm shadow-amber-500/20"
+                                          >
+                                            {isCopied ? <Check size={10} /> : <Copy size={10} />}
+                                            <span>{isCopied ? "Copied" : "Copy"}</span>
+                                          </button>
+                                        </div>
+                                      );
+                                    })()}
+
+                                    {/* Promo Code copyable widget */}
+                                    {(n.title.toLowerCase().includes("promo") || n.message.toLowerCase().includes("code")) && (() => {
+                                      const code = extractPromoCode(n.message);
+                                      if (!code) return null;
+                                      const isCopied = copiedNotiId === n._id;
+                                      return (
+                                        <div
+                                          onClick={(e) => e.stopPropagation()}
+                                          className="mt-2.5 flex items-center justify-between rounded-xl bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20 dark:border-orange-500/30 px-3 py-2"
+                                        >
+                                          <div className="flex items-center gap-2">
+                                            <Tag size={12} className="text-orange-500" />
+                                            <span className="font-bold text-[9px] uppercase tracking-wider text-orange-600 dark:text-orange-400">Coupon:</span>
+                                            <span className="font-mono font-black text-xs tracking-wider bg-orange-500/25 text-orange-700 dark:text-orange-300 px-1.5 py-0.5 rounded border border-orange-500/35">{code}</span>
+                                          </div>
+                                          <button
+                                            onClick={() => {
+                                              navigator.clipboard.writeText(code);
+                                              setCopiedNotiId(n._id);
+                                              toast.success("Promo code copied!");
+                                              setTimeout(() => setCopiedNotiId(null), 2000);
+                                            }}
+                                            className="flex items-center gap-1 text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded bg-orange-500 text-white hover:bg-orange-600 active:scale-95 transition cursor-pointer shadow-sm shadow-orange-500/20"
+                                          >
+                                            {isCopied ? <Check size={10} /> : <Copy size={10} />}
+                                            <span>{isCopied ? "Copied" : "Copy"}</span>
+                                          </button>
+                                        </div>
+                                      );
+                                    })()}
+
+                                    <p className="text-[9px] text-slate-400 dark:text-slate-505 mt-2 font-bold tracking-wide">
+                                      {new Date(n.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })} · {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </p>
+                                  </div>
+                                </div>
+                              );
+                            })
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Cart */}
                 <Link
                   to="/cart"
@@ -430,9 +789,8 @@ const Navbar = () => {
                   <ShoppingCart size={16} />
                   {cartCount > 0 && (
                     <span
-                      className={`absolute -right-1.5 -top-1.5 flex min-w-[18px] h-[18px] items-center justify-center rounded-full bg-gradient-to-br from-red-500 to-rose-600 px-[3px] text-[9px] font-black text-white ring-2 ring-white dark:ring-slate-950 shadow-md transition-transform ${
-                        cartBump ? "scale-125" : "scale-100"
-                      }`}
+                      className={`absolute -right-1.5 -top-1.5 flex min-w-[18px] h-[18px] items-center justify-center rounded-full bg-gradient-to-br from-red-500 to-rose-600 px-[3px] text-[9px] font-black text-white ring-2 ring-white dark:ring-slate-950 shadow-md transition-transform ${cartBump ? "scale-125" : "scale-100"
+                        }`}
                     >
                       {cartCount > 99 ? "99+" : cartCount}
                     </span>
@@ -443,11 +801,10 @@ const Navbar = () => {
                 <div ref={profileRef} className="relative">
                   <button
                     onClick={() => setOpen((p) => !p)}
-                    className={`flex h-9 items-center gap-2 rounded-xl border px-2.5 font-bold text-sm transition-all cursor-pointer select-none ${
-                      open
+                    className={`flex h-9 items-center gap-2 rounded-xl border px-2.5 font-bold text-sm transition-all cursor-pointer select-none ${open
                         ? "border-orange-400 bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400"
                         : "border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900"
-                    }`}
+                      }`}
                   >
                     <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-orange-400 to-amber-500 text-[10px] font-black text-white shadow-sm">
                       {token && initials ? initials : <User size={12} />}
@@ -684,15 +1041,13 @@ const Navbar = () => {
                 <button
                   key="profile"
                   onClick={() => setOpen((p) => !p)}
-                  className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all cursor-pointer ${
-                    open ? "text-orange-500" : "text-slate-500 dark:text-slate-400"
-                  }`}
+                  className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all cursor-pointer ${open ? "text-orange-500" : "text-slate-500 dark:text-slate-400"
+                    }`}
                 >
-                  <div className={`relative flex h-7 w-7 items-center justify-center rounded-full transition-all ${
-                    open
+                  <div className={`relative flex h-7 w-7 items-center justify-center rounded-full transition-all ${open
                       ? "bg-orange-500 text-white shadow-md shadow-orange-500/30"
                       : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
-                  }`}>
+                    }`}>
                     {token && initials
                       ? <span className="text-[11px] font-black">{initials}</span>
                       : <Icon size={14} />
@@ -707,13 +1062,11 @@ const Navbar = () => {
               <Link
                 key={to}
                 to={to}
-                className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all relative ${
-                  active ? "text-orange-500" : "text-slate-500 dark:text-slate-400"
-                }`}
+                className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all relative ${active ? "text-orange-500" : "text-slate-500 dark:text-slate-400"
+                  }`}
               >
-                <div className={`relative flex h-7 w-7 items-center justify-center rounded-xl transition-all ${
-                  active ? "bg-orange-100 dark:bg-orange-950/30" : ""
-                }`}>
+                <div className={`relative flex h-7 w-7 items-center justify-center rounded-xl transition-all ${active ? "bg-orange-100 dark:bg-orange-950/30" : ""
+                  }`}>
                   <Icon size={17} />
                   {label === "Wishlist" && (
                     <></>

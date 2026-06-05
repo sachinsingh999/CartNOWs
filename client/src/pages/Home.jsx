@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { backendUrl } from "../config";
 import ProductCard from "./ProductCard";
-import InviteBanner from "../componenets/InviteBanner";
+
 import {
   getViewed, getTopCategories, getRecommended, isReturningUser,
 } from "../utils/engagement";
@@ -220,9 +220,7 @@ const Home = () => {
       </section>
 
       {/* Co-Shop Invite Banner */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6">
-        <InviteBanner />
-      </section>
+      
 
       {/* ══ RECENTLY VIEWED (Returning user strip) ══ */}
       {returning && recentlyViewed.length > 0 && (

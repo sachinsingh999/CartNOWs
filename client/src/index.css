@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 @import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));
@@ -66,3 +67,40 @@
 
 /* Remove default toastify background so our custom class controls it */
 .Toastify__toast-container { padding: 0 12px 12px !important; }
+
+:root {
+  --font-primary: 'Inter', system-ui, sans-serif;
+  --glass-bg: rgba(255,255,255,0.12);
+  --glass-border: rgba(255,255,255,0.18);
+}
+
+body {
+  font-family: var(--font-primary);
+  background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+  background-attachment: fixed;
+  color: #e0e0e0;
+}
+
+.glass {
+  backdrop-filter: blur(12px);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 1rem;
+  box-shadow: 0 4px 30px rgba(0,0,0,0.12);
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(15deg); }
+  50% { transform: rotate(-10deg); }
+  75% { transform: rotate(10deg); }
+}
+.animate-wiggle {
+  animation: wiggle 0.8s ease-in-out infinite;
+  transform-origin: top center;
+}

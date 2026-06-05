@@ -1,4 +1,6 @@
 import couponModel from "../models/couponModel.js";
+import userModel from "../models/userModel.js";
+import { createNotification } from "../utils/notificationHelper.js";
 
 // Create a new coupon (Admin)
 export const createCoupon = async (req, res) => {
@@ -23,6 +25,27 @@ export const createCoupon = async (req, res) => {
     });
 
     await coupon.save();
+
+    // Notify all registered users about the new promo code
+    try {
+      const users = await userModel.find({});
+      const discountLabel = discountType === "percentage" ? `${discountValue}%` : `₹${discountValue}`;
+      const promoMessage = `Use code "${coupon.code}" to get ${discountLabel} discount on your next order! ${
+        minOrderAmount ? `Applicable on orders above ₹${minOrderAmount}.` : ""
+      }`;
+
+      for (const user of users) {
+        await createNotification(
+          user._id,
+          null, // orderId is optional for general promo codes
+          "New Promo Code Released!",
+          promoMessage
+        );
+      }
+    } catch (notiErr) {
+      console.log("Failed to send global coupon notifications:", notiErr);
+    }
+
     res.json({ success: true, message: "Coupon created successfully", coupon });
   } catch (error) {
     console.log(error);

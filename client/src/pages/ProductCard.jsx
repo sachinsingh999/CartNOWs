@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import { backendUrl } from "../config";
 import { Star, Eye, ShoppingCart, Heart, BarChart2 } from "lucide-react";
 import { useComparison } from "../context/ComparisonContext";
-import { useCoShop } from "../context/CoShopContext";
+
 import { getAverageRating, getReviewCount } from "../utils/productRatings";
 
 const ProductCard = ({ product, compact = false }) => {
@@ -14,7 +14,7 @@ const ProductCard = ({ product, compact = false }) => {
   const [isFavorite, setIsFavorite] = useState(false);
   const token = localStorage.getItem("token") || "";
   const { addToCompare, removeFromCompare, isInCompare } = useComparison();
-  const { activeRoomId, suggestProduct } = useCoShop();
+
   const isComparing = isInCompare(product._id);
 
   useEffect(() => {
@@ -199,19 +199,6 @@ const ProductCard = ({ product, compact = false }) => {
               ({reviewCount} reviews)
             </span>
           </div>
-
-          {activeRoomId && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                suggestProduct(product);
-              }}
-              className="w-full mb-2 py-2 px-3 flex items-center justify-center gap-1.5 rounded-xl bg-indigo-650 hover:bg-indigo-600 text-white text-[11px] font-extrabold transition-all duration-200 cursor-pointer shadow-md shadow-indigo-650/15 active:scale-95"
-            >
-              Suggest to Group
-            </button>
-          )}
 
           <div className="grid grid-cols-2 gap-2">
             <button

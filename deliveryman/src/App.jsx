@@ -5,6 +5,7 @@ import axios from "axios";
 import "react-toastify/dist/ReactToastify.css";
 import Login from "./components/Login";
 import SignUp from "./pages/SignUp";
+import Logo from "./components/Logo";
 import Dashboard from "./pages/Dashboard";
 import { Truck, RotateCcw, Inbox, AlertTriangle, Settings } from "lucide-react";
 import { backendUrl } from "./config";
@@ -131,10 +132,9 @@ const App = () => {
           <nav className="w-full flex flex-col lg:flex-row items-center justify-between px-6 py-3.5 bg-[#0F172A] text-white border-b border-slate-900 shadow-lg z-30 relative gap-4">
             <div className="flex items-center gap-3 group shrink-0">
               <div className="relative overflow-hidden h-9 w-9 rounded-xl border border-slate-800 bg-slate-900 flex items-center justify-center transition-all duration-300 hover:scale-105">
-                <img
-                  src="/cartnow-logo.svg"
-                  alt="CartNOW Logo"
-                  className="h-full w-full object-cover"
+                <Logo
+                  variant="icon"
+                  className="h-full w-full p-1 text-white transition-transform duration-300 hover:scale-105"
                 />
               </div>
               <div className="flex flex-col leading-none">

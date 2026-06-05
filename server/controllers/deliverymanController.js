@@ -4,6 +4,8 @@ import deliverymanModel from "../models/deliverymanModel.js";
 import orderModel from "../models/orderModel.js";
 import deliverymanComplaintModel from "../models/deliverymanComplaintModel.js";
 import returnRequestModel from "../models/returnRequestModel.js";
+import { createNotification } from "../utils/notificationHelper.js";
+
 
 // JWT Generator
 const createToken = (id) => {
@@ -67,7 +69,7 @@ const listDeliverymen = async (req, res) => {
       drivers.map(async (driver) => {
         const activeCount = await orderModel.countDocuments({
           deliverymanId: driver._id,
-          orderStatus: { $ne: "Delivered" }
+          orderStatus: { $nin: ["Delivered", "Cancelled"] }
         });
         
         const driverObj = driver.toObject();
@@ -216,7 +218,7 @@ const getUnassignedOrders = async (req, res) => {
   try {
     const orders = await orderModel.find({
       deliverymanId: null,
-      orderStatus: { $nin: ["Delivered"] }
+      orderStatus: { $nin: ["Delivered", "Cancelled"] }
     });
     res.json({ success: true, orders });
   } catch (error) {
@@ -260,11 +262,20 @@ const claimOrder = async (req, res) => {
     order.orderStatus = "Out for Delivery";
     await order.save();
 
+    // Trigger notification to customer
+    await createNotification(
+      order.userId,
+      order._id,
+      "Order Out for Delivery",
+      `Your order #${order._id.toString().slice(-6).toUpperCase()} has been claimed by delivery agent ${driver.name} and is out for delivery.`
+    );
+
     res.json({
       success: true,
       message: "Shipment claimed! It is now in your active deliveries list.",
       order,
     });
+
   } catch (error) {
     console.log(error);
     res.json({ success: false, message: error.message });
@@ -289,10 +300,29 @@ const updateOrderStatus = async (req, res) => {
     // ✅ Delivery Verification Gate
     if (status === "Delivered") {
       if (!verificationCode) {
+        // Generate verification code if not present
+        if (!order.verificationCode) {
+          const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+          let code = "";
+          for (let i = 0; i < 6; i++) {
+            code += chars.charAt(Math.floor(Math.random() * chars.length));
+          }
+          order.verificationCode = code;
+          await order.save();
+
+          // Notify customer about the secret key
+          await createNotification(
+            order.userId,
+            order._id,
+            "Delivery Verification Code",
+            `A secret key has been generated for order #${order._id.toString().slice(-6).toUpperCase()}. Please provide code ${code} to the delivery agent to confirm delivery.`
+          );
+        }
+
         return res.json({
           success: false,
           requiresVerification: true,
-          message: "Verification code is required to mark this order as Delivered.",
+          message: "A secret verification key has been generated on the customer's end. Ask the customer for the key to verify.",
         });
       }
 
@@ -315,6 +345,22 @@ const updateOrderStatus = async (req, res) => {
       if (order.paymentMethod.toLowerCase() === "cod") {
         order.paymentStatus = "Paid";
       }
+
+      // Notify customer of delivery success
+      await createNotification(
+        order.userId,
+        order._id,
+        "Order Delivered Successfully",
+        `Your order #${order._id.toString().slice(-6).toUpperCase()} has been delivered successfully. Thank you for shopping with CartNOW!`
+      );
+    } else {
+      // General status update notification
+      await createNotification(
+        order.userId,
+        order._id,
+        "Order Status Updated",
+        `Your order #${order._id.toString().slice(-6).toUpperCase()} is now "${status}".`
+      );
     }
 
     await order.save();
@@ -481,7 +527,7 @@ const getDriverStats = async (req, res) => {
     const orders = await orderModel.find({ deliverymanId: driverId });
 
     const totalDelivered = orders.filter(o => o.orderStatus === "Delivered").length;
-    const activeCount = orders.filter(o => o.orderStatus !== "Delivered").length;
+    const activeCount = orders.filter(o => o.orderStatus !== "Delivered" && o.orderStatus !== "Cancelled").length;
 
     // Calculate earnings: ₹75 per delivered order
     const totalEarnings = totalDelivered * 75;
@@ -564,6 +610,14 @@ const updateReturnTaskStatus = async (req, res) => {
 
     returnReq.status = status;
     await returnReq.save();
+
+    // Notify customer about return status update
+    await createNotification(
+      returnReq.userId,
+      returnReq.orderId,
+      "Return Task Status Updated",
+      `The return pickup for your item "${returnReq.itemName}" is now "${status}".`
+    );
 
     res.json({ success: true, message: `Return task updated to ${status}` });
   } catch (error) {

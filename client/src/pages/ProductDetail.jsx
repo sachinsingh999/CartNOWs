@@ -33,13 +33,13 @@ import {
   Users
 } from "lucide-react";
 import { useComparison } from "../context/ComparisonContext";
-import { useCoShop } from "../context/CoShopContext";
+
 
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const { activeRoomId, suggestProduct } = useCoShop();
+
 
   const [product, setProduct] = useState(null);
   const [mainImg, setMainImg] = useState("");
@@ -670,16 +670,7 @@ const ProductDetail = () => {
             {/* Premium CTA Buttons row */}
             <div className="grid gap-3.5 border-t border-slate-100 dark:border-slate-800 pt-6">
               
-              {activeRoomId && (
-                <button
-                  type="button"
-                  onClick={() => suggestProduct(product)}
-                  className="flex items-center justify-center gap-2 rounded-2xl bg-indigo-650 hover:bg-indigo-600 py-3.5 text-xs font-black uppercase tracking-wider text-white shadow-md shadow-indigo-650/15 hover:shadow-lg active:scale-98 transition-all cursor-pointer"
-                >
-                  <Users size={14} />
-                  <span>Suggest to Group Shopping Room</span>
-                </button>
-              )}
+              
 
               <div className="grid grid-cols-2 gap-3.5">
                 {/* Add to Cart button */}

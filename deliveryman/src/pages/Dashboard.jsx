@@ -129,9 +129,14 @@ const Dashboard = ({
   // Called when driver picks a status from the dropdown
   const handleStatusChange = async (orderId, newStatus) => {
     if (newStatus === "Delivered") {
-      setVerifyModal({ open: true, orderId, status: newStatus });
-      setVerifyCode("");
-      setVerifyError("");
+      setLoading(true);
+      const result = await updateStatusHandler(orderId, newStatus);
+      setLoading(false);
+      if (result && result.requiresVerification) {
+        setVerifyModal({ open: true, orderId, status: newStatus });
+        setVerifyCode("");
+        setVerifyError(result.message);
+      }
     } else {
       await updateStatusHandler(orderId, newStatus);
     }

@@ -3,6 +3,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
 import { backendUrl } from "../config";
+import Logo from "../components/Logo";
 import { Truck, Mail, Lock, User, Phone, CheckCircle, Eye, EyeOff } from "lucide-react";
 
 const SignUp = () => {
@@ -78,10 +79,9 @@ const SignUp = () => {
         {/* Logo and Heading */}
         <div className="flex flex-col items-center text-center space-y-3">
           <div className="relative overflow-hidden h-16 w-16 rounded-2xl border border-slate-700 bg-slate-800/60 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_rgba(249,115,22,0.3)]">
-            <img
-              src="/cartnow-logo.svg"
-              alt="CartNOW Logo"
-              className="h-full w-full object-cover"
+            <Logo
+              variant="icon"
+              className="h-full w-full p-2.5 text-white transition-transform duration-300 hover:scale-105"
             />
           </div>
           <div>

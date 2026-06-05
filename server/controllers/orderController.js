@@ -3,6 +3,8 @@ import userModel from "../models/userModel.js";
 import Stripe from "stripe";
 import Razorpay from "razorpay";
 import crypto from "crypto";
+import { createNotification } from "../utils/notificationHelper.js";
+
 
 // Initialize payment integrations
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY || "sk_test_placeholder";
@@ -41,7 +43,7 @@ const placeOrder = async (req, res) => {
       });
     }
 
-    const verificationCode = generateVerificationCode();
+    const verificationCode = null;
 
     const order = await orderModel.create({
       userId: req.user._id,
@@ -81,7 +83,7 @@ const placeOrderStripe = async (req, res) => {
     const { items, amount, address, couponCode, discount } = req.body;
     const userId = req.user._id;
 
-    const verificationCode = generateVerificationCode();
+    const verificationCode = null;
 
     const order = await orderModel.create({
       userId,
@@ -193,7 +195,7 @@ const placeOrderRazorpay = async (req, res) => {
     const { items, amount, address, couponCode, discount } = req.body;
     const userId = req.user._id;
 
-    const verificationCode = generateVerificationCode();
+    const verificationCode = null;
 
     const order = await orderModel.create({
       userId,
@@ -323,11 +325,70 @@ const updateStatus = async (req, res) => {
   try {
     const { orderId, status } = req.body;
 
-    await orderModel.findByIdAndUpdate(orderId, {
-      orderStatus: status,
-    });
+    const order = await orderModel.findById(orderId);
+    if (!order) {
+      return res.json({ success: false, message: "Order not found" });
+    }
+
+    order.orderStatus = status;
+    await order.save();
+
+    // Trigger notification to customer
+    await createNotification(
+      order.userId,
+      order._id,
+      "Order Status Updated",
+      `Your order #${order._id.toString().slice(-6).toUpperCase()} status has been updated to "${status}".`
+    );
 
     res.json({ success: true, message: "Status Updated" });
+  } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
+};
+
+/* ================= USER: CANCEL ORDER ================= */
+const cancelOrder = async (req, res) => {
+  try {
+    const { orderId } = req.body;
+
+    const order = await orderModel.findById(orderId);
+    if (!order) {
+      return res.json({ success: false, message: "Order not found" });
+    }
+
+    // Verify order ownership
+    if (order.userId.toString() !== req.user._id.toString()) {
+      return res.json({ success: false, message: "Unauthorized action" });
+    }
+
+    // Check cancellation eligibility
+    const status = order.orderStatus.toLowerCase();
+    if (status === "delivered") {
+      return res.json({
+        success: false,
+        message: `Order cannot be cancelled once it has been delivered`,
+      });
+    }
+
+    if (status === "cancelled") {
+      return res.json({ success: false, message: "Order is already cancelled" });
+    }
+
+    // Update status and unassign deliveryman
+    order.orderStatus = "Cancelled";
+    order.deliverymanId = null;
+    await order.save();
+
+    // Trigger notification to customer
+    await createNotification(
+      order.userId,
+      order._id,
+      "Order Cancelled",
+      `Your order #${order._id.toString().slice(-6).toUpperCase()} has been successfully cancelled.`
+    );
+
+    res.json({ success: true, message: "Order cancelled successfully" });
   } catch (error) {
     res.json({ success: false, message: error.message });
   }
@@ -342,4 +403,5 @@ export {
   updateStatus,
   verifyStripe,
   verifyRazorpay,
+  cancelOrder,
 };

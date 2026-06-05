@@ -1,6 +1,7 @@
 import userModel from "../models/userModel.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import notificationModel from "../models/notificationModel.js";
 
 const createToken=(id)=>{
   return jwt.sign({id},process.env.JWT_SECRET)
@@ -136,6 +137,7 @@ const getUserProfile = async (req, res) => {
       name: user.name,
       email: user.email,
       deliveryVerificationKey: user.deliveryVerificationKey,
+      addresses: user.addresses || [],
     };
 
     res.json({
@@ -151,9 +153,135 @@ const getUserProfile = async (req, res) => {
   }
 };
 
+/* ================= ADD USER ADDRESS ================= */
+const addUserAddress = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { firstName, lastName, email, phone, street, city, state, country } = req.body;
 
+    if (!firstName || !email || !phone || !street || !city || !state || !country) {
+      return res.json({
+        success: false,
+        message: "Missing required fields",
+      });
+    }
 
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.json({
+        success: false,
+        message: "User not found",
+      });
+    }
 
+    user.addresses.push({
+      firstName,
+      lastName: lastName || "",
+      email,
+      phone,
+      street,
+      city,
+      state,
+      country,
+    });
 
+    await user.save();
 
-export {loginUser,registerUser,adminLogin,getUserProfile}
+    res.json({
+      success: true,
+      message: "Address added successfully",
+      addresses: user.addresses,
+    });
+  } catch (error) {
+    console.log("ADD ADDRESS ERROR 👉", error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+/* ================= DELETE USER ADDRESS ================= */
+const deleteUserAddress = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { addressId } = req.body;
+
+    if (!addressId) {
+      return res.json({
+        success: false,
+        message: "Address ID is required",
+      });
+    }
+
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Pull or filter out the subdocument
+    user.addresses = user.addresses.filter(addr => addr._id.toString() !== addressId);
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Address deleted successfully",
+      addresses: user.addresses,
+    });
+  } catch (error) {
+    console.log("DELETE ADDRESS ERROR 👉", error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+const getUserNotifications = async (req, res) => {
+  try {
+    const notifications = await notificationModel
+      .find({ userId: req.user._id })
+      .sort({ createdAt: -1 })
+      .limit(20);
+    res.json({ success: true, notifications });
+  } catch (error) {
+    console.log("FETCH NOTIFICATIONS ERROR 👉", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const markNotificationsRead = async (req, res) => {
+  try {
+    const { notificationId } = req.body;
+    if (notificationId) {
+      await notificationModel.updateOne(
+        { _id: notificationId, userId: req.user._id },
+        { isRead: true }
+      );
+      res.json({ success: true, message: "Notification marked as read" });
+    } else {
+      await notificationModel.updateMany(
+        { userId: req.user._id, isRead: false },
+        { isRead: true }
+      );
+      res.json({ success: true, message: "All notifications marked as read" });
+    }
+  } catch (error) {
+    console.log("MARK NOTIFICATIONS READ ERROR 👉", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export {
+  loginUser,
+  registerUser,
+  adminLogin,
+  getUserProfile,
+  addUserAddress,
+  deleteUserAddress,
+  getUserNotifications,
+  markNotificationsRead,
+};

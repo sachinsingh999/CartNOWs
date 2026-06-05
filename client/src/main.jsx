@@ -28,15 +28,12 @@ import App from "./App.jsx";
 import { BrowserRouter } from "react-router-dom";
 import { LanguageProvider } from "./context/LanguageContext.jsx";
 import { ComparisonProvider } from "./context/ComparisonContext.jsx";
-import { CoShopProvider } from "./context/CoShopContext.jsx";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <LanguageProvider>
       <ComparisonProvider>
-        <CoShopProvider>
-          <App />
-        </CoShopProvider>
+        <App />
       </ComparisonProvider>
     </LanguageProvider>
   </BrowserRouter>

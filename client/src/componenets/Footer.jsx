@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
+import Logo from "./Logo";
 
 const Footer = () => {
   const [email, setEmail] = useState("");
@@ -70,10 +71,9 @@ const Footer = () => {
           <div className="space-y-6">
             <Link to="/" className="group flex items-center gap-3 select-none">
               <div className="relative overflow-hidden rounded-xl border border-slate-800 bg-slate-950/40 transition-all duration-300 group-hover:scale-105 group-hover:shadow-[0_0_15px_rgba(249,115,22,0.2)]">
-                <img
-                  src="/cartnow-logo.svg"
-                  alt="CartNOW Logo"
-                  className="h-10 w-10 object-cover"
+                <Logo
+                  variant="icon"
+                  className="h-full w-full p-1.5 text-white transition-transform duration-300 group-hover:scale-105"
                 />
               </div>
               <span className="flex flex-col">
