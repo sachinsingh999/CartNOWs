@@ -1,6 +1,10 @@
 node_modules/
+venv/
+.venv/
+server/ai-service/venv/
+
 .env
+.DS_Store
 dist/
 build/
 *.log
-.DS_Store
