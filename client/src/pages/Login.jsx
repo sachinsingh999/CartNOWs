@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { backendUrl } from "../config";
+import { Store, Truck } from "lucide-react";
 
 const inputClass =
   "w-full rounded-xl border border-gray-300 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 outline-none transition focus:border-indigo-650 dark:focus:border-indigo-500";
@@ -166,6 +167,32 @@ const Login = () => {
                 Sign up
               </button>
             </p>
+
+            <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800">
+              <p className="text-center text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-4">
+                Access Other Portals
+              </p>
+              <div className="grid grid-cols-2 gap-4">
+                <a
+                  href="https://cartnow-seller.vercel.app"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 text-xs font-bold text-slate-600 dark:text-slate-400 hover:border-orange-500 dark:hover:border-orange-500 hover:bg-orange-50/35 dark:hover:bg-orange-950/20 hover:text-orange-650 dark:hover:text-orange-400 transition-all duration-300 transform hover:-translate-y-0.5 active:scale-95 shadow-sm"
+                >
+                  <Store size={15} className="text-orange-500" />
+                  <span>Seller Portal</span>
+                </a>
+                <a
+                  href="https://cart-now-deliveryagent.vercel.app/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 text-xs font-bold text-slate-600 dark:text-slate-400 hover:border-blue-500 dark:hover:border-blue-500 hover:bg-blue-50/35 dark:hover:bg-blue-950/20 hover:text-blue-650 dark:hover:text-blue-400 transition-all duration-300 transform hover:-translate-y-0.5 active:scale-95 shadow-sm"
+                >
+                  <Truck size={15} className="text-blue-500" />
+                  <span>Delivery Agent</span>
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </div>

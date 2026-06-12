@@ -25,6 +25,7 @@ import axios from "axios";
 import "react-toastify/dist/ReactToastify.css";
 import Login from "./components/Login";
 import SignUp from "./pages/SignUp";
+import Landing from "./pages/Landing";
 import Logo from "./components/Logo";
 import Dashboard from "./pages/Dashboard";
 import Products from "./pages/Products";
@@ -192,9 +193,10 @@ const App = () => {
       <ToastContainer position="top-right" autoClose={3000} />
       {token === "" ? (
         <Routes>
+          <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login setToken={setToken} setSeller={setSeller} />} />
           <Route path="/signup" element={<SignUp />} />
-          <Route path="*" element={<Navigate to="/login" />} />
+          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       ) : (
         <div className="flex flex-1 h-screen overflow-hidden relative">

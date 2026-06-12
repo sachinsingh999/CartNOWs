@@ -5,6 +5,7 @@ import axios from "axios";
 import "react-toastify/dist/ReactToastify.css";
 import Login from "./components/Login";
 import SignUp from "./pages/SignUp";
+import Landing from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
 import Navbar from "./components/Navbar";
 import { 
@@ -186,20 +187,37 @@ const App = () => {
       <ToastContainer position="top-right" autoClose={3000} theme={theme} />
       {token === "" ? (
         <div className="relative">
-          {/* Theme Toggle Button on Login Screen */}
-          <div className="absolute top-4 right-4 z-50">
-            <button
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="p-2.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-900 dark:bg-[#0F1321]/60 dark:border-slate-800 dark:text-slate-300 dark:hover:text-white transition shadow-sm cursor-pointer"
-              title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
-            >
-              {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
-            </button>
-          </div>
           <Routes>
-            <Route path="/login" element={<Login setToken={setToken} setDriver={setDriver} />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="*" element={<Navigate to="/login" />} />
+            <Route path="/" element={<Landing theme={theme} setTheme={setTheme} />} />
+            <Route path="/login" element={
+              <>
+                <div className="absolute top-4 right-4 z-50">
+                  <button
+                    onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                    className="p-2.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-900 dark:bg-[#0F1321]/60 dark:border-slate-800 dark:text-slate-300 dark:hover:text-white transition shadow-sm cursor-pointer"
+                    title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                  >
+                    {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
+                  </button>
+                </div>
+                <Login setToken={setToken} setDriver={setDriver} />
+              </>
+            } />
+            <Route path="/signup" element={
+              <>
+                <div className="absolute top-4 right-4 z-50">
+                  <button
+                    onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                    className="p-2.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-900 dark:bg-[#0F1321]/60 dark:border-slate-800 dark:text-slate-300 dark:hover:text-white transition shadow-sm cursor-pointer"
+                    title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                  >
+                    {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
+                  </button>
+                </div>
+                <SignUp />
+              </>
+            } />
+            <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </div>
       ) : (
