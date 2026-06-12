@@ -2,6 +2,7 @@ import userModel from "../models/userModel.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import notificationModel from "../models/notificationModel.js";
+import { validateEmail, validatePassword, validateName, validatePhone } from "../utils/validation.js";
 
 const createToken=(id)=>{
   return jwt.sign({id},process.env.JWT_SECRET)
@@ -12,7 +13,14 @@ const createToken=(id)=>{
 const loginUser=async(req,res)=>{
   try {
     const {email,password}=req.body;
-    const user=await userModel.findOne({email});
+    
+    // Quick sanitization & validation
+    const emailCheck = validateEmail(email);
+    if (!emailCheck.isValid) {
+      return res.status(400).json({ success: false, message: emailCheck.message });
+    }
+
+    const user=await userModel.findOne({email: emailCheck.value});
     if(!user){
       return res.status(409).json({
         success: false,
@@ -54,7 +62,22 @@ const registerUser = async (req, res) => {
       });
     }
 
-    const exists = await userModel.findOne({ email });
+    const nameCheck = validateName(name);
+    if (!nameCheck.isValid) {
+      return res.status(400).json({ success: false, message: nameCheck.message });
+    }
+
+    const emailCheck = validateEmail(email);
+    if (!emailCheck.isValid) {
+      return res.status(400).json({ success: false, message: emailCheck.message });
+    }
+
+    const passwordCheck = validatePassword(password);
+    if (!passwordCheck.isValid) {
+      return res.status(400).json({ success: false, message: passwordCheck.message });
+    }
+
+    const exists = await userModel.findOne({ email: emailCheck.value });
     if (exists) {
       return res.status(409).json({
         success: false,
@@ -65,8 +88,8 @@ const registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await userModel.create({
-      name,
-      email,
+      name: nameCheck.value,
+      email: emailCheck.value,
       password: hashedPassword,
     });
 
@@ -166,6 +189,21 @@ const addUserAddress = async (req, res) => {
       });
     }
 
+    const emailCheck = validateEmail(email);
+    if (!emailCheck.isValid) {
+      return res.json({ success: false, message: emailCheck.message });
+    }
+
+    const phoneCheck = validatePhone(phone);
+    if (!phoneCheck.isValid) {
+      return res.json({ success: false, message: phoneCheck.message });
+    }
+
+    const firstCheck = validateName(firstName);
+    if (!firstCheck.isValid) {
+      return res.json({ success: false, message: "First name: " + firstCheck.message });
+    }
+
     const user = await userModel.findById(userId);
     if (!user) {
       return res.json({
@@ -175,14 +213,16 @@ const addUserAddress = async (req, res) => {
     }
 
     user.addresses.push({
-      firstName,
+      firstName: firstCheck.value,
       lastName: lastName || "",
-      email,
-      phone,
+      email: emailCheck.value,
+      phone: phoneCheck.value,
       street,
       city,
       state,
       country,
+      lat: Number(req.body.lat) || 0,
+      lng: Number(req.body.lng) || 0,
     });
 
     await user.save();

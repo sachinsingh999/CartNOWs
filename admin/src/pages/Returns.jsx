@@ -426,11 +426,12 @@ const Returns = ({ token }) => {
                     
                     {/* Status dropdown */}
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Set Request Status</label>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Request Status (Managed by Seller)</label>
                       <select
+                        disabled
                         value={request.status}
                         onChange={(event) => handleStatusUpdate(request._id, event.target.value)}
-                        className={`w-full border rounded-xl px-3 py-2.5 text-xs font-bold bg-white text-slate-800 outline-none transition focus:ring-4 focus:ring-slate-900/5 focus:border-slate-900 ${getStatusBadgeStyle(request.status)}`}
+                        className={`w-full border rounded-xl px-3 py-2.5 text-xs font-bold bg-slate-50 text-slate-500 border-slate-200 outline-none opacity-80 cursor-not-allowed ${getStatusBadgeStyle(request.status)}`}
                       >
                         <option value="Requested">Requested</option>
                         <option value="Approved">Approved</option>
@@ -445,9 +446,10 @@ const Returns = ({ token }) => {
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Return Action</label>
                       <select
+                        disabled
                         value={currentType}
                         onChange={(e) => setTypes(prev => ({ ...prev, [request._id]: e.target.value }))}
-                        className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold bg-white text-slate-700 outline-none focus:border-slate-900"
+                        className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold bg-slate-50 text-slate-500 outline-none cursor-not-allowed opacity-85"
                       >
                         <option value="Refund">Refund</option>
                         <option value="Replacement">Replacement</option>
@@ -460,11 +462,12 @@ const Returns = ({ token }) => {
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Exchange Size</label>
                         <input
+                          disabled
                           type="text"
                           value={exchangeSizes[request._id] ?? request.exchangeSize ?? ""}
                           onChange={(e) => setExchangeSizes(prev => ({ ...prev, [request._id]: e.target.value }))}
                           placeholder="e.g. XL, M, L"
-                          className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold bg-white text-slate-700 outline-none focus:border-slate-900"
+                          className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold bg-slate-50 text-slate-500 outline-none cursor-not-allowed opacity-85"
                         />
                       </div>
                     )}
@@ -473,9 +476,10 @@ const Returns = ({ token }) => {
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Assign Agent</label>
                       <select
+                        disabled
                         value={currentDriver}
                         onChange={(e) => setAssignedDrivers(prev => ({ ...prev, [request._id]: e.target.value }))}
-                        className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold bg-white text-slate-700 outline-none focus:border-slate-900"
+                        className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold bg-slate-50 text-slate-500 outline-none cursor-not-allowed opacity-85"
                       >
                         <option value="">Unassigned</option>
                         {drivers.map(d => (
@@ -488,7 +492,7 @@ const Returns = ({ token }) => {
 
                     {/* Notes */}
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Admin Notes</label>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Obstacle Report / Note to Seller</label>
                       <textarea
                         rows="3"
                         value={notes[request._id] ?? request.adminNote ?? ""}
@@ -498,7 +502,7 @@ const Returns = ({ token }) => {
                             [request._id]: event.target.value,
                           }))
                         }
-                        placeholder="Instructions or feedback..."
+                        placeholder="Report any obstacles or notes to the seller..."
                         className="w-full rounded-xl border border-slate-200 bg-slate-50/20 px-3.5 py-2.5 text-xs outline-none transition focus:bg-white focus:ring-4 focus:ring-slate-950/5 focus:border-slate-900 placeholder:text-slate-400 resize-none font-medium"
                       />
                     </div>
@@ -507,7 +511,7 @@ const Returns = ({ token }) => {
                       onClick={() => handleStatusUpdate(request._id, request.status)}
                       className="w-full rounded-xl bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 text-xs font-bold transition shadow-sm active:scale-98 cursor-pointer mt-1"
                     >
-                      Save Return Settings
+                      Report Obstacle to Seller
                     </button>
                   </div>
                 </div>

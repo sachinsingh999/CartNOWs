@@ -4,7 +4,13 @@ import deliverymanModel from "../models/deliverymanModel.js";
 import orderModel from "../models/orderModel.js";
 import deliverymanComplaintModel from "../models/deliverymanComplaintModel.js";
 import returnRequestModel from "../models/returnRequestModel.js";
+import productModel from "../models/productModel.js";
 import { createNotification } from "../utils/notificationHelper.js";
+import deliveryAssignmentModel from "../models/deliveryAssignmentModel.js";
+import { autoAssignDeliveryAgent } from "../utils/assignmentHelper.js";
+import { validateEmail, validatePhone, validatePassword, validateName } from "../utils/validation.js";
+import { checkAndGenerateInvoice } from "../utils/invoicePdfGenerator.js";
+
 
 
 // JWT Generator
@@ -17,14 +23,34 @@ const createToken = (id) => {
 // Admin/Portal registers a deliveryman (public route)
 const registerDeliveryman = async (req, res) => {
   try {
-    const { name, email, password, phone } = req.body;
+    const { name, email, password, phone, vehicleType, assignedAreas } = req.body;
 
     if (!name || !email || !password || !phone) {
       return res.json({ success: false, message: "Missing required fields" });
     }
 
+    const nameCheck = validateName(name);
+    if (!nameCheck.isValid) {
+      return res.json({ success: false, message: nameCheck.message });
+    }
+
+    const emailCheck = validateEmail(email);
+    if (!emailCheck.isValid) {
+      return res.json({ success: false, message: emailCheck.message });
+    }
+
+    const phoneCheck = validatePhone(phone);
+    if (!phoneCheck.isValid) {
+      return res.json({ success: false, message: phoneCheck.message });
+    }
+
+    const passwordCheck = validatePassword(password);
+    if (!passwordCheck.isValid) {
+      return res.json({ success: false, message: passwordCheck.message });
+    }
+
     // Check if email already exists
-    const exists = await deliverymanModel.findOne({ email });
+    const exists = await deliverymanModel.findOne({ email: emailCheck.value });
     if (exists) {
       return res.json({ success: false, message: "Deliveryman already exists with this email" });
     }
@@ -34,10 +60,12 @@ const registerDeliveryman = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const newDriver = new deliverymanModel({
-      name,
-      email,
+      name: nameCheck.value,
+      email: emailCheck.value,
       password: hashedPassword,
-      phone,
+      phone: phoneCheck.value,
+      vehicleType: vehicleType || "Bike",
+      assignedAreas: assignedAreas || [],
       status: "pending" // Default status is pending
     });
 
@@ -51,6 +79,8 @@ const registerDeliveryman = async (req, res) => {
         name: savedDriver.name,
         email: savedDriver.email,
         phone: savedDriver.phone,
+        vehicleType: savedDriver.vehicleType,
+        assignedAreas: savedDriver.assignedAreas
       },
     });
   } catch (error) {
@@ -131,6 +161,12 @@ const assignOrder = async (req, res) => {
       return res.json({ success: false, message: "Order not found" });
     }
 
+    // Cancel existing active assignments
+    await deliveryAssignmentModel.updateMany(
+      { orderId, status: { $in: ["Assigned", "Accepted", "Picked Up", "Out for Delivery"] } },
+      { status: "Cancelled" }
+    );
+
     // Update order with driver ID
     order.deliverymanId = deliverymanId || null;
     
@@ -140,6 +176,27 @@ const assignOrder = async (req, res) => {
     }
     
     await order.save();
+
+    // Create new assignment document
+    if (deliverymanId) {
+      await deliveryAssignmentModel.create({
+        orderId: order._id,
+        agentId: deliverymanId,
+        status: "Assigned"
+      });
+
+      // Notify agent
+      const driver = await deliverymanModel.findById(deliverymanId);
+      if (driver) {
+        await createNotification(
+          deliverymanId,
+          order._id,
+          "New Delivery Assignment",
+          `Admin has manually assigned you to order #${order._id.toString().slice(-6).toUpperCase()}. Please review and accept.`,
+          "deliveryman"
+        );
+      }
+    }
 
     res.json({
       success: true,
@@ -205,7 +262,7 @@ const loginDeliveryman = async (req, res) => {
 const getAssignedOrders = async (req, res) => {
   try {
     const driverId = req.deliveryman.id;
-    const orders = await orderModel.find({ deliverymanId: driverId });
+    const orders = await orderModel.find({ deliverymanId: driverId }).sort({ createdAt: -1 });
     res.json({ success: true, orders });
   } catch (error) {
     console.log(error);
@@ -219,7 +276,7 @@ const getUnassignedOrders = async (req, res) => {
     const orders = await orderModel.find({
       deliverymanId: null,
       orderStatus: { $nin: ["Delivered", "Cancelled"] }
-    });
+    }).sort({ createdAt: -1 });
     res.json({ success: true, orders });
   } catch (error) {
     console.log(error);
@@ -340,11 +397,21 @@ const updateOrderStatus = async (req, res) => {
 
     order.orderStatus = status;
 
-    // If delivered, toggle payment status if COD
+    // Sync status with DeliveryAssignment
+    await deliveryAssignmentModel.findOneAndUpdate(
+      { orderId, agentId: driverId, status: { $in: ["Assigned", "Accepted", "Picked Up", "Out for Delivery"] } },
+      { status, ...(status === "Delivered" ? { deliveredAt: new Date() } : {}) }
+    );
+
+    // If delivered, toggle payment status if COD and update agent stats
     if (status === "Delivered") {
       if (order.paymentMethod.toLowerCase() === "cod") {
         order.paymentStatus = "Paid";
       }
+
+      await deliverymanModel.findByIdAndUpdate(driverId, {
+        $inc: { activeDeliveries: -1, totalDeliveries: 1, completedDeliveries: 1, earnings: 75 }
+      });
 
       // Notify customer of delivery success
       await createNotification(
@@ -352,6 +419,18 @@ const updateOrderStatus = async (req, res) => {
         order._id,
         "Order Delivered Successfully",
         `Your order #${order._id.toString().slice(-6).toUpperCase()} has been delivered successfully. Thank you for shopping with CartNOW!`
+      );
+    } else if (status === "Failed Delivery" || status === "Cancelled") {
+      await deliverymanModel.findByIdAndUpdate(driverId, {
+        $inc: { activeDeliveries: -1, failedDeliveries: 1 }
+      });
+
+      // General status update notification
+      await createNotification(
+        order.userId,
+        order._id,
+        "Order Status Updated",
+        `Your order #${order._id.toString().slice(-6).toUpperCase()} is now "${status}".`
       );
     } else {
       // General status update notification
@@ -364,6 +443,11 @@ const updateOrderStatus = async (req, res) => {
     }
 
     await order.save();
+
+    // Generate invoice if Delivered (especially for COD)
+    if (status === "Delivered") {
+      await checkAndGenerateInvoice(orderId);
+    }
 
     res.json({
       success: true,
@@ -388,6 +472,7 @@ const toggleDutyStatus = async (req, res) => {
     }
 
     driver.isOnline = !driver.isOnline;
+    driver.availabilityStatus = driver.isOnline ? "Available" : "Offline";
     await driver.save();
 
     res.json({
@@ -412,6 +497,7 @@ const deactivateAccount = async (req, res) => {
 
     driver.status = "inactive";
     driver.isOnline = false;
+    driver.availabilityStatus = "Offline";
     await driver.save();
 
     res.json({
@@ -558,7 +644,7 @@ const getDriverStats = async (req, res) => {
 const getAssignedReturns = async (req, res) => {
   try {
     const driverId = req.deliveryman.id;
-    const returnRequests = await returnRequestModel.find({ deliverymanId: driverId });
+    const returnRequests = await returnRequestModel.find({ deliverymanId: driverId }).sort({ createdAt: -1 });
 
     const populated = await Promise.all(returnRequests.map(async (reqItem) => {
       const order = await orderModel.findById(reqItem.orderId).select("address userId paymentMethod");
@@ -626,6 +712,190 @@ const updateReturnTaskStatus = async (req, res) => {
   }
 };
 
+const updateProfile = async (req, res) => {
+  try {
+    const driverId = req.deliveryman.id;
+    const { name, phone, vehicleType, profilePhoto } = req.body;
+
+    if (name) {
+      const nameCheck = validateName(name);
+      if (!nameCheck.isValid) {
+        return res.json({ success: false, message: nameCheck.message });
+      }
+    }
+
+    if (phone) {
+      const phoneCheck = validatePhone(phone);
+      if (!phoneCheck.isValid) {
+        return res.json({ success: false, message: phoneCheck.message });
+      }
+    }
+
+    const driver = await deliverymanModel.findByIdAndUpdate(
+      driverId,
+      { name, phone, vehicleType, profilePhoto },
+      { new: true }
+    );
+    res.json({ success: true, message: "Profile updated successfully", driver });
+  } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
+};
+
+const updateAvailability = async (req, res) => {
+  try {
+    const driverId = req.deliveryman.id;
+    const { availabilityStatus } = req.body; // Available, Busy, Offline, Suspended
+    if (!["Available", "Busy", "Offline", "Suspended"].includes(availabilityStatus)) {
+      return res.json({ success: false, message: "Invalid status value" });
+    }
+    const driver = await deliverymanModel.findById(driverId);
+    if (!driver) {
+      return res.json({ success: false, message: "Delivery agent not found" });
+    }
+    driver.availabilityStatus = availabilityStatus;
+    driver.isOnline = availabilityStatus === "Available";
+    await driver.save();
+    res.json({ success: true, message: `Availability status updated to ${availabilityStatus}`, driver });
+  } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
+};
+
+const updateDeliveryZones = async (req, res) => {
+  try {
+    const driverId = req.deliveryman.id;
+    const { assignedAreas } = req.body; // array of strings
+    if (!Array.isArray(assignedAreas)) {
+      return res.json({ success: false, message: "assignedAreas must be an array of strings" });
+    }
+    const driver = await deliverymanModel.findByIdAndUpdate(
+      driverId,
+      { assignedAreas },
+      { new: true }
+    );
+    res.json({ success: true, message: "Delivery zones updated successfully", driver });
+  } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
+};
+
+const acceptDelivery = async (req, res) => {
+  try {
+    const driverId = req.deliveryman.id;
+    const { orderId } = req.body;
+    
+    // Find active assignment
+    const assignment = await deliveryAssignmentModel.findOne({ orderId, agentId: driverId, status: "Assigned" });
+    if (!assignment) {
+      return res.json({ success: false, message: "No active assignment found for this order" });
+    }
+
+    assignment.status = "Accepted";
+    assignment.acceptedAt = new Date();
+    await assignment.save();
+
+    // Update order status
+    const order = await orderModel.findById(orderId);
+    if (order) {
+      order.orderStatus = "Accepted";
+      await order.save();
+
+      // Notify customer
+      await createNotification(
+        order.userId,
+        order._id,
+        "Order Accepted by Delivery Agent",
+        `Delivery agent has accepted the assignment and is on the way.`,
+        "user"
+      );
+
+      // Notify seller
+      if (order.items && order.items.length > 0) {
+        const firstItem = order.items[0];
+        const itemId = firstItem.productId || firstItem._id;
+        const product = await productModel.findById(itemId);
+        if (product && product.sellerId) {
+          await createNotification(
+            product.sellerId,
+            order._id,
+            "Agent Assigned",
+            `Delivery agent has accepted the assignment for order #${order._id.toString().slice(-6).toUpperCase()}.`,
+            "seller"
+          );
+        }
+      }
+    }
+
+    // Update agent workload
+    await deliverymanModel.findByIdAndUpdate(driverId, {
+      $inc: { activeDeliveries: 1 }
+    });
+
+    res.json({ success: true, message: "Delivery assignment accepted successfully", assignment });
+  } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
+};
+
+const rejectDelivery = async (req, res) => {
+  try {
+    const driverId = req.deliveryman.id;
+    const { orderId } = req.body;
+
+    // Find active assignment
+    const assignment = await deliveryAssignmentModel.findOne({ orderId, agentId: driverId, status: "Assigned" });
+    if (!assignment) {
+      return res.json({ success: false, message: "No active assignment found for this order" });
+    }
+
+    assignment.status = "Rejected";
+    await assignment.save();
+
+    // Call re-assignment logic
+    await autoAssignDeliveryAgent(orderId);
+
+    res.json({ success: true, message: "Delivery assignment rejected. Order is being reassigned." });
+  } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
+};
+
+// Update Delivery Coordinates and Radius
+const updateDeliveryCoordinates = async (req, res) => {
+  try {
+    const driverId = req.deliveryman.id;
+    const { lat, lng, radius } = req.body;
+
+    if (lat === undefined || lng === undefined || radius === undefined) {
+      return res.json({ success: false, message: "Missing coordinates or radius" });
+    }
+
+    const driver = await deliverymanModel.findByIdAndUpdate(
+      driverId,
+      {
+        deliveryLat: Number(lat),
+        deliveryLng: Number(lng),
+        deliveryRadius: Number(radius)
+      },
+      { new: true }
+    );
+
+    if (!driver) {
+      return res.json({ success: false, message: "Delivery agent not found" });
+    }
+
+    res.json({
+      success: true,
+      message: "Delivery zone map coordinates updated successfully",
+      driver
+    });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
 export {
   registerDeliveryman,
   listDeliverymen,
@@ -645,4 +915,10 @@ export {
   getDriverStats,
   getAssignedReturns,
   updateReturnTaskStatus,
+  updateProfile,
+  updateAvailability,
+  updateDeliveryZones,
+  acceptDelivery,
+  rejectDelivery,
+  updateDeliveryCoordinates
 };

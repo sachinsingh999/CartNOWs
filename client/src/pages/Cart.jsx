@@ -185,28 +185,6 @@ const Cart = () => {
           </p>
         </div>
 
-        {/* Free Shipping Progress Indicator */}
-        <div className="mb-8 rounded-2xl border border-slate-200/60 dark:border-slate-800/80 bg-white dark:bg-slate-900/30 p-5 shadow-sm text-left">
-          <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-350">
-            {amountNeededForFreeShipping > 0 ? (
-              <span>
-                Add <strong className="text-orange-500 font-extrabold">₹{amountNeededForFreeShipping.toLocaleString("en-IN")}</strong> more to qualify for <strong className="text-indigo-600 dark:text-indigo-400 font-extrabold">FREE Standard Delivery</strong>!
-              </span>
-            ) : (
-              <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-black">
-                <Sparkles size={14} className="text-emerald-500 animate-pulse" />
-                <span>Congratulations! Your order qualifies for FREE Standard Delivery.</span>
-              </span>
-            )}
-            <span className="text-slate-450 dark:text-slate-550 font-black">{Math.round(progressPercent)}%</span>
-          </div>
-          <div className="mt-3 h-2.5 w-full bg-slate-100 dark:bg-slate-800/60 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-gradient-to-r from-orange-500 to-indigo-600 dark:from-orange-500 dark:to-indigo-500 rounded-full transition-all duration-500" 
-              style={{ width: `${progressPercent}%` }}
-            />
-          </div>
-        </div>
 
         {/* Cart Main Content Grid */}
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_360px]">
@@ -301,28 +279,6 @@ const Cart = () => {
                 <span className="font-extrabold text-slate-905 dark:text-white">
                   {shipping === 0 ? "Free" : `₹${shipping}`}
                 </span>
-              </div>
-            </div>
-
-            {/* Promo Code Fields */}
-            <div className="pt-4 border-t border-slate-200/50 dark:border-slate-800/50 space-y-2">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                <Ticket size={14} className="text-indigo-500" />
-                <span>Promo Code</span>
-              </div>
-              <div className="flex gap-2">
-                <input 
-                  type="text" 
-                  placeholder="Enter coupon code" 
-                  className="flex-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 text-xs text-slate-900 dark:text-white outline-none transition focus:border-indigo-500 dark:focus:border-indigo-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
-                />
-                <button 
-                  type="button" 
-                  onClick={() => toast.info("Mock coupon: CARTNOW20 applied visually.")}
-                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-850 hover:border-slate-350 dark:hover:border-slate-700 transition active:scale-95 cursor-pointer"
-                >
-                  Apply
-                </button>
               </div>
             </div>
 

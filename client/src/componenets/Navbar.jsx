@@ -314,7 +314,19 @@ const Navbar = () => {
           setLocationLabel(`${coords.latitude.toFixed(2)}, ${coords.longitude.toFixed(2)}`);
         } finally { setLocationLoading(false); }
       },
-      () => { setLocationLoading(false); setLocationLabel("Denied"); },
+      (err) => {
+        setLocationLoading(false);
+        if (err.code === 1) {
+          setLocationLabel("Denied");
+          toast.error("Location permission denied. Please verify macOS System Settings > Privacy & Security > Location Services is enabled for your browser.");
+        } else if (err.code === 3) {
+          setLocationLabel("Timeout");
+          toast.error("Location request timed out. Please try again.");
+        } else {
+          setLocationLabel("Unavailable");
+          toast.error("Location unavailable. Make sure your Wi-Fi is turned on to help locate your device.");
+        }
+      },
       { enableHighAccuracy: false, timeout: 10000 }
     );
   };
@@ -454,7 +466,7 @@ const Navbar = () => {
                 {/* AI Try-On */}
                 <Link
                   to="/tryon"
-                  className="hidden sm:inline-flex items-center gap-1.5 h-9 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 px-3 text-[12px] font-bold text-white shadow-md shadow-orange-500/15 hover:shadow-orange-500/30 hover:-translate-y-0.5 active:scale-95 transition-all duration-200 cursor-pointer select-none whitespace-nowrap"
+                  className="hidden sm:inline-flex items-center gap-1.5 h-9 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 px-3 text-[12px] font-bold text-white shadow-md shadow-orange-500/15 hover:shadow-orange-500/30 active:scale-95 transition-all duration-200 cursor-pointer select-none whitespace-nowrap"
                 >
                   <Sparkles size={13} className="shrink-0" />
                   <span>{t("ai_tryon")}</span>
@@ -506,24 +518,24 @@ const Navbar = () => {
                           : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900"
                         }`}
                     >
-                      <Bell size={16} className={unreadCount > 0 ? "animate-wiggle" : ""} />
-                      {unreadCount > 0 && (
-                        <span className="absolute right-0.5 top-0.5 flex h-2.5 w-2.5">
+                      <div className="relative flex items-center justify-center h-4 w-4">
+                        <Bell size={16} className={unreadCount > 0 ? "animate-wiggle" : ""} />
+                        <span className={`absolute -top-1 -right-1 flex h-2.5 w-2.5 transition-all duration-300 pointer-events-none ${unreadCount > 0 ? "scale-100 opacity-100" : "scale-0 opacity-0"}`}>
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-500 opacity-75"></span>
                           <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
                         </span>
-                      )}
+                      </div>
                     </button>
 
                     {/* Notifications Dropdown */}
                     {notiOpen && (
-                      <div className="absolute right-0 top-[calc(100%+12px)] w-96 overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl z-50 ring-1 ring-black/5 dark:ring-white/10 animate-in fade-in slide-in-from-top-3 duration-200">
+                      <div className="fixed sm:absolute left-4 right-4 sm:left-auto sm:right-0 top-16 sm:top-[calc(100%+12px)] sm:w-96 overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl z-50 ring-1 ring-black/5 dark:ring-white/10 animate-in fade-in slide-in-from-top-3 duration-200">
                         {/* Header */}
                         <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-5 py-4 bg-slate-50 dark:bg-slate-900/50">
                           <div className="flex items-center gap-2">
                             <span className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">Notifications</span>
                             {unreadCount > 0 && (
-                              <span className="bg-orange-100 dark:bg-orange-950/40 text-orange-600 dark:text-orange-450 text-[10px] font-black px-2 py-0.5 rounded-full">
+                              <span className="bg-orange-100 dark:bg-orange-950/40 text-orange-600 dark:text-orange-455 text-[10px] font-black px-2 py-0.5 rounded-full">
                                 {unreadCount} new
                               </span>
                             )}
@@ -562,7 +574,7 @@ const Navbar = () => {
                         </div>
 
                         {/* List */}
-                        <div className="max-h-[350px] overflow-y-auto divide-y divide-slate-100/50 dark:divide-slate-800/30 scrollbar-hide">
+                        <div className="max-h-[60vh] sm:max-h-[350px] overflow-y-auto divide-y divide-slate-100/50 dark:divide-slate-800/30 scrollbar-hide">
                           {filteredNotifications.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-12 text-center px-6">
                               <div className="relative mb-4 flex h-14 w-14 items-center justify-center rounded-3xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/40 dark:to-slate-900/40 text-slate-400 dark:text-slate-500 border border-slate-200/50 dark:border-slate-800/50 shadow-md">
@@ -640,22 +652,22 @@ const Navbar = () => {
                                     }
                                     setNotiOpen(false);
                                   }}
-                                  className={`px-5 py-4 flex gap-3.5 text-left transition cursor-pointer hover:bg-orange-500/[0.03] dark:hover:bg-orange-500/[0.03] relative group ${!n.isRead
-                                      ? "bg-orange-500/[0.01] dark:bg-orange-500/[0.01] border-l-3 border-orange-500"
-                                      : "border-l-3 border-transparent"
+                                  className={`px-5 py-4 flex gap-3.5 text-left transition cursor-pointer hover:bg-orange-500/[0.03] dark:hover:bg-orange-500/[0.03] relative group border-l-4 ${!n.isRead
+                                      ? "bg-orange-500/[0.01] dark:bg-orange-500/[0.01] border-orange-500"
+                                      : "border-transparent"
                                     }`}
                                 >
                                   {getNotificationIcon(n.title)}
                                   <div className="min-w-0 flex-1">
                                     <div className="flex justify-between items-start gap-1">
                                       <p className="text-xs font-black text-slate-900 dark:text-white leading-tight truncate">{n.title}</p>
-                                      <div className="flex items-center gap-1.5 shrink-0">
+                                      <div className="flex items-center justify-center w-5 h-5 shrink-0 relative">
                                         {!n.isRead && (
                                           <>
-                                            <span className="h-2 w-2 rounded-full bg-orange-500 shadow-[0_0_8px_#ff5100] animate-pulse group-hover:hidden" />
+                                            <span className="h-2 w-2 rounded-full bg-orange-500 shadow-[0_0_8px_#ff5100] animate-pulse group-hover:scale-0 transition-transform duration-200 absolute" />
                                             <button
                                               onClick={(e) => handleMarkSingleRead(n._id, e)}
-                                              className="hidden group-hover:flex p-1 rounded-lg bg-orange-100 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 border border-orange-200/30 hover:bg-orange-200/50 hover:scale-105 active:scale-95 transition cursor-pointer"
+                                              className="scale-0 opacity-0 group-hover:scale-100 group-hover:opacity-100 p-0.5 rounded-lg bg-orange-100 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 border border-orange-200/30 hover:bg-orange-200/50 hover:scale-110 active:scale-95 transition-all duration-200 cursor-pointer absolute flex items-center justify-center"
                                               title="Mark as read"
                                             >
                                               <Check size={11} className="stroke-[2.5]" />
@@ -798,7 +810,7 @@ const Navbar = () => {
                 </Link>
 
                 {/* Profile dropdown */}
-                <div ref={profileRef} className="relative">
+                <div ref={profileRef} className="relative hidden lg:block">
                   <button
                     onClick={() => setOpen((p) => !p)}
                     className={`flex h-9 items-center gap-2 rounded-xl border px-2.5 font-bold text-sm transition-all cursor-pointer select-none ${open
@@ -1037,14 +1049,21 @@ const Navbar = () => {
         <div className="flex h-16 items-end justify-around pb-2 px-2 safe-area-inset-bottom">
           {BOTTOM_NAV.map(({ label, icon: Icon, to, isProfile }) => {
             if (isProfile) {
+              const active = location.pathname === "/profile" || location.pathname === "/login" || location.pathname === "/signup";
               return (
                 <button
                   key="profile"
-                  onClick={() => setOpen((p) => !p)}
-                  className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all cursor-pointer ${open ? "text-orange-500" : "text-slate-500 dark:text-slate-400"
+                  onClick={() => {
+                    if (token) {
+                      navigate("/profile");
+                    } else {
+                      navigate("/login");
+                    }
+                  }}
+                  className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all cursor-pointer ${active ? "text-orange-500" : "text-slate-500 dark:text-slate-400"
                     }`}
                 >
-                  <div className={`relative flex h-7 w-7 items-center justify-center rounded-full transition-all ${open
+                  <div className={`relative flex h-7 w-7 items-center justify-center rounded-full transition-all ${active
                       ? "bg-orange-500 text-white shadow-md shadow-orange-500/30"
                       : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
                     }`}>
@@ -1053,7 +1072,7 @@ const Navbar = () => {
                       : <Icon size={14} />
                     }
                   </div>
-                  <span className={`text-[9px] font-bold transition-colors ${open ? "text-orange-500" : "text-slate-400 dark:text-slate-500"}`}>{label}</span>
+                  <span className={`text-[9px] font-bold transition-colors ${active ? "text-orange-500" : "text-slate-400 dark:text-slate-500"}`}>{label}</span>
                 </button>
               );
             }

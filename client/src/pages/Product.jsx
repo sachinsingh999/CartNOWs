@@ -15,78 +15,158 @@ const Product = () => {
   const [collection, setCollection] = useState("all");
   const [price, setPrice] = useState(200000);
   const [rating, setRating] = useState(0);
+  const [dynamicFilters, setDynamicFilters] = useState({});
   const [loading, setLoading] = useState(true);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const maxPrice = 200000;
   const searchQuery = searchParams.get("q") || "";
 
+  const [adminCategories, setAdminCategories] = useState([]);
+
+  // Fetch admin created categories
   useEffect(() => {
-    let active = true;
-    setLoading(true);
-    axios
-      .get(`${backendUrl}/api/product/list`)
-      .then((res) => {
-        if (!active) return;
-        if (res.data.success) setProductList(res.data.products);
-        else toast.error(res.data.message);
-        setLoading(false);
+    axios.get(`${backendUrl}/api/product/categories`)
+      .then(res => {
+        if (res.data.success) {
+          setAdminCategories(res.data.categories || []);
+        }
       })
-      .catch((err) => { if (active) { toast.error(err.message); setLoading(false); } });
-    return () => { active = false; };
+      .catch(err => console.log(err));
   }, []);
 
-  const categories = useMemo(
-    () => ["all", ...new Set(productList.map((p) => p.category).filter(Boolean))],
-    [productList]
-  );
-  const collections = useMemo(() => {
-    const base = category === "all" ? productList : productList.filter((p) => p.category === category);
-    return ["all", ...new Set(base.map((p) => p.collection).filter(Boolean))];
-  }, [productList, category]);
+  // Helper to fetch list of products from the server with search & dynamic filters applied
+  const fetchProductsFiltered = () => {
+    setLoading(true);
+    const params = {
+      price,
+      q: searchQuery || undefined,
+    };
 
-  const filteredList = useMemo(() => {
-    let data = [...productList];
-    if (category !== "all") data = data.filter((p) => p.category === category);
-    if (collection !== "all") data = data.filter((p) => p.collection === collection);
-    if (searchQuery.trim()) {
-      const q = searchQuery.trim().toLowerCase();
-      data = data.filter((p) =>
-        [p.name, p.category, p.subCategory, p.collection, p.brand, ...(p.tags || [])]
-          .filter(Boolean).join(" ").toLowerCase().includes(q)
-      );
+    if (category !== "all") {
+      params.category = category;
     }
-    data = data.filter((p) => Number(p.price) <= price);
-    if (rating > 0) data = data.filter((p) => getAverageRating(p) >= rating);
-    return data.sort((a, b) => {
+    if (collection !== "all") {
+      params.collection = collection;
+    }
+    if (rating > 0) {
+      params.rating = rating;
+    }
+
+    // Include dynamic attribute filters as JSON serialized query parameter
+    // Only pass non-empty filters
+    const activeAttrs = {};
+    Object.keys(dynamicFilters).forEach((k) => {
+      const val = dynamicFilters[k];
+      if (val !== undefined && val !== "") {
+        if (Array.isArray(val) && val.length === 0) return;
+        activeAttrs[k] = val;
+      }
+    });
+
+    if (Object.keys(activeAttrs).length > 0) {
+      params.attributes = JSON.stringify(activeAttrs);
+    }
+
+    axios
+      .get(`${backendUrl}/api/product/list`, { params })
+      .then((res) => {
+        if (res.data.success) {
+          setProductList(res.data.products);
+        } else {
+          toast.error(res.data.message);
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        toast.error(err.message);
+        setLoading(false);
+      });
+  };
+
+  // Trigger data fetch on filter state updates
+  useEffect(() => {
+    fetchProductsFiltered();
+  }, [category, collection, price, rating, searchQuery, dynamicFilters]);
+
+  // Dynamic mapping based on fetched adminCategories
+  const { categoryMapping, reverseMapping } = useMemo(() => {
+    const mapping = {};
+    const rev = {};
+    adminCategories.forEach(c => {
+      const subList = c.subcategories || [];
+      const children = adminCategories.filter(child => child.parentCategoryId?.toString() === c._id?.toString());
+      const allAllowed = [c.name, ...subList, ...children.map(child => child.name)];
+      mapping[c.name] = allAllowed;
+      
+      allAllowed.forEach(name => {
+        rev[name] = c.name;
+      });
+    });
+    return { categoryMapping: mapping, reverseMapping: rev };
+  }, [adminCategories]);
+
+  // Compute available categories & collections from current results
+  const categoriesList = useMemo(() => {
+    if (adminCategories.length > 0) {
+      const unique = adminCategories.map(c => c.name);
+      unique.sort((a, b) => a.localeCompare(b));
+      return ["all", ...unique];
+    }
+    const unique = [...new Set(productList.map((p) => p.category).filter(Boolean))];
+    unique.sort((a, b) => a.localeCompare(b));
+    return ["all", ...unique];
+  }, [adminCategories, productList]);
+
+  const collectionsList = useMemo(() => {
+    const allowed = categoryMapping[category] || [category];
+    const base = category === "all" ? productList : productList.filter((p) => allowed.some(a => a.toLowerCase() === p.category?.toLowerCase()));
+    const unique = [...new Set(base.map((p) => p.collection).filter(Boolean))];
+    unique.sort((a, b) => a.localeCompare(b));
+    return ["all", ...unique];
+  }, [productList, category, categoryMapping]);
+
+  // Sorting client-side
+  const sortedList = useMemo(() => {
+    let sorted = [...productList];
+    return sorted.sort((a, b) => {
       if (sortBy === "price-low") return a.price - b.price;
       if (sortBy === "price-high") return b.price - a.price;
       if (sortBy === "rating") return getAverageRating(b) - getAverageRating(a);
       if (sortBy === "name") return a.name.localeCompare(b.name);
       return 0;
     });
-  }, [productList, category, collection, price, rating, sortBy, searchQuery]);
+  }, [productList, sortBy]);
 
-  const handleCategoryChange = (val) => { setCategory(val); setCollection("all"); };
+  const handleCategoryChange = (val) => {
+    setCategory(val);
+    setCollection("all");
+    setDynamicFilters({}); // Reset dynamic filters on category change
+  };
+
   const handleReset = () => {
-    setCategory("all"); setCollection("all"); setPrice(maxPrice); setRating(0); setSortBy("featured");
-    setSearchParams((cur) => { const n = new URLSearchParams(cur); n.delete("q"); return n; });
+    setCategory("all");
+    setCollection("all");
+    setPrice(maxPrice);
+    setRating(0);
+    setSortBy("featured");
+    setDynamicFilters({});
+    setSearchParams((cur) => {
+      const n = new URLSearchParams(cur);
+      n.delete("q");
+      return n;
+    });
   };
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans transition-colors duration-200">
-
       {/* Top bar */}
       <div className="border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 py-3 transition-colors duration-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between flex-wrap gap-4 text-left">
-
-          {/* Left: title + count */}
+        <div className="max-w-full mx-auto px-4 sm:px-8 lg:px-12 flex items-center justify-between flex-wrap gap-4 text-left">
+          {/* Left: title */}
           <div className="flex items-center gap-2.5">
             <h1 className="text-lg font-bold text-slate-905 dark:text-slate-100">
               {searchQuery ? `"${searchQuery}"` : category === "all" ? "All Products" : category}
             </h1>
-            <span className="text-xs font-bold text-indigo-650 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-900/50">
-              {filteredList.length}
-            </span>
           </div>
 
           {/* Right: sort dropdown */}
@@ -94,12 +174,12 @@ const Product = () => {
             {/* Mobile Filter Toggle */}
             <button
               onClick={() => setShowMobileFilters(!showMobileFilters)}
-              className="md:hidden inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-850 cursor-pointer shadow-sm"
+              className="md:hidden inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-855 cursor-pointer shadow-sm"
             >
               <span>{showMobileFilters ? "Hide Filters" : "Show Filters"}</span>
             </button>
 
-            <span className="text-xs text-slate-450 dark:text-slate-500 font-semibold">Sort:</span>
+            <span className="text-xs text-slate-455 dark:text-slate-505 font-semibold">Sort:</span>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
@@ -116,13 +196,12 @@ const Product = () => {
       </div>
 
       {/* Layout Grid */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 grid grid-cols-1 md:grid-cols-[240px_1fr] gap-6 items-start">
-
+      <div className="max-w-full mx-auto px-4 sm:px-8 lg:px-12 py-6 grid grid-cols-1 md:grid-cols-[260px_1fr] gap-8 items-start">
         {/* Sidebar */}
-        <div className={`${showMobileFilters ? "block" : "hidden"} md:block`}>
+        <div className={`${showMobileFilters ? "block" : "hidden"} md:block md:sticky md:top-24 md:max-h-[calc(100vh-8rem)] md:overflow-y-auto pr-2`}>
           <FilterSidebar
-            categories={categories}
-            collections={collections}
+            categories={categoriesList}
+            collections={collectionsList}
             category={category}
             collection={collection}
             price={price}
@@ -132,6 +211,8 @@ const Product = () => {
             onCollectionChange={setCollection}
             onPriceChange={setPrice}
             onRatingChange={setRating}
+            dynamicFilters={dynamicFilters}
+            onDynamicFiltersChange={setDynamicFilters}
             onReset={handleReset}
           />
         </div>
@@ -139,19 +220,19 @@ const Product = () => {
         {/* Products Display column */}
         <div>
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {Array.from({ length: 6 }).map((_, i) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5">
+              {Array.from({ length: 10 }).map((_, i) => (
                 <div key={i} className="bg-white dark:bg-slate-900/40 rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-800 animate-pulse">
                   <div className="h-48 bg-slate-100 dark:bg-slate-950" />
                   <div className="p-4 space-y-2">
                     <div className="h-3 w-3/4 bg-slate-100 dark:bg-slate-950 rounded" />
                     <div className="h-3 w-5/6 bg-slate-100 dark:bg-slate-950 rounded" />
-                    <div className="h-6 w-1/3 bg-slate-100 dark:bg-slate-950 rounded mt-4" />
+                    <div className="h-6 w-1/3 bg-slate-100 dark:bg-slate-955 rounded mt-4" />
                   </div>
                 </div>
               ))}
             </div>
-          ) : filteredList.length === 0 ? (
+          ) : sortedList.length === 0 ? (
             <div className="text-center py-16 px-4 bg-white dark:bg-slate-900/40 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800">
               <div className="text-4xl mb-3">🔍</div>
               <p className="text-base font-bold text-slate-900 dark:text-slate-100 mb-1">No products found</p>
@@ -164,8 +245,8 @@ const Product = () => {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredList.map((item) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5">
+              {sortedList.map((item) => (
                 <ProductCard key={item._id} product={item} />
               ))}
             </div>

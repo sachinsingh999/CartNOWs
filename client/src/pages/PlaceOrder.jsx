@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import {
@@ -101,6 +101,14 @@ const PlaceOrder = () => {
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [editingAddress, setEditingAddress] = useState(null);
   const [geocodingLoading, setGeocodingLoading] = useState(false);
+  const [modalErrors, setModalErrors] = useState({});
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const [mapSearchQuery, setMapSearchQuery] = useState("");
+  const [searchingMapLocation, setSearchingMapLocation] = useState(false);
+  
+  const mapInstanceRef = useRef(null);
+  const markerRef = useRef(null);
+  const circleRef = useRef(null);
   const [modalFormData, setModalFormData] = useState({
     fullName: "",
     phone: "",
@@ -147,6 +155,8 @@ const PlaceOrder = () => {
             city: firstAddr.city,
             state: firstAddr.state,
             country: firstAddr.country,
+            lat: firstAddr.lat || 0,
+            lng: firstAddr.lng || 0,
           });
         }
       }
@@ -155,9 +165,288 @@ const PlaceOrder = () => {
     }
   };
 
+  const validateField = (name, value) => {
+    let err = "";
+    const trimmed = (value || "").trim();
+    if (name === "fullName") {
+      const parts = trimmed.split(/\s+/);
+      if (!trimmed) {
+        err = "Full name is required";
+      } else if (parts.length < 2) {
+        err = "Please enter both first and last name (separated by space)";
+      }
+    } else if (name === "phone") {
+      if (!trimmed) {
+        err = "Mobile number is required";
+      } else if (!/^\d{10}$/.test(trimmed)) {
+        err = "Mobile number must be exactly 10 digits";
+      }
+    } else if (name === "pincode") {
+      if (!trimmed) {
+        err = "Pincode is required";
+      } else if (!/^\d{6}$/.test(trimmed)) {
+        err = "Pincode must be exactly 6 digits";
+      }
+    } else if (name === "area") {
+      if (!trimmed) {
+        err = "Area/Street is required";
+      }
+    } else if (name === "city") {
+      if (!trimmed) {
+        err = "Town/City is required";
+      }
+    } else if (name === "state") {
+      if (!trimmed) {
+        err = "State is required";
+      }
+    }
+    return err;
+  };
+
+  const updateAddressFromCoords = useCallback(async (lat, lng) => {
+    setGeocodingLoading(true);
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`
+      );
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.address) {
+          const addr = data.address;
+          setModalFormData(prev => ({
+            ...prev,
+            pincode: addr.postcode || prev.pincode || "",
+            flat: addr.house_number || prev.flat || "",
+            area: [addr.road, addr.suburb, addr.neighbourhood].filter(Boolean).join(", ") || prev.area || "",
+            landmark: addr.amenity || addr.landmark || prev.landmark || "",
+            city: addr.city || addr.town || addr.village || addr.suburb || prev.city || "",
+            state: addr.state || prev.state || "",
+            country: addr.country || prev.country || "India",
+            lat: lat,
+            lng: lng
+          }));
+          toast.success("Address synchronized successfully!");
+        }
+      }
+    } catch (err) {
+      console.error("Reverse geocoding error:", err);
+      toast.error("Failed to fetch address details for coordinates.");
+    } finally {
+      setGeocodingLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchUserProfile();
   }, []);
+
+  useEffect(() => {
+    const pin = modalFormData.pincode;
+    if (pin && pin.length === 6 && /^\d+$/.test(pin)) {
+      const timer = setTimeout(async () => {
+        setGeocodingLoading(true);
+        try {
+          const res = await fetch(`https://api.postalpincode.in/pincode/${pin}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data[0] && data[0].Status === "Success" && data[0].PostOffice) {
+              const postOffice = data[0].PostOffice[0];
+              const district = postOffice.District;
+              const state = postOffice.State;
+              
+              let latVal = 0;
+              let lngVal = 0;
+              try {
+                const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&postalcode=${pin}&country=India`);
+                if (geoRes.ok) {
+                  const geoData = await geoRes.json();
+                  if (geoData && geoData[0]) {
+                    latVal = parseFloat(geoData[0].lat);
+                    lngVal = parseFloat(geoData[0].lon);
+                  }
+                }
+              } catch (gErr) {
+                console.error("Geocoding pincode error:", gErr);
+              }
+
+              setModalFormData(prev => ({
+                ...prev,
+                city: district || prev.city,
+                state: state || prev.state,
+                country: "India",
+                lat: latVal || prev.lat || 28.6139,
+                lng: lngVal || prev.lng || 77.2090
+              }));
+              setModalErrors(prev => ({ ...prev, pincode: "", city: "", state: "" }));
+              toast.success(`Location synced with Pincode: ${pin}`);
+            } else {
+              setModalErrors(prev => ({ ...prev, pincode: "Invalid pincode or not found in India Post database" }));
+              toast.error("Invalid pincode. Please check your pincode.");
+            }
+          }
+        } catch (err) {
+          console.error("Pincode fetch error:", err);
+        } finally {
+          setGeocodingLoading(false);
+        }
+      }, 400);
+
+      return () => clearTimeout(timer);
+    } else if (pin && (pin.length !== 6 || !/^\d+$/.test(pin))) {
+      setModalErrors(prev => ({ ...prev, pincode: "Pincode must be exactly 6 digits" }));
+    } else {
+      setModalErrors(prev => ({ ...prev, pincode: "" }));
+    }
+  }, [modalFormData.pincode]);
+
+  useEffect(() => {
+    if (!showAddressModal) {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+        markerRef.current = null;
+      }
+      return;
+    }
+
+    const loadLeaflet = async () => {
+      if (window.L) {
+        setMapLoaded(true);
+        return;
+      }
+
+      if (!document.getElementById("leaflet-css")) {
+        const link = document.createElement("link");
+        link.id = "leaflet-css";
+        link.rel = "stylesheet";
+        link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+        document.head.appendChild(link);
+      }
+
+      if (!document.getElementById("leaflet-js")) {
+        const script = document.createElement("script");
+        script.id = "leaflet-js";
+        script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+        script.onload = () => {
+          setMapLoaded(true);
+        };
+        document.body.appendChild(script);
+      } else {
+        setMapLoaded(true);
+      }
+    };
+
+    loadLeaflet();
+  }, [showAddressModal]);
+
+  useEffect(() => {
+    if (!mapLoaded || !showAddressModal || !document.getElementById("address-map")) return;
+
+    const initialLat = modalFormData.lat || 28.6139;
+    const initialLng = modalFormData.lng || 77.2090;
+
+    const map = window.L.map("address-map").setView([initialLat, initialLng], 14);
+    mapInstanceRef.current = map;
+
+    window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // Draggable marker with premium Tailwind orange theme
+    const marker = window.L.marker([initialLat, initialLng], { draggable: true }).addTo(map);
+    markerRef.current = marker;
+
+    // Radius circle highlighting the selected location area
+    const circle = window.L.circle([initialLat, initialLng], {
+      color: '#f97316',
+      fillColor: '#f97316',
+      fillOpacity: 0.12,
+      radius: 300
+    }).addTo(map);
+    circleRef.current = circle;
+
+    // Draggable marker event listener
+    marker.on("dragend", () => {
+      const position = marker.getLatLng();
+      circle.setLatLng(position);
+      updateAddressFromCoords(position.lat, position.lng);
+    });
+
+    // Map click event listener
+    map.on("click", (e) => {
+      const { lat, lng } = e.latlng;
+      marker.setLatLng([lat, lng]);
+      circle.setLatLng([lat, lng]);
+      map.panTo([lat, lng]);
+      updateAddressFromCoords(lat, lng);
+    });
+
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+        markerRef.current = null;
+        circleRef.current = null;
+      }
+    };
+  }, [mapLoaded, showAddressModal, updateAddressFromCoords]);
+
+  // Sync state coordinates to Leaflet marker, circle, & map view (One-way: State -> Map)
+  useEffect(() => {
+    if (mapInstanceRef.current && markerRef.current && modalFormData.lat && modalFormData.lng) {
+      const currentPos = markerRef.current.getLatLng();
+      const distance = Math.sqrt(
+        Math.pow(currentPos.lat - modalFormData.lat, 2) +
+        Math.pow(currentPos.lng - modalFormData.lng, 2)
+      );
+      // Only update position if difference is significant
+      if (distance > 0.0001) {
+        markerRef.current.setLatLng([modalFormData.lat, modalFormData.lng]);
+        if (circleRef.current) {
+          circleRef.current.setLatLng([modalFormData.lat, modalFormData.lng]);
+        }
+        mapInstanceRef.current.setView([modalFormData.lat, modalFormData.lng], 16);
+      }
+    }
+  }, [modalFormData.lat, modalFormData.lng]);
+
+  const handleMapSearch = async (e) => {
+    e.preventDefault();
+    if (!mapSearchQuery.trim()) return;
+    setSearchingMapLocation(true);
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(mapSearchQuery)}&limit=1`
+      );
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data[0]) {
+          const lat = parseFloat(data[0].lat);
+          const lon = parseFloat(data[0].lon);
+          
+          if (mapInstanceRef.current) {
+            mapInstanceRef.current.setView([lat, lon], 16);
+          }
+          if (markerRef.current) {
+            markerRef.current.setLatLng([lat, lon]);
+          }
+          if (circleRef.current) {
+            circleRef.current.setLatLng([lat, lon]);
+          }
+
+          await updateAddressFromCoords(lat, lon);
+          toast.success("Location found on map!");
+        } else {
+          toast.warning("Location not found on map.");
+        }
+      }
+    } catch (err) {
+      console.error("Map search error:", err);
+      toast.error("Error searching location.");
+    } finally {
+      setSearchingMapLocation(false);
+    }
+  };
 
   const handleSelectAddress = (addr) => {
     setSelectedAddressId(addr._id);
@@ -170,11 +459,14 @@ const PlaceOrder = () => {
       city: addr.city,
       state: addr.state,
       country: addr.country,
+      lat: addr.lat || 0,
+      lng: addr.lng || 0,
     });
   };
 
   const handleOpenAddModal = () => {
     setEditingAddress(null);
+    setModalErrors({});
     setModalFormData({
       fullName: "",
       phone: "",
@@ -193,6 +485,7 @@ const PlaceOrder = () => {
   const handleOpenEditModal = (addr, e) => {
     e.stopPropagation(); // Prevent selecting
     setEditingAddress(addr);
+    setModalErrors({});
     
     // Parse street field to extract details if possible
     let flatVal = "";
@@ -276,43 +569,76 @@ const PlaceOrder = () => {
       return;
     }
     setGeocodingLoading(true);
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
-        try {
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`
-          );
-          if (!res.ok) throw new Error("Failed to fetch location");
-          const data = await res.json();
-          if (data && data.address) {
-            const addr = data.address;
-            setModalFormData((prev) => ({
-              ...prev,
-              pincode: addr.postcode || prev.pincode || "",
-              flat: addr.house_number || prev.flat || "",
-              area: [addr.road, addr.suburb, addr.neighbourhood].filter(Boolean).join(", ") || prev.area || "",
-              landmark: addr.amenity || addr.landmark || prev.landmark || "",
-              city: addr.city || addr.town || addr.village || addr.suburb || prev.city || "",
-              state: addr.state || prev.state || "",
-              country: addr.country || prev.country || "India",
-            }));
-            toast.success("Location autofilled successfully!");
-          } else {
-            toast.warning("Could not resolve address details for your location.");
-          }
-        } catch (err) {
-          console.error("Autofill geocode error:", err);
-          toast.error("Failed to retrieve location details.");
-        } finally {
-          setGeocodingLoading(false);
+
+    const successCallback = async (position) => {
+      const { latitude, longitude } = position.coords;
+
+      // Update Leaflet map view and marker position if the map is initialized
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.setView([latitude, longitude], 16);
+      }
+      if (markerRef.current) {
+        markerRef.current.setLatLng([latitude, longitude]);
+      }
+
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`
+        );
+        if (!res.ok) throw new Error("Failed to fetch location");
+        const data = await res.json();
+        if (data && data.address) {
+          const addr = data.address;
+          setModalFormData((prev) => ({
+            ...prev,
+            pincode: addr.postcode || prev.pincode || "",
+            flat: addr.house_number || prev.flat || "",
+            area: [addr.road, addr.suburb, addr.neighbourhood].filter(Boolean).join(", ") || prev.area || "",
+            landmark: addr.amenity || addr.landmark || prev.landmark || "",
+            city: addr.city || addr.town || addr.village || addr.suburb || prev.city || "",
+            state: addr.state || prev.state || "",
+            country: addr.country || prev.country || "India",
+            lat: latitude,
+            lng: longitude
+          }));
+          toast.success("Location autofilled successfully!");
+        } else {
+          toast.warning("Could not resolve address details for your location.");
         }
-      },
-      (err) => {
-        console.error("Geolocation error:", err);
-        toast.error("Geolocation request denied or timed out.");
+      } catch (err) {
+        console.error("Autofill geocode error:", err);
+        toast.error("Failed to retrieve location details.");
+      } finally {
         setGeocodingLoading(false);
-      },
+      }
+    };
+
+    const errorCallback = (err) => {
+      console.error("Geolocation error:", err);
+      if (err.code === 1) {
+        toast.error("Location permission denied. Please verify macOS System Settings > Privacy & Security > Location Services is enabled for your browser.");
+        setGeocodingLoading(false);
+      } else if (err.code === 3) {
+        // High accuracy timed out, retry with normal accuracy
+        toast.info("High accuracy request timed out. Retrying with standard accuracy...");
+        navigator.geolocation.getCurrentPosition(
+          successCallback,
+          (err2) => {
+            console.error("Secondary geolocation error:", err2);
+            toast.error("Geolocation request timed out. Please input your address manually.");
+            setGeocodingLoading(false);
+          },
+          { enableHighAccuracy: false, timeout: 8000 }
+        );
+      } else {
+        toast.error("Location unavailable. Make sure your Wi-Fi is enabled to help determine your location.");
+        setGeocodingLoading(false);
+      }
+    };
+
+    navigator.geolocation.getCurrentPosition(
+      successCallback,
+      errorCallback,
       { enableHighAccuracy: true, timeout: 8000 }
     );
   };
@@ -327,10 +653,37 @@ const PlaceOrder = () => {
 
     const { fullName, phone, email, pincode, flat, area, landmark, city, state, country } = modalFormData;
 
-    if (!fullName.trim() || !phone.trim() || !email.trim() || !area.trim() || !city.trim() || !state.trim()) {
-      toast.warning("Please fill in all required fields.");
+    // Run validation checks on all fields
+    const errors = {};
+    ["fullName", "phone", "pincode", "area", "city", "state"].forEach(field => {
+      const err = validateField(field, modalFormData[field]);
+      if (err) {
+        errors[field] = err;
+      }
+    });
+
+    if (Object.keys(errors).length > 0) {
+      setModalErrors(errors);
+      toast.warning("Please correct the errors in the form before saving.");
       return;
     }
+
+    setLoading(true);
+    try {
+      const pinCheck = await fetch(`https://api.postalpincode.in/pincode/${pincode.trim()}`);
+      if (pinCheck.ok) {
+        const data = await pinCheck.json();
+        if (!data || !data[0] || data[0].Status !== "Success") {
+          setModalErrors(prev => ({ ...prev, pincode: "Invalid Pincode. Please enter a valid Indian pincode." }));
+          toast.error("Invalid Pincode. Please enter a valid Indian pincode.");
+          setLoading(false);
+          return;
+        }
+      }
+    } catch (err) {
+      console.log("Pincode check error:", err);
+    }
+    setLoading(false);
 
     // Split Full Name into First and Last Name
     const nameParts = fullName.trim().split(" ");
@@ -352,6 +705,8 @@ const PlaceOrder = () => {
       city: city,
       state: state,
       country: country,
+      lat: modalFormData.lat || 0,
+      lng: modalFormData.lng || 0
     };
 
     setLoading(true);
@@ -390,6 +745,8 @@ const PlaceOrder = () => {
             city: newAddr.city,
             state: newAddr.state,
             country: newAddr.country,
+            lat: newAddr.lat || 0,
+            lng: newAddr.lng || 0,
           });
         }
         fetchUserProfile();
@@ -441,16 +798,72 @@ const PlaceOrder = () => {
     setCouponError("");
   };
 
-  const singleProduct = location.state?.product;
-  const cartItems = location.state?.cartItems;
-  const qty = location.state?.qty || 1;
-  const size = location.state?.size || "N/A";
+  const [products, setProducts] = useState([]);
+  const [fetchingCart, setFetchingCart] = useState(false);
 
-  const products = cartItems
-    ? cartItems
-    : singleProduct
-    ? [{ ...singleProduct, qty, size }]
-    : [];
+  useEffect(() => {
+    const loadProducts = async () => {
+      const singleProduct = location.state?.product;
+      const cartItems = location.state?.cartItems;
+      const qty = location.state?.qty || 1;
+      const size = location.state?.size || "N/A";
+
+      if (cartItems) {
+        setProducts(cartItems);
+      } else if (singleProduct) {
+        setProducts([{ ...singleProduct, qty, size }]);
+      } else {
+        // Fetch from cart backend / localStorage
+        const token = localStorage.getItem("token");
+        setFetchingCart(true);
+        try {
+          let cartData = {};
+          if (token) {
+            const cartRes = await axios.post(
+              `${backendUrl}/api/cart/get`,
+              {},
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+            if (cartRes.data.success) {
+              cartData = cartRes.data.cartData || {};
+            }
+          } else {
+            cartData = JSON.parse(localStorage.getItem("cart") || "{}");
+          }
+
+          const items = [];
+          for (const key in cartData) {
+            const [itemId, sizeVal] = key.split("_");
+            const qtyVal = cartData[key];
+
+            if (qtyVal > 0) {
+              try {
+                const productRes = await axios.get(
+                  `${backendUrl}/api/product/single/${itemId}`
+                );
+                if (productRes.data.success && productRes.data.product) {
+                  items.push({
+                    ...productRes.data.product,
+                    qty: qtyVal,
+                    size: sizeVal || "N/A",
+                  });
+                }
+              } catch (err) {
+                console.log("Failed to fetch single product details:", err);
+              }
+            }
+          }
+          setProducts(items);
+        } catch (error) {
+          console.log("Failed to fetch cart:", error);
+        } finally {
+          setFetchingCart(false);
+        }
+      }
+    };
+
+    loadProducts();
+  }, [location.state]);
 
   const subtotal = products.reduce(
     (sum, item) => sum + item.price * item.qty,
@@ -674,6 +1087,17 @@ const PlaceOrder = () => {
     }
   };
 
+  if (fetchingCart) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 px-6 pt-24 pb-20 flex items-center justify-center transition-colors duration-200">
+        <div className="mx-auto max-w-md text-center">
+          <Loader2 className="mx-auto h-12 w-12 text-orange-500 animate-spin mb-4" />
+          <p className="text-lg font-bold text-slate-900 dark:text-slate-100">Loading Checkout...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (products.length === 0) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 px-6 pt-24 pb-20 flex items-center justify-center transition-colors duration-200">
@@ -834,15 +1258,31 @@ const PlaceOrder = () => {
                     </div>
                   )}
 
-                  <div className="pt-3 border-t border-slate-100 dark:border-slate-850 flex flex-wrap gap-2 items-center justify-between">
-                    <button
-                      type="button"
-                      onClick={handleOpenAddModal}
-                      className="inline-flex items-center gap-1 text-xs font-bold text-orange-500 hover:text-orange-600 transition"
-                    >
-                      <Plus size={14} />
-                      <span>Add a new delivery address</span>
-                    </button>
+                  <div className="pt-3 border-t border-slate-100 dark:border-slate-850 flex flex-wrap gap-4 items-center justify-between">
+                    <div className="flex flex-wrap gap-4">
+                      <button
+                        type="button"
+                        onClick={handleOpenAddModal}
+                        className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-500 hover:text-orange-600 transition cursor-pointer"
+                      >
+                        <Plus size={14} />
+                        <span>Add new address</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleOpenAddModal();
+                          setTimeout(() => {
+                            handleAutofillLocation();
+                          }, 150);
+                        }}
+                        className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0082c8] hover:text-[#006ca6] dark:text-sky-400 dark:hover:text-sky-350 transition cursor-pointer"
+                      >
+                        <Navigation size={14} className="animate-pulse" />
+                        <span>Use current location</span>
+                      </button>
+                    </div>
 
                     <button
                       type="button"
@@ -1176,21 +1616,99 @@ const PlaceOrder = () => {
 
             {/* Modal Body */}
             <form onSubmit={handleSaveModalAddress} className="flex-1 overflow-y-auto p-5 space-y-4 max-h-[75vh] text-left">
-              
-              {/* Geolocation Autofill Banner */}
-              <div className="flex items-center justify-between gap-3 bg-[#e2f6ff] dark:bg-sky-950/20 border border-[#bce8ff] dark:border-sky-900/30 rounded-xl px-3.5 py-2.5 text-xs text-[#004e7c] dark:text-sky-400 font-semibold shadow-sm">
-                <div className="flex items-center gap-2">
-                  <Navigation size={14} className="text-[#0082c8] dark:text-sky-400 shrink-0 animate-pulse" />
-                  <span>Save time. Autofill your current location.</span>
+                {/* Map Selection Container */}
+              <div className="space-y-3 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 bg-slate-50/50 dark:bg-slate-950/10 shadow-xs relative">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase text-slate-500 dark:text-slate-400 tracking-wider">
+                    Interactive Delivery Location Picker
+                  </span>
+                  <span className="text-[9px] text-slate-400 font-extrabold flex items-center gap-1">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping" /> Live Sync Active
+                  </span>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleAutofillLocation}
-                  disabled={geocodingLoading}
-                  className="rounded-lg border border-[#0082c8] dark:border-sky-500 bg-white dark:bg-slate-900/40 px-3 py-1 text-[11px] font-black text-[#0082c8] dark:text-sky-450 hover:bg-[#bce8ff] dark:hover:bg-sky-900/30 transition shrink-0 disabled:opacity-50"
-                >
-                  {geocodingLoading ? "Loading..." : "Autofill"}
-                </button>
+
+                {/* Location Search Bar & Quick Pincode Finder */}
+                <div className="grid gap-2 grid-cols-1 sm:grid-cols-[1fr_100px]">
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      placeholder="Search street, area or building..."
+                      value={mapSearchQuery}
+                      onChange={(e) => setMapSearchQuery(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleMapSearch(e); } }}
+                      className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 pl-3 pr-8 py-2 text-xs outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/10 text-slate-900 dark:text-slate-100 placeholder:text-slate-400"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleMapSearch}
+                      className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition"
+                    >
+                      <Search size={14} />
+                    </button>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleMapSearch}
+                    disabled={searchingMapLocation || !mapSearchQuery.trim()}
+                    className="w-full rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 py-2 text-xs font-bold text-white transition disabled:opacity-50 cursor-pointer"
+                  >
+                    {searchingMapLocation ? "..." : "Find"}
+                  </button>
+                </div>
+
+                {/* Map Wrapper */}
+                <div className="relative rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-inner bg-slate-100 dark:bg-slate-950">
+                  <div 
+                    id="address-map" 
+                    className="w-full h-[260px] relative z-10"
+                    style={{ minHeight: "260px" }}
+                  />
+
+                  {/* Floating Current Location Button on Map */}
+                  <button
+                    type="button"
+                    onClick={handleAutofillLocation}
+                    disabled={geocodingLoading}
+                    className="absolute bottom-4 right-4 z-20 h-10 w-10 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 shadow-lg hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-center transition active:scale-95 cursor-pointer disabled:opacity-60"
+                    title="Use current location"
+                  >
+                    {geocodingLoading ? (
+                      <Loader2 className="h-5 w-5 animate-spin text-orange-500" />
+                    ) : (
+                      <Navigation className="h-5 w-5 text-orange-500 fill-orange-500/20" />
+                    )}
+                  </button>
+                  
+                  {/* Coordinates Badge */}
+                  {modalFormData.lat && modalFormData.lng ? (
+                    <div className="absolute bottom-4 left-4 z-20 rounded-lg bg-slate-950/80 backdrop-blur-xs px-2.5 py-1 text-[9px] font-mono text-slate-300 font-bold border border-white/10 select-all">
+                      {modalFormData.lat.toFixed(6)}, {modalFormData.lng.toFixed(6)}
+                    </div>
+                  ) : null}
+                </div>
+
+                {/* Live Address Preview Card */}
+                <div className="rounded-xl border border-orange-105 dark:border-orange-900/30 bg-orange-50/20 dark:bg-orange-950/5 p-3 text-xs text-left space-y-1">
+                  <span className="text-[9px] font-black uppercase text-orange-500 tracking-wider">
+                    Selected Address Preview
+                  </span>
+                  <div className="text-slate-700 dark:text-slate-300 leading-relaxed font-semibold">
+                    {modalFormData.area || modalFormData.city || modalFormData.state ? (
+                      <>
+                        <p className="font-bold text-slate-900 dark:text-white">
+                          {[modalFormData.flat, modalFormData.area].filter(Boolean).join(", ") || "No street selected yet"}
+                        </p>
+                        <p className="text-slate-550 dark:text-slate-400 mt-0.5">
+                          {[modalFormData.city, modalFormData.state, modalFormData.country].filter(Boolean).join(", ")}
+                          {modalFormData.pincode ? ` - ${modalFormData.pincode}` : ""}
+                        </p>
+                      </>
+                    ) : (
+                      <p className="text-slate-400 italic">Drag pin or click map to select delivery address</p>
+                    )}
+                  </div>
+                </div>
               </div>
 
               {/* Form Input fields */}
@@ -1216,9 +1734,16 @@ const PlaceOrder = () => {
                   required
                   placeholder="e.g. sachin kumar"
                   value={modalFormData.fullName}
-                  onChange={(e) => setModalFormData({ ...modalFormData, fullName: e.target.value })}
-                  className={inputClass}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setModalFormData({ ...modalFormData, fullName: val });
+                    setModalErrors(prev => ({ ...prev, fullName: validateField("fullName", val) }));
+                  }}
+                  className={`${inputClass} ${modalErrors.fullName ? "border-rose-500 focus:border-rose-500 focus:ring-rose-550/10" : ""}`}
                 />
+                {modalErrors.fullName && (
+                  <p className="text-[10px] text-rose-500 font-bold mt-1 pl-1">{modalErrors.fullName}</p>
+                )}
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
@@ -1229,10 +1754,18 @@ const PlaceOrder = () => {
                     required
                     placeholder="10-digit mobile number"
                     value={modalFormData.phone}
-                    onChange={(e) => setModalFormData({ ...modalFormData, phone: e.target.value })}
-                    className={inputClass}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setModalFormData({ ...modalFormData, phone: val });
+                      setModalErrors(prev => ({ ...prev, phone: validateField("phone", val) }));
+                    }}
+                    className={`${inputClass} ${modalErrors.phone ? "border-rose-500 focus:border-rose-500 focus:ring-rose-550/10" : ""}`}
                   />
-                  <span className="text-[9px] text-slate-400 mt-0.5 block pl-1 font-semibold">May be used to assist delivery</span>
+                  {modalErrors.phone ? (
+                    <p className="text-[10px] text-rose-500 font-bold mt-1 pl-1">{modalErrors.phone}</p>
+                  ) : (
+                    <span className="text-[9px] text-slate-400 mt-0.5 block pl-1 font-semibold">May be used to assist delivery</span>
+                  )}
                 </div>
                 
                 <div>
@@ -1241,9 +1774,16 @@ const PlaceOrder = () => {
                     type="text"
                     placeholder="6-digit PIN code"
                     value={modalFormData.pincode}
-                    onChange={(e) => setModalFormData({ ...modalFormData, pincode: e.target.value })}
-                    className={inputClass}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setModalFormData({ ...modalFormData, pincode: val });
+                      setModalErrors(prev => ({ ...prev, pincode: validateField("pincode", val) }));
+                    }}
+                    className={`${inputClass} ${modalErrors.pincode ? "border-rose-500 focus:border-rose-500 focus:ring-rose-555/10" : ""}`}
                   />
+                  {modalErrors.pincode && (
+                    <p className="text-[10px] text-rose-500 font-bold mt-1 pl-1">{modalErrors.pincode}</p>
+                  )}
                 </div>
               </div>
 
@@ -1265,9 +1805,16 @@ const PlaceOrder = () => {
                   required
                   placeholder="Street / Locality details"
                   value={modalFormData.area}
-                  onChange={(e) => setModalFormData({ ...modalFormData, area: e.target.value })}
-                  className={inputClass}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setModalFormData({ ...modalFormData, area: val });
+                    setModalErrors(prev => ({ ...prev, area: validateField("area", val) }));
+                  }}
+                  className={`${inputClass} ${modalErrors.area ? "border-rose-500 focus:border-rose-500 focus:ring-rose-555/10" : ""}`}
                 />
+                {modalErrors.area && (
+                  <p className="text-[10px] text-rose-500 font-bold mt-1 pl-1">{modalErrors.area}</p>
+                )}
               </div>
 
               <div>
@@ -1289,9 +1836,16 @@ const PlaceOrder = () => {
                     required
                     placeholder="City"
                     value={modalFormData.city}
-                    onChange={(e) => setModalFormData({ ...modalFormData, city: e.target.value })}
-                    className={inputClass}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setModalFormData({ ...modalFormData, city: val });
+                      setModalErrors(prev => ({ ...prev, city: validateField("city", val) }));
+                    }}
+                    className={`${inputClass} ${modalErrors.city ? "border-rose-500 focus:border-rose-500 focus:ring-rose-555/10" : ""}`}
                   />
+                  {modalErrors.city && (
+                    <p className="text-[10px] text-rose-500 font-bold mt-1 pl-1">{modalErrors.city}</p>
+                  )}
                 </div>
                 
                 <div>
@@ -1301,9 +1855,16 @@ const PlaceOrder = () => {
                     required
                     placeholder="State"
                     value={modalFormData.state}
-                    onChange={(e) => setModalFormData({ ...modalFormData, state: e.target.value })}
-                    className={inputClass}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setModalFormData({ ...modalFormData, state: val });
+                      setModalErrors(prev => ({ ...prev, state: validateField("state", val) }));
+                    }}
+                    className={`${inputClass} ${modalErrors.state ? "border-rose-500 focus:border-rose-500 focus:ring-rose-555/10" : ""}`}
                   />
+                  {modalErrors.state && (
+                    <p className="text-[10px] text-rose-500 font-bold mt-1 pl-1">{modalErrors.state}</p>
+                  )}
                 </div>
               </div>
 

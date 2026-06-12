@@ -81,15 +81,11 @@ const Wishlist = () => {
   };
 
   const handleAddToCart = async (product) => {
-    // Check if sizes are available, redirect to details to pick size if needed
-    if (product.sizes && product.sizes.length > 0) {
-      navigate(`/product/${product._id}`);
-      return;
-    }
+    const chosenSize = product.sizes && product.sizes.length > 0 ? product.sizes[0] : "M";
 
     const cartItem = {
-      productId: product._id,
-      size: "M", // Default fallback if sizes is empty
+      itemId: product._id,
+      size: chosenSize,
       qty: 1
     };
 
@@ -108,7 +104,7 @@ const Wishlist = () => {
       }
     } else {
       let guestCart = JSON.parse(localStorage.getItem("cart") || "{}");
-      const key = `${product._id}_M`;
+      const key = `${product._id}_${chosenSize}`;
       guestCart[key] = (guestCart[key] || 0) + 1;
       localStorage.setItem("cart", JSON.stringify(guestCart));
       toast.success("Added to cart");

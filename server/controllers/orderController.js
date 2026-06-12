@@ -1,9 +1,13 @@
 import orderModel from "../models/orderModel.js";
 import userModel from "../models/userModel.js";
+import { autoAssignDeliveryAgent } from "../utils/assignmentHelper.js";
 import Stripe from "stripe";
 import Razorpay from "razorpay";
 import crypto from "crypto";
 import { createNotification } from "../utils/notificationHelper.js";
+import { checkAndGenerateInvoice } from "../utils/invoicePdfGenerator.js";
+import deliveryAssignmentModel from "../models/deliveryAssignmentModel.js";
+
 
 
 // Initialize payment integrations
@@ -64,6 +68,9 @@ const placeOrder = async (req, res) => {
       cartData: {},
     });
 
+    // Auto-assign delivery agent
+    await autoAssignDeliveryAgent(order._id);
+
     res.json({
       success: true,
       order,
@@ -99,8 +106,6 @@ const placeOrderStripe = async (req, res) => {
       date: Date.now(),
     });
 
-    await userModel.findByIdAndUpdate(userId, { cartData: {} });
-
     const origin = req.headers.origin || "http://localhost:5173";
 
     // Dynamic demo mode fallback if Stripe keys are placeholders
@@ -113,41 +118,54 @@ const placeOrderStripe = async (req, res) => {
     }
 
     try {
-      const line_items = items.map((item) => ({
-        price_data: {
-          currency: "inr",
-          product_data: {
-            name: item.name,
-          },
-          unit_amount: Math.round(item.price * 100), // unit price in paise
-        },
-        quantity: item.qty,
-      }));
+      const discountVal = discount ? Number(discount) : 0;
+      const totalItemsPrice = items.reduce((sum, item) => sum + (item.price * item.qty), 0);
+      let discountLeft = discountVal;
 
-      // Add shipping charges (10 INR) as line item
+      const line_items = items.map((item, index) => {
+        let itemTotal = item.price * item.qty;
+        let itemDiscount = 0;
+        if (totalItemsPrice > 0) {
+          if (index === items.length - 1) {
+            itemDiscount = discountLeft;
+          } else {
+            itemDiscount = Math.round((itemTotal / totalItemsPrice) * discountVal * 100) / 100;
+          }
+        }
+        itemDiscount = Math.min(itemDiscount, itemTotal);
+        discountLeft -= itemDiscount;
+        const adjustedTotal = itemTotal - itemDiscount;
+        const unitPriceINR = adjustedTotal / item.qty;
+
+        return {
+          price_data: {
+            currency: "inr",
+            product_data: {
+              name: item.name,
+            },
+            unit_amount: Math.max(0, Math.round(unitPriceINR * 100)), // unit price in paise
+          },
+          quantity: item.qty,
+        };
+      });
+
+      // Calculate adjusted shipping charge (10 INR base)
+      let shippingAmountINR = 10;
+      if (discountLeft > 0) {
+        shippingAmountINR = Math.max(0, shippingAmountINR - discountLeft);
+      }
+
+      // Add shipping charges as line item
       line_items.push({
         price_data: {
           currency: "inr",
           product_data: {
             name: "Shipping Charges",
           },
-          unit_amount: 10 * 100, // 10 rupees in paise
+          unit_amount: Math.round(shippingAmountINR * 100), // in paise
         },
         quantity: 1,
       });
-
-      if (discount && discount > 0) {
-        line_items.push({
-          price_data: {
-            currency: "inr",
-            product_data: {
-              name: `Promo Code Discount (${couponCode || "COUPON"})`,
-            },
-            unit_amount: Math.round(-discount * 100), // negative amount in paise
-          },
-          quantity: 1,
-        });
-      }
 
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
@@ -178,6 +196,14 @@ const verifyStripe = async (req, res) => {
 
     if (success === "true") {
       await orderModel.findByIdAndUpdate(orderId, { paymentStatus: "paid" });
+      const order = await orderModel.findById(orderId);
+      if (order) {
+        await userModel.findByIdAndUpdate(order.userId, { cartData: {} });
+      }
+      // Auto-assign delivery agent
+      await autoAssignDeliveryAgent(orderId);
+      // Try generating invoice if conditions are met
+      await checkAndGenerateInvoice(orderId);
       res.json({ success: true, message: "Payment Verified Successfully" });
     } else {
       await orderModel.findByIdAndDelete(orderId);
@@ -210,8 +236,6 @@ const placeOrderRazorpay = async (req, res) => {
       discount: discount ? Number(discount) : 0,
       date: Date.now(),
     });
-
-    await userModel.findByIdAndUpdate(userId, { cartData: {} });
 
     // Dynamic demo mode fallback if Razorpay keys are placeholders
     if (
@@ -274,9 +298,17 @@ const verifyRazorpay = async (req, res) => {
   try {
     const { orderId, razorpay_payment_id, razorpay_order_id, razorpay_signature, isMock } = req.body;
 
-    if (isMock) {
+    if (isMock === true || isMock === "true") {
       console.log("Verifying simulated Razorpay payment...");
       await orderModel.findByIdAndUpdate(orderId, { paymentStatus: "paid" });
+      const order = await orderModel.findById(orderId);
+      if (order) {
+        await userModel.findByIdAndUpdate(order.userId, { cartData: {} });
+      }
+      // Auto-assign delivery agent
+      await autoAssignDeliveryAgent(orderId);
+      // Try generating invoice if conditions are met
+      await checkAndGenerateInvoice(orderId);
       return res.json({ success: true, message: "Payment Verified Successfully" });
     }
 
@@ -287,6 +319,14 @@ const verifyRazorpay = async (req, res) => {
 
     if (generatedSignature === razorpay_signature) {
       await orderModel.findByIdAndUpdate(orderId, { paymentStatus: "paid" });
+      const order = await orderModel.findById(orderId);
+      if (order) {
+        await userModel.findByIdAndUpdate(order.userId, { cartData: {} });
+      }
+      // Auto-assign delivery agent
+      await autoAssignDeliveryAgent(orderId);
+      // Try generating invoice if conditions are met
+      await checkAndGenerateInvoice(orderId);
       res.json({ success: true, message: "Payment Verified Successfully" });
     } else {
       res.json({ success: false, message: "Signature verification failed" });
@@ -332,6 +372,17 @@ const updateStatus = async (req, res) => {
 
     order.orderStatus = status;
     await order.save();
+
+    // Sync status with DeliveryAssignment if deliveryman is assigned
+    if (order.deliverymanId) {
+      await deliveryAssignmentModel.findOneAndUpdate(
+        { orderId, agentId: order.deliverymanId, status: { $in: ["Assigned", "Accepted", "Picked Up", "Out for Delivery"] } },
+        { status, ...(status === "Delivered" ? { deliveredAt: new Date() } : {}) }
+      );
+    }
+
+    // Try generating invoice if conditions are met
+    await checkAndGenerateInvoice(orderId);
 
     // Trigger notification to customer
     await createNotification(

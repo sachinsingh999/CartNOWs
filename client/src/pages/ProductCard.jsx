@@ -73,7 +73,7 @@ const ProductCard = ({ product, compact = false }) => {
       onMouseEnter={() => images[1] && setImgIdx(1)}
       onMouseLeave={() => setImgIdx(0)}
       onClick={() => navigate(`/product/${product._id}`)}
-      className="group flex flex-col bg-white dark:bg-slate-900/40 rounded-2xl border border-gray-200/80 dark:border-slate-800 overflow-hidden hover:shadow-xl dark:hover:shadow-slate-950/80 hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+      className="group flex flex-col bg-white dark:bg-slate-900/40 rounded-2xl border border-gray-200/80 dark:border-slate-800 overflow-hidden hover:shadow-xl dark:hover:shadow-slate-950/80 transition-all duration-300 cursor-pointer"
     >
       {/* ── Image Container ── */}
       <div 

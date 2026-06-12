@@ -5,9 +5,12 @@ import axios from "axios";
 import "react-toastify/dist/ReactToastify.css";
 import Login from "./components/Login";
 import SignUp from "./pages/SignUp";
-import Logo from "./components/Logo";
 import Dashboard from "./pages/Dashboard";
-import { Truck, RotateCcw, Inbox, AlertTriangle, Settings } from "lucide-react";
+import Navbar from "./components/Navbar";
+import { 
+  Truck, RotateCcw, Inbox, AlertTriangle, Settings, 
+  Sun, Moon
+} from "lucide-react";
 import { backendUrl } from "./config";
 
 const App = () => {
@@ -17,6 +20,19 @@ const App = () => {
   const [driver, setDriver] = useState(
     JSON.parse(localStorage.getItem("deliveryman_info")) || null
   );
+
+  const [theme, setTheme] = useState(
+    localStorage.getItem("deliveryman_theme") || "dark"
+  );
+
+  useEffect(() => {
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+    localStorage.setItem("deliveryman_theme", theme);
+  }, [theme]);
 
   const [orders, setOrders] = useState([]);
   const [availableOrders, setAvailableOrders] = useState([]);
@@ -31,6 +47,8 @@ const App = () => {
     status: "active"
   });
   const [loading, setLoading] = useState(true);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -117,112 +135,96 @@ const App = () => {
     fetchData
   };
 
+  const tabs = [
+    { id: "my-deliveries", label: "Deliveries", count: orders.filter((o) => o.orderStatus !== "Delivered").length, icon: Truck, clickId: "my-deliveries" },
+    { id: "returns", label: "Returns", count: returnTasks.length, icon: RotateCcw, clickId: "returns" },
+    { id: "available-pool", label: "Available Pool", count: availableOrders.length, icon: Inbox, clickId: "available-pool" },
+    { id: "complaints", label: "Complaints", count: complaints.length, icon: AlertTriangle, clickId: "complaints" },
+  ];
+
+  const notificationsList = [];
+  if (availableOrders.length > 0) {
+    notificationsList.push({
+      id: "pool",
+      type: "warning",
+      title: "New Pool Shipments",
+      desc: `${availableOrders.length} unassigned packages waiting in your zone.`,
+      icon: Inbox
+    });
+  }
+  const pendingOrders = orders.filter(o => o.orderStatus === "Accepted" || o.orderStatus === "Out for Delivery");
+  if (pendingOrders.length > 0) {
+    notificationsList.push({
+      id: "assignment",
+      type: "info",
+      title: "Active Deliveries",
+      desc: `You have ${pendingOrders.length} packages to dispatch.`,
+      icon: Truck
+    });
+  }
+  if (complaints.length > 0) {
+    notificationsList.push({
+      id: "complaint",
+      type: "danger",
+      title: "Agent Dispute",
+      desc: `${complaints.length} customer issues registered.`,
+      icon: AlertTriangle
+    });
+  }
+  if (returnTasks.length > 0) {
+    notificationsList.push({
+      id: "return",
+      type: "purple",
+      title: "Return Tasks",
+      desc: `${returnTasks.length} package pickups scheduled.`,
+      icon: RotateCcw
+    });
+  }
+
   return (
-    <div className="bg-slate-50/50 min-h-screen flex flex-col antialiased">
-      <ToastContainer position="top-right" autoClose={3000} />
+    <div className="bg-[#F9FAFB] dark:bg-[#070A13] min-h-screen flex flex-col antialiased text-slate-900 dark:text-slate-100 pb-16 lg:pb-0 transition-colors duration-200">
+      <ToastContainer position="top-right" autoClose={3000} theme={theme} />
       {token === "" ? (
-        <Routes>
-          <Route path="/login" element={<Login setToken={setToken} setDriver={setDriver} />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="*" element={<Navigate to="/login" />} />
-        </Routes>
+        <div className="relative">
+          {/* Theme Toggle Button on Login Screen */}
+          <div className="absolute top-4 right-4 z-50">
+            <button
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="p-2.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-900 dark:bg-[#0F1321]/60 dark:border-slate-800 dark:text-slate-300 dark:hover:text-white transition shadow-sm cursor-pointer"
+              title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            >
+              {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
+            </button>
+          </div>
+          <Routes>
+            <Route path="/login" element={<Login setToken={setToken} setDriver={setDriver} />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="*" element={<Navigate to="/login" />} />
+          </Routes>
+        </div>
       ) : (
         <>
-          {/* Header NavBar */}
-          <nav className="w-full flex flex-col lg:flex-row items-center justify-between px-6 py-3.5 bg-[#0F172A] text-white border-b border-slate-900 shadow-lg z-30 relative gap-4">
-            <div className="flex items-center gap-3 group shrink-0">
-              <div className="relative overflow-hidden h-9 w-9 rounded-xl border border-slate-800 bg-slate-900 flex items-center justify-center transition-all duration-300 hover:scale-105">
-                <Logo
-                  variant="icon"
-                  className="h-full w-full p-1 text-white transition-transform duration-300 hover:scale-105"
-                />
-              </div>
-              <div className="flex flex-col leading-none">
-                <span className="text-sm font-extrabold text-white tracking-tight">CartNOW</span>
-                <span className="text-[10px] text-orange-500 font-black uppercase tracking-wider mt-0.5">Courier Hub</span>
-              </div>
-            </div>
-
-            {/* Segmented Tab Capsule */}
-            <div className="flex items-center bg-[#070c16] border border-slate-800/80 rounded-full p-1 shadow-inner max-w-full overflow-x-auto no-scrollbar">
-              <button
-                onClick={() => handleTabClick("my-deliveries")}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full font-black text-[11px] uppercase tracking-wider transition-all duration-200 cursor-pointer whitespace-nowrap ${
-                  activeTab === "my-deliveries"
-                    ? "bg-[#FF5100] text-white shadow-md shadow-orange-600/20"
-                    : "text-slate-400 hover:text-white"
-                }`}
-              >
-                <Truck size={13} className="stroke-[2.5]" />
-                <span>Deliveries ({orders.filter((o) => o.orderStatus !== "Delivered").length})</span>
-              </button>
-
-              <button
-                onClick={() => handleTabClick("returns")}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full font-black text-[11px] uppercase tracking-wider transition-all duration-200 cursor-pointer whitespace-nowrap ${
-                  activeTab === "returns"
-                    ? "bg-[#FF5100] text-white shadow-md shadow-orange-600/20"
-                    : "text-slate-400 hover:text-white"
-                }`}
-              >
-                <RotateCcw size={13} className="stroke-[2.5]" />
-                <span>Return Tasks ({returnTasks.length})</span>
-              </button>
-
-              <button
-                onClick={() => handleTabClick("available-pool")}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full font-black text-[11px] uppercase tracking-wider transition-all duration-200 cursor-pointer whitespace-nowrap ${
-                  activeTab === "available-pool"
-                    ? "bg-[#FF5100] text-white shadow-md shadow-orange-600/20"
-                    : "text-slate-400 hover:text-white"
-                }`}
-              >
-                <Inbox size={13} className="stroke-[2.5]" />
-                <span>Available Pool ({availableOrders.length})</span>
-              </button>
-
-              <button
-                onClick={() => handleTabClick("complaints")}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full font-black text-[11px] uppercase tracking-wider transition-all duration-200 cursor-pointer whitespace-nowrap ${
-                  activeTab === "complaints"
-                    ? "bg-[#FF5100] text-white shadow-md shadow-orange-600/20"
-                    : "text-slate-400 hover:text-white"
-                }`}
-              >
-                <AlertTriangle size={13} className="stroke-[2.5]" />
-                <span>Complaints ({complaints.length})</span>
-              </button>
-
-              <button
-                onClick={() => handleTabClick("profile")}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full font-black text-[11px] uppercase tracking-wider transition-all duration-200 cursor-pointer whitespace-nowrap ${
-                  activeTab === "profile"
-                    ? "bg-[#FF5100] text-white shadow-md shadow-orange-600/20"
-                    : "text-slate-400 hover:text-white"
-                }`}
-              >
-                <Settings size={13} className="stroke-[2.5]" />
-                <span>Account Settings</span>
-              </button>
-            </div>
-
-            <div className="flex items-center gap-4 shrink-0">
-              <div className="hidden sm:flex flex-col text-right leading-none">
-                <span className="text-xs font-bold text-slate-200">{driver?.name}</span>
-                <span className="text-[9px] text-emerald-400 font-semibold mt-0.5">Active Agent</span>
-              </div>
-              <button 
-                onClick={logout}
-                className="rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-200 hover:text-white px-4.5 py-2 text-xs font-black uppercase tracking-wider transition shadow-sm active:scale-95 cursor-pointer"
-              >
-                Sign Out
-              </button>
-            </div>
-          </nav>
+          {/* Refactored Header / Navbar component */}
+          <Navbar
+            driver={driver}
+            activeTab={activeTab}
+            handleTabClick={handleTabClick}
+            tabs={tabs}
+            stats={stats}
+            orders={orders}
+            theme={theme}
+            setTheme={setTheme}
+            showNotifications={showNotifications}
+            setShowNotifications={setShowNotifications}
+            showProfileMenu={showProfileMenu}
+            setShowProfileMenu={setShowProfileMenu}
+            notificationsList={notificationsList}
+            logout={logout}
+          />
 
           {/* Main Content */}
-          <main className="flex-1 bg-slate-50/20 p-6 md:p-8">
-            <div className="mx-auto max-w-4xl">
+          <main className="flex-1 bg-slate-50 dark:bg-[#0A0D18]/40 p-4 md:p-8 transition-colors">
+            <div className="mx-auto max-w-7xl">
               <Routes>
                 <Route path="/" element={<Dashboard {...dashboardProps} />} />
                 <Route path="/returns" element={<Dashboard {...dashboardProps} />} />
@@ -233,6 +235,36 @@ const App = () => {
               </Routes>
             </div>
           </main>
+
+          {/* Sticky Mobile/Tablet Bottom Navigation Bar */}
+          <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-slate-955 dark:bg-slate-950/95 border-t border-slate-200 dark:border-slate-900 backdrop-blur-lg flex justify-around py-2.5 shadow-2xl lg:hidden transition-colors">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => handleTabClick(tab.clickId)}
+                  className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition duration-150 relative cursor-pointer ${
+                    isActive ? "text-blue-600 dark:text-indigo-400 font-extrabold" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                  }`}
+                >
+                  <div className="relative">
+                    <Icon size={15} className="stroke-[2.2]" />
+                    {tab.count > 0 && (
+                      <span className="absolute -top-1.5 -right-2 px-1 py-0.2 bg-blue-600 dark:bg-indigo-600 text-white rounded-full text-[8px] font-extrabold min-w-[12px] text-center border border-white dark:border-slate-955">
+                        {tab.count}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-[9px] mt-1 uppercase font-black tracking-wider text-[8px]">{tab.label}</span>
+                  {isActive && (
+                    <span className="absolute bottom-0 h-0.5 w-6 bg-blue-600 dark:bg-indigo-550 dark:bg-indigo-500 rounded-full" />
+                  )}
+                </button>
+              );
+            })}
+          </nav>
         </>
       )}
     </div>

@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { validatePrice } from "../utils/validation.js";
 
 const productSchema = new mongoose.Schema({
   name: {
@@ -14,7 +15,11 @@ const productSchema = new mongoose.Schema({
 
   price: {
     type: Number,
-    required: true
+    required: true,
+    validate: {
+      validator: (v) => validatePrice(v).isValid,
+      message: "Price must be greater than 0 with at most 2 decimal places"
+    }
   },
 
   images: {
@@ -110,6 +115,10 @@ const productSchema = new mongoose.Schema({
           required: true,
           trim: true
         },
+        reply: {
+          type: String,
+          default: ""
+        },
         date: {
           type: Date,
           default: Date.now
@@ -119,7 +128,32 @@ const productSchema = new mongoose.Schema({
     default: []
   },
 
-  
+  sellerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "seller",
+    default: null
+  },
+
+  status: {
+    type: String,
+    enum: ["pending", "approved", "rejected", "disabled"],
+    default: "approved"
+  },
+
+  isFake: {
+    type: Boolean,
+    default: false
+  },
+
+  isDeleted: {
+    type: Boolean,
+    default: false
+  },
+
+  deletedAt: {
+    type: Date,
+    default: null
+  },
 
   date: {
     type: Date,

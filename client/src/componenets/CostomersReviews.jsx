@@ -78,6 +78,20 @@ const CostomersReviews = ({ reviews = [] }) => {
             </div>
 
             <p className="mt-3.5 text-sm text-slate-700 dark:text-slate-350 leading-relaxed pl-1">{review.comment}</p>
+
+            {review.reply && (
+              <div className="mt-4 ml-4 p-4 rounded-xl border border-indigo-100 dark:border-indigo-950/60 bg-indigo-50/30 dark:bg-indigo-950/10 text-left transition-all duration-200 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-indigo-600 dark:bg-indigo-400 animate-pulse"></span>
+                  <span className="text-[10px] font-black text-indigo-700 dark:text-indigo-400 uppercase tracking-widest">
+                    Seller Response
+                  </span>
+                </div>
+                <p className="text-xs text-slate-650 dark:text-slate-300 leading-relaxed pl-3.5 font-medium border-l border-indigo-250 dark:border-indigo-800">
+                  {review.reply}
+                </p>
+              </div>
+            )}
           </div>
         ))}
     </div>

@@ -5,7 +5,16 @@ const notificationSchema = new mongoose.Schema(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
-      required: true,
+      required: false,
+    },
+    recipientId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: false,
+    },
+    recipientRole: {
+      type: String,
+      enum: ["user", "seller", "deliveryman"],
+      default: "user",
     },
     orderId: {
       type: mongoose.Schema.Types.ObjectId,

@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { getAverageRating } from "../utils/productRatings";
+import axios from "axios";
+import { backendUrl } from "../config";
 
 const CategoryFilterSidebar = ({ productList, setFilteredList }) => {
   const [category, setCategory] = useState("all");
   const [price, setPrice] = useState(200000);
   const [rating, setRating] = useState(0);
+  const [adminCategories, setAdminCategories] = useState([]);
   const maxPrice = 200000;
 
   // Track expanded state for clean accordion layout
@@ -18,13 +21,53 @@ const CategoryFilterSidebar = ({ productList, setFilteredList }) => {
     setExpanded((prev) => ({ ...prev, [section]: !prev[section] }));
   };
 
-  const categories = useMemo(() => [
-    "all", ...new Set(productList.map((item) => item.category).filter(Boolean)),
-  ], [productList]);
+  // Fetch admin created categories
+  useEffect(() => {
+    axios.get(`${backendUrl}/api/product/categories`)
+      .then(res => {
+        if (res.data.success) {
+          setAdminCategories(res.data.categories || []);
+        }
+      })
+      .catch(err => console.log(err));
+  }, []);
+
+  // Dynamic mapping based on fetched adminCategories
+  const { categoryMapping, reverseMapping } = useMemo(() => {
+    const mapping = {};
+    const rev = {};
+    adminCategories.forEach(c => {
+      const subList = c.subcategories || [];
+      const children = adminCategories.filter(child => child.parentCategoryId?.toString() === c._id?.toString());
+      const allAllowed = [c.name, ...subList, ...children.map(child => child.name)];
+      mapping[c.name] = allAllowed;
+      
+      allAllowed.forEach(name => {
+        rev[name] = c.name;
+      });
+    });
+    return { categoryMapping: mapping, reverseMapping: rev };
+  }, [adminCategories]);
+
+  const categories = useMemo(() => {
+    if (adminCategories.length > 0) {
+      const unique = adminCategories.map(c => c.name);
+      unique.sort((a, b) => a.localeCompare(b));
+      return ["all", ...unique];
+    }
+    const mapped = productList.map((item) => reverseMapping[item.category] || item.category).filter(Boolean);
+    const unique = [...new Set(mapped)];
+    unique.sort((a, b) => a.localeCompare(b));
+    return ["all", ...unique];
+  }, [adminCategories, productList, reverseMapping]);
 
   const applyFilter = (cat, pr, rat) => {
     let data = [...productList];
-    if (cat !== "all") data = data.filter((item) => item.category?.toLowerCase() === cat.toLowerCase());
+    if (cat !== "all") {
+      const allowedCategories = categoryMapping[cat] || [cat];
+      const lowerAllowed = allowedCategories.map(c => c.toLowerCase());
+      data = data.filter((item) => lowerAllowed.includes(item.category?.toLowerCase()));
+    }
     data = data.filter((item) => item.price <= pr);
     if (rat > 0) data = data.filter((item) => getAverageRating(item) >= rat);
     setFilteredList(data);
@@ -32,7 +75,7 @@ const CategoryFilterSidebar = ({ productList, setFilteredList }) => {
 
   useEffect(() => {
     applyFilter(category, price, rating);
-  }, [productList, category, price, rating]);
+  }, [productList, category, price, rating, categoryMapping]);
 
   const handleReset = () => {
     setCategory("all");

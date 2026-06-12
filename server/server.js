@@ -14,7 +14,12 @@ import saleRouter from "./routers/saleRoute.js";
 import wishlistRouter from "./routers/wishlistRouter.js";
 import couponRouter from "./routers/couponRouter.js";
 import coshopRouter from "./routers/coshopRouter.js";
-
+import adminRouter from "./routers/adminRouter.js";
+import sellerRouter from "./routers/sellerRouter.js";
+import tryOnRouter from "./routers/tryOnRouter.js";
+import { createServer } from "http";
+import { Server } from "socket.io";
+import { startTryOnWorker } from "./workers/tryOnWorker.js";
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -41,10 +46,18 @@ app.use('/api/sale', saleRouter);
 app.use('/api/wishlist', wishlistRouter);
 app.use('/api/coupon', couponRouter);
 app.use('/api/coshop', coshopRouter);
+app.use('/api/admin', adminRouter);
+app.use('/api/seller', sellerRouter);
+app.use('/api/tryon', tryOnRouter);
+
+import invoiceRouter from "./routers/invoiceRouter.js";
+import path from "path";
+app.use('/api/invoice', invoiceRouter);
+app.use('/invoices', express.static(path.join(process.cwd(), 'public', 'invoices')));
+
 
 
 import fs from "fs";
-import path from "path";
 
 app.post("/api/log", (req, res) => {
   const logMessage = `[${new Date().toISOString()}] ${req.body.message || ""}\nStack: ${req.body.stack || ""}\n\n`;
@@ -61,7 +74,33 @@ app.get("/", (req, res) => {
   res.send("API Working");
 });
 
+// Setup server and socket.io
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"]
+  }
+});
+app.set("socketio", io);
+
+io.on("connection", (socket) => {
+  console.log("Socket connected:", socket.id);
+
+  socket.on("join", (userId) => {
+    socket.join(userId);
+    console.log(`Socket ${socket.id} joined room: ${userId}`);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("Socket disconnected:", socket.id);
+  });
+});
+
+// start worker
+startTryOnWorker(io);
+
 // start server
-app.listen(port, () => {
+httpServer.listen(port, () => {
   console.log("Server started on PORT:", port);
 });

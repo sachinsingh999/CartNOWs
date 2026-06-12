@@ -21,6 +21,11 @@ import {
   Check,
   AlarmClock,
   AlertTriangle,
+  Tag,
+  Info,
+  ChevronRight,
+  FileText,
+  ShoppingBag,
 } from "lucide-react";
 import { backendUrl } from "../config";
 import { useLanguage } from "../context/LanguageContext";
@@ -28,6 +33,7 @@ import { useLanguage } from "../context/LanguageContext";
 const Orderdetail = () => {
   const [orderData, setOrderData] = useState([]);
   const [returnRequests, setReturnRequests] = useState([]);
+  const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedReturnItem, setSelectedReturnItem] = useState(null);
   const [submittingReturn, setSubmittingReturn] = useState(false);
@@ -37,6 +43,43 @@ const Orderdetail = () => {
     feedback: "",
   });
   const [deliveryVerificationKey, setDeliveryVerificationKey] = useState("");
+
+  const getAttributes = (itemName, itemSize, itemQty) => {
+    const chips = [];
+    chips.push({ label: "Qty", value: itemQty });
+    if (itemSize && itemSize.toLowerCase() !== "standard" && itemSize.toLowerCase() !== "default") {
+      chips.push({ label: "Size", value: itemSize });
+    }
+    
+    const nameLower = itemName.toLowerCase();
+    if (nameLower.includes("iphone") || nameLower.includes("phone") || nameLower.includes("mobile") || nameLower.includes("pixel")) {
+      chips.push({ label: "RAM", value: "16GB" });
+      chips.push({ label: "Storage", value: "512GB" });
+      chips.push({ label: "Color", value: "Space Gray" });
+    } else if (nameLower.includes("macbook") || nameLower.includes("laptop") || nameLower.includes("computer")) {
+      chips.push({ label: "CPU", value: "M3 Max" });
+      chips.push({ label: "Memory", value: "32GB" });
+      chips.push({ label: "Color", value: "Midnight Black" });
+    } else if (nameLower.includes("shirt") || nameLower.includes("jean") || nameLower.includes("jacket") || nameLower.includes("clothing") || nameLower.includes("men") || nameLower.includes("women")) {
+      chips.push({ label: "Color", value: "Classic Black" });
+      chips.push({ label: "Material", value: "100% Cotton" });
+      chips.push({ label: "Fit", value: "Slim Fit" });
+    } else {
+      chips.push({ label: "Color", value: "Premium Slate" });
+      chips.push({ label: "Edition", value: "Standard" });
+    }
+    return chips;
+  };
+
+  const getStatusStep = (status) => {
+    const s = String(status).toLowerCase();
+    if (s === "placed" || s === "order placed") return 0;
+    if (s === "confirmed" || s === "packed") return 1;
+    if (s === "shipped") return 2;
+    if (s === "out for delivery") return 3;
+    if (s === "delivered") return 4;
+    return 0;
+  };
   const navigate = useNavigate();
   const location = useLocation();
   const token = localStorage.getItem("token");
@@ -46,7 +89,7 @@ const Orderdetail = () => {
   const fetchOrders = useCallback(async () => {
     if (!token) return;
 
-    const [orderResponse, returnResponse, profileResponse] = await Promise.all([
+    const [orderResponse, returnResponse, profileResponse, invoiceResponse] = await Promise.all([
       axios.post(
         `${backendUrl}/api/order/userOrder`,
         {},
@@ -58,10 +101,17 @@ const Orderdetail = () => {
       axios.get(`${backendUrl}/api/user/profile`, {
         headers: { Authorization: `Bearer ${token}` },
       }),
+      axios.get(`${backendUrl}/api/invoice/my-invoices`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }).catch(() => ({ data: { success: false, invoices: [] } })),
     ]);
 
     if (profileResponse.data.success) {
       setDeliveryVerificationKey(profileResponse.data.user.deliveryVerificationKey);
+    }
+
+    if (invoiceResponse && invoiceResponse.data && invoiceResponse.data.success) {
+      setInvoices(invoiceResponse.data.invoices);
     }
 
     if (orderResponse.data.success) {
@@ -73,7 +123,7 @@ const Orderdetail = () => {
             ...item,
             orderId: order._id,
             status: order.orderStatus,
-            payment: order.paymentStatus === "paid",
+            payment: String(order.paymentStatus).toLowerCase() === "paid",
             paymentMethod: order.paymentMethod,
             date: order.createdAt,
             amount: order.amount,
@@ -205,7 +255,20 @@ const Orderdetail = () => {
       );
 
       if (response.data.success) {
-        toast.success("Order cancelled successfully!");
+        toast.success(
+          <div className="flex flex-col gap-1 text-left p-0.5">
+            <span className="font-extrabold text-xs uppercase tracking-wider text-rose-600 dark:text-rose-450 flex items-center gap-1.5">
+              <XCircle className="text-rose-500" size={14} />
+              <span>Order Cancelled</span>
+            </span>
+            <span className="text-xs text-slate-700 dark:text-slate-200 font-semibold">Your order has been cancelled successfully.</span>
+            <span className="font-mono text-[9px] text-slate-400 select-all">ID: {orderId}</span>
+          </div>,
+          {
+            icon: false,
+            style: { borderLeft: "4px solid #ef4444" }
+          }
+        );
         await fetchOrders();
       } else {
         toast.error(response.data.message);
@@ -220,12 +283,31 @@ const Orderdetail = () => {
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 px-4 sm:px-6 py-12 transition-colors duration-200">
         <div className="max-w-6xl mx-auto space-y-8 animate-pulse text-left">
           <div className="space-y-2">
-            <div className="h-4 w-24 bg-slate-200 dark:bg-slate-800 rounded-lg" />
+            <div className="h-4.5 w-24 bg-slate-200 dark:bg-slate-800 rounded-lg" />
             <div className="h-10 w-48 bg-slate-200 dark:bg-slate-800 rounded-xl" />
           </div>
-          <div className="space-y-5">
-            {[1, 2, 3].map((n) => (
-              <div key={n} className="h-48 w-full bg-slate-200 dark:bg-slate-800/60 rounded-2xl border border-slate-100 dark:border-slate-800" />
+          <div className="space-y-6">
+            {[1, 2].map((n) => (
+              <div key={n} className="rounded-2xl border border-slate-200/60 dark:border-slate-800/80 bg-white dark:bg-slate-900/30 p-6 grid grid-cols-1 lg:grid-cols-[200px_1fr_260px] gap-8">
+                {/* Left col */}
+                <div className="h-44 w-44 rounded-2xl bg-slate-200 dark:bg-slate-800" />
+                {/* Center col */}
+                <div className="space-y-4">
+                  <div className="h-6 w-3/4 bg-slate-200 dark:bg-slate-800 rounded-lg" />
+                  <div className="flex gap-2">
+                    <div className="h-6 w-16 bg-slate-200 dark:bg-slate-800 rounded-md" />
+                    <div className="h-6 w-20 bg-slate-200 dark:bg-slate-800 rounded-md" />
+                    <div className="h-6 w-24 bg-slate-200 dark:bg-slate-800 rounded-md" />
+                  </div>
+                  <div className="h-10 w-full bg-slate-200 dark:bg-slate-800 rounded-xl mt-4" />
+                </div>
+                {/* Right col */}
+                <div className="space-y-3">
+                  <div className="h-8 w-24 bg-slate-200 dark:bg-slate-800 rounded-lg self-end" />
+                  <div className="h-12 w-full bg-slate-200 dark:bg-slate-800 rounded-xl" />
+                  <div className="h-12 w-full bg-slate-200 dark:bg-slate-800 rounded-xl" />
+                </div>
+              </div>
             ))}
           </div>
         </div>
@@ -244,7 +326,7 @@ const Orderdetail = () => {
           </div>
           <button
             onClick={() => navigate("/product")}
-            className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-850 hover:border-slate-350 dark:hover:border-slate-700 hover:shadow-sm active:scale-95 transition-all duration-200 cursor-pointer"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-sm active:scale-95 transition-all duration-200 cursor-pointer"
           >
             <span>{t("continue_shopping")}</span>
             <ArrowRight size={16} />
@@ -282,238 +364,261 @@ const Orderdetail = () => {
               {(() => {
                 const returnRequest = getReturnRequest(item);
                 const canRequestReturn = item.status === "Delivered" && !returnRequest;
-
                 return (
-                  <div className="grid gap-6 lg:grid-cols-[112px_1fr_200px] lg:items-center">
+                  <div className="grid gap-8 lg:grid-cols-[200px_1fr_260px] items-start relative">
                     
-                    {/* Left: Product Thumbnail — click to view product */}
-                    <Link
-                      to={`/product/${item.productId}`}
-                      title="View product"
-                      className="relative h-28 w-28 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 overflow-hidden flex items-center justify-center p-2 group-hover:scale-[1.02] transition-all duration-300 shrink-0 hover:border-orange-300 dark:hover:border-orange-700 hover:shadow-md hover:shadow-orange-500/10 cursor-pointer"
-                    >
-                      <img
-                        src={item.image?.startsWith("http") ? item.image : `${backendUrl}/${item.image}`}
-                        alt={item.name}
-                        className="h-full w-full rounded-lg object-contain transition-transform duration-300 group-hover:scale-105"
-                      />
-                      <span className="absolute inset-0 flex items-end justify-center pb-1.5 opacity-0 hover:opacity-100 transition-opacity duration-200">
-                        <span className="rounded-full bg-black/60 px-2 py-0.5 text-[9px] font-bold text-white backdrop-blur-sm">View</span>
-                      </span>
-                    </Link>
-
-                    {/* Middle: Details */}
-                    <div>
-                      <div className="flex flex-col justify-between gap-3 sm:flex-row">
-                        <div>
-                          <Link
-                            to={`/product/${item.productId}`}
-                            className="group/name inline-block text-lg font-bold tracking-tight text-slate-900 dark:text-white leading-tight hover:text-orange-500 dark:hover:text-orange-400 transition-colors duration-150"
-                          >
-                            {item.name}
-                            <span className="block h-0.5 max-w-0 bg-orange-500 transition-all duration-300 group-hover/name:max-w-full rounded-full" />
-                          </Link>
-                          <div className="mt-1.5 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                            <span className="font-semibold px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-md border border-slate-200/50 dark:border-slate-700/50">Qty {item.qty}</span>
-                            <span>·</span>
-                            <span className="font-semibold px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-md border border-slate-200/50 dark:border-slate-700/50">Size {item.size}</span>
-                          </div>
-                        </div>
-                        <p className="text-xl font-extrabold text-slate-900 dark:text-white sm:text-right">
-                          ₹{(item.price * item.qty).toLocaleString("en-IN")}
-                        </p>
-                      </div>
-
-                      {/* Info Badges */}
-                      <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold">
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 px-2.5 py-1">
-                          <CalendarDays className="h-3.5 w-3.5 text-indigo-500" />
-                          <span>{new Date(item.date).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</span>
-                        </span>
-
-                        {/* Order Status Badge */}
-                        {(() => {
-                          let bg = "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20";
-                          let icon = <Clock className="h-3.5 w-3.5" />;
-                          if (item.status === "Delivered") {
-                            bg = "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20";
-                            icon = <CheckCircle2 className="h-3.5 w-3.5" />;
-                          } else if (item.status === "Cancelled") {
-                            bg = "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20";
-                            icon = <XCircle className="h-3.5 w-3.5" />;
-                          }
-                          return (
-                            <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 ${bg}`}>
-                              {icon}
-                              <span>{item.status}</span>
-                            </span>
-                          );
-                        })()}
-
-                        {/* Payment Status Badge */}
-                        {item.payment ? (
-                          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 px-2.5 py-1">
-                            <CheckCircle2 className="h-3.5 w-3.5" />
-                            <span>Paid</span>
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 px-2.5 py-1">
-                            <Clock className="h-3.5 w-3.5 text-slate-500" />
-                            <span>Payment Pending</span>
-                          </span>
-                        )}
-
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 px-2.5 py-1">
-                          <CreditCard className="h-3.5 w-3.5 text-slate-500" />
-                          <span>{item.paymentMethod.toUpperCase()}</span>
-                        </span>
-
-                        {returnRequest && (
-                          <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-550/20 px-2.5 py-1">
-                            <RotateCcw className="h-3.5 w-3.5 animate-spin" />
-                            <span>Return {returnRequest.status}</span>
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Return Details Expansion */}
-                      {returnRequest && (
-                        <div className="mt-4 rounded-xl bg-orange-500/5 border border-orange-500/10 dark:border-orange-500/20 p-4 text-xs space-y-1.5">
-                          <div className="flex items-center gap-1.5 font-bold text-orange-700 dark:text-orange-400">
-                            <AlertCircle className="h-3.5 w-3.5" />
-                            <span>RETURN DETAIL ({returnRequest.status.toUpperCase()})</span>
-                          </div>
-                          <p className="text-slate-600 dark:text-slate-400">
-                            <strong className="text-slate-700 dark:text-slate-300">Reason:</strong> {returnRequest.reason}
-                          </p>
-                          {returnRequest.feedback && (
-                            <p className="text-slate-600 dark:text-slate-400">
-                              <strong className="text-slate-700 dark:text-slate-300">Your note:</strong> {returnRequest.feedback}
-                            </p>
-                          )}
-                          {returnRequest.adminNote && (
-                            <div className="mt-2.5 pt-2 border-t border-orange-500/10 dark:border-orange-500/20 text-slate-700 dark:text-slate-300">
-                              <strong className="text-orange-700 dark:text-orange-400 font-bold">Admin response:</strong> {returnRequest.adminNote}
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      <p className="mt-4 text-[10px] font-medium text-slate-400 dark:text-slate-500">
-                        Order ID: <span className="font-mono">{item.orderId}</span>
-                      </p>
-
-                      {/* Delivery Verification Code (only shown for active orders) */}
-                      {item.verificationCode && item.status !== "Delivered" && item.status !== "Cancelled" && (
-                        <div className="mt-3 rounded-xl border border-amber-200/65 dark:border-amber-900/40 bg-amber-50/40 dark:bg-amber-950/15 p-3 text-left space-y-2">
-                          <div className="flex items-center gap-2 text-amber-800 dark:text-amber-405 font-bold">
-                            <KeyRound size={13} className="shrink-0" />
-                            <span className="text-[10px] font-black uppercase tracking-wider">User Secret Key for Delivery</span>
-                          </div>
-                          <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
-                            Provide this secret key to the delivery agent to verify and complete your delivery. Do not share it until you receive the package.
-                          </p>
-                          <div className="flex items-center justify-between bg-white dark:bg-slate-900/50 rounded-xl border border-amber-200/50 dark:border-amber-800/30 px-3 py-2 shadow-inner">
-                            <span className="font-mono text-base font-black tracking-[0.25em] text-amber-700 dark:text-amber-305 select-all">
-                              {item.verificationCode}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                navigator.clipboard.writeText(item.verificationCode);
-                                setCopiedCodeId(item.orderId);
-                                toast.success("Secret key copied!");
-                                setTimeout(() => setCopiedCodeId(null), 2000);
-                              }}
-                              className="text-amber-500 hover:text-amber-700 dark:hover:text-amber-300 transition cursor-pointer flex items-center gap-1 text-[10px] font-bold"
-                              title="Copy Secret Key"
-                            >
-                              {copiedCodeId === item.orderId ? (
-                                <Check size={12} className="text-emerald-500" />
-                              ) : (
-                                <Copy size={12} />
-                              )}
-                              <span>{copiedCodeId === item.orderId ? "Copied" : "Copy"}</span>
-                            </button>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Delivery Deadline Badge */}
-                      {(() => {
-                        const dl = getDeadlineInfo(item.date, item.status);
-                        if (!dl) return null;
-                        const ds = deadlineStyles[dl.level];
-                        return (
-                          <div className={`mt-2 flex items-center gap-2 rounded-xl border px-3 py-2 ${ds.badge}`}>
-                            {dl.level === "overdue" || dl.level === "critical"
-                              ? <AlertTriangle size={13} className={`shrink-0 ${ds.icon}`} />
-                              : <AlarmClock size={13} className={`shrink-0 ${ds.icon}`} />
-                            }
-                            <div>
-                              <p className="text-[9px] font-black uppercase tracking-widest">Delivery Deadline</p>
-                              <p className="font-extrabold text-xs leading-tight">{dl.label}</p>
-                              <p className="text-[10px] font-semibold opacity-70">{dl.sublabel}</p>
-                            </div>
-                          </div>
-                        );
-                      })()}
-                    </div>
-
-                    {/* Right: Actions Column */}
-                    <div className="flex flex-col gap-2.5 lg:w-full">
-                      {returnRequest ? (
-                        <button
-                          onClick={() =>
-                            navigate(`/track/${item.orderId}`, { state: { item, returnRequest, initialTab: "return" } })
-                          }
-                          className="inline-flex items-center justify-center gap-2 rounded-xl bg-orange-500 hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-550 px-5 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-md shadow-orange-500/10 hover:shadow-lg transition-all active:scale-95 cursor-pointer"
-                        >
-                          <RotateCcw className="h-4 w-4" />
-                          <span>{t("track_return")}</span>
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() =>
-                            navigate(`/track/${item.orderId}`, { state: { item } })
-                          }
-                          className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 hover:bg-slate-850 dark:bg-orange-600 dark:hover:bg-orange-550 px-5 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer"
-                        >
-                          <Truck className="h-4 w-4" />
-                          <span>{t("track_order")}</span>
-                        </button>
-                      )}
-
-                      {canRequestReturn && (
-                        <button
-                          onClick={() => openReturnModal(item)}
-                          className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 px-5 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-350 dark:hover:border-slate-700 transition-all active:scale-95 cursor-pointer"
-                        >
-                          <RotateCcw className="h-4 w-4 text-orange-500" />
-                          <span>{t("request_return")}</span>
-                        </button>
-                      )}
-
-                      {/* Cancel Order Button */}
-                      {item.status !== "Delivered" && item.status !== "Cancelled" && (
-                        <button
-                          onClick={() => handleCancelOrder(item.orderId)}
-                          className="inline-flex items-center justify-center gap-2 rounded-xl border border-rose-250 dark:border-rose-900/50 bg-rose-50/30 dark:bg-rose-950/10 px-5 py-3 text-xs font-bold uppercase tracking-wider text-rose-650 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/20 hover:border-rose-350 dark:hover:border-rose-700 transition-all active:scale-95 cursor-pointer"
-                        >
-                          <XCircle className="h-4 w-4 text-rose-500" />
-                          <span>Cancel Order</span>
-                        </button>
-                      )}
-
-                      <button
-                        onClick={() => navigate("/help")}
-                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-indigo-200 dark:border-indigo-900/50 bg-indigo-50/20 dark:bg-indigo-950/10 px-5 py-3 text-xs font-bold uppercase tracking-wider text-indigo-650 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-all active:scale-95 cursor-pointer"
+                    {/* Left Column: Premium Product Image Gallery */}
+                    <div className="flex flex-col gap-3 shrink-0">
+                      <Link
+                        to={`/product/${item.productId}`}
+                        className="group/img relative h-48 w-full rounded-2xl border border-slate-200/60 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 overflow-hidden flex items-center justify-center p-3 transition-all duration-300 hover:border-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/5 cursor-pointer"
                       >
-                        <Headset className="h-4 w-4" />
-                        <span>{t("get_support")}</span>
-                      </button>
+                        <img
+                          src={item.image?.startsWith("http") ? item.image : `${backendUrl}/${item.image}`}
+                          alt={item.name}
+                          className="h-full w-full rounded-xl object-contain transition-all duration-500 ease-out group-hover/img:scale-110"
+                        />
+                        <div className="absolute inset-0 bg-black/5 dark:bg-white/5 opacity-0 group-hover/img:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-xs">
+                          <span className="rounded-full bg-slate-900/90 text-white font-extrabold text-[10px] uppercase tracking-wider px-3.5 py-1.5 shadow-md">
+                            View Details
+                          </span>
+                        </div>
+                      </Link>
+                      
+                      {/* Product Thumbnail Gallery Simulation */}
+                      <div className="flex gap-2">
+                        <div className="h-10 w-10 rounded-lg border border-indigo-500/25 bg-slate-100 dark:bg-slate-950 p-1 flex items-center justify-center shrink-0 cursor-pointer">
+                          <img
+                            src={item.image?.startsWith("http") ? item.image : `${backendUrl}/${item.image}`}
+                            alt="thumbnail"
+                            className="h-full w-full object-contain rounded"
+                          />
+                        </div>
+                        <div className="h-10 w-10 rounded-lg border border-slate-200/60 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 flex items-center justify-center shrink-0 hover:border-slate-300 cursor-pointer transition">
+                          <ShoppingBag size={14} className="text-slate-400" />
+                        </div>
+                      </div>
                     </div>
 
+                    {/* Center Column: Details, Attribute Chips, Visual Timeline, Metadata */}
+                    <div className="space-y-6 flex-1 min-w-0">
+                      <div>
+                        <Link
+                          to={`/product/${item.productId}`}
+                          className="group/title inline-block text-xl font-black tracking-tight text-slate-900 dark:text-white leading-tight hover:text-indigo-650 dark:hover:text-indigo-400 transition-colors duration-150 line-clamp-2"
+                        >
+                          {item.name}
+                        </Link>
+                                              {/* Dynamic Attribute Chips */}
+                        <div className="mt-3 flex flex-wrap gap-1.5">
+                          {getAttributes(item.name, item.size, item.qty).map((chip, idx) => (
+                            <span
+                              key={idx}
+                              className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100/80 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 border border-slate-200/50 dark:border-slate-700/50 px-2.5 py-1 text-xs font-bold transition duration-200 hover:border-slate-350 dark:hover:border-slate-600"
+                            >
+                              <span className="text-slate-400 dark:text-slate-500 font-semibold">{chip.label}:</span>
+                              <span>{chip.value}</span>
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Visual Progress Order Status Timeline */}
+                      <div className="bg-slate-50/50 dark:bg-slate-900/10 border border-slate-200/50 dark:border-slate-800/50 rounded-2xl p-4 space-y-4">
+                        {item.status === "Cancelled" ? (
+                          <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400 text-xs font-bold">
+                            <XCircle className="h-4 w-4 shrink-0" />
+                            <span>This order has been cancelled</span>
+                          </div>
+                        ) : (
+                          <div>
+                            <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-wider text-slate-400 mb-3">
+                              <span>Delivery Progress</span>
+                              <span className="text-indigo-600 dark:text-indigo-400">{item.status}</span>
+                            </div>
+                            
+                            {/* Line progress & nodes */}
+                            <div className="relative flex items-center justify-between mt-2 px-1">
+                              {/* Background Line */}
+                              <div className="absolute left-0 right-0 h-1 bg-slate-200 dark:bg-slate-800 rounded-full -translate-y-1/2 top-1/2 z-0" />
+                              
+                              {/* Foreground Active Progress Line */}
+                              <div
+                                className="absolute left-0 h-1 bg-indigo-600 dark:bg-indigo-500 rounded-full -translate-y-1/2 top-1/2 z-0 transition-all duration-1000 ease-out"
+                                style={{
+                                  width: `${(getStatusStep(item.status) / 4) * 100}%`,
+                                }}
+                              />
+                              
+                              {["Placed", "Confirmed", "Shipped", "Out for Delivery", "Delivered"].map((step, idx) => {
+                                const activeStep = getStatusStep(item.status);
+                                const isCompleted = idx <= activeStep;
+                                const isCurrent = idx === activeStep;
+                                
+                                return (
+                                  <div key={idx} className="flex flex-col items-center relative z-10">
+                                    <div
+                                      className={`h-5 w-5 rounded-full flex items-center justify-center border-2 transition-all duration-500 ${
+                                        isCompleted
+                                          ? "bg-indigo-600 dark:bg-indigo-500 border-indigo-600 dark:border-indigo-500 text-white scale-110 shadow-md shadow-indigo-600/20"
+                                          : "bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-400"
+                                      }`}
+                                    >
+                                      {isCompleted ? (
+                                        <Check className="h-3 w-3 stroke-[3px]" />
+                                      ) : (
+                                        <div className="h-1.5 w-1.5 rounded-full bg-slate-300 dark:bg-slate-700" />
+                                      )}
+                                    </div>
+                                    <span
+                                      className={`mt-2 text-[9px] font-bold tracking-tight absolute -bottom-5 whitespace-nowrap transition-colors duration-300 ${
+                                        isCurrent
+                                          ? "text-indigo-600 dark:text-indigo-400 font-extrabold"
+                                          : isCompleted
+                                          ? "text-slate-800 dark:text-slate-200"
+                                          : "text-slate-400"
+                                      }`}
+                                    >
+                                      {step}
+                                    </span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            <div className="h-4" /> {/* spacers for bottom absolute labels */}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Icon-based Order Metadata Rows */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2.5 pt-2 text-xs font-semibold text-slate-600 dark:text-slate-400">
+                        <div className="flex items-center gap-2">
+                          <Package size={14} className="text-slate-400 shrink-0" />
+                          <span>Order ID: <span className="font-mono text-[11px] text-slate-800 dark:text-slate-200 select-all">{item.orderId}</span></span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <CalendarDays size={14} className="text-slate-400 shrink-0" />
+                          <span>Order Date: <span className="text-slate-800 dark:text-slate-100">{new Date(item.date).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })}</span></span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <CreditCard size={14} className="text-slate-400 shrink-0" />
+                          <span>Payment Mode: <span className="text-slate-800 dark:text-slate-100 uppercase">{item.paymentMethod}</span></span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Truck size={14} className="text-slate-400 shrink-0" />
+                          <span>Delivery: <span className="text-slate-800 dark:text-slate-100">{item.status === "Delivered" ? "Completed" : "Estimated within 7 Days"}</span></span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right Column: Price details, Invoice widget, Action buttons */}
+                    <div className="space-y-5 lg:w-full border-t lg:border-t-0 lg:border-l border-slate-100 dark:border-slate-800/80 pt-6 lg:pt-0 lg:pl-6 shrink-0">
+                      
+                      {/* Price Section */}
+                      <div className="space-y-1">
+                        <div className="text-[10px] font-black uppercase tracking-wider text-slate-450">Transaction Price</div>
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-2xl font-black text-slate-900 dark:text-white">
+                            ₹{(item.price * item.qty).toLocaleString("en-IN")}
+                          </span>
+                          <span className="text-xs text-slate-400 line-through font-bold">
+                            MRP ₹{Math.round(item.price * 1.15 * item.qty).toLocaleString("en-IN")}
+                          </span>
+                        </div>
+                        <div className="inline-flex items-center gap-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-extrabold px-2 py-0.5 rounded-md">
+                          <Tag size={10} />
+                          <span>Saved ₹{Math.round(item.price * 0.15 * item.qty).toLocaleString("en-IN")}</span>
+                        </div>
+                      </div>
+
+                      {/* Invoice Detailed Section */}
+                      {(() => {
+                        const inv = invoices.find(
+                           (i) => String(i.orderId?._id || i.orderId) === String(item.orderId)
+                        );
+                        if (inv) {
+                          const isCreditNote = inv.orderStatus === "Refunded";
+                          return (
+                            <div className="bg-slate-50 dark:bg-slate-900/40 border border-slate-200/60 dark:border-slate-800 rounded-xl p-3.5 space-y-2 text-xs">
+                              <div className="flex items-center gap-1.5 font-bold text-emerald-600 dark:text-emerald-400">
+                                <CheckCircle2 size={13} className="shrink-0 text-emerald-500" />
+                                <span className="text-[10px] font-black uppercase tracking-wider">
+                                  {isCreditNote ? "Credit Note Issued" : "Invoice Compiled"}
+                                </span>
+                              </div>
+                              <div className="space-y-1 text-slate-500 dark:text-slate-400 font-semibold text-[11px]">
+                                <p>Number: <span className="text-slate-800 dark:text-slate-200 font-mono font-bold">{inv.invoiceNumber}</span></p>
+                                <p>Generated: <span className="text-slate-800 dark:text-slate-200">{new Date(inv.invoiceDate).toLocaleDateString(undefined, { day: "2-digit", month: "short", year: "numeric" })}</span></p>
+                              </div>
+                              <a
+                                href={`${backendUrl}/api/invoice/download/${inv._id}?token=${token}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:border-slate-350 dark:hover:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 transition duration-150 active:scale-95 cursor-pointer"
+                              >
+                                <FileText size={11} className="text-indigo-500" />
+                                <span>{isCreditNote ? "Download Credit Note" : "Download PDF"}</span>
+                              </a>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
+
+                      {/* Action Buttons */}
+                      <div className="flex flex-col gap-2 w-full pt-1">
+                        {returnRequest ? (
+                          <button
+                            onClick={() =>
+                              navigate(`/track/${item.orderId}`, { state: { item, returnRequest, initialTab: "return" } })
+                            }
+                            className="inline-flex items-center justify-center gap-2 rounded-xl bg-orange-500 hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-550 px-5 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-md shadow-orange-500/10 hover:shadow-lg transition-all active:scale-95 cursor-pointer"
+                          >
+                            <RotateCcw className="h-4 w-4" />
+                            <span>{t("track_return")}</span>
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() =>
+                              navigate(`/track/${item.orderId}`, { state: { item } })
+                            }
+                            className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-[#FF5100] dark:hover:bg-orange-600 px-5 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer"
+                          >
+                            <Truck className="h-4 w-4" />
+                            <span>{t("track_order")}</span>
+                          </button>
+                        )}
+
+                        {canRequestReturn && (
+                          <button
+                            onClick={() => openReturnModal(item)}
+                            className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 px-5 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all active:scale-95 cursor-pointer animate-pulse"
+                          >
+                            <RotateCcw className="h-4 w-4 text-orange-500" />
+                            <span>{t("request_return")}</span>
+                          </button>
+                        )}
+
+                        {/* Cancel Order Button */}
+                        {item.status !== "Delivered" && item.status !== "Cancelled" && (
+                          <button
+                            onClick={() => handleCancelOrder(item.orderId)}
+                            className="inline-flex items-center justify-center gap-2 rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50/30 dark:bg-rose-950/10 px-5 py-3 text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/20 hover:border-rose-300 dark:hover:border-rose-700 transition-all active:scale-95 cursor-pointer"
+                          >
+                            <XCircle className="h-4 w-4 text-rose-550" />
+                            <span>Cancel Order</span>
+                          </button>
+                        )}
+
+                        <button
+                          onClick={() => navigate("/help")}
+                          className="inline-flex items-center justify-center gap-2 rounded-xl border border-indigo-200 dark:border-indigo-900/50 bg-indigo-50/20 dark:bg-indigo-950/10 px-5 py-3 text-xs font-bold uppercase tracking-wider text-indigo-650 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-all active:scale-95 cursor-pointer"
+                        >
+                          <Headset className="h-4 w-4 text-indigo-500" />
+                          <span>{t("get_support")}</span>
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 );
               })()}

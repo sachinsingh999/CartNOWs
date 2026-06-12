@@ -17,7 +17,13 @@ import {
   adminReplyComplaint,
   getDriverStats,
   getAssignedReturns,
-  updateReturnTaskStatus
+  updateReturnTaskStatus,
+  updateProfile,
+  updateAvailability,
+  updateDeliveryZones,
+  acceptDelivery,
+  rejectDelivery,
+  updateDeliveryCoordinates
 } from "../controllers/deliverymanController.js";
 import adminAuth from "../middleware/adminAuth.js";
 import deliverymanAuth from "../middleware/deliverymanAuth.js";
@@ -45,6 +51,12 @@ deliverymanRouter.post("/toggle-duty", deliverymanAuth, toggleDutyStatus);
 deliverymanRouter.post("/deactivate", deliverymanAuth, deactivateAccount);
 deliverymanRouter.post("/complaint", deliverymanAuth, createComplaint);
 deliverymanRouter.get("/complaints", deliverymanAuth, getComplaints);
+deliverymanRouter.put("/profile/update", deliverymanAuth, updateProfile);
+deliverymanRouter.post("/update-availability", deliverymanAuth, updateAvailability);
+deliverymanRouter.post("/update-zones", deliverymanAuth, updateDeliveryZones);
+deliverymanRouter.post("/update-coordinates", deliverymanAuth, updateDeliveryCoordinates);
+deliverymanRouter.post("/accept-delivery", deliverymanAuth, acceptDelivery);
+deliverymanRouter.post("/reject-delivery", deliverymanAuth, rejectDelivery);
 
 // Return Tasks Endpoints
 deliverymanRouter.get("/returns", deliverymanAuth, getAssignedReturns);

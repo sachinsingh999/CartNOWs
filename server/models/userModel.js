@@ -1,14 +1,31 @@
 import mongoose from "mongoose";
+import { validateEmail, validatePhone } from "../utils/validation.js";
 
 const addressSchema = new mongoose.Schema({
   firstName: { type: String, required: true },
   lastName: { type: String, default: "" },
-  email: { type: String, required: true },
-  phone: { type: String, required: true },
+  email: {
+    type: String,
+    required: true,
+    validate: {
+      validator: (v) => validateEmail(v).isValid,
+      message: "Invalid email address"
+    }
+  },
+  phone: {
+    type: String,
+    required: true,
+    validate: {
+      validator: (v) => validatePhone(v).isValid,
+      message: "Phone number must be exactly 10 digits"
+    }
+  },
   street: { type: String, required: true },
   city: { type: String, required: true },
   state: { type: String, required: true },
   country: { type: String, required: true },
+  lat: { type: Number, default: 0 },
+  lng: { type: Number, default: 0 },
 });
 
 const userSchema = new mongoose.Schema({
@@ -17,7 +34,11 @@ const userSchema = new mongoose.Schema({
   email: { 
     type: String, 
     required: true, 
-    unique: true 
+    unique: true,
+    validate: {
+      validator: (v) => validateEmail(v).isValid,
+      message: "Invalid email format"
+    }
   },
 
   password: { 
@@ -42,6 +63,22 @@ const userSchema = new mongoose.Schema({
 
   addresses: {
     type: [addressSchema],
+    default: []
+  },
+
+  isBlocked: {
+    type: Boolean,
+    default: false
+  },
+
+  activityLogs: {
+    type: [
+      {
+        action: String,
+        timestamp: { type: Date, default: Date.now },
+        details: String
+      }
+    ],
     default: []
   }
 

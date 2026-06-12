@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@media (hover: hover) {
+  /* Prevent layout/visual hover shifts globally by disabling hover translations, scales, and rotations */
+  [class*="hover:-translate"]:hover,
+  [class*="hover:translate"]:hover,
+  [class*="hover:scale"]:hover,
+  [class*="hover:rotate"]:hover,
+  [class*="group"]:hover [class*="group-hover:-translate"],
+  [class*="group"]:hover [class*="group-hover:translate"],
+  [class*="group"]:hover [class*="group-hover:scale"],
+  [class*="group"]:hover [class*="group-hover:rotate"] {
+    transform: none !important;
+    translate: none !important;
+    scale: none !important;
+    rotate: none !important;
+  }
+}
+

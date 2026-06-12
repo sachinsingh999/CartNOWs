@@ -12,11 +12,12 @@ import {
   RotateCcw,
   ShieldCheck, 
   Truck, 
-  Warehouse 
+  Warehouse,
+  XCircle
 } from "lucide-react";
 import { toast } from "react-toastify";
 
-const steps = [
+const defaultSteps = [
   {
     title: "Order Placed",
     description: "Your order has been registered and is awaiting warehouse processing.",
@@ -50,6 +51,23 @@ const Track = () => {
   const navigate = useNavigate();
   const item = location.state?.item;
 
+  const isCancelled = item?.status?.toLowerCase() === "cancelled";
+
+  const steps = isCancelled 
+    ? [
+        {
+          title: "Order Placed",
+          description: "Your order was successfully registered.",
+          icon: CheckCircle2,
+        },
+        {
+          title: "Order Cancelled",
+          description: "This order has been cancelled. If any payment was made, your refund will be initiated.",
+          icon: XCircle,
+        }
+      ]
+    : defaultSteps;
+
   const statusMap = {
     "order placed": 0,
     packed: 1,
@@ -58,7 +76,7 @@ const Track = () => {
     delivered: 4,
   };
   
-  const currentStep = statusMap[item?.status?.toLowerCase()] ?? 0;
+  const currentStep = isCancelled ? 1 : (statusMap[item?.status?.toLowerCase()] ?? 0);
 
   const returnRequest = location.state?.returnRequest;
   const initialTab = location.state?.initialTab || "delivery";
@@ -200,9 +218,7 @@ const Track = () => {
                   Return Tracking
                 </button>
               </div>
-            )}
-
-            {/* Vertical timeline steps */}
+            )}            {/* Vertical timeline steps */}
             <div className="relative space-y-10">
               
               {/* Timeline Connector Line */}
@@ -211,6 +227,8 @@ const Track = () => {
                   className={`w-full transition-all duration-700 ease-out ${
                     activeTab === "return" && returnRequest?.status === "Rejected"
                       ? "bg-red-500"
+                      : isCancelled
+                      ? "bg-rose-500"
                       : "bg-gradient-to-b from-orange-500 to-amber-500"
                   }`} 
                   style={{
@@ -233,7 +251,9 @@ const Track = () => {
                   nodeStyleClass = "bg-slate-900 dark:bg-slate-100 border-slate-900 dark:border-slate-100 text-white dark:text-slate-900";
                 } else if (isActive) {
                   if (isRejected && idx === 1) {
-                    nodeStyleClass = "bg-red-50 dark:bg-red-950/20 border-red-500 text-red-600 dark:text-red-400 scale-110 shadow-sm shadow-red-100 dark:shadow-red-950/30";
+                    nodeStyleClass = "bg-red-50 dark:bg-red-955/20 border-red-500 text-red-600 dark:text-red-400 scale-110 shadow-sm shadow-red-105 dark:shadow-red-955/30";
+                  } else if (isCancelled && idx === 1) {
+                    nodeStyleClass = "bg-rose-550 border-rose-550 text-white scale-110 shadow-sm shadow-rose-500/30";
                   } else {
                     nodeStyleClass = "bg-white dark:bg-slate-900 border-orange-500 text-orange-600 dark:text-orange-400 scale-110";
                   }
@@ -246,7 +266,7 @@ const Track = () => {
                     <div className="relative flex h-10 w-10 shrink-0 items-center justify-center">
                       {isActive && (
                         <span className={`absolute h-10 w-10 rounded-full animate-ping pointer-events-none ${
-                          isRejected && idx === 1 ? "bg-red-400/20" : "bg-orange-400/20"
+                          isRejected && idx === 1 ? "bg-red-400/20" : isCancelled && idx === 1 ? "bg-rose-400/20" : "bg-orange-400/20"
                         }`} />
                       )}
                       <div
@@ -261,18 +281,20 @@ const Track = () => {
                       <div className="flex items-center gap-2">
                         <h3 className={`text-sm font-bold ${
                           isCompleted || isActive 
-                            ? (isRejected && idx === 1 ? "text-red-700 dark:text-red-405" : "text-slate-900 dark:text-slate-50")
-                            : "text-slate-400 dark:text-slate-500"
+                            ? (isRejected && idx === 1 ? "text-red-700 dark:text-red-405" : isCancelled && idx === 1 ? "text-rose-600 dark:text-rose-400" : "text-slate-900 dark:text-slate-50")
+                            : "text-slate-400 dark:text-slate-505"
                         }`}>
                           {step.title}
                         </h3>
                         {isActive && (
                           <span className={`rounded-md px-2 py-0.5 text-[9px] font-black uppercase tracking-wider ${
                             isRejected && idx === 1
-                              ? "bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/50 text-red-650 dark:text-red-400"
+                              ? "bg-red-50 dark:bg-red-955/40 border border-red-100 dark:border-red-900/50 text-red-655 dark:text-red-400"
+                              : isCancelled && idx === 1
+                              ? "bg-rose-50 dark:bg-rose-955/40 border border-rose-100 dark:border-rose-900/50 text-rose-600 dark:text-rose-405"
                               : "bg-orange-50 dark:bg-orange-950/40 border border-orange-100 dark:border-orange-900/50 text-orange-600 dark:text-orange-400"
                           }`}>
-                            {isRejected && idx === 1 ? "Rejected" : "Active"}
+                            {isRejected && idx === 1 ? "Rejected" : isCancelled && idx === 1 ? "Cancelled" : "Active"}
                           </span>
                         )}
                       </div>
@@ -295,30 +317,34 @@ const Track = () => {
             {/* Dynamic Status Card */}
             <div className={`rounded-2xl border p-6 shadow-sm ${
               activeTab === "return" 
-                ? (returnRequest?.status === "Rejected" ? "border-red-200 dark:border-red-900/50 bg-red-50/30 dark:bg-red-950/10" : "border-orange-200 dark:border-orange-900/50 bg-orange-50/30 dark:bg-orange-950/10")
-                : "border-orange-200 dark:border-orange-900/50 bg-orange-50/30 dark:bg-orange-950/10"
+                ? (returnRequest?.status === "Rejected" ? "border-red-200 dark:border-red-900/50 bg-red-50/30 dark:bg-red-955/10" : "border-orange-200 dark:border-orange-900/50 bg-orange-50/30 dark:bg-orange-950/10")
+                : (isCancelled ? "border-rose-200 dark:border-rose-900/50 bg-rose-55/30 dark:bg-rose-950/10" : "border-orange-200 dark:border-orange-900/50 bg-orange-50/30 dark:bg-orange-950/10")
             }`}>
               <div className="flex items-center gap-3">
                 <div className={`flex h-10 w-10 items-center justify-center rounded-xl shadow-sm ${
                   activeTab === "return"
                     ? (returnRequest?.status === "Rejected" ? "bg-red-100 dark:bg-red-955/30 text-red-600 dark:text-red-400" : "bg-orange-100 dark:bg-orange-955/30 text-orange-600 dark:text-orange-400")
-                    : "bg-orange-100 dark:bg-orange-955/30 text-orange-600 dark:text-orange-400"
+                    : (isCancelled ? "bg-rose-100 dark:bg-rose-955/30 text-rose-600 dark:text-rose-450" : "bg-orange-100 dark:bg-orange-955/30 text-orange-600 dark:text-orange-400")
                 }`}>
                   {activeTab === "return" ? (
                     <RotateCcw size={20} />
+                  ) : isCancelled ? (
+                    <XCircle size={20} />
                   ) : (
                     <Calendar size={20} />
                   )}
                 </div>
                 <div>
-                  <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-505 dark:text-slate-400 font-semibold">
-                    {activeTab === "return" ? "Return Request Status" : "Estimated Delivery"}
+                  <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500 dark:text-slate-400 font-semibold">
+                    {activeTab === "return" ? "Return Request Status" : isCancelled ? "Order Status" : "Estimated Delivery"}
                   </p>
                   <p className={`text-base font-extrabold mt-0.5 ${
-                    activeTab === "return" && returnRequest?.status === "Rejected" ? "text-red-700 dark:text-red-400" : "text-slate-900 dark:text-slate-50"
+                    activeTab === "return" && returnRequest?.status === "Rejected" ? "text-red-700 dark:text-red-450" : isCancelled ? "text-rose-600 dark:text-rose-400" : "text-slate-900 dark:text-slate-50"
                   }`}>
                     {activeTab === "return" 
                       ? (returnRequest?.status || "Requested")
+                      : isCancelled
+                      ? "Cancelled"
                       : (currentStep === 4 ? "Delivered" : getEstimatedDate())}
                   </p>
                 </div>

@@ -1,5 +1,8 @@
 import productModel from "../models/productModel.js";
 import userModel from "../models/userModel.js";
+import categoryAttributeModel from "../models/categoryAttributeModel.js";
+import listingAttributeValueModel from "../models/listingAttributeValueModel.js";
+import listingMediaModel from "../models/listingMediaModel.js";
 import axios from "axios";
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
@@ -116,21 +119,222 @@ const addProducts = async (req, res) => {
 
 
 
-const listProducts=async (req,res)=>{
+const listProducts = async (req, res) => {
+  try {
+    const { category, subCategory, collection, brand, price, rating, q, attributes } = req.query;
 
-    try {
-        const products=await productModel.find({});
-        res.json({success:true,products})
-        
-    } catch (error) {
-        console.log(error);
+    // Build core query
+    const query = { isDeleted: { $ne: true } };
+    if (category && category !== "all") {
+      const categoryModel = (await import("../models/categoryModel.js")).default;
+      const adminCats = await categoryModel.find({ status: "active" });
+      const selectedCatDoc = adminCats.find(c => c.name.toLowerCase() === category.toLowerCase());
+      if (selectedCatDoc) {
+        const childrenDocs = adminCats.filter(c => c.parentCategoryId?.toString() === selectedCatDoc._id.toString());
+        let allowedCategories = [
+          selectedCatDoc.name,
+          ...(selectedCatDoc.subcategories || []),
+          ...childrenDocs.map(c => c.name)
+        ];
 
-        res.json({success:false,message:error.message})
-        
-        
+        // Category mapping expansions for database compatibility
+        const lowerAllowed = allowedCategories.map(c => c.toLowerCase());
+        if (lowerAllowed.includes("fashion")) {
+          allowedCategories.push(
+            "Fashion", "Men", "Women", "Kids", "Accessories", "Footwear",
+            "Fashion (Men)", "Fashion (Women)", "Fashion (Kids)",
+            "clothing", "apparel", "shirts", "trousers", "t-shirts", "jackets", "sportswear", "jeans"
+          );
+        }
+        if (lowerAllowed.includes("electrinocs") || lowerAllowed.includes("electronics")) {
+          allowedCategories.push("Electronics", "Electrinocs");
+        }
+
+        // Case-insensitive query match
+        query.category = { $in: allowedCategories.map(c => new RegExp(`^${c}$`, "i")) };
+      } else {
+        query.category = new RegExp(`^${category}$`, "i");
+      }
+    }
+    if (subCategory) query.subCategory = subCategory;
+    if (collection && collection !== "all") query.collection = collection;
+    if (brand) query.brand = brand;
+    if (price) {
+      const maxPrice = Number(price);
+      if (!isNaN(maxPrice)) {
+        query.price = { $lte: maxPrice };
+      }
     }
 
+    if (q) {
+      const searchRegex = new RegExp(q, "i");
+      query.$or = [
+        { name: searchRegex },
+        { description: searchRegex },
+        { brand: searchRegex },
+        { category: searchRegex },
+        { subCategory: searchRegex },
+        { tags: { $in: [searchRegex] } }
+      ];
+    }
+
+    // Dynamic Attribute Filters
+    let matchingProductIds = null;
+    let parsedAttrs = {};
+    if (attributes) {
+      try {
+        parsedAttrs = typeof attributes === "string" ? JSON.parse(attributes) : attributes;
+      } catch (e) {}
+    }
+
+    const attrFilterKeys = Object.keys(parsedAttrs).filter(k => parsedAttrs[k]);
+    if (attrFilterKeys.length > 0) {
+      // Find attributes matching keys
+      const attrDefs = await categoryAttributeModel.find({ fieldName: { $in: attrFilterKeys } });
+      const defMap = {};
+      attrDefs.forEach(d => { defMap[d.fieldName] = d._id; });
+
+      let candidateIds = null;
+
+      for (const key of attrFilterKeys) {
+        const attrId = defMap[key];
+        if (!attrId) continue;
+
+        const valFilter = parsedAttrs[key];
+        const valQuery = { attributeId: attrId };
+
+        if (Array.isArray(valFilter)) {
+          valQuery.value = { $in: valFilter };
+        } else if (typeof valFilter === "object") {
+          // Range validation support: min/max
+          const rangeCond = {};
+          if (valFilter.min !== undefined) rangeCond.$gte = Number(valFilter.min);
+          if (valFilter.max !== undefined) rangeCond.$lte = Number(valFilter.max);
+          valQuery.value = rangeCond;
+        } else {
+          valQuery.value = valFilter;
+        }
+
+        const attrVals = await listingAttributeValueModel.find(valQuery).select("listingId");
+        const listIds = attrVals.map(av => av.listingId.toString());
+
+        if (candidateIds === null) {
+          candidateIds = listIds;
+        } else {
+          candidateIds = candidateIds.filter(id => listIds.includes(id));
+        }
+
+        if (candidateIds.length === 0) break;
+      }
+
+      matchingProductIds = candidateIds || [];
+    }
+
+    if (matchingProductIds !== null) {
+      query._id = { $in: matchingProductIds.map(id => new mongoose.Types.ObjectId(id)) };
+    }
+
+    // Pagination parameters
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
+    // Sorting parameters
+    const sortBy = req.query.sortBy || "featured";
+
+    let pipeline = [
+      { $match: query }
+    ];
+
+    // Sorting
+    if (sortBy === "price-low") {
+      pipeline.push({ $sort: { price: 1 } });
+    } else if (sortBy === "price-high") {
+      pipeline.push({ $sort: { price: -1 } });
+    } else if (sortBy === "name") {
+      pipeline.push({ $sort: { name: 1 } });
+    } else if (sortBy === "rating") {
+      pipeline.push({
+        $addFields: {
+          avgRating: {
+            $cond: {
+              if: { $eq: [{ $size: { $ifNull: ["$reviews", []] } }, 0] },
+              then: 0,
+              else: { $avg: "$reviews.rating" }
+            }
+          }
+        }
+      });
+      pipeline.push({ $sort: { avgRating: -1, createdAt: -1 } });
+    } else {
+      pipeline.push({ $sort: { createdAt: -1 } });
+    }
+
+    // Get total count matching core filters
+    const total = await productModel.countDocuments(query);
+
+    // Apply pagination skip & limit
+    pipeline.push({ $skip: skip });
+    pipeline.push({ $limit: limit });
+
+    // Project only necessary fields to optimize network payload
+    pipeline.push({
+      $project: {
+        name: 1,
+        description: 1,
+        price: 1,
+        images: 1,
+        category: 1,
+        subCategory: 1,
+        collection: 1,
+        brand: 1,
+        stock: 1,
+        sizes: 1,
+        sku: 1,
+        status: 1,
+        reviews: {
+          $map: {
+            input: { $ifNull: ["$reviews", []] },
+            as: "r",
+            in: { rating: "$$r.rating" }
+          }
+        }
+      }
+    });
+
+    let products = await productModel.aggregate(pipeline);
+
+    // Populate each product with dynamic attributes and media
+    const enrichedProducts = [];
+    for (const p of products) {
+      // Fetch dynamic media
+      const media = await listingMediaModel.find({ listingId: p._id }).sort({ displayOrder: 1 });
+      p.media = media;
+      if (media.length > 0) {
+        // Sync cover image as first item in images list
+        const coverItem = media.find(m => m.isCover);
+        p.images = media.map(m => m.url);
+        if (coverItem) {
+          p.images = [coverItem.url, ...media.filter(m => !m.isCover).map(m => m.url)];
+        }
+      }
+
+      enrichedProducts.push(p);
+    }
+
+    res.json({
+      success: true,
+      products: enrichedProducts,
+      total,
+      page,
+      pages: Math.ceil(total / limit)
+    });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
   }
+};
+
 const removeProduct = async (req, res) => {
   try {
     const { id } = req.body;
@@ -146,6 +350,10 @@ const removeProduct = async (req, res) => {
         message: "Product not found",
       });
     }
+
+    // Clean up dynamic attribute values and media
+    await listingAttributeValueModel.deleteMany({ listingId: id });
+    await listingMediaModel.deleteMany({ listingId: id });
 
     // 2️⃣ remove product from ALL carts
     const users = await userModel.find({ cartData: { $exists: true } });
@@ -197,9 +405,36 @@ const singleProduct = async (req, res) => {
       });
     }
 
+    const pObj = product.toObject();
+
+    // Fetch dynamic attributes
+    const attrVals = await listingAttributeValueModel.find({ listingId: id }).populate({
+      path: "attributeId",
+      model: "categoryAttribute"
+    });
+    
+    const dynAttrs = {};
+    const specsList = [];
+    attrVals.forEach(av => {
+      if (av.attributeId) {
+        dynAttrs[av.attributeId.fieldName] = av.value;
+        specsList.push({
+          key: av.attributeId.label || av.attributeId.fieldName,
+          value: Array.isArray(av.value) ? av.value.join(", ") : String(av.value)
+        });
+      }
+    });
+    
+    pObj.dynamicAttributes = dynAttrs;
+    pObj.specifications = [...(pObj.specifications || []), ...specsList];
+
+    // Fetch dynamic media
+    const media = await listingMediaModel.find({ listingId: id }).sort({ displayOrder: 1 });
+    pObj.media = media;
+
     res.json({
       success: true,
-      product,
+      product: pObj,
     });
   } catch (error) {
     console.log(error);
@@ -386,4 +621,65 @@ const generateDescription = async (req, res) => {
   }
 };
 
-export { addProducts, listProducts, removeProduct, singleProduct, addProductReview, updateStock, generateDescription }
+const getCategoriesPublic = async (req, res) => {
+  try {
+    const categoryModel = (await import("../models/categoryModel.js")).default;
+    const categories = await categoryModel.find({ status: "active" }).sort({ displayOrder: 1, name: 1 });
+    res.json({ success: true, categories });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const getCategoryTemplatePublic = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const categoryModel = (await import("../models/categoryModel.js")).default;
+    const categoryAttributeModel = (await import("../models/categoryAttributeModel.js")).default;
+    const categoryAttributeOptionModel = (await import("../models/categoryAttributeOptionModel.js")).default;
+    const categorySettingsModel = (await import("../models/categorySettingsModel.js")).default;
+
+    // Check if id is an ObjectId or slug
+    let category;
+    if (id.match(/^[0-9a-fA-F]{24}$/)) {
+      category = await categoryModel.findById(id);
+    } else {
+      category = await categoryModel.findOne({ slug: id });
+    }
+
+    if (!category) {
+      return res.status(404).json({ success: false, message: "Category not found" });
+    }
+
+    const fields = await categoryAttributeModel.find({ categoryId: category._id }).sort({ displayOrder: 1 });
+    let settings = await categorySettingsModel.findOne({ categoryId: category._id });
+    if (!settings) {
+      settings = await categorySettingsModel.create({ categoryId: category._id });
+    }
+
+    const populatedFields = [];
+    for (const f of fields) {
+      const fieldObj = f.toObject();
+      const options = await categoryAttributeOptionModel.find({ attributeId: f._id }).sort({ displayOrder: 1 });
+      fieldObj.selectOptions = options.map(o => o.value);
+      populatedFields.push(fieldObj);
+    }
+
+    res.json({ success: true, fields: populatedFields, settings, category });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export {
+  addProducts,
+  listProducts,
+  removeProduct,
+  singleProduct,
+  addProductReview,
+  updateStock,
+  generateDescription,
+  getCategoriesPublic,
+  getCategoryTemplatePublic
+}
+

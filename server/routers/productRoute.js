@@ -1,5 +1,15 @@
 import express from 'express'
-import { listProducts ,addProducts,removeProduct,singleProduct,addProductReview,updateStock,generateDescription} from '../controllers/productController.js'
+import {
+  listProducts,
+  addProducts,
+  removeProduct,
+  singleProduct,
+  addProductReview,
+  updateStock,
+  generateDescription,
+  getCategoriesPublic,
+  getCategoryTemplatePublic
+} from '../controllers/productController.js'
 import upload from '../middleware/multer.js';
 import adminAuth from '../middleware/adminAuth.js';
 import authUser from '../middleware/auth.js';
@@ -23,5 +33,8 @@ productRouter.post('/generate-description',adminAuth,generateDescription)
 productRouter.get('/single/:id',singleProduct)
 productRouter.post('/review/:id',authUser,addProductReview)
 productRouter.get('/list',listProducts)
+productRouter.get('/categories', getCategoriesPublic)
+productRouter.get('/category/:id/template', getCategoryTemplatePublic)
 
 export default productRouter;
+

@@ -273,7 +273,7 @@ console.log(`📦 Total products prepared: ${products.length}`);
 // ── Connect and seed ──
 async function seed() {
   try {
-    await mongoose.connect(process.env.MONGODB_URI, { dbName: "cartNow" });
+    await mongoose.connect(process.env.MONGODB_URI, { dbName: "cartNOW" });
     console.log("✅ MongoDB connected");
 
     const existing = await Product.countDocuments();
