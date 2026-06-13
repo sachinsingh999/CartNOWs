@@ -179,7 +179,6 @@ const listProducts = async (req, res) => {
     }
 
     // Dynamic Attribute Filters
-    let matchingProductIds = null;
     let parsedAttrs = {};
     if (attributes) {
       try {
@@ -187,51 +186,49 @@ const listProducts = async (req, res) => {
       } catch (e) {}
     }
 
-    const attrFilterKeys = Object.keys(parsedAttrs).filter(k => parsedAttrs[k]);
+    const attrFilterKeys = Object.keys(parsedAttrs).filter(k => {
+      const val = parsedAttrs[k];
+      if (val === undefined || val === null || val === "") return false;
+      if (Array.isArray(val) && val.length === 0) return false;
+      return true;
+    });
+
     if (attrFilterKeys.length > 0) {
-      // Find attributes matching keys
-      const attrDefs = await categoryAttributeModel.find({ fieldName: { $in: attrFilterKeys } });
-      const defMap = {};
-      attrDefs.forEach(d => { defMap[d.fieldName] = d._id; });
-
-      let candidateIds = null;
-
-      for (const key of attrFilterKeys) {
-        const attrId = defMap[key];
-        if (!attrId) continue;
-
+      if (!query.$and) query.$and = [];
+      attrFilterKeys.forEach(key => {
         const valFilter = parsedAttrs[key];
-        const valQuery = { attributeId: attrId };
-
         if (Array.isArray(valFilter)) {
-          valQuery.value = { $in: valFilter };
+          query.$and.push({
+            specifications: {
+              $elemMatch: {
+                key: new RegExp(`^${key}$`, "i"),
+                value: { $in: valFilter }
+              }
+            }
+          });
         } else if (typeof valFilter === "object") {
-          // Range validation support: min/max
           const rangeCond = {};
           if (valFilter.min !== undefined) rangeCond.$gte = Number(valFilter.min);
           if (valFilter.max !== undefined) rangeCond.$lte = Number(valFilter.max);
-          valQuery.value = rangeCond;
+          query.$and.push({
+            specifications: {
+              $elemMatch: {
+                key: new RegExp(`^${key}$`, "i"),
+                value: rangeCond
+              }
+            }
+          });
         } else {
-          valQuery.value = valFilter;
+          query.$and.push({
+            specifications: {
+              $elemMatch: {
+                key: new RegExp(`^${key}$`, "i"),
+                value: valFilter
+              }
+            }
+          });
         }
-
-        const attrVals = await listingAttributeValueModel.find(valQuery).select("listingId");
-        const listIds = attrVals.map(av => av.listingId.toString());
-
-        if (candidateIds === null) {
-          candidateIds = listIds;
-        } else {
-          candidateIds = candidateIds.filter(id => listIds.includes(id));
-        }
-
-        if (candidateIds.length === 0) break;
-      }
-
-      matchingProductIds = candidateIds || [];
-    }
-
-    if (matchingProductIds !== null) {
-      query._id = { $in: matchingProductIds.map(id => new mongoose.Types.ObjectId(id)) };
+      });
     }
 
     // Pagination parameters
@@ -407,26 +404,14 @@ const singleProduct = async (req, res) => {
 
     const pObj = product.toObject();
 
-    // Fetch dynamic attributes
-    const attrVals = await listingAttributeValueModel.find({ listingId: id }).populate({
-      path: "attributeId",
-      model: "categoryAttribute"
-    });
-    
+    // Setup dynamicAttributes mapping from specifications for backward compatibility
     const dynAttrs = {};
-    const specsList = [];
-    attrVals.forEach(av => {
-      if (av.attributeId) {
-        dynAttrs[av.attributeId.fieldName] = av.value;
-        specsList.push({
-          key: av.attributeId.label || av.attributeId.fieldName,
-          value: Array.isArray(av.value) ? av.value.join(", ") : String(av.value)
-        });
-      }
-    });
-    
+    if (product.specifications) {
+      product.specifications.forEach(s => {
+        dynAttrs[s.key] = s.value;
+      });
+    }
     pObj.dynamicAttributes = dynAttrs;
-    pObj.specifications = [...(pObj.specifications || []), ...specsList];
 
     // Fetch dynamic media
     const media = await listingMediaModel.find({ listingId: id }).sort({ displayOrder: 1 });
@@ -635,8 +620,6 @@ const getCategoryTemplatePublic = async (req, res) => {
   try {
     const { id } = req.params;
     const categoryModel = (await import("../models/categoryModel.js")).default;
-    const categoryAttributeModel = (await import("../models/categoryAttributeModel.js")).default;
-    const categoryAttributeOptionModel = (await import("../models/categoryAttributeOptionModel.js")).default;
     const categorySettingsModel = (await import("../models/categorySettingsModel.js")).default;
 
     // Check if id is an ObjectId or slug
@@ -651,19 +634,56 @@ const getCategoryTemplatePublic = async (req, res) => {
       return res.status(404).json({ success: false, message: "Category not found" });
     }
 
-    const fields = await categoryAttributeModel.find({ categoryId: category._id }).sort({ displayOrder: 1 });
+    // Load category settings or create default
     let settings = await categorySettingsModel.findOne({ categoryId: category._id });
     if (!settings) {
-      settings = await categorySettingsModel.create({ categoryId: category._id });
+      settings = {
+        categoryId: category._id,
+        minImages: 3,
+        maxImages: 10,
+        requiresApproval: true,
+        inventoryTrackingEnabled: true,
+        skuRequired: false,
+        barcodeRequired: false
+      };
     }
 
+    // Find all products in this category
+    const products = await productModel.find({
+      category: new RegExp(`^${category.name}$`, "i"),
+      isDeleted: { $ne: true }
+    });
+
+    // Extract unique attribute keys and values
+    const attrMap = new Map(); // key -> Set of values
+    products.forEach(p => {
+      const specs = p.specifications || p.attributes || [];
+      specs.forEach(s => {
+        if (s.key && s.value) {
+          const trimmedKey = s.key.trim();
+          const trimmedVal = s.value.trim();
+          if (trimmedKey && trimmedVal) {
+            if (!attrMap.has(trimmedKey)) {
+              attrMap.set(trimmedKey, new Set());
+            }
+            attrMap.get(trimmedKey).add(trimmedVal);
+          }
+        }
+      });
+    });
+
     const populatedFields = [];
-    for (const f of fields) {
-      const fieldObj = f.toObject();
-      const options = await categoryAttributeOptionModel.find({ attributeId: f._id }).sort({ displayOrder: 1 });
-      fieldObj.selectOptions = options.map(o => o.value);
-      populatedFields.push(fieldObj);
-    }
+    attrMap.forEach((vals, key) => {
+      populatedFields.push({
+        _id: key,
+        fieldName: key,
+        label: key,
+        fieldType: "Dropdown",
+        isFilterable: true,
+        visibleOnSearch: true,
+        selectOptions: Array.from(vals)
+      });
+    });
 
     res.json({ success: true, fields: populatedFields, settings, category });
   } catch (error) {

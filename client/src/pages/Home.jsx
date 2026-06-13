@@ -94,9 +94,8 @@ const TrendCard = ({ product, rank, navigate }) => {
       onClick={() => navigate(`/product/${product._id}`)}
       className="flex items-center gap-4 p-3 rounded-2xl bg-white dark:bg-slate-900/40 border border-slate-150/80 dark:border-slate-800 hover:border-indigo-500/20 dark:hover:border-indigo-500/20 hover:shadow-md hover:translate-x-1 transition-all duration-300 cursor-pointer text-left"
     >
-      <span className={`text-xl font-black min-w-[28px] text-center ${
-        rank <= 3 ? "text-indigo-650 dark:text-indigo-400" : "text-slate-300 dark:text-slate-700"
-      }`}>
+      <span className={`text-xl font-black min-w-[28px] text-center ${rank <= 3 ? "text-indigo-650 dark:text-indigo-400" : "text-slate-300 dark:text-slate-700"
+        }`}>
         #{rank}
       </span>
       <div className="w-14 h-14 rounded-xl bg-slate-50 dark:bg-slate-950 overflow-hidden flex-shrink-0 border border-slate-100 dark:border-slate-800/80 p-1 flex items-center justify-center">
@@ -130,12 +129,29 @@ const Home = () => {
   const returning = isReturningUser();
   const recentlyViewed = getViewed().slice(0, 10);
   const topCats = getTopCategories(1);
-  const hero = HERO_CONFIG[topCats[0]] || HERO_CONFIG.default;
+  // Setup dynamic slides carousel (preferred category/gender starts first)
+  const slides = useMemo(() => {
+    const fav = (topCats[0] && HERO_CONFIG[topCats[0]]) ? topCats[0] : "default";
+    const keys = ["Men", "Women", "Kids", "default"];
+    const sortedKeys = [fav, ...keys.filter(k => k !== fav)];
+    return sortedKeys.map(k => ({ ...HERO_CONFIG[k], key: k }));
+  }, [topCats]);
+
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    }, 10000); // 10 seconds rotation
+    return () => clearInterval(interval);
+  }, [slides]);
+
+  const hero = slides[currentSlide];
 
   useEffect(() => {
     axios.get(`${backendUrl}/api/product/list`)
       .then(res => { if (res.data.success) setAllProducts(res.data.products); })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoading(false));
   }, []);
 
@@ -153,19 +169,26 @@ const Home = () => {
 
   return (
     <div className="bg-[#f8fafc] dark:bg-slate-950 min-h-screen text-slate-750 dark:text-slate-300 font-sans pb-16 transition-colors duration-300">
-      
+
       <section className="relative h-[calc(100vh-76px)] min-h-[600px] w-full overflow-hidden flex items-center">
-        {/* Background Image */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105 transition-all duration-700"
-          style={{ backgroundImage: `url(${hero.bg})` }}
-        />
+        {/* Background Images Cross-Fade */}
+        {slides.map((slide, idx) => (
+          <div
+            key={slide.key}
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105 transition-opacity duration-1000 ease-in-out"
+            style={{
+              backgroundImage: `url(${slide.bg})`,
+              opacity: idx === currentSlide ? 1 : 0,
+              zIndex: idx === currentSlide ? 1 : 0
+            }}
+          />
+        ))}
         {/* Soft Radial Gradient Lighting */}
         <div className="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-950/50 to-transparent dark:from-slate-950/95 dark:via-slate-950/60 z-10" />
-        
+
         <div className="relative z-20 mx-auto max-w-7xl px-6 w-full text-left">
           <div className="max-w-xl md:max-w-2xl space-y-6">
-            
+
             {/* Tag / Badge */}
             <div className="inline-flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-1.5 px-3.5 py-1 text-[9px] font-black tracking-widest text-indigo-300 bg-indigo-500/10 border border-indigo-400/20 backdrop-blur-md rounded-full">
@@ -199,16 +222,16 @@ const Home = () => {
 
             {/* Action CTAs */}
             <div className="flex flex-wrap gap-3 pt-2">
-              <button 
-                onClick={() => navigate(hero.ctaPath)} 
+              <button
+                onClick={() => navigate(hero.ctaPath)}
                 className="group inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-white text-slate-900 text-xs md:text-sm font-bold tracking-wider uppercase hover:shadow-lg hover:shadow-white/10 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
               >
                 <span>{hero.cta}</span>
                 <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
               </button>
 
-              <button 
-                onClick={() => navigate("/product")} 
+              <button
+                onClick={() => navigate("/product")}
                 className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white text-xs md:text-sm font-bold tracking-wider uppercase backdrop-blur-md transition-all duration-200 cursor-pointer"
               >
                 Browse All
@@ -220,7 +243,7 @@ const Home = () => {
       </section>
 
       {/* Co-Shop Invite Banner */}
-      
+
 
       {/* ══ RECENTLY VIEWED (Returning user strip) ══ */}
       {returning && recentlyViewed.length > 0 && (
@@ -289,13 +312,13 @@ const Home = () => {
                 onClick={() => navigate(cat.path)}
                 className="group relative h-64 md:h-72 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-500 cursor-pointer"
               >
-                <img 
-                  src={cat.image} 
-                  alt={cat.name} 
-                  className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105" 
+                <img
+                  src={cat.image}
+                  alt={cat.name}
+                  className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                 />
                 <div className={`absolute inset-0 bg-gradient-to-t ${cat.color} z-10 transition-opacity duration-300`} />
-                
+
                 <div className="absolute bottom-5 left-5 z-20 text-left">
                   <span className="text-[10px] font-black uppercase tracking-widest text-orange-400 block mb-1">
                     COLLECTION
@@ -387,7 +410,7 @@ const Home = () => {
       <section className="pt-12 pb-8">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-            
+
             {/* Column 1: Trending Now */}
             <div className="space-y-4">
               <SectionHead eyebrow="MOST WANTED" title="Trending Items" sub="Highest rated and most popular picks" />

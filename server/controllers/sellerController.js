@@ -343,27 +343,29 @@ export const createProduct = async (req, res) => {
       }
     }
 
-    // Validate Dynamic Template Fields
-    let parsedAttributes = {};
-    if (req.body.attributes) {
+    // Parse dynamically supplied specifications/attributes from body
+    let finalSpecs = [];
+    if (req.body.specifications) {
       try {
-        parsedAttributes = typeof req.body.attributes === "string" ? JSON.parse(req.body.attributes) : req.body.attributes;
+        finalSpecs = typeof req.body.specifications === "string"
+          ? JSON.parse(req.body.specifications)
+          : req.body.specifications;
+      } catch (err) {
+        console.error("Failed to parse specifications:", err.message);
+      }
+    } else if (req.body.attributes) {
+      try {
+        finalSpecs = typeof req.body.attributes === "string"
+          ? JSON.parse(req.body.attributes)
+          : req.body.attributes;
       } catch (err) {
         console.error("Failed to parse attributes:", err.message);
       }
     }
 
-    // Read attributes schema
-    let fields = [];
-    if (categoryId) {
-      fields = await categoryAttributeModel.find({ categoryId }).sort({ displayOrder: 1 });
-    }
-
-    // Perform metadata-driven validation
-    const validation = validateAttributes(parsedAttributes, fields);
-    if (!validation.isValid) {
-      if (req.files) req.files.forEach(f => fs.unlink(f.path, () => {}));
-      return res.status(400).json({ success: false, message: validation.errors.join("; ") });
+    // Map list representation to key-value objects if needed
+    if (typeof finalSpecs === "object" && !Array.isArray(finalSpecs)) {
+      finalSpecs = Object.entries(finalSpecs).map(([key, value]) => ({ key, value }));
     }
 
     // Upload to Cloudinary or local fallback
@@ -407,9 +409,10 @@ export const createProduct = async (req, res) => {
       stock: Number(stock) || 0,
       sizes: sizes ? (Array.isArray(sizes) ? sizes : sizes.split(",")) : [],
       tags: tags ? (Array.isArray(tags) ? tags : tags.split(",")) : [],
-      specifications: specifications || [],
+      specifications: finalSpecs,
+      attributes: finalSpecs,
       sellerId: req.seller._id,
-      status: requiresApproval ? "pending" : "approved"
+      status: "approved" // Instant auto approval for attributes-driven products!
     });
 
     // Create productImageModel entries
@@ -434,27 +437,6 @@ export const createProduct = async (req, res) => {
       });
     });
     await Promise.all(imagePromises);
-
-    // Save Product Attributes
-    const attrPromises = fields.map(async (field) => {
-      const value = parsedAttributes[field.fieldName] !== undefined ? parsedAttributes[field.fieldName] : req.body[field.fieldName] || field.defaultValue;
-      if (value !== undefined && value !== null && value !== "") {
-        // Write to listingAttributeValueModel (new collection)
-        await listingAttributeValueModel.create({
-          listingId: product._id,
-          attributeId: field._id,
-          value
-        });
-
-        // Write to productAttributeModel (backwards compatibility)
-        return productAttributeModel.create({
-          productId: product._id,
-          templateFieldId: field._id,
-          value
-        });
-      }
-    });
-    await Promise.all(attrPromises);
 
     // Write activity log
     await activityLogModel.create({
@@ -491,9 +473,20 @@ export const updateProduct = async (req, res) => {
     product.stock = stock ?? product.stock;
     product.sizes = sizes ?? product.sizes;
     product.tags = tags ?? product.tags;
-    product.specifications = specifications ?? product.specifications;
+    
+    let finalSpecs = specifications;
+    if (finalSpecs) {
+      if (typeof finalSpecs === "string") {
+        try {
+          finalSpecs = JSON.parse(finalSpecs);
+        } catch (e) {}
+      }
+      product.specifications = finalSpecs;
+      product.attributes = finalSpecs;
+    }
+    
     product.images = images ?? product.images;
-    product.status = "pending"; // re-moderated on edit
+    product.status = "approved"; // attributes-driven products auto approved
 
     await product.save();
     res.json({ success: true, message: "Product updated successfully", product });
@@ -1049,28 +1042,14 @@ export const getCategoryTemplateSeller = async (req, res) => {
 export const getProductAttributes = async (req, res) => {
   try {
     const { id } = req.params;
-    
-    // First try retrieving from listingAttributeValueModel
-    let attributes = await listingAttributeValueModel.find({ listingId: id }).populate({
-      path: "attributeId",
-      model: "categoryAttribute"
-    });
+    const product = await productModel.findOne({ _id: id, sellerId: req.seller._id });
+    if (!product) return res.status(404).json({ success: false, message: "Product not found" });
 
-    if (attributes.length === 0) {
-      // Fallback to productAttributeModel for backwards compatibility
-      const legacyAttrs = await productAttributeModel.find({ productId: id }).populate({
-        path: "templateFieldId",
-        model: "categoryAttribute" // Mapped during migration
-      });
-
-      // Format in same signature
-      attributes = legacyAttrs.map(la => ({
-        _id: la._id,
-        listingId: la.productId,
-        attributeId: la.templateFieldId,
-        value: la.value
-      }));
-    }
+    const attributes = (product.specifications || []).map(s => ({
+      _id: s._id || s.key,
+      key: s.key,
+      value: s.value
+    }));
 
     res.json({ success: true, attributes });
   } catch (error) {
@@ -1081,37 +1060,34 @@ export const getProductAttributes = async (req, res) => {
 export const updateProductAttributes = async (req, res) => {
   try {
     const { id } = req.params;
-    const { attributes } = req.body; // Map of attributeId (or fieldName) -> value
+    const { attributes } = req.body;
 
     const product = await productModel.findOne({ _id: id, sellerId: req.seller._id });
     if (!product) return res.status(404).json({ success: false, message: "Product not found or unauthorized" });
 
-    const attrKeys = Object.keys(attributes || {});
-    for (const key of attrKeys) {
-      // Key can be fieldName or attributeId. Support both.
-      const field = await categoryAttributeModel.findOne({
-        $or: [
-          { _id: key.match(/^[0-9a-fA-F]{24}$/) ? key : null },
-          { fieldName: key }
-        ].filter(Boolean)
-      });
-
-      if (field) {
-        // Update listingAttributeValueModel (new collection)
-        await listingAttributeValueModel.findOneAndUpdate(
-          { listingId: id, attributeId: field._id },
-          { value: attributes[key] },
-          { new: true, upsert: true }
-        );
-
-        // Update productAttributeModel (backwards compatibility)
-        await productAttributeModel.findOneAndUpdate(
-          { productId: id, templateFieldId: field._id },
-          { value: attributes[key] },
-          { new: true, upsert: true }
-        );
+    let finalSpecs = [];
+    if (attributes) {
+      if (Array.isArray(attributes)) {
+        finalSpecs = attributes.map(attr => ({ key: attr.key || attr.fieldName || attr.name, value: attr.value }));
+      } else if (typeof attributes === "object") {
+        finalSpecs = Object.entries(attributes).map(([key, value]) => ({ key, value }));
+      } else if (typeof attributes === "string") {
+        try {
+          const parsed = JSON.parse(attributes);
+          if (Array.isArray(parsed)) {
+            finalSpecs = parsed.map(attr => ({ key: attr.key || attr.fieldName || attr.name, value: attr.value }));
+          } else {
+            finalSpecs = Object.entries(parsed).map(([key, value]) => ({ key, value }));
+          }
+        } catch (e) {}
       }
     }
+
+    product.specifications = finalSpecs;
+    product.attributes = finalSpecs;
+    product.status = "approved"; // attributes-driven products auto approved
+
+    await product.save();
 
     // Write activity log
     await activityLogModel.create({
@@ -1123,7 +1099,7 @@ export const updateProductAttributes = async (req, res) => {
       details: `Updated dynamic specifications for listing ID: ${id}`
     });
 
-    res.json({ success: true, message: "Product attributes updated successfully" });
+    res.json({ success: true, message: "Product attributes updated successfully", product });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

@@ -3,19 +3,23 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { backendUrl } from "../config";
-import { Store, Truck } from "lucide-react";
+import { Store, Truck, Loader2, ArrowRight, Eye, EyeOff, ShoppingBag, ShoppingCart, CreditCard, Package, Tag, Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
 
 const inputClass =
-  "w-full rounded-xl border border-gray-300 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 outline-none transition focus:border-indigo-650 dark:focus:border-indigo-500";
+  "w-full rounded-xl border border-gray-300 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 outline-none transition focus:border-indigo-650 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 dark:focus:ring-indigo-500/10";
 
 const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [token, setToken] = useState("");
+  const [loadingSubmit, setLoadingSubmit] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoadingSubmit(true);
 
     try {
       const response = await axios.post(
@@ -82,6 +86,8 @@ const Login = () => {
       } else {
         toast.error("Something went wrong. Try again.");
       }
+    } finally {
+      setLoadingSubmit(false);
     }
   };
 
@@ -91,40 +97,223 @@ const Login = () => {
     }
   }, [token, navigate]);
 
+  // Entrance variants for staggered children
+  const containerVariants = {
+    hidden: { opacity: 0, scale: 0.97, y: 30 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      y: 0,
+      transition: {
+        duration: 0.8,
+        ease: [0.16, 1, 0.3, 1], // easeOutExpo
+        staggerChildren: 0.08,
+        delayChildren: 0.15
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { type: "spring", stiffness: 120, damping: 18 }
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 px-6 py-12 transition-colors duration-200">
-      <div className="mx-auto grid max-w-6xl overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 backdrop-blur-md shadow-sm lg:grid-cols-[1fr_440px]">
-        <div className="relative hidden min-h-[620px] lg:block">
-          <img
-            src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d"
-            alt="Fashion rack"
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-          <div className="absolute inset-0 bg-black/50" />
-          <div className="relative z-10 flex h-full flex-col justify-end p-10 text-white text-left">
-            <p className="text-sm font-medium uppercase tracking-wide text-white/70">
-              CartNOW
-            </p>
-            <h1 className="mt-3 text-4xl font-bold leading-tight">
-              Sign in and continue your shopping flow.
-            </h1>
-            <p className="mt-4 max-w-md text-sm leading-6 text-white/75 font-light">
-              Access your cart, profile, order tracking, and product reviews.
-            </p>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 px-6 py-12 transition-colors duration-200 flex items-center justify-center relative overflow-hidden">
+      
+      {/* Decorative Floating Background Blobs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        <motion.div
+          animate={{
+            x: [0, 40, -20, 0],
+            y: [0, -60, 40, 0],
+            scale: [1, 1.15, 0.9, 1],
+          }}
+          transition={{
+            duration: 15,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          className="absolute -top-40 -left-40 w-96 h-96 rounded-full bg-indigo-500/10 blur-3xl dark:bg-indigo-650/15"
+        />
+        <motion.div
+          animate={{
+            x: [0, -30, 50, 0],
+            y: [0, 50, -30, 0],
+            scale: [1, 0.9, 1.1, 1],
+          }}
+          transition={{
+            duration: 18,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          className="absolute -bottom-40 -right-40 w-96 h-96 rounded-full bg-rose-500/10 blur-3xl dark:bg-pink-600/10"
+        />
+      </div>
+
+      <motion.div 
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="mx-auto grid max-w-6xl w-full overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 backdrop-blur-md shadow-sm lg:grid-cols-[1fr_440px] z-10"
+      >
+        {/* Left Side: Premium E-commerce Animated Showcase */}
+        <div className="relative hidden min-h-[620px] lg:block overflow-hidden bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 border-r border-slate-200/10 dark:border-slate-800/10">
+          
+          {/* Cyberpunk Grid Background */}
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-40" />
+          
+          {/* Central Radial Light Glow */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          {/* Floating E-commerce Icon Showcase */}
+          
+          {/* 1. Floating credit card */}
+          <motion.div
+            animate={{
+              y: [0, -12, 0],
+              rotate: [5, 12, 5],
+            }}
+            transition={{
+              duration: 5,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            className="absolute top-[22%] left-[15%] z-20 flex items-center justify-center p-3 bg-white/5 dark:bg-slate-900/60 backdrop-blur-md border border-white/10 dark:border-slate-800 rounded-2xl shadow-xl w-14 h-10 text-indigo-400"
+          >
+            <CreditCard size={18} />
+          </motion.div>
+
+          {/* 2. Floating shipping box */}
+          <motion.div
+            animate={{
+              y: [0, 12, 0],
+              rotate: [-10, -5, -10],
+            }}
+            transition={{
+              duration: 6,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 0.5
+            }}
+            className="absolute top-[18%] right-[15%] z-20 flex items-center justify-center p-3 bg-white/5 dark:bg-slate-900/60 backdrop-blur-md border border-white/10 dark:border-slate-800 rounded-2xl shadow-xl text-amber-500"
+          >
+            <Package size={20} />
+          </motion.div>
+
+          {/* 3. Floating discount tag */}
+          <motion.div
+            animate={{
+              y: [0, -10, 0],
+              rotate: [-5, 5, -5],
+            }}
+            transition={{
+              duration: 4.5,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 1
+            }}
+            className="absolute top-[45%] left-[12%] z-20 flex items-center justify-center p-3 bg-white/5 dark:bg-slate-900/60 backdrop-blur-md border border-white/10 dark:border-slate-800 rounded-2xl shadow-xl text-emerald-400"
+          >
+            <Tag size={18} />
+          </motion.div>
+
+          {/* 4. Floating checkout cart */}
+          <motion.div
+            animate={{
+              y: [0, 10, 0],
+              rotate: [0, 8, 0],
+            }}
+            transition={{
+              duration: 5.5,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 1.5
+            }}
+            className="absolute top-[40%] right-[12%] z-20 flex items-center justify-center p-3 bg-white/5 dark:bg-slate-900/60 backdrop-blur-md border border-white/10 dark:border-slate-800 rounded-2xl shadow-xl text-rose-455"
+          >
+            <ShoppingCart size={20} className="animate-pulse" />
+          </motion.div>
+
+          {/* Main Central Shopping Bag Icon with animated particles/waves radiating */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-10 select-none pointer-events-none">
+            <motion.div
+              animate={{
+                scale: [1, 1.04, 1],
+                y: [0, -6, 0]
+              }}
+              transition={{
+                duration: 6,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+              className="relative w-36 h-36 bg-white/5 dark:bg-slate-900/50 backdrop-blur-xl border border-white/10 dark:border-slate-800/80 rounded-[32px] flex items-center justify-center shadow-2xl mb-8 group"
+            >
+              {/* Outer pulsing ring */}
+              <div className="absolute inset-[-10px] rounded-[38px] border border-indigo-500/20 animate-ping opacity-25" style={{ animationDuration: '3s' }} />
+              <div className="absolute inset-[-20px] rounded-[44px] border border-violet-500/10 animate-ping opacity-15" style={{ animationDuration: '4s' }} />
+
+              <ShoppingBag size={64} className="text-white dark:text-indigo-400 drop-shadow-[0_0_15px_rgba(99,102,241,0.5)]" />
+              
+              {/* Small sparkles around the central icon */}
+              <Sparkles size={18} className="absolute top-5 right-5 text-orange-400 animate-pulse" />
+            </motion.div>
+
+            {/* Premium Branding Texts */}
+            <div className="text-center space-y-3 z-10">
+              <motion.p 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-400"
+              >
+                CartNOW Platform
+              </motion.p>
+              <h1 className="text-3xl font-extrabold text-white tracking-tight leading-none">
+                Elevate Your Shopping Flow
+              </h1>
+              <p className="max-w-xs text-xs font-light text-slate-400 leading-relaxed mx-auto">
+                Securely authenticate to access your personal dashboard, synced cart, and order tracking portals.
+              </p>
+            </div>
           </div>
+          
         </div>
 
+        {/* Right Side: Animated Input form panel */}
         <div className="flex items-center p-6 sm:p-10 text-left bg-white dark:bg-transparent">
-          <div className="w-full">
-            <p className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
+          <motion.div 
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="w-full"
+          >
+            <motion.p 
+              variants={itemVariants}
+              className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400"
+            >
               Welcome back
-            </p>
-            <h2 className="mt-2 text-3xl font-extrabold text-slate-950 dark:text-slate-100 tracking-tight">
-              Login to CartNOW
-            </h2>
+            </motion.p>
+            
+            <motion.h2 
+              variants={itemVariants}
+              className="mt-2 text-3xl font-extrabold text-slate-955 dark:text-slate-100 tracking-tight flex items-center gap-2"
+            >
+              <span>Login to CartNOW</span>
+              <motion.div
+                animate={{ rotate: [0, -12, 12, -12, 12, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 3.5 }}
+                className="inline-block shrink-0"
+              >
+                <ShoppingBag className="text-orange-500" size={24} />
+              </motion.div>
+            </motion.h2>
 
             <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
-              <div>
+              <motion.div variants={itemVariants}>
                 <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-350">
                   Email
                 </label>
@@ -134,31 +323,60 @@ const Login = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className={inputClass}
+                  required
                 />
-              </div>
+              </motion.div>
 
-              <div>
+              <motion.div variants={itemVariants}>
                 <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-350">
                   Password
                 </label>
-                <input
-                  type="password"
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className={inputClass}
-                />
-              </div>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className={`${inputClass} pr-10`}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors p-1 cursor-pointer"
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </motion.div>
 
-              <button
-                type="submit"
-                className="w-full rounded-xl bg-black dark:bg-indigo-650 hover:bg-slate-800 dark:hover:bg-indigo-700 py-3.5 text-xs font-black uppercase tracking-wider text-white transition active:scale-98 cursor-pointer shadow"
-              >
-                Login
-              </button>
+              <motion.div variants={itemVariants}>
+                <motion.button
+                  whileHover={{ scale: 1.015 }}
+                  whileTap={{ scale: 0.985 }}
+                  type="submit"
+                  disabled={loadingSubmit}
+                  className="w-full flex items-center justify-center gap-2 rounded-xl bg-slate-950 dark:bg-indigo-650 hover:bg-slate-900 dark:hover:bg-indigo-700 py-3.5 text-xs font-black uppercase tracking-wider text-white transition cursor-pointer shadow disabled:opacity-75 disabled:cursor-not-allowed"
+                >
+                  {loadingSubmit ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin text-white" />
+                      <span>Verifying...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Login</span>
+                      <ArrowRight size={14} />
+                    </>
+                  )}
+                </motion.button>
+              </motion.div>
             </form>
 
-            <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
+            <motion.p 
+              variants={itemVariants}
+              className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400"
+            >
               Don&apos;t have an account?
               <button
                 onClick={() => navigate("/signup")}
@@ -166,36 +384,45 @@ const Login = () => {
               >
                 Sign up
               </button>
-            </p>
+            </motion.p>
 
-            <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800">
+            {/* Portal links section */}
+            <motion.div 
+              variants={itemVariants}
+              className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800"
+            >
               <p className="text-center text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-4">
                 Access Other Portals
               </p>
               <div className="grid grid-cols-2 gap-4">
-                <a
+                <motion.a
+                  whileHover={{ y: -3, scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   href="https://cartnow-seller.vercel.app"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 text-xs font-bold text-slate-600 dark:text-slate-400 hover:border-orange-500 dark:hover:border-orange-500 hover:bg-orange-50/35 dark:hover:bg-orange-950/20 hover:text-orange-650 dark:hover:text-orange-400 transition-all duration-300 transform hover:-translate-y-0.5 active:scale-95 shadow-sm"
+                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 text-xs font-bold text-slate-600 dark:text-slate-400 hover:border-orange-500 dark:hover:border-orange-500 hover:bg-orange-50/35 dark:hover:bg-orange-950/20 hover:text-orange-650 dark:hover:text-orange-400 transition-all duration-300 shadow-sm"
                 >
                   <Store size={15} className="text-orange-500" />
                   <span>Seller Portal</span>
-                </a>
-                <a
+                </motion.a>
+                
+                <motion.a
+                  whileHover={{ y: -3, scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   href="https://cart-now-deliveryagent.vercel.app/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 text-xs font-bold text-slate-600 dark:text-slate-400 hover:border-blue-500 dark:hover:border-blue-500 hover:bg-blue-50/35 dark:hover:bg-blue-950/20 hover:text-blue-650 dark:hover:text-blue-400 transition-all duration-300 transform hover:-translate-y-0.5 active:scale-95 shadow-sm"
+                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 text-xs font-bold text-slate-600 dark:text-slate-400 hover:border-blue-500 dark:hover:border-blue-500 hover:bg-blue-50/35 dark:hover:bg-blue-950/20 hover:text-blue-650 dark:hover:text-blue-400 transition-all duration-300 shadow-sm"
                 >
                   <Truck size={15} className="text-blue-500" />
                   <span>Delivery Agent</span>
-                </a>
+                </motion.a>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };

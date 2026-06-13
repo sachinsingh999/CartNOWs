@@ -7,6 +7,8 @@ import {
   X, 
   ArrowLeft, 
   ArrowRight, 
+  ArrowUp,
+  ArrowDown,
   Upload,
   Search,
   SlidersHorizontal,
@@ -39,6 +41,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
   const [editCategories, setEditCategories] = useState([]);
   const [editTemplateFields, setEditTemplateFields] = useState([]);
   const [editDynamicAttributes, setEditDynamicAttributes] = useState({});
+  const [editCustomAttributes, setEditCustomAttributes] = useState([]);
 
   // Search & Filter state
   const [searchQuery, setSearchQuery] = useState("");
@@ -103,17 +106,9 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
         }
       }
 
-      // 2. Fetch category template
-      const targetCat = cats.find(c => c.name === product.category);
-      if (targetCat) {
-        const templRes = await axios.get(`${backendUrl}/api/seller/category/${targetCat._id}/template`, { headers: { token } });
-        if (templRes.data.success) {
-          setEditTemplateFields(templRes.data.fields || []);
-        }
-      }
-
-      // 3. Set dynamic attributes from product.dynamicAttributes or fetch
-      setEditDynamicAttributes(product.dynamicAttributes || {});
+      // 2. Load custom attributes from product.specifications
+      const specs = product.specifications || [];
+      setEditCustomAttributes(specs.map(s => ({ key: s.key, value: s.value })));
 
       const response = await axios.get(`${backendUrl}/api/seller/product/${product._id}/images`, {
         headers: { token }
@@ -136,6 +131,11 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
         return;
       }
 
+      if (!editForm.name || !editForm.price || !editForm.description.trim()) {
+        toast.error("Product name, price, and description are required.");
+        return;
+      }
+
       // Update basic product details
       const response = await axios.post(`${backendUrl}/api/seller/update-product`, {
         id: editingProduct._id,
@@ -150,7 +150,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
       if (response.data.success) {
         // Save dynamic attributes
         await axios.post(`${backendUrl}/api/seller/product/${editingProduct._id}/attributes`, {
-          attributes: editDynamicAttributes
+          attributes: editCustomAttributes.filter(a => a.key.trim() !== "")
         }, {
           headers: { token }
         });
@@ -1041,25 +1041,114 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                 />
               </div>
 
-              {/* Dynamic Category Specifications for Editing */}
-              {editTemplateFields.length > 0 && (
-                <div className="space-y-4 pt-4 border-t border-slate-100 text-left">
-                  <div className="flex items-center gap-1.5 text-xs font-black text-indigo-600 uppercase tracking-wider">
+              {/* Custom Dynamic Specifications Builder */}
+              <div className="space-y-4 pt-4 border-t border-slate-100 text-left animate-fade-in">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-xs font-black text-indigo-650 uppercase tracking-wider">
                     <Layers size={13} />
-                    <span>Category Specifications</span>
+                    <span>Dynamic Product Attributes</span>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {editTemplateFields.map((field) => (
-                      <div key={field._id} className="space-y-1">
-                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                          {field.label || field.fieldName} {field.isRequired && <span className="text-red-500">*</span>}
-                        </label>
-                        {renderDynamicField(field)}
+                  <button
+                    type="button"
+                    onClick={() => setEditCustomAttributes(prev => [...prev, { key: "", value: "" }])}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition cursor-pointer shadow-sm"
+                  >
+                    <Plus size={11} />
+                    <span>Add Attribute</span>
+                  </button>
+                </div>
+
+                {editCustomAttributes.length === 0 ? (
+                  <div className="border border-dashed border-slate-200 rounded-2xl py-8 text-center text-slate-400 text-xs italic bg-slate-50/50">
+                    No attributes added yet. Click "Add Attribute" to add custom key-value specifications.
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {editCustomAttributes.map((attr, idx) => (
+                      <div key={idx} className="flex items-center gap-2.5 p-3.5 border border-slate-150 rounded-2xl bg-white shadow-sm transition hover:shadow-md">
+                        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <label className="text-[9px] font-bold text-slate-450 uppercase block">Attribute Name</label>
+                            <input
+                              type="text"
+                              placeholder="e.g. RAM, Material, Color"
+                              value={attr.key}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setEditCustomAttributes(prev => {
+                                  const updated = [...prev];
+                                  updated[idx] = { ...updated[idx], key: val };
+                                  return updated;
+                                });
+                              }}
+                              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-slate-850 text-xs outline-none focus:border-orange-500 transition"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[9px] font-bold text-slate-450 uppercase block">Value</label>
+                            <input
+                              type="text"
+                              placeholder="e.g. 16GB, 100% Cotton, Black"
+                              value={attr.value}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setEditCustomAttributes(prev => {
+                                  const updated = [...prev];
+                                  updated[idx] = { ...updated[idx], value: val };
+                                  return updated;
+                                });
+                              }}
+                              className="w-full px-3 py-2 rounded-xl border border-slate-200 text-slate-850 text-xs outline-none focus:border-orange-500 transition"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 self-end pb-0.5">
+                          <button
+                            type="button"
+                            disabled={idx === 0}
+                            onClick={() => {
+                              setEditCustomAttributes(prev => {
+                                const updated = [...prev];
+                                const temp = updated[idx];
+                                updated[idx] = updated[idx - 1];
+                                updated[idx - 1] = temp;
+                                return updated;
+                              });
+                            }}
+                            className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-450 disabled:opacity-20 transition cursor-pointer"
+                          >
+                            <ArrowUp size={13} />
+                          </button>
+                          <button
+                            type="button"
+                            disabled={idx === editCustomAttributes.length - 1}
+                            onClick={() => {
+                              setEditCustomAttributes(prev => {
+                                const updated = [...prev];
+                                const temp = updated[idx];
+                                updated[idx] = updated[idx + 1];
+                                updated[idx + 1] = temp;
+                                return updated;
+                              });
+                            }}
+                            className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-450 disabled:opacity-20 transition cursor-pointer"
+                          >
+                            <ArrowDown size={13} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEditCustomAttributes(prev => prev.filter((_, i) => i !== idx))}
+                            className="p-1.5 rounded-lg hover:bg-red-50 text-red-500 transition cursor-pointer"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
-                </div>
-              )}
+                )}
+              </div>
 
               {/* Gallery Image Manager */}
               <div className="space-y-3 pt-3 border-t border-slate-100">

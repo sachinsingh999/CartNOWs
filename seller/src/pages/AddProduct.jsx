@@ -5,6 +5,8 @@ import {
   Upload, 
   ArrowLeft, 
   ArrowRight,
+  ArrowUp,
+  ArrowDown,
   Package,
   Layers,
   Sparkles,
@@ -30,9 +32,8 @@ const AddProduct = ({ token, addProduct }) => {
 
   const [categories, setCategories] = useState([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
-  const [templateFields, setTemplateFields] = useState([]);
   const [categorySettings, setCategorySettings] = useState(null);
-  const [dynamicAttributes, setDynamicAttributes] = useState({});
+  const [customAttributes, setCustomAttributes] = useState([]);
 
   const [uploadedFiles, setUploadedFiles] = useState([]); 
   const [dragActive, setDragActive] = useState(false);
@@ -68,9 +69,8 @@ const AddProduct = ({ token, addProduct }) => {
 
   const handleCategoryChange = async (catId) => {
     setSelectedCategoryId(catId);
-    setTemplateFields([]);
     setCategorySettings(null);
-    setDynamicAttributes({});
+    setCustomAttributes([]);
 
     const selectedCat = categories.find(c => c._id === catId);
     setNewProduct(prev => ({
@@ -85,7 +85,6 @@ const AddProduct = ({ token, addProduct }) => {
         headers: { token }
       });
       if (response.data.success) {
-        setTemplateFields(response.data.fields || []);
         setCategorySettings(response.data.settings || null);
       }
     } catch (err) {
@@ -196,19 +195,11 @@ const AddProduct = ({ token, addProduct }) => {
       toast.error("Please select a category first.");
       return;
     }
-    if (!newProduct.name || !newProduct.price) return;
-
-    // Check dynamic attribute validations
-    for (const field of templateFields) {
-      if (field.isRequired) {
-        const value = dynamicAttributes[field.fieldName];
-        if (value === undefined || value === null || value === "") {
-          toast.error(`"${field.fieldName}" is required.`);
-          return;
-        }
-      }
+    if (!newProduct.name || !newProduct.price || !newProduct.description.trim()) {
+      toast.error("Product name, price, and description are required.");
+      return;
     }
-    
+
     const minLimit = categorySettings ? categorySettings.minImages : 3;
     if (uploadedFiles.length < minLimit) {
       toast.error(`At least ${minLimit} images are required for this category.`);
@@ -216,6 +207,7 @@ const AddProduct = ({ token, addProduct }) => {
     }
 
     const coverIndex = uploadedFiles.findIndex(f => f.isCover);
+    const finalAttributes = customAttributes.filter(a => a.key.trim() !== "");
 
     const success = await addProduct({
       ...newProduct,
@@ -223,7 +215,7 @@ const AddProduct = ({ token, addProduct }) => {
       stock: parseInt(newProduct.stock) || 0,
       images: uploadedFiles.map(f => f.file),
       coverIndex: coverIndex >= 0 ? coverIndex : 0,
-      attributes: JSON.stringify(dynamicAttributes)
+      attributes: JSON.stringify(finalAttributes)
     });
 
     if (success) {
@@ -239,261 +231,9 @@ const AddProduct = ({ token, addProduct }) => {
         stock: ""
       });
       setSelectedCategoryId("");
-      setTemplateFields([]);
       setCategorySettings(null);
-      setDynamicAttributes({});
+      setCustomAttributes([]);
       setUploadedFiles([]);
-    }
-  };
-
-  const shouldShowField = (field) => {
-    if (!field.conditionalRules || !field.conditionalRules.dependsOn) return true;
-    const dependencyVal = dynamicAttributes[field.conditionalRules.dependsOn];
-    const expectedVal = field.conditionalRules.expectedValue;
-    const isMatch = String(dependencyVal) === String(expectedVal);
-    if (field.conditionalRules.action === "show") return isMatch;
-    if (field.conditionalRules.action === "hide") return !isMatch;
-    return true;
-  };
-
-  const renderDynamicField = (field) => {
-    if (!shouldShowField(field)) return null;
-
-    const value = dynamicAttributes[field.fieldName] !== undefined ? dynamicAttributes[field.fieldName] : "";
-    
-    const onChange = (val) => {
-      setDynamicAttributes(prev => ({
-        ...prev,
-        [field.fieldName]: val
-      }));
-    };
-
-    const inputClass = "w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-800 text-sm outline-none focus:border-orange-500 bg-white transition";
-
-    switch (field.fieldType) {
-      case "Text Area":
-      case "Rich Text Editor":
-        return (
-          <textarea
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder={field.placeholder || "Enter details..."}
-            className={`${inputClass} resize-none`}
-            rows={3}
-            required={field.isRequired}
-          />
-        );
-      case "Dropdown":
-        return (
-          <select
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            className={inputClass}
-            required={field.isRequired}
-          >
-            <option value="">Select option</option>
-            {field.selectOptions?.map(opt => (
-              <option key={opt} value={opt}>{opt}</option>
-            ))}
-          </select>
-        );
-      case "Multi Select":
-        return (
-          <div className="flex flex-wrap gap-2.5 p-3 border border-slate-200 rounded-xl bg-slate-50">
-            {field.selectOptions?.map(opt => {
-              const currentArray = Array.isArray(value) ? value : [];
-              const isChecked = currentArray.includes(opt);
-              return (
-                <label key={opt} className="flex items-center gap-1.5 text-xs text-slate-700 font-bold cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={isChecked}
-                    onChange={(e) => {
-                      const updated = e.target.checked
-                        ? [...currentArray, opt]
-                        : currentArray.filter(item => item !== opt);
-                      onChange(updated);
-                    }}
-                    className="rounded border-slate-300 text-orange-500 focus:ring-orange-500"
-                  />
-                  <span>{opt}</span>
-                </label>
-              );
-            })}
-          </div>
-        );
-      case "Radio Button":
-        return (
-          <div className="flex flex-wrap gap-4 p-2 bg-slate-50/50 border border-slate-200/40 rounded-xl">
-            {field.selectOptions?.map(opt => (
-              <label key={opt} className="flex items-center gap-1.5 text-xs text-slate-700 font-semibold cursor-pointer">
-                <input
-                  type="radio"
-                  name={field.fieldName}
-                  checked={value === opt}
-                  onChange={() => onChange(opt)}
-                  className="text-orange-500 focus:ring-orange-500"
-                />
-                <span>{opt}</span>
-              </label>
-            ))}
-          </div>
-        );
-      case "Checkbox":
-        return (
-          <label className="flex items-center gap-2 text-xs text-slate-750 font-bold cursor-pointer py-1.5 pl-1">
-            <input
-              type="checkbox"
-              checked={!!value}
-              onChange={(e) => onChange(e.target.checked)}
-              className="rounded border-slate-300 text-orange-500 focus:ring-orange-500"
-            />
-            <span>{field.label || field.fieldName}</span>
-          </label>
-        );
-      case "Date":
-        return (
-          <input
-            type="date"
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            className={inputClass}
-            required={field.isRequired}
-          />
-        );
-      case "Time":
-        return (
-          <input
-            type="time"
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            className={inputClass}
-            required={field.isRequired}
-          />
-        );
-      case "Datetime":
-        return (
-          <input
-            type="datetime-local"
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            className={inputClass}
-            required={field.isRequired}
-          />
-        );
-      case "Email":
-        return (
-          <input
-            type="email"
-            placeholder={field.placeholder || "email@example.com"}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            className={inputClass}
-            required={field.isRequired}
-          />
-        );
-      case "URL":
-        return (
-          <input
-            type="url"
-            placeholder={field.placeholder || "https://example.com"}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            className={inputClass}
-            required={field.isRequired}
-          />
-        );
-      case "Phone":
-        return (
-          <input
-            type="tel"
-            placeholder={field.placeholder || "+1 555-555-5555"}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            className={inputClass}
-            required={field.isRequired}
-          />
-        );
-      case "Color Picker":
-        return (
-          <div className="flex items-center gap-2">
-            <input
-              type="color"
-              value={value || "#ff0000"}
-              onChange={(e) => onChange(e.target.value)}
-              className="w-10 h-10 border border-slate-200 rounded-lg cursor-pointer bg-white"
-            />
-            <span className="text-xs text-slate-500 font-mono font-bold">{value || "#ff0000"}</span>
-          </div>
-        );
-      case "Number":
-        return (
-          <input
-            type="number"
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            className={inputClass}
-            required={field.isRequired}
-          />
-        );
-      case "Decimal":
-        return (
-          <input
-            type="number"
-            step="0.01"
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            className={inputClass}
-            required={field.isRequired}
-          />
-        );
-      case "Location Picker":
-        return (
-          <input
-            type="text"
-            placeholder={field.placeholder || "Latitude, Longitude (e.g. 37.7749, -122.4194)"}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            className={inputClass}
-            required={field.isRequired}
-          />
-        );
-      case "Tags Input":
-        return (
-          <input
-            type="text"
-            placeholder={field.placeholder || "Comma separated tags (e.g. red, cotton, wash)"}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            className={inputClass}
-            required={field.isRequired}
-          />
-        );
-      case "Image Upload":
-      case "Multiple Image Upload":
-      case "Video Upload":
-      case "File Upload":
-        return (
-          <input
-            type="text"
-            placeholder={field.placeholder || "Direct media link / URL"}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            className={inputClass}
-            required={field.isRequired}
-          />
-        );
-      default:
-        return (
-          <input
-            type="text"
-            placeholder={field.placeholder}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            className={inputClass}
-            required={field.isRequired}
-          />
-        );
     }
   };
 
@@ -613,35 +353,125 @@ const AddProduct = ({ token, addProduct }) => {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Product Description</label>
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Product Description *</label>
               <textarea
                 rows={3}
                 placeholder="Describe features, size details, warranty, etc."
                 value={newProduct.description}
                 onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-800 text-sm outline-none focus:border-orange-500 transition resize-none"
+                required
               />
             </div>
 
-            {/* Render Category Specific Dynamic Attributes */}
-            {templateFields.length > 0 && (
-              <div className="space-y-4 pt-4 border-t border-slate-100">
-                <div className="flex items-center gap-1.5 text-xs font-black text-indigo-600 uppercase tracking-wider">
+            {/* Custom Dynamic Specifications Builder */}
+            <div className="space-y-4 pt-4 border-t border-slate-100">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-xs font-black text-indigo-650 uppercase tracking-wider">
                   <Layers size={13} />
-                  <span>Category Specifications</span>
+                  <span>Dynamic Product Attributes</span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {templateFields.map((field) => (
-                    <div key={field._id} className="space-y-1">
-                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                        {field.fieldName} {field.isRequired && <span className="text-red-500">*</span>}
-                      </label>
-                      {renderDynamicField(field)}
+                <button
+                  type="button"
+                  onClick={() => setCustomAttributes(prev => [...prev, { key: "", value: "" }])}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition cursor-pointer shadow-sm animate-fade-in"
+                >
+                  <Plus size={11} />
+                  <span>Add Attribute</span>
+                </button>
+              </div>
+
+              {customAttributes.length === 0 ? (
+                <div className="border border-dashed border-slate-200 rounded-2xl py-8 text-center text-slate-400 text-xs italic bg-slate-50/50">
+                  No attributes added yet. Click "Add Attribute" to add custom key-value specifications.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {customAttributes.map((attr, idx) => (
+                    <div key={idx} className="flex items-center gap-2.5 p-3.5 border border-slate-150 rounded-2xl bg-white shadow-sm transition hover:shadow-md animate-fade-in">
+                      <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-bold text-slate-450 uppercase block">Attribute Name</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. RAM, Material, Color"
+                            value={attr.key}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setCustomAttributes(prev => {
+                                const updated = [...prev];
+                                updated[idx] = { ...updated[idx], key: val };
+                                return updated;
+                              });
+                            }}
+                            className="w-full px-3 py-2 rounded-xl border border-slate-200 text-slate-850 text-xs outline-none focus:border-orange-500 transition"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-bold text-slate-450 uppercase block">Value</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. 16GB, 100% Cotton, Black"
+                            value={attr.value}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setCustomAttributes(prev => {
+                                const updated = [...prev];
+                                updated[idx] = { ...updated[idx], value: val };
+                                return updated;
+                              });
+                            }}
+                            className="w-full px-3 py-2 rounded-xl border border-slate-200 text-slate-850 text-xs outline-none focus:border-orange-500 transition"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 self-end pb-0.5">
+                        <button
+                          type="button"
+                          disabled={idx === 0}
+                          onClick={() => {
+                            setCustomAttributes(prev => {
+                              const updated = [...prev];
+                              const temp = updated[idx];
+                              updated[idx] = updated[idx - 1];
+                              updated[idx - 1] = temp;
+                              return updated;
+                            });
+                          }}
+                          className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-450 disabled:opacity-20 transition cursor-pointer"
+                        >
+                          <ArrowUp size={13} />
+                        </button>
+                        <button
+                          type="button"
+                          disabled={idx === customAttributes.length - 1}
+                          onClick={() => {
+                            setCustomAttributes(prev => {
+                              const updated = [...prev];
+                              const temp = updated[idx];
+                              updated[idx] = updated[idx + 1];
+                              updated[idx + 1] = temp;
+                              return updated;
+                            });
+                          }}
+                          className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-450 disabled:opacity-20 transition cursor-pointer"
+                        >
+                          <ArrowDown size={13} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setCustomAttributes(prev => prev.filter((_, i) => i !== idx))}
+                          className="p-1.5 rounded-lg hover:bg-red-50 text-red-500 transition cursor-pointer"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
             {/* Dynamic Category Settings Rule Summary */}
             {categorySettings && (
@@ -654,7 +484,7 @@ const AddProduct = ({ token, addProduct }) => {
                   <li>Minimum images required: <strong className="text-slate-800">{categorySettings.minImages}</strong></li>
                   <li>Maximum images allowed: <strong className="text-slate-800">{categorySettings.maxImages}</strong></li>
                   <li>Auto Approval: 
-                    {categorySettings.autoApprove ? (
+                    {!categorySettings.requiresApproval ? (
                       <span className="text-emerald-600 font-bold ml-1 inline-flex items-center gap-0.5"><CheckCircle size={10} /> Enabled (Instantly Published)</span>
                     ) : (
                       <span className="text-amber-600 font-bold ml-1 inline-flex items-center gap-0.5"><AlertCircle size={10} /> Pending Admin Moderation</span>

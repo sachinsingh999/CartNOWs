@@ -18,6 +18,7 @@ import {
   Tag,
   HelpCircle,
   TrendingUp,
+  RotateCcw,
   Globe,
   Bell,
   CheckCheck,
@@ -73,6 +74,14 @@ const Navbar = () => {
   const [allProducts, setAllProducts] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
+  const [recentSearches, setRecentSearches] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("recent_searches") || "[]");
+    } catch {
+      return [];
+    }
+  });
+  const trendingSearches = ["iPhone", "Denim Jacket", "Sneakers", "Smartwatch", "Headphones"];
 
   /* Mobile search overlay */
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
@@ -293,6 +302,13 @@ const Navbar = () => {
 
   const submitSearch = (val) => {
     const trimmed = (val ?? searchValue).trim();
+    if (trimmed) {
+      setRecentSearches((prev) => {
+        const next = [trimmed, ...prev.filter((x) => x !== trimmed)].slice(0, 5);
+        localStorage.setItem("recent_searches", JSON.stringify(next));
+        return next;
+      });
+    }
     setShowSuggestions(false);
     setMobileSearchOpen(false);
     navigate(`/product${trimmed ? `?q=${encodeURIComponent(trimmed)}` : ""}`);
@@ -344,7 +360,7 @@ const Navbar = () => {
         {/* ── Main bar ── */}
         <nav className="border-b border-slate-200/70 dark:border-slate-800/70 bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl shadow-[0_1px_3px_0_rgb(0,0,0,0.07)] dark:shadow-[0_4px_24px_-4px_rgba(0,0,0,0.5)]">
           <div className="mx-auto max-w-[1400px] px-4 sm:px-6">
-            <div className="flex h-16 items-center gap-3 lg:gap-4">
+            <div className="flex h-13 items-center gap-3 lg:gap-4">
 
               {/* ── Logo ── */}
               <Link
@@ -352,27 +368,27 @@ const Navbar = () => {
                 className="group flex shrink-0 items-center select-none"
               >
                 <Logo
-                  className="h-9 sm:h-10 w-auto text-slate-900 dark:text-white transition-transform duration-300 group-hover:scale-105"
+                  className="h-7.5 sm:h-8.5 w-auto text-slate-900 dark:text-white transition-transform duration-300 group-hover:scale-105"
                 />
               </Link>
 
               {/* ── Desktop Search ── */}
-              <div ref={searchRef} className="relative hidden md:flex flex-1 min-w-0">
+              <div ref={searchRef} className="relative hidden md:flex flex-1 min-w-0 max-w-xl mx-auto">
                 <form
                   onSubmit={(e) => { e.preventDefault(); submitSearch(); }}
-                  className={`flex w-full items-center overflow-hidden rounded-2xl border transition-all duration-300 ${searchFocused
+                  className={`flex w-full items-center overflow-hidden rounded-xl border transition-all duration-300 ${searchFocused
                       ? "border-orange-400 bg-white dark:bg-slate-900 shadow-lg shadow-orange-500/10 ring-3 ring-orange-500/15"
                       : "border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60"
                     }`}
                 >
-                  <Search className="ml-4 h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500" />
+                  <Search className="ml-3.5 h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-slate-500" />
                   <input
                     type="text"
                     value={searchValue}
                     onChange={(e) => setSearchValue(e.target.value)}
                     onFocus={() => { setSearchFocused(true); setShowSuggestions(true); fetchAllProducts(); }}
                     placeholder={t("search_placeholder")}
-                    className="h-11 w-full bg-transparent px-3 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none font-medium"
+                    className="h-9.5 w-full bg-transparent px-3 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none font-medium"
                   />
                   {searchValue && (
                     <button
@@ -385,53 +401,131 @@ const Navbar = () => {
                   )}
                   <button
                     type="submit"
-                    className="h-11 shrink-0 rounded-r-2xl bg-gradient-to-r from-orange-500 to-amber-500 px-5 text-[13px] font-bold text-white hover:from-orange-600 hover:to-amber-600 active:scale-95 transition-all cursor-pointer select-none"
+                    className="h-9.5 shrink-0 rounded-r-xl bg-gradient-to-r from-orange-500 to-amber-500 px-4 text-xs font-bold text-white hover:from-orange-600 hover:to-amber-600 active:scale-95 transition-all cursor-pointer select-none"
                   >
                     {t("search_button")}
                   </button>
                 </form>
 
                 {/* Autocomplete dropdown */}
-                {showSuggestions && suggestions.length > 0 && (
-                  <div className="absolute top-[calc(100%+8px)] left-0 right-0 z-50 overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl ring-1 ring-black/5 dark:ring-white/10">
-                    <div className="px-3 pt-3 pb-1">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
-                        <TrendingUp size={10} /> Suggestions
-                      </p>
-                    </div>
-                    {suggestions.map((p) => (
-                      <button
-                        key={p._id}
-                        onMouseDown={() => submitSearch(p.name)}
-                        className="flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-orange-50 dark:hover:bg-slate-800/80 transition-colors cursor-pointer group"
-                      >
-                        <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800">
-                          <img
-                            src={p.images?.[0]?.startsWith("http") ? p.images[0] : `${backendUrl}/${p.images?.[0]}`}
-                            alt={p.name}
-                            className="h-full w-full object-contain"
-                          />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
-                            {p.name}
+                {showSuggestions && (
+                  <div className="absolute top-[calc(100%+8px)] left-0 right-0 z-50 overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl ring-1 ring-black/5 dark:ring-white/10 p-4 space-y-4">
+                    {/* If search query is empty, show Recents and Trendings */}
+                    {!searchValue.trim() ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
+                        {/* Recent Searches */}
+                        <div>
+                          <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2 flex items-center gap-1.5">
+                            <RotateCcw size={11} /> Recent Searches
                           </p>
-                          <p className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide">
-                            {p.category}{p.brand ? ` · ${p.brand}` : ""}
-                          </p>
+                          {recentSearches.length === 0 ? (
+                            <p className="text-[11px] font-medium text-slate-455 dark:text-slate-505 italic pl-1">No recent searches</p>
+                          ) : (
+                            <div className="space-y-1">
+                              {recentSearches.map((item, index) => (
+                                <div key={index} className="flex items-center justify-between group">
+                                  <button
+                                    type="button"
+                                    onMouseDown={() => {
+                                      setSearchValue(item);
+                                      submitSearch(item);
+                                    }}
+                                    className="flex-1 text-left text-xs font-semibold text-slate-600 dark:text-slate-350 hover:text-orange-500 dark:hover:text-orange-400 py-1 transition-colors cursor-pointer"
+                                  >
+                                    {item}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onMouseDown={(e) => {
+                                      e.stopPropagation();
+                                      const next = recentSearches.filter((_, i) => i !== index);
+                                      setRecentSearches(next);
+                                      localStorage.setItem("recent_searches", JSON.stringify(next));
+                                    }}
+                                    className="text-[10px] font-bold text-slate-400 hover:text-red-500 transition px-1 opacity-0 group-hover:opacity-100"
+                                  >
+                                    Clear
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
-                        <span className="shrink-0 text-sm font-bold text-slate-700 dark:text-slate-300">₹{p.price}</span>
-                      </button>
-                    ))}
-                    <div className="border-t border-slate-100 dark:border-slate-800 p-2">
-                      <button
-                        onMouseDown={() => submitSearch()}
-                        className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-50 dark:bg-slate-800 py-2 text-xs font-bold text-orange-500 hover:bg-orange-50 dark:hover:bg-slate-700 transition cursor-pointer"
-                      >
-                        <Search size={11} />
-                        Search all results for "{searchValue}"
-                      </button>
-                    </div>
+
+                        {/* Trending Searches */}
+                        <div>
+                          <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2 flex items-center gap-1.5">
+                            <TrendingUp size={11} className="text-orange-500" /> Trending Now
+                          </p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {trendingSearches.map((item) => (
+                              <button
+                                key={item}
+                                type="button"
+                                onMouseDown={() => {
+                                  setSearchValue(item);
+                                  submitSearch(item);
+                                }}
+                                className="px-2.5 py-1 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300 hover:border-orange-500 hover:bg-orange-50/20 dark:hover:bg-orange-950/20 hover:text-orange-500 dark:hover:text-orange-400 transition cursor-pointer"
+                              >
+                                {item}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      /* If search query has value, show matching suggestions list */
+                      <div className="text-left space-y-3">
+                        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+                          <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-505">
+                            Matching Products
+                          </p>
+                          <span className="text-[10px] font-bold text-slate-400">{suggestions.length} suggestions</span>
+                        </div>
+
+                        {suggestions.length === 0 ? (
+                          <p className="text-xs text-slate-400 dark:text-slate-500 py-2">No matching products found. Press Enter to search anyway.</p>
+                        ) : (
+                          <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                            {suggestions.map((p) => (
+                              <button
+                                key={p._id}
+                                onMouseDown={() => submitSearch(p.name)}
+                                className="flex w-full items-center gap-3 py-2 text-left hover:bg-orange-50/40 dark:hover:bg-slate-800/40 transition rounded-xl px-1.5 group cursor-pointer"
+                              >
+                                <div className="h-8 w-8 shrink-0 overflow-hidden rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800">
+                                  <img
+                                    src={p.images?.[0]?.startsWith("http") ? p.images[0] : `${backendUrl}/${p.images?.[0]}`}
+                                    alt={p.name}
+                                    className="h-full w-full object-contain"
+                                  />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate group-hover:text-orange-500 dark:group-hover:text-orange-400 transition-colors">
+                                    {p.name}
+                                  </p>
+                                  <p className="text-[9px] text-slate-400 dark:text-slate-500 uppercase tracking-wide">
+                                    {p.category}{p.brand ? ` · ${p.brand}` : ""}
+                                  </p>
+                                </div>
+                                <span className="shrink-0 text-xs font-black text-slate-800 dark:text-slate-200">₹{p.price.toLocaleString("en-IN")}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+
+                        <div className="border-t border-slate-100 dark:border-slate-800 pt-2.5">
+                          <button
+                            onMouseDown={() => submitSearch()}
+                            className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-slate-50 dark:bg-slate-800 py-2.5 text-xs font-bold text-orange-500 hover:bg-orange-50 dark:hover:bg-slate-700 transition cursor-pointer"
+                          >
+                            <Search size={12} />
+                            Search all results for "{searchValue}"
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

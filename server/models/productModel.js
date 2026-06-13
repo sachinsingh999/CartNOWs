@@ -91,6 +91,24 @@ const productSchema = new mongoose.Schema({
     default: []
   },
 
+  attributes: {
+    type: [
+      {
+        key: {
+          type: String,
+          required: true,
+          trim: true
+        },
+        value: {
+          type: String,
+          required: true,
+          trim: true
+        }
+      }
+    ],
+    default: []
+  },
+
   reviews: {
     type: [
       {
