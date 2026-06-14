@@ -80,6 +80,12 @@ const userSchema = new mongoose.Schema({
       }
     ],
     default: []
+  },
+
+  appReview: {
+    rating: { type: Number, default: 0 },
+    comment: { type: String, default: "" },
+    createdAt: { type: Date, default: Date.now }
   }
 
 },{ minimize:false });

@@ -65,7 +65,7 @@ const Rating = ({ reviews = [] }) => {
               key={star}
               className="grid grid-cols-[38px_1fr_35px] items-center gap-2.5 text-[11px] text-left"
             >
-              <span className="font-bold text-slate-600 dark:text-slate-450 whitespace-nowrap">
+              <span className="font-bold text-slate-600 dark:text-slate-400 whitespace-nowrap">
                 {star} Star
               </span>
 

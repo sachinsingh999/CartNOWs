@@ -233,7 +233,7 @@ const ReviewCard = ({ review, getAvatarStyle }) => {
             value={newReplyText}
             onChange={(e) => setNewReplyText(e.target.value)}
             placeholder="Write a comment..."
-            className="flex-1 bg-transparent text-[11px] outline-none text-slate-850 dark:text-slate-100"
+            className="flex-1 bg-transparent text-[11px] outline-none text-slate-800 dark:text-slate-100"
           />
           <button type="submit" className="text-indigo-600 dark:text-indigo-400 hover:scale-105 active:scale-95 transition shrink-0 cursor-pointer">
             <Send size={12} />
@@ -253,7 +253,7 @@ const ReviewCard = ({ review, getAvatarStyle }) => {
                 </span>
                 <span className="text-[8.5px] font-bold text-slate-400">Verified Employee</span>
               </div>
-              <p className="text-xs text-slate-650 dark:text-slate-350 leading-relaxed pl-2.5 border-l-2 border-indigo-200 dark:border-indigo-850">
+              <p className="text-xs text-slate-600 dark:text-slate-350 leading-relaxed pl-2.5 border-l-2 border-indigo-200 dark:border-indigo-850">
                 {rep}
               </p>
             </div>
@@ -308,7 +308,7 @@ const CostomersReviews = ({ reviews = [], filter = "All Reviews", sortBy = "Most
     return (
       <div className="rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 px-5 py-10 text-center">
         <p className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">No matching reviews</p>
-        <p className="mt-1 text-[10px] text-slate-450 dark:text-slate-500">
+        <p className="mt-1 text-[10px] text-slate-400 dark:text-slate-500">
           Try relaxing your filters to see more product reviews.
         </p>
       </div>

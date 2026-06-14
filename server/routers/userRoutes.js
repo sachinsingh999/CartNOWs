@@ -8,6 +8,8 @@ import {
   deleteUserAddress,
   getUserNotifications,
   markNotificationsRead,
+  addUserAppReview,
+  getAllAppReviews,
 } from '../controllers/userController.js';
 import authUser from '../middleware/auth.js';
 
@@ -22,5 +24,7 @@ userRouter.post("/add-address", authUser, addUserAddress);
 userRouter.post("/delete-address", authUser, deleteUserAddress);
 userRouter.get("/notifications", authUser, getUserNotifications);
 userRouter.post("/notifications/read", authUser, markNotificationsRead);
+userRouter.post("/app-review", authUser, addUserAppReview);
+userRouter.get("/app-reviews", getAllAppReviews);
 
 export default userRouter;

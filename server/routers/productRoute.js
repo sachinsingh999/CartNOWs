@@ -33,6 +33,7 @@ productRouter.post('/generate-description',adminAuth,generateDescription)
 productRouter.get('/single/:id',singleProduct)
 productRouter.post('/review/:id',authUser,addProductReview)
 productRouter.get('/list',listProducts)
+productRouter.get('/',listProducts)
 productRouter.get('/categories', getCategoriesPublic)
 productRouter.get('/category/:id/template', getCategoryTemplatePublic)
 

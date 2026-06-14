@@ -109,7 +109,7 @@ const WriteReviewModal = ({ isOpen, onClose, onSubmit, loading }) => {
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 text-slate-400 hover:text-slate-650 dark:hover:text-white transition cursor-pointer h-8 w-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800"
+          className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-white transition cursor-pointer h-8 w-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800"
         >
           <X size={18} />
         </button>
@@ -138,7 +138,7 @@ const WriteReviewModal = ({ isOpen, onClose, onSubmit, loading }) => {
 
           {/* Stars Input */}
           <div className="space-y-1.5">
-            <label className="block text-[10px] font-black uppercase tracking-widest text-slate-450 dark:text-slate-400">
+            <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-400">
               Overall Rating *
             </label>
             <div className="flex items-center gap-3">
@@ -258,7 +258,7 @@ const WriteReviewModal = ({ isOpen, onClose, onSubmit, loading }) => {
 
           {/* Review Text Area */}
           <div className="space-y-1.5">
-            <label className="block text-[10px] font-black uppercase tracking-widest text-slate-450 dark:text-slate-400">
+            <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-400">
               Detailed Comments *
             </label>
             <textarea
@@ -266,7 +266,7 @@ const WriteReviewModal = ({ isOpen, onClose, onSubmit, loading }) => {
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="Tell us about the design, fit, delivery speed, or performance. How are you using this product?"
-              className="w-full border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm resize-none outline-none transition duration-200 focus:border-slate-850 dark:focus:border-indigo-500 dark:bg-slate-950 dark:text-white"
+              className="w-full border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm resize-none outline-none transition duration-200 focus:border-slate-800 dark:focus:border-indigo-500 dark:bg-slate-950 dark:text-white"
             />
             <div className="flex justify-between items-center text-[10px] text-slate-400">
               <span>Min 10 characters</span>
@@ -276,7 +276,7 @@ const WriteReviewModal = ({ isOpen, onClose, onSubmit, loading }) => {
 
           {/* Media Attachments Dropzone */}
           <div className="space-y-2">
-            <label className="block text-[10px] font-black uppercase tracking-widest text-slate-455 dark:text-slate-400">
+            <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-400">
               Attach Photos or Videos
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -341,7 +341,7 @@ const WriteReviewModal = ({ isOpen, onClose, onSubmit, loading }) => {
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-450 hover:bg-slate-50 dark:hover:bg-slate-800 transition active:scale-95 cursor-pointer"
+                className="px-4 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition active:scale-95 cursor-pointer"
               >
                 Cancel
               </button>
@@ -359,7 +359,7 @@ const WriteReviewModal = ({ isOpen, onClose, onSubmit, loading }) => {
         {/* trust indicator banner at the bottom */}
         <div className="bg-slate-50 dark:bg-slate-950 px-6 py-4 flex items-center gap-2.5 border-t border-slate-100 dark:border-slate-800/80">
           <Shield size={14} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
-          <p className="text-[10px] text-slate-400 dark:text-slate-550 leading-snug">
+          <p className="text-[10px] text-slate-400 dark:text-slate-500 leading-snug">
             We employ automated security filters to identify and prevent spam, fraud, or commercial review uploads.
           </p>
         </div>

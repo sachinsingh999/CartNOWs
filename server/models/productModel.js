@@ -152,6 +152,16 @@ const productSchema = new mongoose.Schema({
     default: null
   },
 
+  originalPrice: {
+    type: Number,
+    default: 0
+  },
+
+  location: {
+    type: String,
+    default: "Delhi"
+  },
+
   status: {
     type: String,
     enum: ["pending", "approved", "rejected", "disabled"],

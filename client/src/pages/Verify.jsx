@@ -79,7 +79,7 @@ const Verify = () => {
           <div className="flex flex-col items-center space-y-4">
             <Loader2 className="h-16 w-16 text-slate-900 dark:text-slate-100 animate-spin" />
             <h1 className="text-2xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight">Verifying Payment</h1>
-            <p className="text-sm font-semibold text-slate-400 dark:text-slate-550">Please do not close this window or refresh the page.</p>
+            <p className="text-sm font-semibold text-slate-400 dark:text-slate-500">Please do not close this window or refresh the page.</p>
           </div>
         )}
 
@@ -89,7 +89,7 @@ const Verify = () => {
               <CheckCircle2 size={48} />
             </div>
             <h1 className="text-2xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight">Payment Successful</h1>
-            <p className="text-sm font-semibold text-emerald-650 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/50 px-3 py-1 rounded-full inline-block">
+            <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/50 px-3 py-1 rounded-full inline-block">
               {isDemo ? "Simulated Sandboxed Sandbox Success" : "Transaction Cleared"}
             </p>
             <p className="text-sm text-slate-500 dark:text-slate-400 font-medium max-w-xs mx-auto leading-relaxed">
@@ -98,7 +98,7 @@ const Verify = () => {
             <div className="border-t border-slate-100 dark:border-slate-800 pt-6 w-full">
               <button
                 onClick={() => navigate(`/order-confirmed/${orderId}`)}
-                className="w-full rounded-2xl bg-slate-950 dark:bg-orange-600 py-3.5 text-sm font-bold text-white transition hover:bg-slate-800 dark:hover:bg-orange-550 cursor-pointer"
+                className="w-full rounded-2xl bg-slate-950 dark:bg-orange-600 py-3.5 text-sm font-bold text-white transition hover:bg-slate-800 dark:hover:bg-orange-500 cursor-pointer"
               >
                 View Order Receipt
               </button>
@@ -108,7 +108,7 @@ const Verify = () => {
 
         {!verifying && !isSuccess && (
           <div className="flex flex-col items-center space-y-4">
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-red-50 dark:bg-red-950/30 text-red-655 dark:text-red-400">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400">
               <XCircle size={48} />
             </div>
             <h1 className="text-2xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight">Payment Verification Failed</h1>
@@ -124,7 +124,7 @@ const Verify = () => {
               </button>
               <button
                 onClick={() => navigate("/product")}
-                className="w-full rounded-2xl border border-slate-205 dark:border-slate-800 bg-white dark:bg-slate-900 py-3.5 text-sm font-bold text-slate-707 dark:text-slate-300 transition hover:bg-slate-55 dark:hover:bg-slate-800 cursor-pointer"
+                className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-3.5 text-sm font-bold text-slate-707 dark:text-slate-300 transition hover:bg-slate-55 dark:hover:bg-slate-800 cursor-pointer"
               >
                 Continue Shopping
               </button>

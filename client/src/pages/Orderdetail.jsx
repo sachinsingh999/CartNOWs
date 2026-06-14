@@ -342,7 +342,7 @@ const Orderdetail = () => {
             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Your purchased items and order history will appear here once you place an order.</p>
             <button
               onClick={() => navigate("/product")}
-              className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-550 text-xs font-bold uppercase tracking-wider text-white transition active:scale-95 cursor-pointer shadow-md"
+              className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-500 text-xs font-bold uppercase tracking-wider text-white transition active:scale-95 cursor-pointer shadow-md"
             >
               Start Shopping
             </button>
@@ -405,7 +405,7 @@ const Orderdetail = () => {
                       <div>
                         <Link
                           to={`/product/${item.productId}`}
-                          className="group/title inline-block text-xl font-black tracking-tight text-slate-900 dark:text-white leading-tight hover:text-indigo-650 dark:hover:text-indigo-400 transition-colors duration-150 line-clamp-2"
+                          className="group/title inline-block text-xl font-black tracking-tight text-slate-900 dark:text-white leading-tight hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-150 line-clamp-2"
                         >
                           {item.name}
                         </Link>
@@ -516,7 +516,7 @@ const Orderdetail = () => {
                       
                       {/* Price Section */}
                       <div className="space-y-1">
-                        <div className="text-[10px] font-black uppercase tracking-wider text-slate-450">Transaction Price</div>
+                        <div className="text-[10px] font-black uppercase tracking-wider text-slate-400">Transaction Price</div>
                         <div className="flex items-baseline gap-2">
                           <span className="text-2xl font-black text-slate-900 dark:text-white">
                             ₹{(item.price * item.qty).toLocaleString("en-IN")}
@@ -572,7 +572,7 @@ const Orderdetail = () => {
                             onClick={() =>
                               navigate(`/track/${item.orderId}`, { state: { item, returnRequest, initialTab: "return" } })
                             }
-                            className="inline-flex items-center justify-center gap-2 rounded-xl bg-orange-500 hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-550 px-5 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-md shadow-orange-500/10 hover:shadow-lg transition-all active:scale-95 cursor-pointer"
+                            className="inline-flex items-center justify-center gap-2 rounded-xl bg-orange-500 hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-500 px-5 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-md shadow-orange-500/10 hover:shadow-lg transition-all active:scale-95 cursor-pointer"
                           >
                             <RotateCcw className="h-4 w-4" />
                             <span>{t("track_return")}</span>
@@ -612,7 +612,7 @@ const Orderdetail = () => {
 
                         <button
                           onClick={() => navigate("/help")}
-                          className="inline-flex items-center justify-center gap-2 rounded-xl border border-indigo-200 dark:border-indigo-900/50 bg-indigo-50/20 dark:bg-indigo-950/10 px-5 py-3 text-xs font-bold uppercase tracking-wider text-indigo-650 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-all active:scale-95 cursor-pointer"
+                          className="inline-flex items-center justify-center gap-2 rounded-xl border border-indigo-200 dark:border-indigo-900/50 bg-indigo-50/20 dark:bg-indigo-950/10 px-5 py-3 text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-all active:scale-95 cursor-pointer"
                         >
                           <Headset className="h-4 w-4 text-indigo-500" />
                           <span>{t("get_support")}</span>
@@ -640,11 +640,11 @@ const Orderdetail = () => {
                 <h3 className="mt-2 text-xl font-extrabold text-slate-900 dark:text-white">
                   Request Return
                 </h3>
-                <p className="text-xs text-slate-550 dark:text-slate-400 mt-1">Item: {selectedReturnItem.name}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Item: {selectedReturnItem.name}</p>
               </div>
               <button
                 onClick={() => setSelectedReturnItem(null)}
-                className="rounded-xl h-9 w-9 flex items-center justify-center text-slate-400 hover:text-slate-650 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                className="rounded-xl h-9 w-9 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>

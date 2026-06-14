@@ -50,7 +50,7 @@ const BeforeAfterSlider = ({ beforeImage, afterImage }) => {
           className="absolute inset-0 w-full h-full object-contain pointer-events-none p-4"
           style={{ width: containerRef.current?.getBoundingClientRect().width }}
         />
-        <div className="absolute top-4 right-4 z-20 bg-indigo-650/90 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-black text-white uppercase tracking-wider">
+        <div className="absolute top-4 right-4 z-20 bg-indigo-600/90 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-black text-white uppercase tracking-wider">
           Try-On Result
         </div>
       </div>

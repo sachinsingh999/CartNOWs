@@ -25,7 +25,7 @@ const ComparisonTray = () => {
             </div>
             <button 
               onClick={clearCompare}
-              className="text-[10px] font-bold text-slate-450 hover:text-slate-600 dark:hover:text-slate-200 transition cursor-pointer"
+              className="text-[10px] font-bold text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition cursor-pointer"
             >
               Clear All
             </button>
@@ -51,7 +51,7 @@ const ComparisonTray = () => {
                   <div className="h-10 w-10 flex items-center justify-center overflow-hidden bg-white rounded-lg p-0.5 border border-slate-100">
                     <img src={imgUrl} alt={product.name} className="max-h-full max-w-full object-contain" />
                   </div>
-                  <span className="text-[9px] font-bold text-slate-650 dark:text-slate-400 mt-1.5 truncate max-w-full block">
+                  <span className="text-[9px] font-bold text-slate-600 dark:text-slate-400 mt-1.5 truncate max-w-full block">
                     {product.name.split(" ")[0]}
                   </span>
                 </div>

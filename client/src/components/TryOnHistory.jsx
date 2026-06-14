@@ -107,7 +107,7 @@ const TryOnHistory = ({ token, onSelectLook }) => {
 
         <button 
           onClick={() => document.getElementById("catalog-section")?.scrollIntoView({ behavior: "smooth" })}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 dark:bg-indigo-650 hover:bg-slate-850 text-[10px] font-black text-white uppercase tracking-wider transition active:scale-95 shadow-sm hover:shadow-md cursor-pointer"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 dark:bg-indigo-600 hover:bg-slate-800 text-[10px] font-black text-white uppercase tracking-wider transition active:scale-95 shadow-sm hover:shadow-md cursor-pointer"
         >
           <span>Browse the Catalog</span>
           <ArrowRight size={12} />
@@ -184,7 +184,7 @@ const TryOnHistory = ({ token, onSelectLook }) => {
             <h4 className="text-[11px] font-black text-slate-800 dark:text-slate-200 truncate capitalize">
               {item.productId?.name || "Product Deleted"}
             </h4>
-            <div className="flex items-center justify-between text-[9.5px] text-slate-450 dark:text-slate-500 font-bold border-t border-slate-100 dark:border-slate-850/60 pt-1.5 mt-1.5">
+            <div className="flex items-center justify-between text-[9.5px] text-slate-400 dark:text-slate-500 font-bold border-t border-slate-100 dark:border-slate-800/60 pt-1.5 mt-1.5">
               <span className="inline-flex items-center gap-1">
                 <Tag size={10} className="text-indigo-500" />
                 <span>Size: {item.selectedSize || "Default"}</span>

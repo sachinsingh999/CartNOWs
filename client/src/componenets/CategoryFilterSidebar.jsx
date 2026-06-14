@@ -151,7 +151,7 @@ const CategoryFilterSidebar = ({ productList, setFilteredList }) => {
                       className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all duration-200 cursor-pointer hover:-translate-y-0.5 active:translate-y-0 capitalize ${
                         isActive
                           ? "border-indigo-600 dark:border-indigo-500 bg-indigo-600 dark:bg-indigo-500 text-white shadow-md shadow-indigo-100 dark:shadow-slate-950 scale-102"
-                          : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-650 dark:text-slate-355 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-850"
+                          : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-355 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
                       }`}
                     >
                       {cat === "all" ? "All" : cat}
@@ -192,7 +192,7 @@ const CategoryFilterSidebar = ({ productList, setFilteredList }) => {
                 <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500">
                   Max Budget
                 </span>
-                <span className="text-sm font-extrabold text-indigo-650 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded-lg border border-indigo-200/50 dark:border-indigo-900/50">
+                <span className="text-sm font-extrabold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded-lg border border-indigo-200/50 dark:border-indigo-900/50">
                   ₹{price.toLocaleString("en-IN")}
                 </span>
               </div>
@@ -254,7 +254,7 @@ const CategoryFilterSidebar = ({ productList, setFilteredList }) => {
                     className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl border w-full text-left transition-all duration-200 cursor-pointer hover:-translate-y-0.5 active:translate-y-0 ${
                       isActive
                         ? "border-indigo-600 dark:border-indigo-500 bg-indigo-600 dark:bg-indigo-500 text-white shadow-sm shadow-indigo-100 dark:shadow-slate-950"
-                        : "border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-900 text-slate-650 dark:text-slate-350 hover:border-slate-300 dark:hover:border-slate-700"
+                        : "border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-350 hover:border-slate-300 dark:hover:border-slate-700"
                     }`}
                   >
                     <span className="text-amber-500 text-sm tracking-tighter flex gap-0.5">
@@ -265,7 +265,7 @@ const CategoryFilterSidebar = ({ productList, setFilteredList }) => {
                       className={`text-xs font-bold ${
                         isActive
                           ? "text-white"
-                          : "text-slate-650 dark:text-slate-400"
+                          : "text-slate-600 dark:text-slate-400"
                       }`}
                     >
                       {r}+ stars

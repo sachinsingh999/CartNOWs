@@ -1032,7 +1032,7 @@ const ProductDetail = () => {
                       <h4 className="text-xs font-black uppercase text-slate-900 dark:text-white tracking-wider">
                         Customer Feedback
                       </h4>
-                      <p className="text-[10px] text-slate-450 dark:text-slate-500 mt-0.5">
+                      <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
                         Showing {reviewCount} product reviews
                       </p>
                     </div>
@@ -1052,7 +1052,7 @@ const ProductDetail = () => {
 
                       <button
                         onClick={() => setShowWriteReview(true)}
-                        className="py-2.5 px-4 bg-slate-950 dark:bg-indigo-600 hover:bg-slate-850 dark:hover:bg-indigo-500 text-white text-[11px] font-black uppercase tracking-wider rounded-xl transition active:scale-95 cursor-pointer flex items-center gap-1.5 shadow-sm"
+                        className="py-2.5 px-4 bg-slate-950 dark:bg-indigo-600 hover:bg-slate-800 dark:hover:bg-indigo-500 text-white text-[11px] font-black uppercase tracking-wider rounded-xl transition active:scale-95 cursor-pointer flex items-center gap-1.5 shadow-sm"
                       >
                         <MessageSquare size={13} />
                         <span>Write a Review</span>
@@ -1071,7 +1071,7 @@ const ProductDetail = () => {
                           className={`px-3 py-1 rounded-full text-[10.5px] font-bold transition-all duration-200 cursor-pointer ${
                             isActive
                               ? "bg-slate-950 dark:bg-indigo-600 text-white shadow-xs"
-                              : "bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-450 border border-slate-200/50 dark:border-slate-800 hover:border-slate-350"
+                              : "bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 border border-slate-200/50 dark:border-slate-800 hover:border-slate-350"
                           }`}
                         >
                           {chip}
@@ -1205,13 +1205,13 @@ const ProductDetail = () => {
               return (
                 <div 
                   key={i} 
-                  className="flex items-center gap-4 bg-white/60 dark:bg-slate-900/25 border border-slate-200/50 dark:border-slate-800/80 rounded-2xl p-4.5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xs hover:border-slate-300 dark:hover:border-slate-700 text-left"
+                  className="flex items-center gap-4 bg-white/60 dark:bg-slate-900/25 border border-slate-200/50 dark:border-slate-800/80 rounded-2xl p-4.5 transition-all duration-300 hover:border-slate-300 dark:hover:border-slate-700 text-left"
                 >
                   <div className={`h-11 w-11 rounded-xl flex items-center justify-center border shrink-0 ${colorClasses}`}>
                     <Icon size={20} />
                   </div>
                   <div className="space-y-0.5">
-                    <span className="text-xs font-black text-slate-850 dark:text-slate-100 block uppercase tracking-wider">
+                    <span className="text-xs font-black text-slate-800 dark:text-slate-100 block uppercase tracking-wider">
                       {feature.title}
                     </span>
                     <span className="text-[10px] text-slate-400 dark:text-slate-500 block leading-tight font-medium">
@@ -1285,7 +1285,7 @@ const ProductDetail = () => {
       {!showAssistant && (
         <button
           onClick={() => setShowAssistant(true)}
-          className="fixed bottom-6 right-6 z-[90] flex items-center gap-2.5 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 p-4 text-white shadow-xl hover:shadow-indigo-500/35 hover:-translate-y-1 active:translate-y-0 transition-all duration-300 group cursor-pointer"
+          className="fixed bottom-6 right-6 z-[90] flex items-center gap-2.5 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 p-4 text-white shadow-xl hover:shadow-indigo-500/35 transition-all duration-300 group cursor-pointer"
         >
           <div className="relative">
             <MessageSquare size={20} />
@@ -1349,7 +1349,7 @@ const ProductDetail = () => {
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative">
             <button
               onClick={() => setShowSizeGuide(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-650 dark:hover:text-white transition cursor-pointer"
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-white transition cursor-pointer"
             >
               <X size={20} />
             </button>
@@ -1367,7 +1367,7 @@ const ProductDetail = () => {
                       <th className="py-2.5">Chest (in)</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium text-slate-800 dark:text-slate-250">
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium text-slate-800 dark:text-slate-200">
                     <tr><td className="py-3">2Y</td><td className="py-3">33" - 35"</td><td className="py-3">20" - 21"</td></tr>
                     <tr><td className="py-3">4Y</td><td className="py-3">39" - 41"</td><td className="py-3">22" - 23"</td></tr>
                     <tr><td className="py-3">6Y</td><td className="py-3">45" - 47"</td><td className="py-3">24" - 25"</td></tr>
@@ -1388,7 +1388,7 @@ const ProductDetail = () => {
                       <th className="py-2.5">Hip (in)</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium text-slate-800 dark:text-slate-250">
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium text-slate-800 dark:text-slate-200">
                     <tr><td className="py-3 font-bold">XS</td><td className="py-3">32" - 34"</td><td className="py-3">26" - 28"</td><td className="py-3">32" - 34"</td></tr>
                     <tr><td className="py-3 font-bold">S</td><td className="py-3">35" - 37"</td><td className="py-3">29" - 31"</td><td className="py-3">35" - 37"</td></tr>
                     <tr><td className="py-3 font-bold">M</td><td className="py-3">38" - 40"</td><td className="py-3">32" - 34"</td><td className="py-3">38" - 40"</td></tr>

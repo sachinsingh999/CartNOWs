@@ -336,14 +336,14 @@ const TryOnPage = () => {
 
           {loading ? (
             <div className="flex justify-center py-20">
-              <div className="w-10 h-10 rounded-full border-4 border-slate-250 border-t-orange-500 animate-spin" />
+              <div className="w-10 h-10 rounded-full border-4 border-slate-200 border-t-orange-500 animate-spin" />
             </div>
           ) : (
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
               {filteredProducts.map((item) => (
                 <div 
                   key={item._id}
-                  className="relative overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-900/40 p-3.5 flex flex-col justify-between group shadow-xs hover:shadow-md transition-all duration-300 hover:-translate-y-0.5"
+                  className="relative overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 p-3.5 flex flex-col justify-between group shadow-xs hover:shadow-md transition-all duration-300 hover:-translate-y-0.5"
                 >
                   {/* Image frame */}
                   <div className="aspect-[3/4] rounded-2xl overflow-hidden bg-slate-50 dark:bg-slate-900 relative">
@@ -366,7 +366,7 @@ const TryOnPage = () => {
                       <span className="text-xs font-black text-slate-950 dark:text-slate-100">₹{item.price}</span>
                       <button
                         onClick={() => handleOpenFittingRoom(item)}
-                        className="px-3.5 py-2 rounded-xl bg-slate-950 dark:bg-indigo-650 hover:bg-slate-900 text-[10px] font-black text-white uppercase tracking-wider transition active:scale-95 cursor-pointer shadow-xs flex items-center gap-1"
+                        className="px-3.5 py-2 rounded-xl bg-slate-950 dark:bg-indigo-600 hover:bg-slate-900 text-[10px] font-black text-white uppercase tracking-wider transition active:scale-95 cursor-pointer shadow-xs flex items-center gap-1"
                       >
                         <Sparkles size={10} className="animate-pulse" />
                         <span>Try On</span>
@@ -389,7 +389,7 @@ const TryOnPage = () => {
             const Icon = feat.icon;
             return (
               <div key={fIdx} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-3xl flex gap-4 text-left shadow-xs">
-                <div className={`h-9 w-9 rounded-xl bg-slate-50 dark:bg-slate-950 flex items-center justify-center shrink-0 border border-slate-200 dark:border-slate-850 ${feat.color}`}>
+                <div className={`h-9 w-9 rounded-xl bg-slate-50 dark:bg-slate-950 flex items-center justify-center shrink-0 border border-slate-200 dark:border-slate-800 ${feat.color}`}>
                   <Icon size={16} />
                 </div>
                 <div className="space-y-1">

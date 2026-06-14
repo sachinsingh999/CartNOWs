@@ -161,6 +161,7 @@ const getUserProfile = async (req, res) => {
       email: user.email,
       deliveryVerificationKey: user.deliveryVerificationKey,
       addresses: user.addresses || [],
+      appReview: user.appReview || null,
     };
 
     res.json({
@@ -315,6 +316,87 @@ const markNotificationsRead = async (req, res) => {
   }
 };
 
+/* ================= ADD OR UPDATE USER APP REVIEW ================= */
+const addUserAppReview = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { rating, comment } = req.body;
+
+    if (rating === undefined || rating < 1 || rating > 5) {
+      return res.json({
+        success: false,
+        message: "Rating must be between 1 and 5",
+      });
+    }
+
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    user.appReview = {
+      rating: Number(rating),
+      comment: comment || "",
+      createdAt: new Date(),
+    };
+
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Application review saved successfully",
+      appReview: user.appReview,
+    });
+  } catch (error) {
+    console.log("ADD APP REVIEW ERROR 👉", error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+/* ================= GET ALL APPLICATION REVIEWS ================= */
+const getAllAppReviews = async (req, res) => {
+  try {
+    const usersWithReviews = await userModel.find(
+      { "appReview.rating": { $gt: 0 } },
+      "name appReview"
+    );
+
+    const reviews = usersWithReviews.map(user => {
+      const nameParts = user.name.trim().split(" ");
+      const initials = nameParts.map(n => n.charAt(0).toUpperCase()).join("").slice(0, 2);
+
+      return {
+        id: user._id,
+        name: user.name,
+        rating: user.appReview.rating,
+        comment: user.appReview.comment,
+        product: "Platform Experience",
+        date: user.appReview.createdAt 
+          ? new Date(user.appReview.createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" })
+          : "Recently",
+        initials: initials || "U"
+      };
+    });
+
+    res.json({
+      success: true,
+      reviews
+    });
+  } catch (error) {
+    console.log("GET ALL APP REVIEWS ERROR 👉", error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 export {
   loginUser,
   registerUser,
@@ -324,4 +406,6 @@ export {
   deleteUserAddress,
   getUserNotifications,
   markNotificationsRead,
+  addUserAppReview,
+  getAllAppReviews,
 };

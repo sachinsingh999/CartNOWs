@@ -11,7 +11,7 @@ const About = () => {
           <p className="text-sm font-medium uppercase tracking-wide text-gray-500 dark:text-slate-400 font-semibold">
             About CartNOW
           </p>
-          <h1 className="mt-3 text-5xl font-extrabold text-gray-955 dark:text-slate-50">
+          <h1 className="mt-3 text-5xl font-extrabold text-gray-900 dark:text-slate-50">
             Built for simple, confident shopping.
           </h1>
 
@@ -25,28 +25,28 @@ const About = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
 
           <div className="bg-white dark:bg-slate-900/50 p-8 rounded-lg border border-gray-200 dark:border-slate-800 shadow-sm hover:shadow-lg dark:shadow-slate-950/20 transition text-center">
-            <h3 className="text-xl font-semibold mb-2 text-gray-955 dark:text-slate-100">Quality Products</h3>
+            <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-slate-100">Quality Products</h3>
             <p className="text-gray-600 dark:text-slate-400 text-sm">
               Carefully selected products with premium quality standards.
             </p>
           </div>
 
           <div className="bg-white dark:bg-slate-900/50 p-8 rounded-lg border border-gray-200 dark:border-slate-800 shadow-sm hover:shadow-lg dark:shadow-slate-950/20 transition text-center">
-            <h3 className="text-xl font-semibold mb-2 text-gray-955 dark:text-slate-100">Fast Delivery</h3>
+            <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-slate-100">Fast Delivery</h3>
             <p className="text-gray-600 dark:text-slate-400 text-sm">
               Quick and reliable shipping across multiple locations.
             </p>
           </div>
 
           <div className="bg-white dark:bg-slate-900/50 p-8 rounded-lg border border-gray-200 dark:border-slate-800 shadow-sm hover:shadow-lg dark:shadow-slate-950/20 transition text-center">
-            <h3 className="text-xl font-semibold mb-2 text-gray-955 dark:text-slate-100">Secure Payments</h3>
+            <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-slate-100">Secure Payments</h3>
             <p className="text-gray-600 dark:text-slate-400 text-sm">
               100% safe checkout with trusted payment gateways.
             </p>
           </div>
 
           <div className="bg-white dark:bg-slate-900/50 p-8 rounded-lg border border-gray-200 dark:border-slate-800 shadow-sm hover:shadow-lg dark:shadow-slate-950/20 transition text-center">
-            <h3 className="text-xl font-semibold mb-2 text-gray-955 dark:text-slate-100">Easy Returns</h3>
+            <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-slate-100">Easy Returns</h3>
             <p className="text-gray-600 dark:text-slate-400 text-sm">
               Hassle-free return & refund policy for customers.
             </p>

@@ -32,6 +32,25 @@ const generateVerificationCode = () => {
   return code;
 };
 
+// Helper function to remove only ordered items from the user's cart
+const cleanUserCart = async (userId, items) => {
+  try {
+    const user = await userModel.findById(userId);
+    if (user && user.cartData) {
+      const cartData = { ...user.cartData };
+      for (const item of items) {
+        const prodId = item.productId || item._id || item.itemId;
+        const key = `${prodId}_${item.size}`;
+        delete cartData[key];
+      }
+      user.cartData = cartData;
+      await user.save();
+    }
+  } catch (error) {
+    console.log("Error cleaning user cart:", error);
+  }
+};
+
 /* ================= PLACE ORDER (COD) ================= */
 const placeOrder = async (req, res) => {
   try {
@@ -63,10 +82,8 @@ const placeOrder = async (req, res) => {
       date: Date.now(),
     });
 
-    // Clear cart after order placement
-    await userModel.findByIdAndUpdate(req.user._id, {
-      cartData: {},
-    });
+    // Remove only ordered items from the user's cart after order placement
+    await cleanUserCart(req.user._id, items);
 
     // Auto-assign delivery agent
     await autoAssignDeliveryAgent(order._id);
@@ -198,7 +215,7 @@ const verifyStripe = async (req, res) => {
       await orderModel.findByIdAndUpdate(orderId, { paymentStatus: "paid" });
       const order = await orderModel.findById(orderId);
       if (order) {
-        await userModel.findByIdAndUpdate(order.userId, { cartData: {} });
+        await cleanUserCart(order.userId, order.items);
       }
       // Auto-assign delivery agent
       await autoAssignDeliveryAgent(orderId);
@@ -303,7 +320,7 @@ const verifyRazorpay = async (req, res) => {
       await orderModel.findByIdAndUpdate(orderId, { paymentStatus: "paid" });
       const order = await orderModel.findById(orderId);
       if (order) {
-        await userModel.findByIdAndUpdate(order.userId, { cartData: {} });
+        await cleanUserCart(order.userId, order.items);
       }
       // Auto-assign delivery agent
       await autoAssignDeliveryAgent(orderId);
@@ -321,7 +338,7 @@ const verifyRazorpay = async (req, res) => {
       await orderModel.findByIdAndUpdate(orderId, { paymentStatus: "paid" });
       const order = await orderModel.findById(orderId);
       if (order) {
-        await userModel.findByIdAndUpdate(order.userId, { cartData: {} });
+        await cleanUserCart(order.userId, order.items);
       }
       // Auto-assign delivery agent
       await autoAssignDeliveryAgent(orderId);

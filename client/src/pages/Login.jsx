@@ -7,7 +7,7 @@ import { Store, Truck, Loader2, ArrowRight, Eye, EyeOff, ShoppingBag, ShoppingCa
 import { motion } from "framer-motion";
 
 const inputClass =
-  "w-full rounded-xl border border-gray-300 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 outline-none transition focus:border-indigo-650 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 dark:focus:ring-indigo-500/10";
+  "w-full rounded-xl border border-gray-300 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 outline-none transition focus:border-indigo-600 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 dark:focus:ring-indigo-500/10";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -138,7 +138,7 @@ const Login = () => {
             repeat: Infinity,
             ease: "easeInOut"
           }}
-          className="absolute -top-40 -left-40 w-96 h-96 rounded-full bg-indigo-500/10 blur-3xl dark:bg-indigo-650/15"
+          className="absolute -top-40 -left-40 w-96 h-96 rounded-full bg-indigo-500/10 blur-3xl dark:bg-indigo-600/15"
         />
         <motion.div
           animate={{
@@ -300,7 +300,7 @@ const Login = () => {
             
             <motion.h2 
               variants={itemVariants}
-              className="mt-2 text-3xl font-extrabold text-slate-955 dark:text-slate-100 tracking-tight flex items-center gap-2"
+              className="mt-2 text-3xl font-extrabold text-slate-950 dark:text-slate-100 tracking-tight flex items-center gap-2"
             >
               <span>Login to CartNOW</span>
               <motion.div
@@ -356,7 +356,7 @@ const Login = () => {
                   whileTap={{ scale: 0.985 }}
                   type="submit"
                   disabled={loadingSubmit}
-                  className="w-full flex items-center justify-center gap-2 rounded-xl bg-slate-950 dark:bg-indigo-650 hover:bg-slate-900 dark:hover:bg-indigo-700 py-3.5 text-xs font-black uppercase tracking-wider text-white transition cursor-pointer shadow disabled:opacity-75 disabled:cursor-not-allowed"
+                  className="w-full flex items-center justify-center gap-2 rounded-xl bg-slate-950 dark:bg-indigo-600 hover:bg-slate-900 dark:hover:bg-indigo-700 py-3.5 text-xs font-black uppercase tracking-wider text-white transition cursor-pointer shadow disabled:opacity-75 disabled:cursor-not-allowed"
                 >
                   {loadingSubmit ? (
                     <>

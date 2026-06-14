@@ -377,8 +377,8 @@ const Navbar = () => {
                 <form
                   onSubmit={(e) => { e.preventDefault(); submitSearch(); }}
                   className={`flex w-full items-center overflow-hidden rounded-xl border transition-all duration-300 ${searchFocused
-                      ? "border-orange-400 bg-white dark:bg-slate-900 shadow-lg shadow-orange-500/10 ring-3 ring-orange-500/15"
-                      : "border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60"
+                    ? "border-orange-400 bg-white dark:bg-slate-900 shadow-lg shadow-orange-500/10 ring-3 ring-orange-500/15"
+                    : "border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60"
                     }`}
                 >
                   <Search className="ml-3.5 h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-slate-500" />
@@ -419,7 +419,7 @@ const Navbar = () => {
                             <RotateCcw size={11} /> Recent Searches
                           </p>
                           {recentSearches.length === 0 ? (
-                            <p className="text-[11px] font-medium text-slate-455 dark:text-slate-505 italic pl-1">No recent searches</p>
+                            <p className="text-[11px] font-medium text-slate-400 dark:text-slate-505 italic pl-1">No recent searches</p>
                           ) : (
                             <div className="space-y-1">
                               {recentSearches.map((item, index) => (
@@ -608,8 +608,8 @@ const Navbar = () => {
                       onClick={() => setNotiOpen((p) => !p)}
                       title="Notifications"
                       className={`relative flex h-9 w-9 items-center justify-center rounded-xl border transition cursor-pointer hover:scale-105 active:scale-95 ${notiOpen
-                          ? "border-orange-400 bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400"
-                          : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900"
+                        ? "border-orange-400 bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400"
+                        : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900"
                         }`}
                     >
                       <div className="relative flex items-center justify-center h-4 w-4">
@@ -650,8 +650,8 @@ const Navbar = () => {
                           <button
                             onClick={() => setActiveTab("all")}
                             className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${activeTab === "all"
-                                ? "bg-slate-900 text-white dark:bg-white dark:text-slate-955 shadow-sm scale-105"
-                                : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-205 hover:bg-slate-150/40 dark:hover:bg-slate-800/20"
+                              ? "bg-slate-900 text-white dark:bg-white dark:text-slate-950 shadow-sm scale-105"
+                              : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-150/40 dark:hover:bg-slate-800/20"
                               }`}
                           >
                             All {notifications.length > 0 && `(${notifications.length})`}
@@ -659,8 +659,8 @@ const Navbar = () => {
                           <button
                             onClick={() => setActiveTab("unread")}
                             className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${activeTab === "unread"
-                                ? "bg-orange-500 text-white shadow-sm scale-105"
-                                : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-205 hover:bg-slate-150/40 dark:hover:bg-slate-800/20"
+                              ? "bg-orange-500 text-white shadow-sm scale-105"
+                              : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-150/40 dark:hover:bg-slate-800/20"
                               }`}
                           >
                             Unread {unreadCount > 0 && `(${unreadCount})`}
@@ -680,7 +680,7 @@ const Navbar = () => {
                               <p className="text-xs font-black text-slate-800 dark:text-slate-200">
                                 {activeTab === "unread" ? "No unread alerts" : "Inbox Clean & Clear"}
                               </p>
-                              <p className="text-[10px] text-slate-450 dark:text-slate-505 mt-1 max-w-[200px] leading-relaxed">
+                              <p className="text-[10px] text-slate-400 dark:text-slate-505 mt-1 max-w-[200px] leading-relaxed">
                                 {activeTab === "unread"
                                   ? "You have read all notifications. Switch to 'All' to view history."
                                   : "You're all caught up! When order updates arrive, you'll see them here."}
@@ -747,8 +747,8 @@ const Navbar = () => {
                                     setNotiOpen(false);
                                   }}
                                   className={`px-5 py-4 flex gap-3.5 text-left transition cursor-pointer hover:bg-orange-500/[0.03] dark:hover:bg-orange-500/[0.03] relative group border-l-4 ${!n.isRead
-                                      ? "bg-orange-500/[0.01] dark:bg-orange-500/[0.01] border-orange-500"
-                                      : "border-transparent"
+                                    ? "bg-orange-500/[0.01] dark:bg-orange-500/[0.01] border-orange-500"
+                                    : "border-transparent"
                                     }`}
                                 >
                                   {getNotificationIcon(n.title)}
@@ -908,8 +908,8 @@ const Navbar = () => {
                   <button
                     onClick={() => setOpen((p) => !p)}
                     className={`flex h-9 items-center gap-2 rounded-xl border px-2.5 font-bold text-sm transition-all cursor-pointer select-none ${open
-                        ? "border-orange-400 bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400"
-                        : "border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900"
+                      ? "border-orange-400 bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400"
+                      : "border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900"
                       }`}
                   >
                     <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-orange-400 to-amber-500 text-[10px] font-black text-white shadow-sm">
@@ -1158,8 +1158,8 @@ const Navbar = () => {
                     }`}
                 >
                   <div className={`relative flex h-7 w-7 items-center justify-center rounded-full transition-all ${active
-                      ? "bg-orange-500 text-white shadow-md shadow-orange-500/30"
-                      : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+                    ? "bg-orange-500 text-white shadow-md shadow-orange-500/30"
+                    : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
                     }`}>
                     {token && initials
                       ? <span className="text-[11px] font-black">{initials}</span>

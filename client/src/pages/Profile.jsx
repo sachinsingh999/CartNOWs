@@ -46,6 +46,45 @@ const Profile = () => {
   });
   const [adding, setAdding] = useState(false);
 
+  const [appRating, setAppRating] = useState(0);
+  const [appComment, setAppComment] = useState("");
+  const [submittingReview, setSubmittingReview] = useState(false);
+
+  useEffect(() => {
+    if (user && user.appReview) {
+      setAppRating(user.appReview.rating || 0);
+      setAppComment(user.appReview.comment || "");
+    }
+  }, [user]);
+
+  const handleAppReviewSubmit = async (e) => {
+    e.preventDefault();
+    if (appRating === 0) {
+      toast.error("Please select a rating of at least 1 star.");
+      return;
+    }
+    setSubmittingReview(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.post(
+        `${backendUrl}/api/user/app-review`,
+        { rating: appRating, comment: appComment },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (res.data.success) {
+        setUser(prev => ({ ...prev, appReview: res.data.appReview }));
+        toast.success("Thank you for your feedback! 🌟");
+      } else {
+        toast.error(res.data.message || "Failed to submit feedback.");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to submit feedback.");
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
+
   const handleAddAddress = async (e) => {
     e.preventDefault();
     const { firstName, email, phone, street, city, state, country } = newAddress;
@@ -176,7 +215,7 @@ const Profile = () => {
         <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 mt-4">No user data found.</p>
         <button
           onClick={() => navigate("/login")}
-          className="mt-4 rounded-xl bg-orange-500 hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-550 px-5 py-2.5 text-xs font-bold text-white transition cursor-pointer"
+          className="mt-4 rounded-xl bg-orange-500 hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-500 px-5 py-2.5 text-xs font-bold text-white transition cursor-pointer"
         >
           Go to Login
         </button>
@@ -386,7 +425,7 @@ const Profile = () => {
                 </div>
                 <button
                   onClick={() => setShowModal(true)}
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-orange-500 hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-550 px-4 py-2 text-xs font-bold text-white transition active:scale-95 cursor-pointer shadow-sm"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-orange-500 hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-500 px-4 py-2 text-xs font-bold text-white transition active:scale-95 cursor-pointer shadow-sm"
                 >
                   <Plus size={14} />
                   <span>Add Address</span>
@@ -419,7 +458,7 @@ const Profile = () => {
                         <p className="text-[10px] font-bold text-slate-500 dark:text-slate-500 uppercase tracking-widest">
                           {addr.country}
                         </p>
-                        <p className="text-xs text-slate-500 dark:text-slate-550 pt-1">
+                        <p className="text-xs text-slate-500 dark:text-slate-500 pt-1">
                           📞 {addr.phone}
                         </p>
                       </div>
@@ -434,6 +473,85 @@ const Profile = () => {
                   ))}
                 </div>
               )}
+            </div>
+
+            {/* Application Feedback Box */}
+            <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 backdrop-blur-md p-6 sm:p-8 space-y-6">
+              <div>
+                <h3 className="text-xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Application Feedback</h3>
+                <p className="text-xs text-slate-400 dark:text-slate-500 font-semibold mt-1">
+                  Share your experience with our platform to help us improve.
+                </p>
+              </div>
+
+              <form onSubmit={handleAppReviewSubmit} className="space-y-4">
+                {/* Rating selection */}
+                <div>
+                  <label className="block text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider mb-2">
+                    Overall Application Rating *
+                  </label>
+                  <div className="flex items-center gap-1.5">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        id={`btn-app-star-${star}`}
+                        type="button"
+                        onClick={() => setAppRating(star)}
+                        className="p-1 transition duration-150 hover:scale-110 active:scale-95 cursor-pointer text-slate-200 dark:text-slate-700 hover:text-amber-300"
+                        title={`${star} Star${star > 1 ? 's' : ''}`}
+                      >
+                        <svg
+                          className={`h-7 w-7 ${
+                            star <= appRating
+                              ? "text-amber-400 fill-amber-400"
+                              : "text-current"
+                          }`}
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                      </button>
+                    ))}
+                    {appRating > 0 && (
+                      <span className="text-xs font-bold text-slate-500 dark:text-slate-400 ml-2">
+                        {appRating} / 5 Stars
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Comment Textarea */}
+                <div>
+                  <label className="block text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider mb-2">
+                    Review Description
+                  </label>
+                  <textarea
+                    id="input-app-review-comment"
+                    value={appComment}
+                    onChange={(e) => setAppComment(e.target.value.slice(0, 500))}
+                    rows={4}
+                    maxLength={500}
+                    placeholder="Tell us what you love about CartNOW, or how we can improve our checkout, styling fitting room, or performance..."
+                    className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-950/40 p-4 text-xs font-semibold outline-none focus:border-orange-500 dark:focus:border-orange-500/80 transition text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-600 resize-none"
+                  />
+                  <div className="mt-1 flex justify-end text-[10px] text-slate-400 dark:text-slate-500 font-mono">
+                    <span>{appComment.length} / 500 characters</span>
+                  </div>
+                </div>
+
+                {/* Submit button */}
+                <div className="flex justify-end">
+                  <button
+                    id="btn-submit-app-review"
+                    type="submit"
+                    disabled={submittingReview || appRating === 0}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-950 dark:bg-orange-600 hover:bg-slate-850 dark:hover:bg-orange-550 text-white text-xs font-black uppercase tracking-wider px-5 py-3 transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-orange-500/10 cursor-pointer"
+                  >
+                    <span>{user.appReview ? "Update Feedback" : "Submit Feedback"}</span>
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
 
@@ -516,7 +634,7 @@ const Profile = () => {
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
               <div>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Add New Address</h3>
-                <p className="text-xs text-slate-450 dark:text-slate-500 font-semibold">Enter your shipping details below</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 font-semibold">Enter your shipping details below</p>
               </div>
               <button
                 type="button"
@@ -585,7 +703,7 @@ const Profile = () => {
                   required
                   value={newAddress.street}
                   onChange={(e) => setNewAddress({ ...newAddress, street: e.target.value })}
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-850 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 transition text-slate-900 dark:text-slate-100"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 transition text-slate-900 dark:text-slate-100"
                   placeholder="123 Main St"
                 />
               </div>

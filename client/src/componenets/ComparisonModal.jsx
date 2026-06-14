@@ -74,7 +74,7 @@ const ComparisonModal = ({ onClose }) => {
           </div>
           <button
             onClick={onClose}
-            className="flex items-center justify-center h-8.5 w-8.5 rounded-full bg-slate-50 dark:bg-slate-850 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 cursor-pointer transition-all"
+            className="flex items-center justify-center h-8.5 w-8.5 rounded-full bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 cursor-pointer transition-all"
           >
             <X size={16} />
           </button>
@@ -114,13 +114,13 @@ const ComparisonModal = ({ onClose }) => {
                     <th key={product._id} className="p-5 w-[250px] relative group align-middle">
                       <button
                         onClick={() => removeFromCompare(product._id)}
-                        className="absolute top-3 right-3 h-6 w-6 bg-slate-100 hover:bg-rose-500 hover:text-white dark:bg-slate-800 dark:hover:bg-rose-500 rounded-full flex items-center justify-center text-slate-450 dark:text-slate-500 shadow-sm transition-all cursor-pointer z-10"
+                        className="absolute top-3 right-3 h-6 w-6 bg-slate-100 hover:bg-rose-500 hover:text-white dark:bg-slate-800 dark:hover:bg-rose-500 rounded-full flex items-center justify-center text-slate-400 dark:text-slate-500 shadow-sm transition-all cursor-pointer z-10"
                         title="Remove product"
                       >
                         <X size={11} />
                       </button>
                       <div className="flex flex-col gap-3">
-                        <div className="h-24 w-full flex items-center justify-center bg-slate-50 dark:bg-slate-950 rounded-xl p-2 border border-slate-150/80 dark:border-slate-850 overflow-hidden">
+                        <div className="h-24 w-full flex items-center justify-center bg-slate-50 dark:bg-slate-950 rounded-xl p-2 border border-slate-150/80 dark:border-slate-800 overflow-hidden">
                           <img src={imgUrl} alt={product.name} className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105" />
                         </div>
                         <h4 className="font-extrabold text-xs text-slate-800 dark:text-white line-clamp-2 leading-tight">
@@ -163,7 +163,7 @@ const ComparisonModal = ({ onClose }) => {
 
               {/* Row: Price */}
               <tr className="hover:bg-slate-50/30 dark:hover:bg-slate-900/10">
-                <td className="p-4 font-bold text-xs uppercase text-slate-450 dark:text-slate-500">Price</td>
+                <td className="p-4 font-bold text-xs uppercase text-slate-400 dark:text-slate-500">Price</td>
                 {Array.from({ length: 3 }).map((_, idx) => {
                   const product = compareList[idx];
                   return (
@@ -176,7 +176,7 @@ const ComparisonModal = ({ onClose }) => {
 
               {/* Row: Brand */}
               <tr className="hover:bg-slate-50/30 dark:hover:bg-slate-900/10">
-                <td className="p-4 font-bold text-xs uppercase text-slate-450 dark:text-slate-500">Brand</td>
+                <td className="p-4 font-bold text-xs uppercase text-slate-400 dark:text-slate-500">Brand</td>
                 {Array.from({ length: 3 }).map((_, idx) => {
                   const product = compareList[idx];
                   return (
@@ -189,7 +189,7 @@ const ComparisonModal = ({ onClose }) => {
 
               {/* Row: Category */}
               <tr className="hover:bg-slate-50/30 dark:hover:bg-slate-900/10">
-                <td className="p-4 font-bold text-xs uppercase text-slate-450 dark:text-slate-500">Category</td>
+                <td className="p-4 font-bold text-xs uppercase text-slate-400 dark:text-slate-500">Category</td>
                 {Array.from({ length: 3 }).map((_, idx) => {
                   const product = compareList[idx];
                   return (
@@ -202,12 +202,12 @@ const ComparisonModal = ({ onClose }) => {
 
               {/* Row: Rating */}
               <tr className="hover:bg-slate-50/30 dark:hover:bg-slate-900/10">
-                <td className="p-4 font-bold text-xs uppercase text-slate-450 dark:text-slate-500">Rating</td>
+                <td className="p-4 font-bold text-xs uppercase text-slate-400 dark:text-slate-500">Rating</td>
                 {Array.from({ length: 3 }).map((_, idx) => {
                   const product = compareList[idx];
                   const rating = product ? getAverageRating(product) : 0;
                   return (
-                    <td key={`rate-${idx}`} className="p-4 text-xs font-bold text-slate-750 dark:text-slate-350">
+                    <td key={`rate-${idx}`} className="p-4 text-xs font-bold text-slate-700 dark:text-slate-350">
                       {product ? (
                         rating > 0 ? (
                           <span className="flex items-center gap-1">
@@ -227,7 +227,7 @@ const ComparisonModal = ({ onClose }) => {
 
               {/* Row: Availability */}
               <tr className="hover:bg-slate-50/30 dark:hover:bg-slate-900/10">
-                <td className="p-4 font-bold text-xs uppercase text-slate-450 dark:text-slate-500">Availability</td>
+                <td className="p-4 font-bold text-xs uppercase text-slate-400 dark:text-slate-500">Availability</td>
                 {Array.from({ length: 3 }).map((_, idx) => {
                   const product = compareList[idx];
                   if (!product) return <td key={`avail-${idx}`} className="p-4">—</td>;
@@ -254,7 +254,7 @@ const ComparisonModal = ({ onClose }) => {
               {/* Rows: Dynamic Specifications keys mapping */}
               {specKeys.map((key) => (
                 <tr key={key} className="hover:bg-slate-50/30 dark:hover:bg-slate-900/10">
-                  <td className="p-4 font-bold text-xs uppercase text-slate-450 dark:text-slate-500 capitalize">{key}</td>
+                  <td className="p-4 font-bold text-xs uppercase text-slate-400 dark:text-slate-500 capitalize">{key}</td>
                   {Array.from({ length: 3 }).map((_, idx) => {
                     const product = compareList[idx];
                     if (!product) return <td key={`spec-${key}-${idx}`} className="p-4">—</td>;

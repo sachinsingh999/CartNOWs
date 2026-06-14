@@ -166,7 +166,7 @@ const Track = () => {
         {/* Navigation Breadcrumb */}
         <button
           onClick={() => navigate(-1)}
-          className="group mb-8 inline-flex items-center gap-2.5 rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-5 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 shadow-sm transition hover:border-slate-350 dark:hover:border-slate-700 hover:text-slate-955 dark:hover:text-slate-100 hover:shadow cursor-pointer"
+          className="group mb-8 inline-flex items-center gap-2.5 rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-5 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 shadow-sm transition hover:border-slate-350 dark:hover:border-slate-700 hover:text-slate-950 dark:hover:text-slate-100 hover:shadow cursor-pointer"
         >
           <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-1" />
           <span>Back to orders</span>
@@ -187,7 +187,7 @@ const Track = () => {
                 </span>
                 <button
                   onClick={handleCopyId}
-                  className="text-slate-400 dark:text-slate-500 hover:text-slate-750 dark:hover:text-slate-200 transition cursor-pointer"
+                  className="text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 transition cursor-pointer"
                   title="Copy Order ID"
                 >
                   <Copy size={12} className={copied ? "text-emerald-500" : ""} />
@@ -196,7 +196,7 @@ const Track = () => {
             </div>
 
             {returnRequest && (
-              <div className="flex border border-slate-100 dark:border-slate-800 mb-8 p-1 bg-slate-50 dark:bg-slate-955 rounded-xl">
+              <div className="flex border border-slate-100 dark:border-slate-800 mb-8 p-1 bg-slate-50 dark:bg-slate-950 rounded-xl">
                 <button
                   onClick={() => setActiveTab("delivery")}
                   className={`flex-1 py-2.5 text-xs font-black rounded-lg transition-all cursor-pointer ${
@@ -212,7 +212,7 @@ const Track = () => {
                   className={`flex-1 py-2.5 text-xs font-black rounded-lg transition-all cursor-pointer ${
                     activeTab === "return"
                       ? "bg-white dark:bg-slate-900 text-orange-600 dark:text-orange-400 shadow-sm border border-slate-200/50 dark:border-slate-800"
-                      : "text-slate-400 hover:text-slate-655 dark:hover:text-slate-350"
+                      : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-350"
                   }`}
                 >
                   Return Tracking
@@ -251,7 +251,7 @@ const Track = () => {
                   nodeStyleClass = "bg-slate-900 dark:bg-slate-100 border-slate-900 dark:border-slate-100 text-white dark:text-slate-900";
                 } else if (isActive) {
                   if (isRejected && idx === 1) {
-                    nodeStyleClass = "bg-red-50 dark:bg-red-955/20 border-red-500 text-red-600 dark:text-red-400 scale-110 shadow-sm shadow-red-105 dark:shadow-red-955/30";
+                    nodeStyleClass = "bg-red-50 dark:bg-red-950/20 border-red-500 text-red-600 dark:text-red-400 scale-110 shadow-sm shadow-red-105 dark:shadow-red-950/30";
                   } else if (isCancelled && idx === 1) {
                     nodeStyleClass = "bg-rose-550 border-rose-550 text-white scale-110 shadow-sm shadow-rose-500/30";
                   } else {
@@ -289,9 +289,9 @@ const Track = () => {
                         {isActive && (
                           <span className={`rounded-md px-2 py-0.5 text-[9px] font-black uppercase tracking-wider ${
                             isRejected && idx === 1
-                              ? "bg-red-50 dark:bg-red-955/40 border border-red-100 dark:border-red-900/50 text-red-655 dark:text-red-400"
+                              ? "bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/50 text-red-600 dark:text-red-400"
                               : isCancelled && idx === 1
-                              ? "bg-rose-50 dark:bg-rose-955/40 border border-rose-100 dark:border-rose-900/50 text-rose-600 dark:text-rose-405"
+                              ? "bg-rose-50 dark:bg-rose-950/40 border border-rose-100 dark:border-rose-900/50 text-rose-600 dark:text-rose-400"
                               : "bg-orange-50 dark:bg-orange-950/40 border border-orange-100 dark:border-orange-900/50 text-orange-600 dark:text-orange-400"
                           }`}>
                             {isRejected && idx === 1 ? "Rejected" : isCancelled && idx === 1 ? "Cancelled" : "Active"}
@@ -299,7 +299,7 @@ const Track = () => {
                         )}
                       </div>
                       <p className={`mt-1.5 text-xs leading-relaxed ${
-                        isActive ? "text-slate-650 dark:text-slate-350 font-medium" : "text-slate-400 dark:text-slate-500"
+                        isActive ? "text-slate-600 dark:text-slate-350 font-medium" : "text-slate-400 dark:text-slate-500"
                       }`}>
                         {step.description}
                       </p>
@@ -317,14 +317,14 @@ const Track = () => {
             {/* Dynamic Status Card */}
             <div className={`rounded-2xl border p-6 shadow-sm ${
               activeTab === "return" 
-                ? (returnRequest?.status === "Rejected" ? "border-red-200 dark:border-red-900/50 bg-red-50/30 dark:bg-red-955/10" : "border-orange-200 dark:border-orange-900/50 bg-orange-50/30 dark:bg-orange-950/10")
+                ? (returnRequest?.status === "Rejected" ? "border-red-200 dark:border-red-900/50 bg-red-50/30 dark:bg-red-950/10" : "border-orange-200 dark:border-orange-900/50 bg-orange-50/30 dark:bg-orange-950/10")
                 : (isCancelled ? "border-rose-200 dark:border-rose-900/50 bg-rose-55/30 dark:bg-rose-950/10" : "border-orange-200 dark:border-orange-900/50 bg-orange-50/30 dark:bg-orange-950/10")
             }`}>
               <div className="flex items-center gap-3">
                 <div className={`flex h-10 w-10 items-center justify-center rounded-xl shadow-sm ${
                   activeTab === "return"
-                    ? (returnRequest?.status === "Rejected" ? "bg-red-100 dark:bg-red-955/30 text-red-600 dark:text-red-400" : "bg-orange-100 dark:bg-orange-955/30 text-orange-600 dark:text-orange-400")
-                    : (isCancelled ? "bg-rose-100 dark:bg-rose-955/30 text-rose-600 dark:text-rose-450" : "bg-orange-100 dark:bg-orange-955/30 text-orange-600 dark:text-orange-400")
+                    ? (returnRequest?.status === "Rejected" ? "bg-red-100 dark:bg-red-950/30 text-red-600 dark:text-red-400" : "bg-orange-100 dark:bg-orange-955/30 text-orange-600 dark:text-orange-400")
+                    : (isCancelled ? "bg-rose-100 dark:bg-rose-950/30 text-rose-600 dark:text-rose-450" : "bg-orange-100 dark:bg-orange-955/30 text-orange-600 dark:text-orange-400")
                 }`}>
                   {activeTab === "return" ? (
                     <RotateCcw size={20} />
@@ -363,7 +363,7 @@ const Track = () => {
                 <div className="min-w-0 flex-1 flex flex-col justify-between py-0.5">
                   <div>
                     <h3 className="font-extrabold text-sm text-slate-900 dark:text-slate-100 truncate">{item.name}</h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-450 mt-1 font-semibold">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-semibold">
                       Qty: {item.qty} · Size: <span className="font-bold">{item.size}</span>
                     </p>
                   </div>
@@ -383,7 +383,7 @@ const Track = () => {
               
               <div className="grid grid-cols-2 gap-4 text-xs font-semibold">
                 <div>
-                  <p className="font-semibold text-slate-450 dark:text-slate-400">
+                  <p className="font-semibold text-slate-400 dark:text-slate-400">
                     {activeTab === "return" ? "Pickup Carrier" : "Carrier"}
                   </p>
                   <p className="font-extrabold text-slate-900 dark:text-slate-100 mt-1">
@@ -391,7 +391,7 @@ const Track = () => {
                   </p>
                 </div>
                 <div>
-                  <p className="font-semibold text-slate-450 dark:text-slate-400">
+                  <p className="font-semibold text-slate-400 dark:text-slate-400">
                     {activeTab === "return" ? "Pickup Method" : "Shipping Method"}
                   </p>
                   <p className="font-extrabold text-slate-900 dark:text-slate-100 mt-1">
@@ -400,7 +400,7 @@ const Track = () => {
                 </div>
                 {activeTab === "return" ? (
                   <div className="col-span-2 border-t border-slate-100 dark:border-slate-800 pt-3">
-                    <p className="font-semibold text-slate-450 dark:text-slate-400 font-bold">Return Reason</p>
+                    <p className="font-semibold text-slate-400 dark:text-slate-400 font-bold">Return Reason</p>
                     <p className="font-bold text-slate-800 dark:text-slate-200 mt-1.5 leading-relaxed">
                       {returnRequest?.reason || "Reason not specified"}
                     </p>
@@ -412,7 +412,7 @@ const Track = () => {
                   </div>
                 ) : (
                   <div className="col-span-2 border-t border-slate-100 dark:border-slate-800 pt-3">
-                    <p className="font-semibold text-slate-455 dark:text-slate-400">Delivery Address</p>
+                    <p className="font-semibold text-slate-400 dark:text-slate-400">Delivery Address</p>
                     <p className="font-medium text-slate-700 dark:text-slate-300 mt-1.5 leading-relaxed">
                       123, Shopping Avenue, Fashion District, New Delhi, 110001
                     </p>

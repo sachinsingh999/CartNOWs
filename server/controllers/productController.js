@@ -121,10 +121,12 @@ const addProducts = async (req, res) => {
 
 const listProducts = async (req, res) => {
   try {
-    const { category, subCategory, collection, brand, price, rating, q, attributes } = req.query;
+    const { category, subCategory, collection, brand, price, rating, q, attributes, location, discount, availability } = req.query;
 
     // Build core query
     const query = { isDeleted: { $ne: true } };
+    
+    // Category filter
     if (category && category !== "all") {
       const categoryModel = (await import("../models/categoryModel.js")).default;
       const adminCats = await categoryModel.find({ status: "active" });
@@ -156,9 +158,42 @@ const listProducts = async (req, res) => {
         query.category = new RegExp(`^${category}$`, "i");
       }
     }
-    if (subCategory) query.subCategory = subCategory;
-    if (collection && collection !== "all") query.collection = collection;
-    if (brand) query.brand = brand;
+
+    // Subcategory filter (comma-separated or single)
+    if (subCategory) {
+      const subArray = Array.isArray(subCategory) ? subCategory : subCategory.split(",").map(s => s.trim()).filter(Boolean);
+      if (subArray.length > 0) {
+        query.subCategory = { $in: subArray.map(s => new RegExp(`^${s}$`, "i")) };
+      }
+    }
+
+    // Collection filter
+    if (collection && collection !== "all") {
+      query.collection = collection;
+    }
+
+    // Brand filter (comma-separated or single)
+    if (brand) {
+      const brandArray = Array.isArray(brand) ? brand : brand.split(",").map(b => b.trim()).filter(Boolean);
+      if (brandArray.length > 0) {
+        query.brand = { $in: brandArray.map(b => new RegExp(`^${b}$`, "i")) };
+      }
+    }
+
+    // Location filter (comma-separated or single)
+    if (location) {
+      const locArray = Array.isArray(location) ? location : location.split(",").map(l => l.trim()).filter(Boolean);
+      if (locArray.length > 0) {
+        query.location = { $in: locArray.map(l => new RegExp(`^${l}$`, "i")) };
+      }
+    }
+
+    // Availability/Stock status filter
+    if (availability === "in-stock") {
+      query.stock = { $gt: 0 };
+    }
+
+    // Price range filter
     if (price) {
       const maxPrice = Number(price);
       if (!isNaN(maxPrice)) {
@@ -166,6 +201,7 @@ const listProducts = async (req, res) => {
       }
     }
 
+    // Text search filter
     if (q) {
       const searchRegex = new RegExp(q, "i");
       query.$or = [
@@ -239,47 +275,84 @@ const listProducts = async (req, res) => {
     // Sorting parameters
     const sortBy = req.query.sortBy || "featured";
 
+    // Setup base pipeline steps
     let pipeline = [
       { $match: query }
     ];
 
-    // Sorting
+    // Add dynamic/computed fields to pipeline (rating and discount calculations)
+    pipeline.push({
+      $addFields: {
+        avgRating: {
+          $cond: {
+            if: { $eq: [{ $size: { $ifNull: ["$reviews", []] } }, 0] },
+            then: 0,
+            else: { $avg: "$reviews.rating" }
+          }
+        },
+        reviewCount: { $size: { $ifNull: ["$reviews", []] } },
+        discountPercent: {
+          $cond: {
+            if: {
+              $and: [
+                { $gt: ["$originalPrice", 0] },
+                { $gt: ["$originalPrice", "$price"] }
+              ]
+            },
+            then: { $round: [{ $multiply: [{ $divide: [{ $subtract: ["$originalPrice", "$price"] }, "$originalPrice"] }, 100] }] },
+            else: 0
+          }
+        }
+      }
+    });
+
+    // Apply pipeline matched filters (rating & discount percentage)
+    if (rating) {
+      const minRating = Number(rating);
+      if (!isNaN(minRating) && minRating > 0) {
+        pipeline.push({ $match: { avgRating: { $gte: minRating } } });
+      }
+    }
+
+    if (discount) {
+      const minDiscount = Number(discount);
+      if (!isNaN(minDiscount) && minDiscount > 0) {
+        pipeline.push({ $match: { discountPercent: { $gte: minDiscount } } });
+      }
+    }
+
+    // Build the count query pipeline (before sorting/skipping/limiting)
+    const countPipeline = [...pipeline, { $count: "count" }];
+    const countResult = await productModel.aggregate(countPipeline);
+    const total = countResult[0]?.count || 0;
+
+    // Apply sorting
     if (sortBy === "price-low") {
       pipeline.push({ $sort: { price: 1 } });
     } else if (sortBy === "price-high") {
       pipeline.push({ $sort: { price: -1 } });
     } else if (sortBy === "name") {
       pipeline.push({ $sort: { name: 1 } });
-    } else if (sortBy === "rating") {
-      pipeline.push({
-        $addFields: {
-          avgRating: {
-            $cond: {
-              if: { $eq: [{ $size: { $ifNull: ["$reviews", []] } }, 0] },
-              then: 0,
-              else: { $avg: "$reviews.rating" }
-            }
-          }
-        }
-      });
-      pipeline.push({ $sort: { avgRating: -1, createdAt: -1 } });
+    } else if (sortBy === "rating" || sortBy === "highest-rated") {
+      pipeline.push({ $sort: { avgRating: -1, reviewCount: -1 } });
+    } else if (sortBy === "popularity" || sortBy === "best-selling") {
+      pipeline.push({ $sort: { reviewCount: -1, avgRating: -1 } });
     } else {
-      pipeline.push({ $sort: { createdAt: -1 } });
+      pipeline.push({ $sort: { date: -1, _id: -1 } }); // default to newest
     }
 
-    // Get total count matching core filters
-    const total = await productModel.countDocuments(query);
-
-    // Apply pagination skip & limit
+    // Apply skip & limit
     pipeline.push({ $skip: skip });
     pipeline.push({ $limit: limit });
 
-    // Project only necessary fields to optimize network payload
+    // Project output fields
     pipeline.push({
       $project: {
         name: 1,
         description: 1,
         price: 1,
+        originalPrice: 1,
+        location: 1,
         images: 1,
         category: 1,
         subCategory: 1,
@@ -289,6 +362,9 @@ const listProducts = async (req, res) => {
         sizes: 1,
         sku: 1,
         status: 1,
+        avgRating: 1,
+        reviewCount: 1,
+        discountPercent: 1,
         reviews: {
           $map: {
             input: { $ifNull: ["$reviews", []] },
@@ -301,30 +377,30 @@ const listProducts = async (req, res) => {
 
     let products = await productModel.aggregate(pipeline);
 
-    // Populate each product with dynamic attributes and media
+    // Populate each product with dynamic media if available
     const enrichedProducts = [];
     for (const p of products) {
-      // Fetch dynamic media
       const media = await listingMediaModel.find({ listingId: p._id }).sort({ displayOrder: 1 });
       p.media = media;
       if (media.length > 0) {
-        // Sync cover image as first item in images list
         const coverItem = media.find(m => m.isCover);
         p.images = media.map(m => m.url);
         if (coverItem) {
           p.images = [coverItem.url, ...media.filter(m => !m.isCover).map(m => m.url)];
         }
       }
-
       enrichedProducts.push(p);
     }
+
+    const totalPages = Math.ceil(total / limit);
 
     res.json({
       success: true,
       products: enrichedProducts,
       total,
       page,
-      pages: Math.ceil(total / limit)
+      totalPages,
+      hasMore: page < totalPages
     });
   } catch (error) {
     console.log(error);

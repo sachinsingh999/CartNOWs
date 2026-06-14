@@ -26,12 +26,12 @@ const Kids = () => {
       <div className="border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 py-3 transition-colors duration-200">
         <div className="max-w-full mx-auto px-4 sm:px-8 lg:px-12 flex items-center justify-between gap-4 text-left">
           <div className="flex items-center gap-2.5">
-            <h1 className="text-lg font-bold text-slate-905 dark:text-slate-100">Kids</h1>
+            <h1 className="text-lg font-bold text-slate-900 dark:text-slate-100">Kids</h1>
           </div>
 
           <button
             onClick={() => setShowMobileFilters(!showMobileFilters)}
-            className="md:hidden inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-855 cursor-pointer shadow-sm"
+            className="md:hidden inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer shadow-sm"
           >
             <span>{showMobileFilters ? "Hide Filters" : "Show Filters"}</span>
           </button>

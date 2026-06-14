@@ -141,7 +141,7 @@ const Wishlist = () => {
           </div>
           <div>
             <h2 className="text-lg font-bold text-slate-900 dark:text-white">Your wishlist is empty</h2>
-            <p className="text-xs text-slate-450 dark:text-slate-500 leading-relaxed mt-1">
+            <p className="text-xs text-slate-400 dark:text-slate-500 leading-relaxed mt-1">
               Save your favorite clothing designs to purchase them later or try them on with our AI Stylist.
             </p>
           </div>
@@ -162,7 +162,7 @@ const Wishlist = () => {
             >
               <div className="relative">
                 {/* Image Frame */}
-                <div className="aspect-[4/5] bg-slate-50 dark:bg-slate-950 rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-850 p-3 flex items-center justify-center shadow-inner relative">
+                <div className="aspect-[4/5] bg-slate-50 dark:bg-slate-950 rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-800 p-3 flex items-center justify-center shadow-inner relative">
                   <img
                     src={product.images?.[0]?.startsWith("http") ? product.images[0] : `${backendUrl}/${product.images?.[0]}`}
                     alt={product.name}
@@ -187,7 +187,7 @@ const Wishlist = () => {
               <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex gap-2">
                 <button
                   onClick={() => handleAddToCart(product)}
-                  className="flex-1 inline-flex items-center justify-center gap-1.5 bg-slate-900 hover:bg-slate-850 dark:bg-orange-600 dark:hover:bg-orange-700 text-white font-black text-[10px] uppercase tracking-wider py-2.5 rounded-xl cursor-pointer active:scale-95 transition-all"
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-orange-600 dark:hover:bg-orange-700 text-white font-black text-[10px] uppercase tracking-wider py-2.5 rounded-xl cursor-pointer active:scale-95 transition-all"
                 >
                   <ShoppingBag size={12} />
                   <span>Add to Cart</span>

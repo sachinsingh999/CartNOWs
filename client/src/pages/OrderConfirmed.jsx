@@ -108,7 +108,7 @@ const OrderConfirmed = () => {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center transition-colors duration-200">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-900 dark:border-slate-100 border-t-transparent" />
-        <p className="text-sm font-semibold text-slate-550 dark:text-slate-400 mt-4">Generating order receipt...</p>
+        <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mt-4">Generating order receipt...</p>
       </div>
     );
   }
@@ -174,12 +174,12 @@ const OrderConfirmed = () => {
             </div>
 
             {/* Reference ID copy pill */}
-            <div className="flex items-center gap-2 rounded-full border border-slate-850 dark:border-slate-700 bg-slate-900/60 dark:bg-slate-950/60 px-4 py-2 text-xs font-semibold text-slate-300">
+            <div className="flex items-center gap-2 rounded-full border border-slate-800 dark:border-slate-700 bg-slate-900/60 dark:bg-slate-950/60 px-4 py-2 text-xs font-semibold text-slate-300">
               <span>Order ID:</span>
               <span className="font-mono text-slate-105 font-bold">{orderId}</span>
               <button
                 onClick={handleCopyId}
-                className="text-slate-450 hover:text-slate-200 transition ml-1 cursor-pointer"
+                className="text-slate-400 hover:text-slate-200 transition ml-1 cursor-pointer"
                 title="Copy Order ID"
               >
                 {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
@@ -199,7 +199,7 @@ const OrderConfirmed = () => {
                 <h3 className="text-xs uppercase tracking-wider text-slate-400 dark:text-slate-500 font-black">
                   Items Purchased ({order.items?.length || 0})
                 </h3>
-                <span className="text-xs text-slate-455 dark:text-slate-400 font-bold">
+                <span className="text-xs text-slate-400 dark:text-slate-400 font-bold">
                   {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "Today"}
                 </span>
               </div>
@@ -311,7 +311,7 @@ const OrderConfirmed = () => {
                   <p>
                     {order.address?.city}, {order.address?.state} - {order.address?.phone}
                   </p>
-                  <p className="text-slate-450 dark:text-slate-500 uppercase tracking-widest text-[9px]">{order.address?.country}</p>
+                  <p className="text-slate-400 dark:text-slate-500 uppercase tracking-widest text-[9px]">{order.address?.country}</p>
                 </div>
               </div>
 
