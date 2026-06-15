@@ -21,13 +21,18 @@ import Profile from './pages/Profile'
 import InvoiceManagement from './pages/InvoiceManagement'
 import Login from './components/Login'
 import { ToastContainer } from 'react-toastify';
+import SystemSettings from './pages/SystemSettings'
+import axios from 'axios'
+import { backendUrl } from './config'
 
 const App = () => {
   const [token, setToken] = useState(localStorage.getItem('token') ? localStorage.getItem('token') : '');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(
     localStorage.getItem('sidebar_collapsed') === 'true'
   );
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [theme, setTheme] = useState(localStorage.getItem('admin_theme') || 'dark');
+  const [maintenanceActive, setMaintenanceActive] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('token', token)
@@ -42,16 +47,49 @@ const App = () => {
     localStorage.setItem('admin_theme', theme);
   }, [theme]);
 
+  // Poll or check maintenance status
+  useEffect(() => {
+    const checkStatus = async () => {
+      try {
+        const { data } = await axios.get(`${backendUrl}/api/system/maintenance`);
+        if (data.success) {
+          setMaintenanceActive(data.settings.enabled);
+        }
+      } catch (e) {
+        console.error("Failed to check maintenance status:", e);
+      }
+    };
+
+    checkStatus();
+    // Fetch periodically or on settings update event
+    const interval = setInterval(checkStatus, 30000); // 30s polling fallback
+    window.addEventListener("adminMaintenanceUpdated", checkStatus);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("adminMaintenanceUpdated", checkStatus);
+    };
+  }, []);
+
   const toggleSidebar = () => {
-    setIsSidebarCollapsed(prev => {
-      const next = !prev;
-      localStorage.setItem('sidebar_collapsed', String(next));
-      return next;
-    });
+    if (window.innerWidth < 768) {
+      setIsMobileSidebarOpen(prev => !prev);
+    } else {
+      setIsSidebarCollapsed(prev => {
+        const next = !prev;
+        localStorage.setItem('sidebar_collapsed', String(next));
+        return next;
+      });
+    }
   };
 
   return (
     <div className="bg-slate-50 dark:bg-[#0B1220] h-screen overflow-hidden flex flex-col antialiased text-slate-800 dark:text-slate-100 selection:bg-blue-500/30">
+      {maintenanceActive && (
+        <div className="w-full bg-red-600 dark:bg-red-700 text-white py-2 px-4 text-[11px] font-black text-center uppercase tracking-wider flex items-center justify-center gap-1.5 shrink-0 z-50 animate-pulse shadow-md">
+          <span>⚠ Maintenance Mode Active: Public users cannot access the platform.</span>
+        </div>
+      )}
       <ToastContainer theme={theme} />
       {token === "" ? (
         <Login setToken={setToken} />
@@ -65,11 +103,22 @@ const App = () => {
             setTheme={setTheme}
             token={token}
           />
-          <div className="flex flex-1 overflow-hidden h-[calc(100vh-60px)]">
-            <Sidebar isCollapsed={isSidebarCollapsed} />
+          <div className="flex flex-1 overflow-hidden h-[calc(100vh-60px)] relative">
+            {isMobileSidebarOpen && (
+              <div 
+                className="md:hidden fixed inset-0 top-[60px] bg-slate-950/40 dark:bg-slate-950/65 backdrop-blur-xs z-30 transition-opacity duration-300"
+                onClick={() => setIsMobileSidebarOpen(false)}
+              />
+            )}
+            
+            <Sidebar 
+              isCollapsed={isSidebarCollapsed} 
+              isMobileOpen={isMobileSidebarOpen}
+              setIsMobileOpen={setIsMobileSidebarOpen}
+            />
 
             {/* MAIN CONTENT */}
-            <main className="flex-1 min-w-0 bg-slate-50 dark:bg-[#0B1220] p-5 md:p-6 overflow-y-scroll overflow-x-hidden custom-scrollbar">
+            <main className="flex-1 min-w-0 bg-slate-50 dark:bg-[#0B1220] p-4 md:p-6 overflow-y-scroll overflow-x-hidden custom-scrollbar">
               <div className="mx-auto w-full max-w-[1600px] space-y-5">
                 <Routes>
                   <Route path="/" element={<Dashboard token={token} />} />
@@ -89,6 +138,7 @@ const App = () => {
                   <Route path="/logs" element={<AuditLogs token={token} />} />
                   <Route path="/invoices" element={<InvoiceManagement token={token} />} />
                   <Route path="/profile" element={<Profile />} />
+                  <Route path="/settings" element={<SystemSettings token={token} />} />
                 </Routes>
               </div>
             </main>
@@ -98,5 +148,6 @@ const App = () => {
     </div>
   );
 };
+
 
 export default App;

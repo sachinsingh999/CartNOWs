@@ -27,6 +27,7 @@ import {
   Truck,
   Check,
   Copy,
+  Mic,
 } from "lucide-react";
 import axios from "axios";
 import { backendUrl } from "../config";
@@ -63,12 +64,19 @@ const Navbar = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [username, setUsername] = useState("");
   const [searchValue, setSearchValue] = useState("");
-  const [locationLabel, setLocationLabel] = useState("Use location");
+  const [locationLabel, setLocationLabel] = useState(() => {
+    return localStorage.getItem("delivery_location") || "Use location";
+  });
   const [locationLoading, setLocationLoading] = useState(false);
   const [cartBump, setCartBump] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
   const [copiedNotiId, setCopiedNotiId] = useState(null);
   const [expandedNotis, setExpandedNotis] = useState({});
+  const [pincodeInput, setPincodeInput] = useState(() => {
+    return localStorage.getItem("delivery_pincode") || "";
+  });
+  const [pincodeOpen, setPincodeOpen] = useState(false);
+  const [isListening, setIsListening] = useState(false);
 
   /* Search autocomplete */
   const [allProducts, setAllProducts] = useState([]);
@@ -91,6 +99,7 @@ const Navbar = () => {
   const notiRef = useRef(null);
   const searchRef = useRef(null);
   const mobileSearchInputRef = useRef(null);
+  const pincodeRef = useRef(null);
 
   /* Dark mode */
   const [isDarkMode, setIsDarkMode] = useState(() =>
@@ -194,6 +203,7 @@ const Navbar = () => {
         setShowSuggestions(false);
         setSearchFocused(false);
       }
+      if (pincodeRef.current && !pincodeRef.current.contains(e.target)) setPincodeOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -325,9 +335,21 @@ const Navbar = () => {
           );
           const data = await res.json();
           const a = data.address || {};
-          setLocationLabel(a.city || a.town || a.state_district || a.state || a.country || `${coords.latitude.toFixed(2)}, ${coords.longitude.toFixed(2)}`);
+          const cityStr = a.city || a.town || a.state_district || a.state || a.country || `${coords.latitude.toFixed(2)}, ${coords.longitude.toFixed(2)}`;
+          const pCode = a.postcode || "";
+          localStorage.setItem("delivery_location", cityStr);
+          if (pCode) {
+            localStorage.setItem("delivery_pincode", pCode);
+            setPincodeInput(pCode);
+          }
+          setLocationLabel(cityStr);
+          window.dispatchEvent(new Event("pincodeUpdated"));
+          toast.success(`Location set to: ${cityStr}`);
         } catch {
-          setLocationLabel(`${coords.latitude.toFixed(2)}, ${coords.longitude.toFixed(2)}`);
+          const coordsStr = `${coords.latitude.toFixed(2)}, ${coords.longitude.toFixed(2)}`;
+          localStorage.setItem("delivery_location", coordsStr);
+          setLocationLabel(coordsStr);
+          window.dispatchEvent(new Event("pincodeUpdated"));
         } finally { setLocationLoading(false); }
       },
       (err) => {
@@ -345,6 +367,42 @@ const Navbar = () => {
       },
       { enableHighAccuracy: false, timeout: 10000 }
     );
+  };
+
+  const handleVoiceSearch = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      toast.error("Voice search is not supported in this browser. Please use Chrome or Safari.");
+      return;
+    }
+    const recognition = new SpeechRecognition();
+    recognition.lang = language === "hi" ? "hi-IN" : language === "es" ? "es-ES" : "en-US";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      setIsListening(true);
+      toast.info("Listening... Speak now 🎙️");
+    };
+
+    recognition.onerror = (e) => {
+      console.error("Speech error", e);
+      setIsListening(false);
+      toast.error("Could not understand voice. Try again.");
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.onresult = (event) => {
+      const speechToText = event.results[0][0].transcript;
+      setSearchValue(speechToText);
+      submitSearch(speechToText);
+      toast.success(`Searching for: "${speechToText}"`);
+    };
+
+    recognition.start();
   };
 
   const isActive = (to) => location.pathname === to || location.pathname.startsWith(to + "/");
@@ -399,6 +457,15 @@ const Navbar = () => {
                       <X size={10} />
                     </button>
                   )}
+                  {/* Voice Search Mic Button */}
+                  <button
+                    type="button"
+                    onClick={handleVoiceSearch}
+                    className={`mr-2 flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:scale-105 active:scale-95 transition cursor-pointer ${isListening ? "bg-red-500/10 border-red-500/30 text-red-500" : ""}`}
+                    title="Search by Voice"
+                  >
+                    <Mic size={13} className={isListening ? "animate-pulse" : ""} />
+                  </button>
                   <button
                     type="submit"
                     className="h-9.5 shrink-0 rounded-r-xl bg-gradient-to-r from-orange-500 to-amber-500 px-4 text-xs font-bold text-white hover:from-orange-600 hover:to-amber-600 active:scale-95 transition-all cursor-pointer select-none"
@@ -413,6 +480,35 @@ const Navbar = () => {
                     {/* If search query is empty, show Recents and Trendings */}
                     {!searchValue.trim() ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
+                        {/* Quick Category Shortcuts */}
+                        <div className="md:col-span-2 border-b border-slate-100 dark:border-slate-800 pb-3">
+                          <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2 flex items-center gap-1.5">
+                            <Tag size={11} className="text-orange-500" /> Category Shortcuts
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {[
+                              { label: "Men's Apparel", to: "/product?category=men", emoji: "🤵" },
+                              { label: "Women's Apparel", to: "/product?category=women", emoji: "💃" },
+                              { label: "Kids' Collection", to: "/product?category=kid", emoji: "👦" },
+                              { label: "Electronics", to: "/product?category=electronics", emoji: "🔌" },
+                              { label: "Home Decor", to: "/product?category=home", emoji: "🏠" },
+                              { label: "Beauty & Care", to: "/product?category=beauty", emoji: "💄" },
+                            ].map((item) => (
+                              <button
+                                key={item.label}
+                                type="button"
+                                onMouseDown={() => {
+                                  setShowSuggestions(false);
+                                  navigate(item.to);
+                                }}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/60 text-xs font-bold text-slate-700 dark:text-slate-350 hover:border-orange-500 hover:bg-orange-50/10 dark:hover:bg-orange-950/10 hover:text-orange-500 dark:hover:text-orange-400 transition cursor-pointer"
+                              >
+                                <span>{item.emoji}</span>
+                                <span>{item.label}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                         {/* Recent Searches */}
                         <div>
                           <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2 flex items-center gap-1.5">
@@ -543,19 +639,86 @@ const Navbar = () => {
                 </button>
 
                 {/* Location (desktop) */}
-                <button
-                  onClick={handleGetLocation}
-                  title={locationLabel}
-                  className="hidden xl:flex items-center gap-1.5 h-9 rounded-xl border border-slate-200 dark:border-slate-800 px-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 hover:scale-105 active:scale-95 transition cursor-pointer"
-                >
-                  {locationLoading
-                    ? <Navigation size={14} className="animate-spin text-orange-500" />
-                    : <MapPin size={14} className="text-orange-500" />
-                  }
-                  <span className="max-w-24 truncate text-[11px] font-semibold">
-                    {locationLoading ? "Locating…" : locationLabel}
-                  </span>
-                </button>
+                <div ref={pincodeRef} className="relative hidden xl:block">
+                  <button
+                    onClick={() => setPincodeOpen(!pincodeOpen)}
+                    title={locationLabel}
+                    className="flex items-center gap-1.5 h-9 rounded-xl border border-slate-200 dark:border-slate-800 px-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 hover:scale-105 active:scale-95 transition cursor-pointer"
+                  >
+                    {locationLoading ? (
+                      <Navigation size={14} className="animate-spin text-orange-500" />
+                    ) : (
+                      <MapPin size={14} className="text-orange-500" />
+                    )}
+                    <span className="max-w-36 sm:max-w-44 truncate text-[11px] font-semibold">
+                      {locationLoading ? "Locating…" : locationLabel}
+                    </span>
+                  </button>
+
+                  {pincodeOpen && (
+                    <div className="absolute top-[calc(100%+8px)] left-0 z-50 w-72 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl p-4 text-left animate-in fade-in slide-in-from-top-3 duration-200">
+                      <h4 className="text-xs font-black uppercase text-slate-900 dark:text-white mb-2">Delivery Location</h4>
+                      <p className="text-[10px] text-slate-400 dark:text-slate-505 leading-normal mb-3 font-semibold">
+                        Enter your pincode to check delivery dates and regional availability.
+                      </p>
+                      
+                      <form
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          const val = pincodeInput.trim();
+                          if (!/^\d{6}$/.test(val)) {
+                            toast.error("Please enter a valid 6-digit Pincode.");
+                            return;
+                          }
+                          // Fetch city name or guess city based on first 2 digits
+                          let city = "Delhi NCR";
+                          if (val.startsWith("4")) city = "Mumbai";
+                          else if (val.startsWith("5") || val.startsWith("6")) city = "Bangalore";
+                          else if (val.startsWith("7")) city = "Kolkata";
+                          else if (val.startsWith("3")) city = "Gujarat/Rajasthan";
+                          
+                          const label = `${city} (${val})`;
+                          localStorage.setItem("delivery_pincode", val);
+                          localStorage.setItem("delivery_location", label);
+                          setLocationLabel(label);
+                          setPincodeOpen(false);
+                          window.dispatchEvent(new Event("pincodeUpdated"));
+                          toast.success(`Delivery pincode set to ${val}`);
+                        }}
+                        className="flex gap-2"
+                      >
+                        <input
+                          type="text"
+                          maxLength={6}
+                          value={pincodeInput}
+                          onChange={(e) => setPincodeInput(e.target.value.replace(/\D/g, ""))}
+                          placeholder="e.g. 110001"
+                          className="w-full h-8.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-transparent px-2.5 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-550 outline-none focus:border-orange-500 transition-colors"
+                        />
+                        <button
+                          type="submit"
+                          className="h-8.5 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-bold text-[10px] px-3 active:scale-95 transition-all select-none cursor-pointer uppercase"
+                        >
+                          Apply
+                        </button>
+                      </form>
+
+                      <div className="border-t border-slate-100 dark:border-slate-800/80 my-3 pt-3">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleGetLocation();
+                            setPincodeOpen(false);
+                          }}
+                          className="flex items-center justify-center gap-1.5 w-full h-8 rounded-lg bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700/80 text-[10.5px] font-black uppercase text-slate-700 dark:text-slate-300 transition-colors cursor-pointer"
+                        >
+                          <Navigation size={12} className="text-orange-500" />
+                          <span>Detect Live Location</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 {/* AI Try-On */}
                 <Link

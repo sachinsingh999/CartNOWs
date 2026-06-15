@@ -20,6 +20,8 @@ import tryOnRouter from "./routers/tryOnRouter.js";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import { startTryOnWorker } from "./workers/tryOnWorker.js";
+import maintenanceMiddleware from "./middleware/maintenanceMiddleware.js";
+import systemRouter from "./routers/systemRouter.js";
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -29,9 +31,10 @@ connectCloudinary();
 // middlewares
 app.use(express.json());
 app.use(cors());
-
+app.use(maintenanceMiddleware);
 
 //api end point
+app.use('/api/system', systemRouter);
 app.use('/api/user',userRouter);
 app.use('/uploads', express.static('uploads'));
 

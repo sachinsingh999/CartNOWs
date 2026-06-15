@@ -66,7 +66,7 @@ const Footer = () => {
 
       {/* ── Main Links & Newsletter ── */}
       <div className="mx-auto max-w-7xl px-6 py-10">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-[1.2fr_0.8fr_0.8fr_1.2fr]">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-3 lg:grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr_1.2fr]">
           {/* Identity */}
           <div className="space-y-4">
             <Link to="/" className="group flex items-center gap-2 select-none">
@@ -111,66 +111,87 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Quick Links */}
+          {/* Customer Support */}
           <div>
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-white">SHOPPING</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-white">SUPPORT</h3>
             <ul className="mt-4 space-y-2.5 text-xs font-medium">
               <li>
-                <Link to="/" className="hover:text-orange-400 hover:translate-x-1 transition-all duration-200 inline-block">
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link to="/about" className="hover:text-orange-400 hover:translate-x-1 transition-all duration-200 inline-block">
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link to="/product" className="hover:text-orange-400 hover:translate-x-1 transition-all duration-200 inline-block">
-                  All Products
-                </Link>
-              </li>
-              <li>
-                <Link to="/tryon" className="text-orange-400 font-semibold hover:translate-x-1 transition-all duration-200 flex items-center gap-1">
-                  <span>AI Try-On</span>
-                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+                <Link to="/help" className="hover:text-orange-400 hover:translate-x-1 transition-all duration-200 inline-block">
+                  Help Center & FAQ
                 </Link>
               </li>
               <li>
                 <Link to="/help" className="hover:text-orange-400 hover:translate-x-1 transition-all duration-200 inline-block">
-                  Need Help?
+                  Shipping Policy
+                </Link>
+              </li>
+              <li>
+                <Link to="/help" className="hover:text-orange-400 hover:translate-x-1 transition-all duration-200 inline-block">
+                  Refund & Returns
+                </Link>
+              </li>
+              <li>
+                <Link to="/help" className="hover:text-orange-400 hover:translate-x-1 transition-all duration-200 inline-block">
+                  Contact Support
+                </Link>
+              </li>
+              <li>
+                <Link to="/about" className="hover:text-orange-400 hover:translate-x-1 transition-all duration-200 inline-block">
+                  About Our Hubs
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Categories */}
+          {/* Seller Program */}
           <div>
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-white">COLLECTIONS</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-white">SELLERS</h3>
             <ul className="mt-4 space-y-2.5 text-xs font-medium">
               <li>
-                <Link to="/product/men" className="hover:text-orange-400 hover:translate-x-1 transition-all duration-200 inline-block">
-                  Men's Wardrobe
+                <a href="/seller/login" className="hover:text-orange-400 hover:translate-x-1 transition-all duration-200 inline-block">
+                  Seller Dashboard
+                </a>
+              </li>
+              <li>
+                <Link to="/about" className="hover:text-orange-400 hover:translate-x-1 transition-all duration-200 inline-block">
+                  Seller Program Details
                 </Link>
               </li>
               <li>
-                <Link to="/product/women" className="hover:text-orange-400 hover:translate-x-1 transition-all duration-200 inline-block">
-                  Women's Collection
+                <Link to="/help" className="hover:text-orange-400 hover:translate-x-1 transition-all duration-200 inline-block">
+                  Verification Badges
                 </Link>
               </li>
               <li>
-                <Link to="/product/kid" className="hover:text-orange-400 hover:translate-x-1 transition-all duration-200 inline-block">
-                  Kids' Selection
+                <Link to="/about" className="hover:text-orange-400 hover:translate-x-1 transition-all duration-200 inline-block">
+                  Partner Directory
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Company & Legal */}
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-white">COMPANY</h3>
+            <ul className="mt-4 space-y-2.5 text-xs font-medium">
+              <li>
+                <Link to="/about" className="hover:text-orange-400 hover:translate-x-1 transition-all duration-200 inline-block">
+                  Careers
                 </Link>
               </li>
               <li>
-                <Link to="/cart" className="hover:text-orange-400 hover:translate-x-1 transition-all duration-200 inline-block">
-                  View Cart
+                <Link to="/about" className="hover:text-orange-400 hover:translate-x-1 transition-all duration-200 inline-block">
+                  Sustainability
                 </Link>
               </li>
               <li>
-                <Link to="/profile" className="hover:text-orange-400 hover:translate-x-1 transition-all duration-200 inline-block">
-                  My Profile
+                <Link to="/help" className="hover:text-orange-400 hover:translate-x-1 transition-all duration-200 inline-block">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link to="/help" className="hover:text-orange-400 hover:translate-x-1 transition-all duration-200 inline-block">
+                  Terms of Service
                 </Link>
               </li>
             </ul>

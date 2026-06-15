@@ -60,7 +60,7 @@ const Customers = ({ token }) => {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-120px)] space-y-6 animate-fadeIn text-slate-900 dark:text-slate-100">
+    <div className="flex flex-col md:h-[calc(100vh-120px)] h-auto space-y-6 animate-fadeIn text-slate-900 dark:text-slate-100 pb-4">
       <div className="flex items-center gap-3 shrink-0">
         <div className="h-10 w-10 bg-orange-500/10 text-orange-500 dark:text-orange-400 rounded-xl flex items-center justify-center border border-orange-500/20 shadow-sm">
           <Users size={20} />

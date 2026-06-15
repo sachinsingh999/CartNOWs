@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:where(.dark, .dark *));
 
 @media (hover: hover) {
   /* Prevent layout/visual hover shifts globally by disabling hover translations, scales, and rotations */

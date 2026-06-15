@@ -10,6 +10,9 @@ const MyDeliveriesTab = ({
   stats,
   orders,
   nextOrder,
+  pendingAcceptance = [],
+  handleAcceptAssignment,
+  handleRejectAssignment,
   filterStartDate,
   setFilterStartDate,
   filterEndDate,
@@ -120,6 +123,79 @@ const MyDeliveriesTab = ({
           </div>
         </div>
       </div>
+
+      {/* PENDING ASSIGNMENTS REQUEST SECTION */}
+      {pendingAcceptance && pendingAcceptance.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 px-1">
+            <span className="h-2 w-2 rounded-full bg-rose-500 animate-ping" />
+            <h3 className="font-extrabold text-xs text-slate-900 dark:text-white uppercase tracking-wider">
+              Pending Delivery Requests ({pendingAcceptance.length})
+            </h3>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {pendingAcceptance.map((order) => (
+              <div 
+                key={order._id} 
+                className="bg-gradient-to-br from-rose-50/50 to-white dark:from-[#1e1520] dark:to-[#111827] border-2 border-rose-100 dark:border-rose-950/40 rounded-2xl p-5 shadow-sm relative overflow-hidden transition-all duration-300 hover:shadow-md hover:border-rose-200 dark:hover:border-rose-900/60"
+              >
+                {/* Accent glow */}
+                <div className="absolute top-0 right-0 h-24 w-24 bg-rose-500/5 dark:bg-rose-500/10 rounded-full blur-xl pointer-events-none" />
+                
+                <div className="flex justify-between items-start gap-4 mb-3">
+                  <div>
+                    <span className="text-[9px] font-black uppercase tracking-widest text-rose-600 dark:text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-md">
+                      Action Required
+                    </span>
+                    <h4 className="font-extrabold text-slate-900 dark:text-white text-sm mt-1.5">
+                      Order #{order._id.slice(-6).toUpperCase()}
+                    </h4>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xs font-mono font-black text-rose-605 dark:text-rose-400">
+                      ₹{order.amount}
+                    </span>
+                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">
+                      {order.paymentMethod}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-2.5 text-xs">
+                  <div>
+                    <span className="text-[8px] font-black uppercase tracking-wider text-slate-405 dark:text-slate-500 block">Customer</span>
+                    <span className="font-bold text-slate-800 dark:text-slate-200">
+                      {order.address?.firstName} {order.address?.lastName}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[8px] font-black uppercase tracking-wider text-slate-405 dark:text-slate-500 block">Address</span>
+                    <span className="font-semibold text-slate-655 dark:text-slate-350 line-clamp-2">
+                      {formatAddress(order.address)}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex gap-2.5 mt-5">
+                  <button
+                    onClick={() => handleRejectAssignment(order._id)}
+                    className="flex-1 flex items-center justify-center gap-1.5 bg-slate-50 dark:bg-slate-900/60 hover:bg-rose-50 dark:hover:bg-rose-950/20 border border-slate-200 dark:border-slate-800/80 hover:border-rose-200 dark:hover:border-rose-900/60 text-slate-755 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-200 cursor-pointer shadow-xs active:scale-98"
+                  >
+                    <span>Reject</span>
+                  </button>
+                  <button
+                    onClick={() => handleAcceptAssignment(order._id)}
+                    className="flex-1 flex items-center justify-center gap-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-200 cursor-pointer shadow-md shadow-emerald-500/10 active:scale-98"
+                  >
+                    <span>Accept</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* PRIORITY NEXT TASK SECTION */}
       {nextOrder ? (
@@ -384,9 +460,15 @@ const MyDeliveriesTab = ({
                         {order.paymentMethod}
                       </td>
                       <td className="py-3.5 px-5">
-                        <span className={`px-2.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider border ${getStatusBadgeStyle(order.orderStatus)}`}>
-                          {order.orderStatus}
-                        </span>
+                        {order.assignmentStatus === "Assigned" ? (
+                          <span className="px-2.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider border bg-amber-50 text-amber-705 dark:text-amber-550 dark:text-amber-400 border-amber-100 dark:border-amber-950/35">
+                            Pending Accept
+                          </span>
+                        ) : (
+                          <span className={`px-2.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider border ${getStatusBadgeStyle(order.orderStatus)}`}>
+                            {order.orderStatus}
+                          </span>
+                        )}
                       </td>
                       <td className="py-3.5 px-5 text-slate-550 dark:text-slate-400">
                         {new Date(order.createdAt).toLocaleDateString()}
@@ -397,6 +479,21 @@ const MyDeliveriesTab = ({
                       <td className="py-3.5 px-5 text-right">
                         {order.orderStatus === "Delivered" ? (
                           <span className="text-emerald-500 font-extrabold text-[10px] mr-2">✓ Delivered</span>
+                        ) : order.assignmentStatus === "Assigned" ? (
+                          <div className="flex justify-end gap-1.5">
+                            <button
+                              onClick={() => handleRejectAssignment(order._id)}
+                              className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider bg-rose-50 dark:bg-rose-950/20 text-rose-605 dark:text-rose-450 dark:text-rose-400 rounded-lg border border-rose-100 dark:border-rose-950/50 hover:bg-rose-100 dark:hover:bg-rose-900/30 transition cursor-pointer"
+                            >
+                              Reject
+                            </button>
+                            <button
+                              onClick={() => handleAcceptAssignment(order._id)}
+                              className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition cursor-pointer"
+                            >
+                              Accept
+                            </button>
+                          </div>
                         ) : (
                           <select
                             value={order.orderStatus}

@@ -1,5 +1,7 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
+import axios from "axios";
+import { backendUrl } from "./config";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Product from "./pages/Product";
@@ -27,9 +29,41 @@ import Wishlist from "./pages/Wishlist";
 import AiAssistant from "./componenets/AiAssistant";
 import ScrollToTop from "./componenets/ScrollToTop";
 import ComparisonTray from "./componenets/ComparisonTray";
+import Maintenance from "./pages/Maintenance";
+import NotFound from "./pages/NotFound";
 
 const App = () => {
   const location = useLocation();
+  const [maintenanceSettings, setMaintenanceSettings] = useState(null);
+  const [loadingMaintenance, setLoadingMaintenance] = useState(true);
+
+  useEffect(() => {
+    const checkMaintenance = async () => {
+      try {
+        const { data } = await axios.get(`${backendUrl}/api/system/maintenance`);
+        if (data.success) {
+          setMaintenanceSettings(data.settings);
+        }
+      } catch (err) {
+        console.error("Failed to fetch maintenance settings:", err);
+      } finally {
+        setLoadingMaintenance(false);
+      }
+    };
+    checkMaintenance();
+  }, []);
+
+  if (loadingMaintenance) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-6 text-slate-800 dark:text-slate-100 transition-colors duration-300">
+        <div className="h-8 w-8 rounded-full border-2 border-orange-500 border-t-transparent animate-spin" />
+      </div>
+    );
+  }
+
+  if (maintenanceSettings && maintenanceSettings.enabled && !maintenanceSettings.isWhitelisted) {
+    return <Maintenance settings={maintenanceSettings} />;
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-200">
@@ -85,6 +119,7 @@ const App = () => {
           <Route path="/order-confirmed/:orderId" element={<OrderConfirmed />} />
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/category/:slug" element={<Category />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
 
@@ -95,7 +130,5 @@ const App = () => {
     </div>
   );
 };
-
-
 
 export default App;

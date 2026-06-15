@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { backendUrl } from "../config";
 import { toast } from "react-toastify";
-import { Tag, Plus, Trash2, ToggleLeft, ToggleRight, Megaphone, Calendar, Percent } from "lucide-react";
+import { Plus, Trash2, ToggleLeft, ToggleRight, Megaphone, Calendar, Percent, AlertTriangle } from "lucide-react";
 
 const PRESET_COLORS = [
   { label: "Indigo", bg: "#6366f1", text: "#ffffff" },
@@ -74,115 +74,104 @@ const Sales = ({ token }) => {
   };
 
   return (
-    <div style={{ fontFamily: "'Inter', sans-serif" }}>
+    <div className="space-y-6 animate-fadeIn text-slate-900 dark:text-slate-100">
       {/* Page Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 28, flexWrap: "wrap", gap: 12 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg,#6366f1,#8b5cf6)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <Megaphone size={20} color="white" />
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 bg-indigo-500/10 text-indigo-550 dark:text-indigo-400 rounded-xl flex items-center justify-center border border-indigo-500/20 shadow-sm shrink-0">
+            <Megaphone size={20} />
           </div>
           <div>
-            <h1 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: "#0f172a" }}>Sale & Promotions</h1>
-            <p style={{ margin: 0, fontSize: 12, color: "#94a3b8" }}>{sales.length} banner{sales.length !== 1 ? "s" : ""} total</p>
+            <h1 className="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white">Sale & Promotions</h1>
+            <p className="text-xs text-slate-500 mt-0.5">{sales.length} banner{sales.length !== 1 ? "s" : ""} total</p>
           </div>
         </div>
         <button
           onClick={() => setShowForm(f => !f)}
-          style={{
-            display: "flex", alignItems: "center", gap: 8,
-            padding: "10px 20px", borderRadius: 12,
-            background: showForm ? "#f1f5f9" : "linear-gradient(135deg,#6366f1,#8b5cf6)",
-            color: showForm ? "#475569" : "#fff",
-            border: "none", cursor: "pointer",
-            fontSize: 13, fontWeight: 700,
-            boxShadow: showForm ? "none" : "0 4px 14px rgba(99,102,241,0.4)",
-          }}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition active:scale-95 cursor-pointer shadow-sm ${
+            showForm
+              ? "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+              : "bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white shadow-md shadow-indigo-500/25"
+          }`}
         >
           <Plus size={16} />
-          {showForm ? "Cancel" : "New Sale Banner"}
+          <span>{showForm ? "Cancel" : "New Sale Banner"}</span>
         </button>
       </div>
 
-      {/* ── Create Form ── */}
+      {/* Create Sale Banner Form */}
       {showForm && (
-        <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #e9eaec", padding: 24, marginBottom: 28, boxShadow: "0 4px 20px rgba(0,0,0,0.06)" }}>
-          <h2 style={{ margin: "0 0 20px", fontSize: 16, fontWeight: 700, color: "#0f172a" }}>Create Sale Banner</h2>
+        <div className="bg-white dark:bg-[#151b26] border border-slate-200 dark:border-slate-800/80 rounded-2xl p-6 shadow-sm space-y-4 animate-scaleUp">
+          <h2 className="text-sm font-black text-slate-850 dark:text-white tracking-tight">Create Sale Banner</h2>
 
-          <form onSubmit={handleSubmit}>
-            {/* Row 1 */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Banner Title *" name="title" value={form.title} onChange={handleChange} placeholder="e.g. Summer Flash Sale" />
               <Field label="Subtitle" name="subtitle" value={form.subtitle} onChange={handleChange} placeholder="e.g. Limited time only!" />
             </div>
 
-            {/* Row 2 */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14, marginBottom: 14 }}>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Field label="Badge Text" name="badge" value={form.badge} onChange={handleChange} placeholder="SALE / FLASH DEAL" />
               <Field label="Discount %" name="discountPercent" type="number" min="0" max="100" value={form.discountPercent} onChange={handleChange} placeholder="e.g. 40" />
               <Field label="Discount Label" name="discountLabel" value={form.discountLabel} onChange={handleChange} placeholder="Up to 40% off" />
             </div>
 
-            {/* Row 3 */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Button Text" name="buttonText" value={form.buttonText} onChange={handleChange} placeholder="Shop Now" />
               <Field label="Button Link" name="buttonLink" value={form.buttonLink} onChange={handleChange} placeholder="/product or /product/men" />
             </div>
 
-            {/* Row 4 */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14, marginBottom: 14 }}>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Field label="Category (optional)" name="category" value={form.category} onChange={handleChange} placeholder="Men / Women / Kids" />
               <Field label="Start Date" name="validFrom" type="date" value={form.validFrom} onChange={handleChange} />
               <Field label="End Date *" name="validTo" type="date" value={form.validTo} onChange={handleChange} />
             </div>
 
-            {/* Row 5 — Image URL */}
-            <div style={{ marginBottom: 14 }}>
+            <div>
               <Field label="Banner Image URL (optional)" name="image" value={form.image} onChange={handleChange} placeholder="https://..." />
             </div>
 
             {/* Color presets */}
-            <div style={{ marginBottom: 20 }}>
-              <p style={{ margin: "0 0 10px", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#64748b" }}>Banner Color</p>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+            <div className="space-y-2">
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Banner Color</label>
+              <div className="flex gap-2.5 flex-wrap items-center">
                 {PRESET_COLORS.map(c => (
                   <button
                     key={c.bg}
                     type="button"
                     onClick={() => setForm(f => ({ ...f, bgColor: c.bg, textColor: c.text }))}
                     title={c.label}
+                    className="w-8 h-8 rounded-lg cursor-pointer transition transform active:scale-90 border-2"
                     style={{
-                      width: 30, height: 30, borderRadius: 8, background: c.bg,
-                      border: form.bgColor === c.bg ? "3px solid #6366f1" : "2px solid transparent",
-                      cursor: "pointer", outline: form.bgColor === c.bg ? "2px solid #c7d2fe" : "none",
-                      transition: "transform 0.15s",
+                      backgroundColor: c.bg,
+                      borderColor: form.bgColor === c.bg ? "#6366f1" : "transparent",
+                      boxShadow: form.bgColor === c.bg ? "0 0 0 2px #c7d2fe" : "none",
                     }}
                   />
                 ))}
-                {/* Custom hex */}
-                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <input type="color" name="bgColor" value={form.bgColor} onChange={handleChange}
-                    style={{ width: 30, height: 30, borderRadius: 8, border: "1px solid #e2e8f0", cursor: "pointer" }} />
-                  <span style={{ fontSize: 12, color: "#64748b" }}>Custom</span>
+                <div className="flex items-center gap-2 border border-slate-200 dark:border-slate-800 rounded-xl px-2.5 py-1.5 bg-slate-50/50 dark:bg-[#111827]">
+                  <input 
+                    type="color" 
+                    name="bgColor" 
+                    value={form.bgColor} 
+                    onChange={handleChange}
+                    className="w-7 h-7 rounded border border-slate-200 dark:border-slate-800 cursor-pointer p-0 bg-transparent" 
+                  />
+                  <span className="text-[10px] font-bold text-slate-450 uppercase">Custom</span>
                 </div>
               </div>
             </div>
 
             {/* Live Preview */}
-            <div style={{ marginBottom: 20 }}>
-              <p style={{ margin: "0 0 10px", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#64748b" }}>Preview</p>
+            <div className="space-y-2">
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Banner Preview</label>
               <BannerPreview sale={form} />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              style={{
-                padding: "11px 28px", borderRadius: 12,
-                background: "linear-gradient(135deg,#6366f1,#8b5cf6)",
-                color: "#fff", border: "none", cursor: loading ? "not-allowed" : "pointer",
-                fontSize: 13, fontWeight: 700, opacity: loading ? 0.7 : 1,
-                boxShadow: "0 4px 14px rgba(99,102,241,0.4)",
-              }}
+              className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white font-bold text-xs uppercase tracking-wider transition active:scale-[0.98] disabled:opacity-50 cursor-pointer shadow-md hover:shadow-indigo-500/25"
             >
               {loading ? "Creating…" : "Create Sale Banner"}
             </button>
@@ -190,72 +179,85 @@ const Sales = ({ token }) => {
         </div>
       )}
 
-      {/* ── Banners List ── */}
+      {/* Banners List */}
       {sales.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "60px 20px", background: "#fff", borderRadius: 16, border: "1px dashed #e2e8f0" }}>
-          <Megaphone size={40} color="#c7d2fe" style={{ marginBottom: 12 }} />
-          <p style={{ fontSize: 15, fontWeight: 700, color: "#0f172a", margin: "0 0 6px" }}>No sale banners yet</p>
-          <p style={{ fontSize: 13, color: "#94a3b8" }}>Create your first promotion to show on the home page.</p>
+        <div className="rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-[#151b26] py-16 text-center text-xs text-slate-500 dark:text-slate-400 shadow-sm flex flex-col items-center justify-center gap-3">
+          <Megaphone size={40} className="text-indigo-200 dark:text-slate-700" />
+          <div>
+            <p className="font-bold text-slate-800 dark:text-slate-200">No sale banners yet</p>
+            <p className="text-slate-400 mt-1">Create your first promotion to show on the storefront home page.</p>
+          </div>
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        <div className="flex flex-col gap-4">
           {sales.map(sale => {
             const expired = isExpired(sale.validTo);
             return (
-              <div key={sale._id} style={{
-                background: "#fff", borderRadius: 14,
-                border: `1px solid ${expired ? "#fde68a" : sale.active ? "#e0e7ff" : "#f1f5f9"}`,
-                padding: "16px 20px",
-                display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap",
-                opacity: (!sale.active || expired) ? 0.7 : 1,
-              }}>
-                {/* Color swatch */}
-                <div style={{ width: 48, height: 48, borderRadius: 10, background: sale.bgColor, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <Percent size={20} color={sale.textColor || "#fff"} />
+              <div 
+                key={sale._id} 
+                className={`bg-white dark:bg-[#151b26] rounded-2xl border p-4.5 flex flex-col sm:flex-row items-center justify-between gap-4 transition duration-200 shadow-xs hover:shadow-md ${
+                  expired 
+                    ? "border-amber-255 dark:border-amber-500/20 bg-amber-50/10 dark:bg-amber-500/5" 
+                    : sale.active 
+                      ? "border-indigo-200 dark:border-indigo-500/20" 
+                      : "border-slate-200 dark:border-slate-800"
+                } ${(!sale.active || expired) ? "opacity-70" : ""}`}
+              >
+                <div className="flex items-center gap-4 min-w-0 w-full sm:w-auto">
+                  {/* Swatch */}
+                  <div 
+                    className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 border border-black/5 dark:border-white/5 shadow-inner"
+                    style={{ backgroundColor: sale.bgColor || "#6366f1" }}
+                  >
+                    <Percent size={18} style={{ color: sale.textColor || "#fff" }} />
+                  </div>
+
+                  <div className="min-w-0 flex-1 sm:flex-initial">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-extrabold text-sm text-slate-900 dark:text-white tracking-tight">{sale.title}</span>
+                      <span className={`text-[8px] font-black px-2 py-0.5 rounded-full border uppercase tracking-wider leading-none ${
+                        expired 
+                          ? "bg-amber-500/15 text-amber-605 dark:text-amber-405 border-amber-500/30" 
+                          : sale.active 
+                            ? "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border-indigo-500/30" 
+                            : "bg-slate-500/15 text-slate-600 dark:text-slate-400 border-slate-500/30"
+                      }`}>
+                        {expired ? "Expired" : sale.active ? "Active" : "Paused"}
+                      </span>
+                      {sale.discountPercent > 0 && (
+                        <span className="text-xs font-black text-rose-500 dark:text-rose-400">{sale.discountPercent}% OFF</span>
+                      )}
+                    </div>
+                    {sale.subtitle && <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium leading-relaxed">{sale.subtitle}</p>}
+                    <div className="flex items-center gap-3 mt-1.5 flex-wrap text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wide">
+                      <span className="flex items-center gap-1.5">
+                        <Calendar size={11} className="text-slate-400" />
+                        <span>{fmt(sale.validFrom)} → {fmt(sale.validTo)}</span>
+                      </span>
+                      {sale.category && (
+                        <>
+                          <span>•</span>
+                          <span className="text-indigo-600 dark:text-indigo-400 font-extrabold">📦 {sale.category}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
-                {/* Info */}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                    <span style={{ fontWeight: 800, fontSize: 14, color: "#0f172a" }}>{sale.title}</span>
-                    <span style={{
-                      fontSize: 10, fontWeight: 800, padding: "2px 8px", borderRadius: 20,
-                      background: expired ? "#fef3c7" : sale.active ? "#eef2ff" : "#f1f5f9",
-                      color: expired ? "#92400e" : sale.active ? "#4338ca" : "#64748b",
-                      textTransform: "uppercase", letterSpacing: "0.06em",
-                    }}>
-                      {expired ? "Expired" : sale.active ? "Active" : "Paused"}
-                    </span>
-                    {sale.discountPercent > 0 && (
-                      <span style={{ fontSize: 12, fontWeight: 700, color: "#f43f5e" }}>{sale.discountPercent}% OFF</span>
-                    )}
-                  </div>
-                  {sale.subtitle && <p style={{ margin: "2px 0 0", fontSize: 12, color: "#64748b" }}>{sale.subtitle}</p>}
-                  <div style={{ display: "flex", gap: 12, marginTop: 4, flexWrap: "wrap" }}>
-                    <span style={{ fontSize: 11, color: "#94a3b8", display: "flex", alignItems: "center", gap: 4 }}>
-                      <Calendar size={11} /> {fmt(sale.validFrom)} → {fmt(sale.validTo)}
-                    </span>
-                    {sale.category && (
-                      <span style={{ fontSize: 11, color: "#6366f1", fontWeight: 600 }}>📦 {sale.category}</span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                <div className="flex items-center gap-3 shrink-0 self-end sm:self-auto">
                   <button
                     onClick={() => handleToggle(sale._id)}
                     title={sale.active ? "Pause" : "Activate"}
-                    style={{ background: "none", border: "none", cursor: "pointer", color: sale.active ? "#6366f1" : "#94a3b8", padding: 4 }}
+                    className={`p-1 rounded-lg transition cursor-pointer ${sale.active ? "text-indigo-500 hover:text-indigo-600" : "text-slate-400 hover:text-slate-605 dark:text-slate-500"}`}
                   >
-                    {sale.active ? <ToggleRight size={24} /> : <ToggleLeft size={24} />}
+                    {sale.active ? <ToggleRight size={26} /> : <ToggleLeft size={26} />}
                   </button>
                   <button
                     onClick={() => handleDelete(sale._id)}
-                    title="Delete"
-                    style={{ background: "#fff5f5", border: "1px solid #fecaca", borderRadius: 8, padding: "6px 10px", cursor: "pointer", color: "#ef4444", display: "flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 600 }}
+                    className="px-3.5 py-1.5 rounded-xl border border-red-200 hover:border-red-300 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 transition cursor-pointer flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider"
                   >
-                    <Trash2 size={14} />
+                    <Trash2 size={13} />
+                    <span>Delete</span>
                   </button>
                 </div>
               </div>
@@ -267,62 +269,48 @@ const Sales = ({ token }) => {
   );
 };
 
-// ── Small reusable input field ────────────────────────────────────────────────
 const Field = ({ label, name, value, onChange, type = "text", placeholder, min, max }) => (
   <div>
-    <label style={{ display: "block", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#64748b", marginBottom: 6 }}>{label}</label>
+    <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1.5">{label}</label>
     <input
-      type={type} name={name} value={value} onChange={onChange}
-      placeholder={placeholder} min={min} max={max}
-      style={{
-        width: "100%", boxSizing: "border-box",
-        border: "1.5px solid #e2e8f0", borderRadius: 10,
-        padding: "9px 12px", fontSize: 13, color: "#0f172a",
-        outline: "none", background: "#fafafa",
-        transition: "border-color 0.15s",
-      }}
-      onFocus={e => e.target.style.borderColor = "#6366f1"}
-      onBlur={e => e.target.style.borderColor = "#e2e8f0"}
+      type={type}
+      name={name}
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      min={min}
+      max={max}
+      className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#111827] px-4 py-2.5 text-xs font-semibold text-slate-900 dark:text-slate-100 outline-none transition focus:bg-white dark:focus:bg-[#151b26] focus:border-indigo-500 dark:focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 placeholder:text-slate-450 dark:placeholder:text-slate-600"
     />
   </div>
 );
 
-// ── Live Banner Preview ───────────────────────────────────────────────────────
 const BannerPreview = ({ sale }) => (
-  <div style={{
-    borderRadius: 14, overflow: "hidden",
-    background: sale.bgColor || "#6366f1",
-    color: sale.textColor || "#fff",
-    padding: "20px 24px",
-    display: "flex", alignItems: "center", justifyContent: "space-between",
-    gap: 16, flexWrap: "wrap",
-    minHeight: 90,
-    position: "relative",
-  }}>
-    {/* Decorative circle */}
-    <div style={{ position: "absolute", right: -30, top: -30, width: 120, height: 120, borderRadius: "50%", background: "rgba(255,255,255,0.07)", pointerEvents: "none" }} />
-    <div style={{ position: "absolute", right: 60, bottom: -40, width: 80, height: 80, borderRadius: "50%", background: "rgba(255,255,255,0.05)", pointerEvents: "none" }} />
+  <div 
+    className="rounded-2xl overflow-hidden p-6 flex flex-col sm:flex-row items-center justify-between gap-5 min-h-[90px] relative shadow-inner select-none transition-all duration-200"
+    style={{
+      backgroundColor: sale.bgColor || "#6366f1",
+      color: sale.textColor || "#fff",
+    }}
+  >
+    <div className="absolute right-[-30px] top-[-30px] width-[120px] height-[120px] rounded-full bg-white/10 blur pointer-events-none" />
+    <div className="absolute right-[60px] bottom-[-40px] width-[80px] height-[80px] rounded-full bg-white/5 blur pointer-events-none" />
 
-    <div style={{ position: "relative" }}>
+    <div className="relative space-y-1.5 text-center sm:text-left">
       {sale.badge && (
-        <span style={{
-          fontSize: 9, fontWeight: 900, letterSpacing: "0.12em",
-          background: "rgba(255,255,255,0.25)", padding: "3px 10px", borderRadius: 20,
-          display: "inline-block", marginBottom: 6, textTransform: "uppercase",
-        }}>{sale.badge}</span>
+        <span className="text-[9px] font-black uppercase tracking-wider bg-white/20 px-2.5 py-1 rounded-full border border-white/10 inline-block">{sale.badge}</span>
       )}
-      <p style={{ margin: 0, fontSize: 16, fontWeight: 900, lineHeight: 1.2 }}>{sale.title || "Banner Title"}</p>
-      {sale.subtitle && <p style={{ margin: "4px 0 0", fontSize: 12, opacity: 0.8 }}>{sale.subtitle}</p>}
+      <p className="text-base font-black tracking-tight leading-tight">{sale.title || "Banner Title"}</p>
+      {sale.subtitle && <p className="text-xs font-semibold opacity-80 leading-relaxed">{sale.subtitle}</p>}
     </div>
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8, position: "relative" }}>
+
+    <div className="flex flex-col items-center sm:items-end gap-2.5 shrink-0 relative">
       {sale.discountPercent > 0 && (
-        <span style={{ fontSize: 32, fontWeight: 900, lineHeight: 1 }}>{sale.discountPercent}%<span style={{ fontSize: 14 }}> OFF</span></span>
+        <span className="text-3xl font-black leading-none">{sale.discountPercent}%<span className="text-xs font-bold uppercase tracking-wider"> OFF</span></span>
       )}
-      <span style={{
-        fontSize: 12, fontWeight: 700, padding: "7px 16px",
-        background: "rgba(255,255,255,0.2)", border: "1.5px solid rgba(255,255,255,0.3)",
-        borderRadius: 20, backdropFilter: "blur(4px)",
-      }}>{sale.buttonText || "Shop Now"} →</span>
+      <span className="text-[11px] font-black uppercase tracking-wider px-4 py-1.5 rounded-full border border-white/30 bg-white/10 backdrop-blur-xs transition hover:bg-white hover:text-slate-900 cursor-pointer">
+        {sale.buttonText || "Shop Now"} →
+      </span>
     </div>
   </div>
 );

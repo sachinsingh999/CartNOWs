@@ -63,7 +63,7 @@ const Finance = ({ token }) => {
   const refundedPayments = orders.filter((o) => o.paymentStatus === "Refunded");
 
   return (
-    <div className="flex flex-col h-[calc(100vh-120px)] space-y-6 animate-fadeIn text-slate-900 dark:text-slate-100">
+    <div className="flex flex-col md:h-[calc(100vh-120px)] h-auto space-y-6 animate-fadeIn text-slate-900 dark:text-slate-100 pb-4">
       <div className="flex items-center gap-3 shrink-0">
         <div className="h-10 w-10 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center justify-center border border-emerald-500/20 shadow-sm">
           <DollarSign size={20} />

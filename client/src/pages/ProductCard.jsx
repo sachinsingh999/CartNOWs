@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { backendUrl } from "../config";
-import { Star, Eye, ShoppingCart, Heart, BarChart2 } from "lucide-react";
+import { Star, Eye, ShoppingCart, Heart, BarChart2, Truck } from "lucide-react";
 import { useComparison } from "../context/ComparisonContext";
 import { getAverageRating, getReviewCount } from "../utils/productRatings";
 
@@ -102,44 +102,75 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
   // Pricing calculations
   const originalVal = product.originalPrice || Math.round(product.price * 1.25);
   const discountPercent = Math.max(5, Math.round(((originalVal - product.price) / originalVal) * 100));
-  const emiAmount = Math.round(product.price / 12);
 
-  // Dynamic delivery estimate based on geographic location
-  const getDeliveryEstimate = () => {
-    const loc = String(product.location || "Delhi").toLowerCase();
-    if (loc === "delhi") return "FREE Delivery by Tomorrow";
-    if (loc === "mumbai") return "FREE Delivery in 2 Days";
-    if (loc === "bangalore") return "FREE Delivery in 3 Days";
-    return "FREE Delivery in 4 Days";
-  };
+  const [deliveryEstimate, setDeliveryEstimate] = useState("");
+
+  useEffect(() => {
+    const updateEstimate = () => {
+      const pCode = localStorage.getItem("delivery_pincode") || "";
+      const loc = String(product.location || "Delhi").toLowerCase();
+      
+      if (!pCode) {
+        if (loc === "delhi") setDeliveryEstimate("FREE Delivery Tomorrow");
+        else if (loc === "mumbai") setDeliveryEstimate("FREE Delivery in 2 Days");
+        else if (loc === "bangalore") setDeliveryEstimate("FREE Delivery in 3 Days");
+        else setDeliveryEstimate("FREE Delivery in 4 Days");
+        return;
+      }
+
+      if (pCode.startsWith("11") || pCode.startsWith("12") || pCode.startsWith("13") || pCode.startsWith("20")) {
+        if (loc === "delhi") setDeliveryEstimate("⚡ Next-Day Delivery");
+        else setDeliveryEstimate("📦 Delivery in 2 Days");
+      } else if (pCode.startsWith("40") || pCode.startsWith("41") || pCode.startsWith("42") || pCode.startsWith("30")) {
+        if (loc === "mumbai") setDeliveryEstimate("⚡ Next-Day Delivery");
+        else setDeliveryEstimate("📦 Delivery in 2 Days");
+      } else if (pCode.startsWith("56") || pCode.startsWith("57") || pCode.startsWith("60")) {
+        if (loc === "bangalore") setDeliveryEstimate("⚡ Next-Day Delivery");
+        else setDeliveryEstimate("📦 Delivery in 2-3 Days");
+      } else {
+        setDeliveryEstimate("📦 Delivery in 3-5 Days");
+      }
+    };
+
+    updateEstimate();
+    window.addEventListener("pincodeUpdated", updateEstimate);
+    return () => window.removeEventListener("pincodeUpdated", updateEstimate);
+  }, [product.location]);
 
   return (
     <div
       onMouseEnter={() => images[1] && setImgIdx(1)}
       onMouseLeave={() => setImgIdx(0)}
-      onClick={() => navigate(`/product/${product._id}`)}
-      className="group flex flex-col bg-white dark:bg-slate-900/40 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 overflow-hidden hover:shadow-xl hover:border-indigo-500/25 dark:hover:border-indigo-500/20 transition-all duration-350 cursor-pointer text-left relative"
+      onClick={() => {
+        try {
+          const list = JSON.parse(localStorage.getItem("recently_viewed") || "[]");
+          const next = [product._id, ...list.filter(id => id !== product._id)].slice(0, 8);
+          localStorage.setItem("recently_viewed", JSON.stringify(next));
+        } catch (e) {}
+        navigate(`/product/${product._id}`);
+      }}
+      className="group flex flex-col bg-white dark:bg-slate-900/30 rounded-3xl border border-slate-200/60 dark:border-slate-800/80 overflow-hidden hover:shadow-2xl hover:-translate-y-1 hover:border-indigo-500/20 dark:hover:border-indigo-500/20 transition-all duration-300 cursor-pointer text-left relative"
     >
-      {/* Image Container with strict aspect-square */}
-      <div className="aspect-square relative w-full overflow-hidden bg-slate-50 dark:bg-slate-950/40 flex items-center justify-center">
+      {/* Image Container with portrait ratio */}
+      <div className="aspect-[3/4] relative w-full overflow-hidden bg-slate-50/70 dark:bg-slate-950/20 flex items-center justify-center">
         <img
           src={getSrc(imgIdx)}
           alt={product.name}
           loading="lazy"
-          className="w-full h-full object-contain p-4.5 transition-all duration-300"
+          className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-105"
         />
 
-        {/* Heart Favorite Button */}
+        {/* Heart Favorite Button with click spring feedback */}
         <button
           type="button"
           onClick={toggleFavorite}
-          className="absolute top-3 right-3 h-8 w-8 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200/40 dark:border-slate-800 rounded-full flex items-center justify-center shadow-md z-10 cursor-pointer transition hover:bg-slate-100 dark:hover:bg-slate-800"
+          className="absolute top-3.5 right-3.5 h-8.5 w-8.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-100 dark:border-slate-800 rounded-full flex items-center justify-center shadow-md z-10 cursor-pointer transition-all active:scale-90 hover:scale-105"
           title="Save to favorites"
         >
           <Heart
-            size={13}
-            className={`transition duration-150 ${
-              isFavorite ? "text-rose-500 fill-rose-500 scale-110" : "text-slate-400 hover:text-rose-500"
+            size={14}
+            className={`transition-all duration-300 ${
+              isFavorite ? "text-rose-500 fill-rose-500 scale-110 animate-bounce" : "text-slate-400 hover:text-rose-500"
             }`}
           />
         </button>
@@ -155,10 +186,10 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
               addToCompare(product);
             }
           }}
-          className={`absolute top-12 right-3 h-8 w-8 backdrop-blur-md border rounded-full flex items-center justify-center shadow-md z-10 cursor-pointer transition hover:bg-slate-100 dark:hover:bg-slate-800 ${
+          className={`absolute top-13 right-3.5 h-8.5 w-8.5 backdrop-blur-md border rounded-full flex items-center justify-center shadow-md z-10 cursor-pointer transition-all active:scale-90 hover:scale-105 ${
             isComparing
               ? "bg-indigo-600 border-indigo-500 text-white"
-              : "bg-white/90 dark:bg-slate-900/90 border-slate-200/40 dark:border-slate-800 text-slate-400 hover:text-indigo-600"
+              : "bg-white/95 dark:bg-slate-900/95 border-slate-100 dark:border-slate-800 text-slate-400 hover:text-indigo-600"
           }`}
           title="Compare product"
         >
@@ -166,24 +197,33 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
         </button>
 
         {/* Badges Overlays */}
-        <div className="absolute top-3 left-3 flex flex-col gap-1 z-10">
-          <span className="px-2 py-0.5 text-[8px] font-black tracking-widest uppercase text-slate-800 dark:text-slate-200 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded border border-slate-200/60 dark:border-slate-800">
+        <div className="absolute top-3.5 left-3.5 flex flex-col gap-1.5 z-10">
+          <span className="px-2.5 py-0.5 text-[8.5px] font-black tracking-wider uppercase text-white bg-orange-500 rounded-lg shadow-sm">
             {discountPercent}% OFF
           </span>
+          {averageRating >= 4.5 && (
+            <span className="px-2.5 py-0.5 text-[8.5px] font-black tracking-wider uppercase text-slate-800 dark:text-slate-100 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-lg border border-slate-200/50 dark:border-slate-800">
+              🔥 Bestseller
+            </span>
+          )}
           {isOOS ? (
-            <span className="px-2 py-0.5 text-[8px] font-black tracking-widest uppercase text-white bg-rose-500 rounded shadow-sm animate-pulse">
+            <span className="px-2.5 py-0.5 text-[8.5px] font-black tracking-wider uppercase text-white bg-red-650 rounded-lg shadow-sm animate-pulse">
               Sold Out
             </span>
           ) : isLowStock ? (
-            <span className="px-2 py-0.5 text-[8px] font-black tracking-widest uppercase text-white bg-amber-500 rounded shadow-sm">
+            <span className="px-2.5 py-0.5 text-[8.5px] font-black tracking-wider uppercase text-white bg-amber-500 rounded-lg shadow-sm">
               Only {product.stock} Left
             </span>
-          ) : null}
+          ) : (
+            <span className="px-2.5 py-0.5 text-[8.5px] font-black tracking-wider uppercase text-white bg-emerald-600 rounded-lg shadow-sm">
+              In Stock
+            </span>
+          )}
         </div>
 
-        {/* Origin Hub badge */}
-        <span className="absolute bottom-3 left-3 px-2 py-0.5 text-[8.5px] font-extrabold text-indigo-600 dark:text-indigo-400 bg-indigo-50/90 dark:bg-indigo-950/80 backdrop-blur-md border border-indigo-200/50 dark:border-indigo-900/40 rounded uppercase tracking-wider">
-          {product.location || "Delhi"} Hub
+        {/* Verified Seller Badge */}
+        <span className="absolute bottom-3.5 left-3.5 px-2 py-0.5 text-[8px] font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50/90 dark:bg-indigo-950/80 backdrop-blur-md border border-indigo-200/40 dark:border-indigo-900/30 rounded uppercase tracking-wider">
+          ✓ Verified Seller
         </span>
 
         {/* Quick View Glassmorphic Banner */}
@@ -192,9 +232,9 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
             e.stopPropagation();
             if (onQuickView) onQuickView(product);
           }}
-          className="absolute inset-x-3 bottom-3 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out z-10 cursor-pointer"
+          className="absolute inset-x-3.5 bottom-3.5 opacity-0 group-hover:opacity-100 transition-all duration-350 ease-out z-10 cursor-pointer"
         >
-          <div className="flex h-9 w-full items-center justify-center gap-1 rounded-xl bg-slate-950/85 hover:bg-slate-950 dark:bg-slate-950/85 backdrop-blur-md border border-white/10 text-[10px] font-black uppercase tracking-wider text-white transition-all duration-200">
+          <div className="flex h-9 w-full items-center justify-center gap-1.5 rounded-xl bg-slate-950/85 hover:bg-slate-950 dark:bg-slate-950/85 backdrop-blur-md border border-white/10 text-[10.5px] font-black uppercase tracking-wider text-white transition-all duration-200">
             <Eye size={12} />
             Quick View
           </div>
@@ -202,20 +242,25 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
       </div>
 
       {/* Product Card Body */}
-      <div className="flex flex-col flex-1 p-4 gap-2 bg-white dark:bg-transparent">
+      <div className="flex flex-col flex-1 p-4.5 gap-2.5 bg-white dark:bg-transparent">
         {/* Brand / Collection */}
-        <p className="text-[10px] font-black tracking-wider uppercase text-indigo-600 dark:text-indigo-400">
-          {product.brand || "CartNOW Apparel"}
-        </p>
+        <div className="flex items-center justify-between">
+          <p className="text-[10px] font-black tracking-wider uppercase text-indigo-600 dark:text-indigo-400">
+            {product.brand || "CartNOW Apparel"}
+          </p>
+          <span className="text-[9.5px] font-bold text-slate-450 dark:text-slate-500 uppercase">
+            {product.location || "Delhi"} Hub
+          </span>
+        </div>
 
         {/* Title */}
-        <p className="font-bold text-[13px] text-slate-800 dark:text-slate-100 line-clamp-2 min-h-[36px] leading-snug group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200">
+        <p className="font-bold text-[13.5px] text-slate-800 dark:text-slate-100 line-clamp-2 min-h-[36px] leading-snug group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200">
           {product.name}
         </p>
 
         {/* Rating Line */}
-        <div className="flex items-center gap-1 text-[11px] mt-0.5">
-          <div className="flex items-center gap-0.5 bg-amber-500/10 px-2 py-0.5 rounded-md text-amber-500 font-extrabold">
+        <div className="flex items-center gap-1.5 text-[11px] mt-0.5">
+          <div className="flex items-center gap-0.5 bg-amber-500/10 px-2 py-0.5 rounded-md text-amber-500 font-black">
             <Star size={11} className="fill-amber-500 stroke-none" />
             <span>{averageRating ? averageRating.toFixed(1) : "New"}</span>
           </div>
@@ -225,44 +270,35 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
         </div>
 
         {/* Pricing details */}
-        <div className="flex flex-col gap-0.5 mt-1">
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-[17px] font-black text-slate-900 dark:text-slate-100 tracking-tight">
+        <div className="flex flex-col gap-1 mt-1">
+          <div className="flex items-baseline gap-2">
+            <span className="text-[18px] font-black text-slate-900 dark:text-slate-100 tracking-tight">
               ₹{Number(product.price).toLocaleString("en-IN")}
             </span>
-            <span className="text-[11px] text-slate-400 dark:text-slate-500 line-through">
+            <span className="text-[11.5px] text-slate-400 dark:text-slate-500 line-through">
               ₹{originalVal.toLocaleString("en-IN")}
             </span>
           </div>
-          <span className="text-[9.5px] font-bold text-slate-400 dark:text-slate-500">
-            {getDeliveryEstimate()}
-          </span>
+          <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-450 dark:text-slate-500">
+            <Truck size={12} className="text-slate-400" />
+            <span>{deliveryEstimate}</span>
+          </div>
         </div>
 
         {/* Action Buttons Row */}
-        <div className="grid grid-cols-2 gap-2 mt-2 pt-3 border-t border-slate-100 dark:border-slate-800/80">
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`/product/${product._id}`);
-            }}
-            className="py-2.5 text-[10.5px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-350 bg-slate-50 hover:bg-slate-100 dark:bg-slate-850 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800/80 active:scale-95 transition-all duration-200 rounded-xl cursor-pointer"
-          >
-            Details
-          </button>
+        <div className="grid grid-cols-1 gap-2 mt-2 pt-3 border-t border-slate-100 dark:border-slate-800/80">
           <button
             type="button"
             disabled={isOOS}
             onClick={handleAddToCart}
-            className={`flex items-center justify-center gap-1 py-2.5 text-[10.5px] font-black uppercase tracking-wider rounded-xl transition-all duration-205 active:scale-95 cursor-pointer ${
+            className={`flex items-center justify-center gap-1.5 py-2.5 text-[10.5px] font-black uppercase tracking-wider rounded-xl transition-all duration-200 active:scale-95 cursor-pointer w-full ${
               isOOS
                 ? "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed border border-slate-200/50 dark:border-slate-800/50"
                 : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-md hover:shadow border border-indigo-500/20"
             }`}
           >
             <ShoppingCart size={11} />
-            <span>Add to Cart</span>
+            <span>{isOOS ? "Sold Out" : "Add to Cart"}</span>
           </button>
         </div>
       </div>

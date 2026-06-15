@@ -263,7 +263,20 @@ const getAssignedOrders = async (req, res) => {
   try {
     const driverId = req.deliveryman.id;
     const orders = await orderModel.find({ deliverymanId: driverId }).sort({ createdAt: -1 });
-    res.json({ success: true, orders });
+
+    const assignments = await deliveryAssignmentModel.find({
+      agentId: driverId,
+      orderId: { $in: orders.map(o => o._id) }
+    });
+
+    const ordersWithStatus = orders.map(order => {
+      const orderObj = order.toObject();
+      const assignment = assignments.find(a => a.orderId.toString() === order._id.toString());
+      orderObj.assignmentStatus = assignment ? assignment.status : "Accepted";
+      return orderObj;
+    });
+
+    res.json({ success: true, orders: ordersWithStatus });
   } catch (error) {
     console.log(error);
     res.json({ success: false, message: error.message });
@@ -851,6 +864,13 @@ const rejectDelivery = async (req, res) => {
 
     assignment.status = "Rejected";
     await assignment.save();
+
+    // Clear deliverymanId from order so it is not associated with this driver anymore
+    const order = await orderModel.findById(orderId);
+    if (order) {
+      order.deliverymanId = null;
+      await order.save();
+    }
 
     // Call re-assignment logic
     await autoAssignDeliveryAgent(orderId);

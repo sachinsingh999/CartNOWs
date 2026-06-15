@@ -1,5 +1,6 @@
 import express from "express";
 import adminAuth from "../middleware/adminAuth.js";
+import { getMaintenanceAdmin, updateMaintenanceAdmin } from "../controllers/maintenanceController.js";
 import {
   getAllSellers,
   getSellerDetails,
@@ -133,6 +134,10 @@ adminRouter.post("/announce", sendAnnouncement);
 
 // Audit logs
 adminRouter.get("/logs", getAuditLogs);
+
+// Maintenance Mode Settings
+adminRouter.get("/maintenance", getMaintenanceAdmin);
+adminRouter.put("/maintenance", updateMaintenanceAdmin);
 
 // Analytics
 adminRouter.get("/analytics/revenue", getAdminRevenueAnalytics);

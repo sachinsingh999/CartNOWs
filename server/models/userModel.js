@@ -7,18 +7,10 @@ const addressSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
-    validate: {
-      validator: (v) => validateEmail(v).isValid,
-      message: "Invalid email address"
-    }
   },
   phone: {
     type: String,
     required: true,
-    validate: {
-      validator: (v) => validatePhone(v).isValid,
-      message: "Phone number must be exactly 10 digits"
-    }
   },
   street: { type: String, required: true },
   city: { type: String, required: true },

@@ -868,13 +868,16 @@ const PlaceOrder = () => {
     loadProducts();
   }, [location.state]);
 
+  const giftWrap = location.state?.giftWrap || false;
+  const giftMessage = location.state?.giftMessage || "";
+
   const subtotal = products.reduce(
     (sum, item) => sum + item.price * item.qty,
     0
   );
-  const shipping = subtotal > 0 ? 10 : 0;
+  const shipping = subtotal > 999 || subtotal === 0 ? 0 : 10;
   const discount = appliedCoupon ? appliedCoupon.discountAmount : 0;
-  const finalTotal = Math.max(0, subtotal + shipping - discount);
+  const finalTotal = Math.max(0, subtotal + shipping + (giftWrap ? 50 : 0) - discount);
 
   const handleDeliverToAddress = () => {
     if (!selectedAddressId) {
@@ -938,7 +941,7 @@ const PlaceOrder = () => {
           {
             items,
             amount: finalTotal,
-            address: { ...formData },
+            address: { ...formData, giftWrap, giftMessage },
             paymentMethod: "cod",
             couponCode: appliedCoupon ? appliedCoupon.code : null,
             discount,
@@ -960,7 +963,7 @@ const PlaceOrder = () => {
           {
             items,
             amount: finalTotal,
-            address: { ...formData },
+            address: { ...formData, giftWrap, giftMessage },
             couponCode: appliedCoupon ? appliedCoupon.code : null,
             discount,
           },
@@ -978,7 +981,7 @@ const PlaceOrder = () => {
           {
             items,
             amount: finalTotal,
-            address: { ...formData },
+            address: { ...formData, giftWrap, giftMessage },
             couponCode: appliedCoupon ? appliedCoupon.code : null,
             discount,
           },
@@ -1526,6 +1529,13 @@ const PlaceOrder = () => {
                 <div className="flex justify-between text-rose-600 dark:text-rose-455 font-bold">
                   <span>Coupon Discount:</span>
                   <span>-₹{discount}</span>
+                </div>
+              )}
+
+              {giftWrap && (
+                <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                  <span>Gift Wrapping:</span>
+                  <span className="font-semibold text-slate-900 dark:text-slate-100">₹50</span>
                 </div>
               )}
               

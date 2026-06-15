@@ -275,6 +275,50 @@ const Dashboard = ({
     }
   };
 
+  const handleAcceptAssignment = async (orderId) => {
+    setLoading(true);
+    try {
+      const response = await axios.post(
+        `${backendUrl}/api/deliveryman/accept-delivery`,
+        { orderId },
+        { headers: { token } }
+      );
+      if (response.data.success) {
+        toast.success(response.data.message || "Assignment accepted successfully");
+        fetchData();
+      } else {
+        toast.error(response.data.message || "Failed to accept assignment");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRejectAssignment = async (orderId) => {
+    setLoading(true);
+    try {
+      const response = await axios.post(
+        `${backendUrl}/api/deliveryman/reject-delivery`,
+        { orderId },
+        { headers: { token } }
+      );
+      if (response.data.success) {
+        toast.success(response.data.message || "Assignment rejected successfully");
+        fetchData();
+      } else {
+        toast.error(response.data.message || "Failed to reject assignment");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const toggleDutyStatusHandler = async () => {
     try {
       const response = await axios.post(
@@ -385,8 +429,9 @@ const Dashboard = ({
   const filteredReturnTasks = filterByDate(returnTasks);
   const filteredComplaints = filterByDate(complaints);
 
-  const activeDeliveries = orders.filter((o) => o.orderStatus !== "Delivered");
-  const nextOrder = activeDeliveries[0]; // Priority next order
+  const pendingAcceptance = orders.filter((o) => o.assignmentStatus === "Assigned");
+  const activeOngoing = orders.filter((o) => o.assignmentStatus !== "Assigned" && o.orderStatus !== "Delivered" && o.orderStatus !== "Cancelled");
+  const nextOrder = activeOngoing[0]; // Priority next order
 
   const getStatusBadgeStyle = (status) => {
     switch (status) {
@@ -463,6 +508,9 @@ const Dashboard = ({
           stats={stats}
           orders={orders}
           nextOrder={nextOrder}
+          pendingAcceptance={pendingAcceptance}
+          handleAcceptAssignment={handleAcceptAssignment}
+          handleRejectAssignment={handleRejectAssignment}
           filterStartDate={filterStartDate}
           setFilterStartDate={setFilterStartDate}
           filterEndDate={filterEndDate}

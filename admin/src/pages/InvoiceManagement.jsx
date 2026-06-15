@@ -145,7 +145,7 @@ const InvoiceManagement = ({ token }) => {
   const totalTax = totalCGST + totalSGST;
 
   return (
-    <div className="flex flex-col h-[calc(100vh-80px)] space-y-4 text-slate-800">
+    <div className="flex flex-col md:h-[calc(100vh-80px)] h-auto space-y-4 text-slate-800 pb-4">
       
       {/* Page Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 shrink-0">
@@ -286,7 +286,7 @@ const InvoiceManagement = ({ token }) => {
 
       {/* Invoices List Table */}
       <div className="flex-1 bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-xs flex flex-col min-h-0">
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-auto">
           {loading ? (
             <div className="h-full flex items-center justify-center text-slate-450 font-medium">
               <RotateCw className="animate-spin mr-2" size={16} /> Loading invoices...

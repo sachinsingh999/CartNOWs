@@ -139,7 +139,7 @@ const Orders = ({ token }) => {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-120px)] space-y-6 animate-fadeIn text-slate-800 dark:text-slate-100 pb-4">
+    <div className="flex flex-col md:h-[calc(100vh-120px)] h-auto space-y-6 animate-fadeIn text-slate-800 dark:text-slate-100 pb-4">
 
       {/* ── Page Header ── */}
       <div className="flex flex-wrap items-center justify-between gap-4 shrink-0 bg-white/40 dark:bg-slate-950/20 backdrop-blur-md border border-slate-200/50 dark:border-slate-900/50 p-4 rounded-2xl shadow-xs">
