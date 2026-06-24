@@ -89,7 +89,7 @@ const Navbar = () => {
       return [];
     }
   });
-  const trendingSearches = ["iPhone", "Denim Jacket", "Sneakers", "Smartwatch", "Headphones"];
+  const [trendingSearches, setTrendingSearches] = useState(["iPhone", "Denim Jacket", "Sneakers", "Smartwatch", "Headphones"]);
 
   /* Mobile search overlay */
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
@@ -99,7 +99,6 @@ const Navbar = () => {
   const notiRef = useRef(null);
   const searchRef = useRef(null);
   const mobileSearchInputRef = useRef(null);
-  const pincodeRef = useRef(null);
 
   /* Dark mode */
   const [isDarkMode, setIsDarkMode] = useState(() =>
@@ -197,13 +196,15 @@ const Navbar = () => {
   /* ── Click outside ── */
   useEffect(() => {
     const handler = (e) => {
-      if (profileRef.current && !profileRef.current.contains(e.target)) setOpen(false);
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setOpen(false);
+        setPincodeOpen(false);
+      }
       if (notiRef.current && !notiRef.current.contains(e.target)) setNotiOpen(false);
       if (searchRef.current && !searchRef.current.contains(e.target)) {
         setShowSuggestions(false);
         setSearchFocused(false);
       }
-      if (pincodeRef.current && !pincodeRef.current.contains(e.target)) setPincodeOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -217,6 +218,22 @@ const Navbar = () => {
       if (res.data.success) setAllProducts(res.data.products || []);
     } catch { }
   }, [allProducts.length]);
+
+  /* ── Fetch trending searches from analytics ── */
+  const fetchTrendingSearches = useCallback(async () => {
+    try {
+      const res = await axios.get(`${backendUrl}/api/product/search-suggestions`);
+      if (res.data.success && res.data.suggestions && res.data.suggestions.length > 0) {
+        setTrendingSearches(res.data.suggestions);
+      }
+    } catch (err) {
+      console.log("Error fetching search suggestions:", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchTrendingSearches();
+  }, [fetchTrendingSearches]);
 
   const suggestions = useMemo(() => {
     const q = searchValue.trim().toLowerCase();
@@ -412,13 +429,24 @@ const Navbar = () => {
   ══════════════════════════════════════════ */
   return (
     <>
+      {/* Backdrop Dimming Overlay */}
+      {showSuggestions && (
+        <div
+          onClick={() => {
+            setShowSuggestions(false);
+            setSearchFocused(false);
+          }}
+          className="fixed inset-0 z-40 bg-slate-950/40 backdrop-blur-sm transition-opacity duration-300"
+        />
+      )}
+
       {/* ═══════════ TOP NAV BAR ═══════════ */}
-      <header className="sticky top-0 z-50 w-full">
+      <header id="main-navbar-header" className="sticky top-0 z-50 w-full">
 
         {/* ── Main bar ── */}
         <nav className="border-b border-slate-200/70 dark:border-slate-800/70 bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl shadow-[0_1px_3px_0_rgb(0,0,0,0.07)] dark:shadow-[0_4px_24px_-4px_rgba(0,0,0,0.5)]">
           <div className="mx-auto max-w-[1400px] px-4 sm:px-6">
-            <div className="flex h-13 items-center gap-3 lg:gap-4">
+            <div className="flex h-13 items-center gap-3 lg:gap-4 w-full">
 
               {/* ── Logo ── */}
               <Link
@@ -430,29 +458,47 @@ const Navbar = () => {
                 />
               </Link>
 
-              {/* ── Desktop Search ── */}
-              <div ref={searchRef} className="relative hidden md:flex flex-1 min-w-0 max-w-xl mx-auto">
+              {/* ── Desktop Categories (Myntra style) ── */}
+              <div className={`hidden lg:flex items-center font-extrabold text-[12px] uppercase tracking-widest text-[#282c3f] dark:text-slate-200 shrink-0 transition-all duration-300 ease-in-out ${searchFocused ? "max-w-0 opacity-0 overflow-hidden ml-0 gap-0 pointer-events-none" : "max-w-[600px] opacity-100 ml-6 gap-6"}`}>
+                <Link to="/product?collection=men" className="hover:text-[#ff3f6c] transition-colors py-4 border-b-2 border-transparent hover:border-[#ff3f6c]">Men</Link>
+                <Link to="/product?collection=women" className="hover:text-[#ff3f6c] transition-colors py-4 border-b-2 border-transparent hover:border-[#ff3f6c]">Women</Link>
+                <Link to="/product?collection=kid" className="hover:text-[#ff3f6c] transition-colors py-4 border-b-2 border-transparent hover:border-[#ff3f6c]">Kids</Link>
+                <Link to="/product?category=electronics" className="hover:text-[#ff3f6c] transition-colors py-4 border-b-2 border-transparent hover:border-[#ff3f6c]">Electronics</Link>
+                <Link to="/product?category=beauty" className="hover:text-[#ff3f6c] transition-colors py-4 border-b-2 border-transparent hover:border-[#ff3f6c]">Beauty</Link>
+              </div>
+
+              {/* ── Desktop Search (Minimalist Capsule) ── */}
+              <div
+                ref={searchRef}
+                className={`relative hidden md:flex flex-1 min-w-0 mx-auto transition-all duration-300 ease-in-out z-50 ${searchFocused ? "max-w-2xl" : "max-w-md"
+                  }`}
+              >
                 <form
                   onSubmit={(e) => { e.preventDefault(); submitSearch(); }}
-                  className={`flex w-full items-center overflow-hidden rounded-xl border transition-all duration-300 ${searchFocused
-                    ? "border-orange-400 bg-white dark:bg-slate-900 shadow-lg shadow-orange-500/10 ring-3 ring-orange-500/15"
-                    : "border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60"
+                  className={`flex w-full items-center overflow-hidden rounded-md border transition-all duration-300 ${searchFocused
+                    ? "border-slate-350 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xs"
+                    : "border-transparent bg-slate-100 dark:bg-slate-900/60"
                     }`}
                 >
-                  <Search className="ml-3.5 h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-slate-500" />
+                  <Search className="ml-3 h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500" />
                   <input
                     type="text"
                     value={searchValue}
                     onChange={(e) => setSearchValue(e.target.value)}
-                    onFocus={() => { setSearchFocused(true); setShowSuggestions(true); fetchAllProducts(); }}
-                    placeholder={t("search_placeholder")}
-                    className="h-9.5 w-full bg-transparent px-3 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none font-medium"
+                    onFocus={() => {
+                      setSearchFocused(true);
+                      setShowSuggestions(true);
+                      fetchAllProducts();
+                      fetchTrendingSearches();
+                    }}
+                    placeholder="Search for products, brands and more"
+                    className="h-9 w-full bg-transparent px-3 text-[11.5px] text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none font-medium"
                   />
                   {searchValue && (
                     <button
                       type="button"
                       onClick={() => { setSearchValue(""); setShowSuggestions(false); }}
-                      className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-300 dark:hover:bg-slate-600 transition cursor-pointer"
+                      className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-750 text-slate-500 dark:text-slate-400 hover:bg-slate-350 dark:hover:bg-slate-700 transition cursor-pointer"
                     >
                       <X size={10} />
                     </button>
@@ -461,16 +507,10 @@ const Navbar = () => {
                   <button
                     type="button"
                     onClick={handleVoiceSearch}
-                    className={`mr-2 flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-lg border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:scale-105 active:scale-95 transition cursor-pointer ${isListening ? "bg-red-500/10 border-red-500/30 text-red-500" : ""}`}
+                    className={`mr-3 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-slate-450 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition cursor-pointer ${isListening ? "bg-red-500/10 text-red-500" : ""}`}
                     title="Search by Voice"
                   >
                     <Mic size={13} className={isListening ? "animate-pulse" : ""} />
-                  </button>
-                  <button
-                    type="submit"
-                    className="h-9.5 shrink-0 rounded-r-xl bg-gradient-to-r from-orange-500 to-amber-500 px-4 text-xs font-bold text-white hover:from-orange-600 hover:to-amber-600 active:scale-95 transition-all cursor-pointer select-none"
-                  >
-                    {t("search_button")}
                   </button>
                 </form>
 
@@ -638,128 +678,22 @@ const Navbar = () => {
                   <Search size={17} />
                 </button>
 
-                {/* Location (desktop) */}
-                <div ref={pincodeRef} className="relative hidden xl:block">
-                  <button
-                    onClick={() => setPincodeOpen(!pincodeOpen)}
-                    title={locationLabel}
-                    className="flex items-center gap-1.5 h-9 rounded-xl border border-slate-200 dark:border-slate-800 px-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 hover:scale-105 active:scale-95 transition cursor-pointer"
-                  >
-                    {locationLoading ? (
-                      <Navigation size={14} className="animate-spin text-orange-500" />
-                    ) : (
-                      <MapPin size={14} className="text-orange-500" />
-                    )}
-                    <span className="max-w-36 sm:max-w-44 truncate text-[11px] font-semibold">
-                      {locationLoading ? "Locating…" : locationLabel}
-                    </span>
-                  </button>
-
-                  {pincodeOpen && (
-                    <div className="absolute top-[calc(100%+8px)] left-0 z-50 w-72 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl p-4 text-left animate-in fade-in slide-in-from-top-3 duration-200">
-                      <h4 className="text-xs font-black uppercase text-slate-900 dark:text-white mb-2">Delivery Location</h4>
-                      <p className="text-[10px] text-slate-400 dark:text-slate-505 leading-normal mb-3 font-semibold">
-                        Enter your pincode to check delivery dates and regional availability.
-                      </p>
-                      
-                      <form
-                        onSubmit={(e) => {
-                          e.preventDefault();
-                          const val = pincodeInput.trim();
-                          if (!/^\d{6}$/.test(val)) {
-                            toast.error("Please enter a valid 6-digit Pincode.");
-                            return;
-                          }
-                          // Fetch city name or guess city based on first 2 digits
-                          let city = "Delhi NCR";
-                          if (val.startsWith("4")) city = "Mumbai";
-                          else if (val.startsWith("5") || val.startsWith("6")) city = "Bangalore";
-                          else if (val.startsWith("7")) city = "Kolkata";
-                          else if (val.startsWith("3")) city = "Gujarat/Rajasthan";
-                          
-                          const label = `${city} (${val})`;
-                          localStorage.setItem("delivery_pincode", val);
-                          localStorage.setItem("delivery_location", label);
-                          setLocationLabel(label);
-                          setPincodeOpen(false);
-                          window.dispatchEvent(new Event("pincodeUpdated"));
-                          toast.success(`Delivery pincode set to ${val}`);
-                        }}
-                        className="flex gap-2"
-                      >
-                        <input
-                          type="text"
-                          maxLength={6}
-                          value={pincodeInput}
-                          onChange={(e) => setPincodeInput(e.target.value.replace(/\D/g, ""))}
-                          placeholder="e.g. 110001"
-                          className="w-full h-8.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-transparent px-2.5 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-550 outline-none focus:border-orange-500 transition-colors"
-                        />
-                        <button
-                          type="submit"
-                          className="h-8.5 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-bold text-[10px] px-3 active:scale-95 transition-all select-none cursor-pointer uppercase"
-                        >
-                          Apply
-                        </button>
-                      </form>
-
-                      <div className="border-t border-slate-100 dark:border-slate-800/80 my-3 pt-3">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            handleGetLocation();
-                            setPincodeOpen(false);
-                          }}
-                          className="flex items-center justify-center gap-1.5 w-full h-8 rounded-lg bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700/80 text-[10.5px] font-black uppercase text-slate-700 dark:text-slate-300 transition-colors cursor-pointer"
-                        >
-                          <Navigation size={12} className="text-orange-500" />
-                          <span>Detect Live Location</span>
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
                 {/* AI Try-On */}
                 <Link
                   to="/tryon"
-                  className="hidden sm:inline-flex items-center gap-1.5 h-9 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 px-3 text-[12px] font-bold text-white shadow-md shadow-orange-500/15 hover:shadow-orange-500/30 active:scale-95 transition-all duration-200 cursor-pointer select-none whitespace-nowrap"
+                  className={`hidden sm:inline-flex items-center gap-1.5 h-9 rounded-md bg-gradient-to-r from-[#ff3f6c] to-rose-600 px-3 text-[11px] font-black uppercase tracking-wider text-white shadow-md shadow-rose-500/15 hover:shadow-rose-500/30 active:scale-95 transition-all duration-300 cursor-pointer select-none whitespace-nowrap border-none ${searchFocused ? "max-w-0 opacity-0 overflow-hidden px-0 py-0 mr-0 pointer-events-none" : "max-w-[150px] opacity-100"}`}
                 >
                   <Sparkles size={13} className="shrink-0" />
                   <span>{t("ai_tryon")}</span>
                 </Link>
 
-                {/* Language (desktop) */}
-                <div className="hidden lg:flex items-center h-9 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-                  <Globe size={13} className="ml-2.5 text-slate-400 shrink-0" />
-                  <select
-                    value={language}
-                    onChange={(e) => changeLanguage(e.target.value)}
-                    className="h-full bg-transparent pl-1 pr-2 text-[11px] font-bold text-slate-700 dark:text-slate-300 focus:outline-none cursor-pointer"
-                  >
-                    <option value="en">EN</option>
-                    <option value="hi">HI</option>
-                    <option value="es">ES</option>
-                  </select>
-                </div>
 
-                {/* Theme toggle */}
-                <button
-                  onClick={() => setIsDarkMode(!isDarkMode)}
-                  title={isDarkMode ? "Light Mode" : "Dark Mode"}
-                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 hover:scale-105 active:scale-95 transition cursor-pointer"
-                >
-                  {isDarkMode
-                    ? <Sun size={16} className="text-amber-400" />
-                    : <Moon size={16} />
-                  }
-                </button>
 
                 {/* Wishlist (desktop) */}
                 <Link
                   to="/wishlist"
                   title="My Wishlist"
-                  className="hidden md:flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-950/20 hover:border-rose-200 dark:hover:border-rose-900/40 hover:scale-105 active:scale-95 transition cursor-pointer"
+                  className="hidden md:flex h-9 w-9 items-center justify-center rounded-md border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-rose-50/10 dark:hover:bg-rose-950/10 hover:border-rose-200 dark:hover:border-rose-900/40 hover:scale-105 active:scale-95 transition cursor-pointer"
                 >
                   <Heart size={16} className="text-rose-500" />
                 </Link>
@@ -1053,13 +987,12 @@ const Navbar = () => {
                 {/* Cart */}
                 <Link
                   to="/cart"
-                  className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 hover:scale-105 active:scale-95 transition cursor-pointer"
+                  className="relative flex h-9 w-9 items-center justify-center rounded-md border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 hover:scale-105 active:scale-95 transition cursor-pointer"
                 >
                   <ShoppingCart size={16} />
                   {cartCount > 0 && (
                     <span
-                      className={`absolute -right-1.5 -top-1.5 flex min-w-[18px] h-[18px] items-center justify-center rounded-full bg-gradient-to-br from-red-500 to-rose-600 px-[3px] text-[9px] font-black text-white ring-2 ring-white dark:ring-slate-950 shadow-md transition-transform ${cartBump ? "scale-125" : "scale-100"
-                        }`}
+                      className="absolute -right-1.5 -top-1.5 flex min-w-[18px] h-[18px] items-center justify-center rounded-full bg-[#ff3f6c] px-[3px] text-[9px] font-black text-white ring-2 ring-white dark:ring-slate-950 shadow-md transition-transform"
                     >
                       {cartCount > 99 ? "99+" : cartCount}
                     </span>
@@ -1069,13 +1002,13 @@ const Navbar = () => {
                 {/* Profile dropdown */}
                 <div ref={profileRef} className="relative hidden lg:block">
                   <button
-                    onClick={() => setOpen((p) => !p)}
-                    className={`flex h-9 items-center gap-2 rounded-xl border px-2.5 font-bold text-sm transition-all cursor-pointer select-none ${open
-                      ? "border-orange-400 bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400"
+                    onClick={() => { setOpen((p) => !p); setPincodeOpen(false); }}
+                    className={`flex h-9 items-center gap-2 rounded-md border px-2.5 font-bold text-sm transition-all cursor-pointer select-none ${open
+                      ? "border-slate-350 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 text-slate-800 dark:text-slate-200"
                       : "border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900"
                       }`}
                   >
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-orange-400 to-amber-500 text-[10px] font-black text-white shadow-sm">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-[#ff3f6c] to-rose-600 text-[10px] font-black text-white shadow-sm">
                       {token && initials ? initials : <User size={12} />}
                     </span>
                     <span className="hidden sm:block max-w-[70px] truncate capitalize text-[12px]">
@@ -1086,112 +1019,277 @@ const Navbar = () => {
 
                   {/* Dropdown */}
                   {open && (
-                    <div className="absolute right-0 top-[calc(100%+8px)] w-60 overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl z-50 ring-1 ring-black/5 dark:ring-white/10 animate-in fade-in slide-in-from-top-2 duration-150">
+                    <div className="absolute right-0 top-[calc(100%+8px)] w-64 overflow-hidden rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl shadow-[0_20px_50px_rgba(0,0,0,0.12)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-50 ring-1 ring-black/5 dark:ring-white/10 animate-in fade-in slide-in-from-top-3 duration-200">
                       {token ? (
                         <>
                           {/* User greeting */}
-                          <div className="flex items-center gap-3 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 px-4 py-3.5 border-b border-slate-100 dark:border-slate-800">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-orange-400 to-amber-500 text-sm font-black text-white shadow-md shadow-orange-500/20">
+                          <div className="flex items-center gap-3 bg-gradient-to-r from-orange-500/[0.04] to-amber-500/[0.02] dark:from-orange-500/[0.08] dark:to-transparent px-5 py-4 border-b border-slate-100 dark:border-slate-900/60">
+                            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[#ff3f6c] to-rose-600 text-sm font-black text-white shadow-md shadow-rose-500/25">
                               {initials || <User size={16} />}
                             </div>
                             <div className="min-w-0">
-                              <p className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate capitalize">{username || "My Account"}</p>
-                              <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">CartNOW Member</p>
+                              <p className="text-xs font-black tracking-wider uppercase text-slate-405 dark:text-slate-500">Welcome back,</p>
+                              <p className="text-sm font-black text-slate-850 dark:text-white truncate capitalize mt-0.5">{username || "My Account"}</p>
                             </div>
                           </div>
 
                           {/* Nav items */}
-                          {[
-                            { icon: User, label: t("profile"), to: "/profile" },
-                            { icon: Package, label: t("orders"), to: "/orderdetail" },
-                            { icon: Heart, label: "Wishlist", to: "/wishlist" },
-                            { icon: HelpCircle, label: "Help & Support", to: "/help" },
-                          ].map(({ icon: Icon, label, to }) => (
-                            <button
-                              key={to}
-                              onClick={() => { setOpen(false); navigate(to); }}
-                              className="flex w-full items-center gap-3 px-4 py-3 text-left text-[13px] font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer group"
-                            >
-                              <Icon size={15} className="text-slate-400 dark:text-slate-500 group-hover:text-orange-500 transition-colors" />
-                              <span>{label}</span>
-                            </button>
-                          ))}
+                          <div className="py-1.5">
+                            {[
+                              { icon: User, label: t("profile"), to: "/profile" },
+                              { icon: Package, label: t("orders"), to: "/orderdetail" },
+                              { icon: Heart, label: "Wishlist", to: "/wishlist" },
+                              { icon: HelpCircle, label: "Help & Support", to: "/help" },
+                            ].map(({ icon: Icon, label, to }) => (
+                              <button
+                                key={to}
+                                onClick={() => { setOpen(false); navigate(to); }}
+                                className="flex w-full items-center gap-3 px-5 py-2.5 text-left text-xs font-bold text-slate-650 dark:text-slate-350 hover:bg-orange-500/[0.04] dark:hover:bg-slate-800/40 hover:text-orange-500 dark:hover:text-orange-400 hover:translate-x-0.5 transition-all duration-200 cursor-pointer group"
+                              >
+                                <Icon size={14} className="text-slate-405 group-hover:text-orange-500 dark:group-hover:text-orange-400 transition-colors" />
+                                <span>{label}</span>
+                              </button>
+                            ))}
+                          </div>
 
                           {/* Settings section */}
-                          <div className="px-4 py-3 border-t border-slate-100 dark:border-slate-800 space-y-2.5 bg-slate-50/60 dark:bg-slate-900/60">
+                          <div className="px-5 py-4 border-t border-slate-100 dark:border-slate-900/60 bg-slate-50/50 dark:bg-slate-900/30 space-y-3.5">
                             <div className="flex items-center justify-between">
-                              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Theme</span>
+                              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-505">Interface Theme</span>
                               <button
                                 onClick={() => setIsDarkMode(!isDarkMode)}
-                                className={`relative h-6 w-11 rounded-full transition-all cursor-pointer ${isDarkMode ? "bg-orange-500" : "bg-slate-200 dark:bg-slate-700"}`}
+                                className={`relative h-5.5 w-10.5 rounded-full transition-all duration-300 cursor-pointer ${isDarkMode ? "bg-orange-500" : "bg-slate-200 dark:bg-slate-800"}`}
                               >
-                                <span className={`absolute top-0.5 left-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-white shadow transition-transform ${isDarkMode ? "translate-x-5" : "translate-x-0"}`}>
-                                  {isDarkMode ? <Moon size={10} className="text-orange-500" /> : <Sun size={10} className="text-amber-500" />}
+                                <span className={`absolute top-0.5 left-0.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-white shadow transition-transform duration-300 ${isDarkMode ? "translate-x-5" : "translate-x-0"}`}>
+                                  {isDarkMode ? <Moon size={9} className="text-orange-500" /> : <Sun size={9} className="text-amber-500" />}
                                 </span>
                               </button>
                             </div>
+
                             <div className="flex items-center justify-between">
-                              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Language</span>
+                              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-505">Language (Lang)</span>
                               <select
                                 value={language}
                                 onChange={(e) => changeLanguage(e.target.value)}
-                                className="h-6 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-1.5 text-[10px] font-bold text-slate-700 dark:text-slate-300 focus:outline-none cursor-pointer"
+                                className="h-6.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-2 text-[10px] font-black text-slate-700 dark:text-slate-300 focus:outline-none focus:border-orange-500 cursor-pointer transition-colors"
                               >
-                                <option value="en">EN</option>
-                                <option value="hi">HI</option>
-                                <option value="es">ES</option>
+                                <option value="en">English (EN)</option>
+                                <option value="hi">Hindi (HI)</option>
+                                <option value="es">Español (ES)</option>
                               </select>
+                            </div>
+
+                            {/* Delivery location */}
+                            <div className="border-t border-slate-100 dark:border-slate-800/80 pt-3 mt-1.5">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-405 dark:text-slate-550">Delivery Area</span>
+                                <button
+                                  type="button"
+                                  onClick={() => setPincodeOpen(!pincodeOpen)}
+                                  className="text-[10px] font-black uppercase text-orange-500 hover:text-orange-650 dark:hover:text-orange-400 transition-colors"
+                                >
+                                  {pincodeOpen ? "Close" : "Change"}
+                                </button>
+                              </div>
+
+                              {!pincodeOpen ? (
+                                <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-955 px-3 py-2 rounded-xl border border-slate-100 dark:border-slate-900/60 shadow-2xs">
+                                  <MapPin size={12} className="text-[#ff3f6c] shrink-0" />
+                                  <span className="truncate max-w-[150px]" title={locationLabel}>{locationLabel}</span>
+                                </div>
+                              ) : (
+                                <div className="space-y-2 animate-in fade-in duration-200">
+                                  <form
+                                    onSubmit={(e) => {
+                                      e.preventDefault();
+                                      const val = pincodeInput.trim();
+                                      if (!/^\d{6}$/.test(val)) {
+                                        toast.error("Please enter a valid 6-digit Pincode.");
+                                        return;
+                                      }
+                                      let city = "Delhi NCR";
+                                      if (val.startsWith("4")) city = "Mumbai";
+                                      else if (val.startsWith("5") || val.startsWith("6")) city = "Bangalore";
+                                      else if (val.startsWith("7")) city = "Kolkata";
+                                      else if (val.startsWith("3")) city = "Gujarat/Rajasthan";
+
+                                      const label = `${city} (${val})`;
+                                      localStorage.setItem("delivery_pincode", val);
+                                      localStorage.setItem("delivery_location", label);
+                                      setLocationLabel(label);
+                                      setPincodeOpen(false);
+                                      window.dispatchEvent(new Event("pincodeUpdated"));
+                                      toast.success(`Delivery pincode set to ${val}`);
+                                    }}
+                                    className="flex gap-1.5"
+                                  >
+                                    <input
+                                      type="text"
+                                      maxLength={6}
+                                      value={pincodeInput}
+                                      onChange={(e) => setPincodeInput(e.target.value.replace(/\D/g, ""))}
+                                      placeholder="Pincode"
+                                      className="w-full h-8 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-2.5 text-xs text-slate-850 dark:text-slate-100 placeholder-slate-400 outline-none focus:border-orange-500 transition-colors font-semibold"
+                                    />
+                                    <button
+                                      type="submit"
+                                      className="h-8 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-[10px] px-3 uppercase border-none cursor-pointer active:scale-95 transition-all"
+                                    >
+                                      Apply
+                                    </button>
+                                  </form>
+                                  <button
+                                    type="button"
+                                    onClick={handleGetLocation}
+                                    className="flex items-center justify-center gap-1.5 w-full h-8 rounded-xl bg-white dark:bg-slate-955 hover:bg-slate-50 dark:hover:bg-slate-900 text-[10px] font-black uppercase text-slate-700 dark:text-slate-350 cursor-pointer border border-slate-200 dark:border-slate-800/80 shadow-3xs active:scale-95 transition-all"
+                                  >
+                                    {locationLoading ? (
+                                      <Navigation size={11} className="animate-spin text-[#ff3f6c]" />
+                                    ) : (
+                                      <Navigation size={11} className="text-[#ff3f6c]" />
+                                    )}
+                                    <span>Detect Location</span>
+                                  </button>
+                                </div>
+                              )}
                             </div>
                           </div>
 
                           {/* Logout */}
                           <button
                             onClick={handleLogout}
-                            className="flex w-full items-center gap-3 px-4 py-3 text-left text-[13px] font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/15 transition-colors cursor-pointer border-t border-slate-100 dark:border-slate-800"
+                            className="flex w-full items-center gap-3 px-5 py-3.5 text-left text-xs font-black text-rose-500 dark:text-rose-400 hover:bg-rose-500/[0.04] dark:hover:bg-rose-500/[0.02] hover:text-rose-600 dark:hover:text-rose-300 transition-all duration-200 cursor-pointer border-t border-slate-100 dark:border-slate-900/60"
                           >
-                            <LogOut size={15} className="text-red-500" />
+                            <LogOut size={14} className="text-rose-500" />
                             <span>{t("logout")}</span>
                           </button>
                         </>
                       ) : (
-                        <div className="p-4 space-y-3">
-                          <div className="text-center pb-2">
-                            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800">
-                              <User size={22} className="text-slate-400" />
+                        <div className="p-5 space-y-4">
+                          <div className="text-center pb-2 border-b border-slate-100 dark:border-slate-900/60">
+                            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500/5 text-orange-500 border border-orange-500/10">
+                              <User size={20} />
                             </div>
-                            <p className="text-sm font-bold text-slate-800 dark:text-slate-200">Welcome!</p>
-                            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">Sign in to access your account</p>
+                            <h4 className="text-sm font-black text-slate-800 dark:text-white">Welcome Guest!</h4>
+                            <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-semibold">Sign in to track orders & details</p>
                           </div>
-                          <button
-                            onClick={() => { setOpen(false); navigate("/login"); }}
-                            className="w-full py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-center text-sm font-bold text-white hover:from-orange-600 hover:to-amber-600 active:scale-95 transition cursor-pointer"
-                          >
-                            {t("login")}
-                          </button>
-                          <button
-                            onClick={() => { setOpen(false); navigate("/signup"); }}
-                            className="w-full py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-center text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-95 transition cursor-pointer"
-                          >
-                            Create Account
-                          </button>
-                          {/* Settings for guests */}
-                          <div className="flex items-center justify-between pt-1">
+
+                          <div className="space-y-2">
                             <button
-                              onClick={() => setIsDarkMode(!isDarkMode)}
-                              className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition cursor-pointer"
+                              onClick={() => { setOpen(false); navigate("/login"); }}
+                              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-center text-xs font-black text-white shadow-md shadow-orange-500/15 active:scale-95 transition-all cursor-pointer border-none uppercase tracking-wider"
                             >
-                              {isDarkMode ? <Sun size={13} className="text-amber-400" /> : <Moon size={13} />}
-                              {isDarkMode ? "Light Mode" : "Dark Mode"}
+                              {t("login")}
                             </button>
-                            <select
-                              value={language}
-                              onChange={(e) => changeLanguage(e.target.value)}
-                              className="h-6 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-1.5 text-[10px] font-bold text-slate-700 dark:text-slate-300 focus:outline-none cursor-pointer"
+                            <button
+                              onClick={() => { setOpen(false); navigate("/signup"); }}
+                              className="w-full py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-center text-xs font-black text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 active:scale-95 transition-all cursor-pointer uppercase tracking-wider"
                             >
-                              <option value="en">EN</option>
-                              <option value="hi">HI</option>
-                              <option value="es">ES</option>
-                            </select>
+                              Create Account
+                            </button>
+                          </div>
+
+                          {/* Settings section for guests */}
+                          <div className="pt-2.5 border-t border-slate-100 dark:border-slate-900/60 space-y-3.5">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Interface Theme</span>
+                              <button
+                                onClick={() => setIsDarkMode(!isDarkMode)}
+                                className={`relative h-5.5 w-10.5 rounded-full transition-all duration-300 cursor-pointer ${isDarkMode ? "bg-orange-500" : "bg-slate-200 dark:bg-slate-800"}`}
+                              >
+                                <span className={`absolute top-0.5 left-0.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-white shadow transition-transform duration-300 ${isDarkMode ? "translate-x-5" : "translate-x-0"}`}>
+                                  {isDarkMode ? <Moon size={9} className="text-orange-500" /> : <Sun size={9} className="text-amber-500" />}
+                                </span>
+                              </button>
+                            </div>
+
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Language</span>
+                              <select
+                                value={language}
+                                onChange={(e) => changeLanguage(e.target.value)}
+                                className="h-6.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 px-2 text-[10px] font-black text-slate-700 dark:text-slate-300 focus:outline-none focus:border-orange-500 cursor-pointer transition-colors"
+                              >
+                                <option value="en">English (EN)</option>
+                                <option value="hi">Hindi (HI)</option>
+                                <option value="es">Español (ES)</option>
+                              </select>
+                            </div>
+
+                            {/* Delivery location */}
+                            <div className="border-t border-slate-100 dark:border-slate-800/80 pt-3 mt-1.5">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-405 dark:text-slate-550">Delivery Area</span>
+                                <button
+                                  type="button"
+                                  onClick={() => setPincodeOpen(!pincodeOpen)}
+                                  className="text-[10px] font-black uppercase text-orange-500 hover:text-orange-655 dark:hover:text-orange-400 transition-colors"
+                                >
+                                  {pincodeOpen ? "Close" : "Change"}
+                                </button>
+                              </div>
+
+                              {!pincodeOpen ? (
+                                <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-950 px-3 py-2 rounded-xl border border-slate-100 dark:border-slate-900/60 shadow-2xs">
+                                  <MapPin size={12} className="text-[#ff3f6c] shrink-0" />
+                                  <span className="truncate max-w-[150px]" title={locationLabel}>{locationLabel}</span>
+                                </div>
+                              ) : (
+                                <div className="space-y-2 animate-in fade-in duration-200">
+                                  <form
+                                    onSubmit={(e) => {
+                                      e.preventDefault();
+                                      const val = pincodeInput.trim();
+                                      if (!/^\d{6}$/.test(val)) {
+                                        toast.error("Please enter a valid 6-digit Pincode.");
+                                        return;
+                                      }
+                                      let city = "Delhi NCR";
+                                      if (val.startsWith("4")) city = "Mumbai";
+                                      else if (val.startsWith("5") || val.startsWith("6")) city = "Bangalore";
+                                      else if (val.startsWith("7")) city = "Kolkata";
+                                      else if (val.startsWith("3")) city = "Gujarat/Rajasthan";
+
+                                      const label = `${city} (${val})`;
+                                      localStorage.setItem("delivery_pincode", val);
+                                      localStorage.setItem("delivery_location", label);
+                                      setLocationLabel(label);
+                                      setPincodeOpen(false);
+                                      window.dispatchEvent(new Event("pincodeUpdated"));
+                                      toast.success(`Delivery pincode set to ${val}`);
+                                    }}
+                                    className="flex gap-1.5"
+                                  >
+                                    <input
+                                      type="text"
+                                      maxLength={6}
+                                      value={pincodeInput}
+                                      onChange={(e) => setPincodeInput(e.target.value.replace(/\D/g, ""))}
+                                      placeholder="Pincode"
+                                      className="w-full h-8 rounded-xl border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-950 px-2.5 text-xs text-slate-850 dark:text-slate-100 placeholder-slate-400 outline-none focus:border-orange-500 transition-colors font-semibold"
+                                    />
+                                    <button
+                                      type="submit"
+                                      className="h-8 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-[10px] px-3 uppercase border-none cursor-pointer active:scale-95 transition-all"
+                                    >
+                                      Apply
+                                    </button>
+                                  </form>
+                                  <button
+                                    type="button"
+                                    onClick={handleGetLocation}
+                                    className="flex items-center justify-center gap-1.5 w-full h-8 rounded-xl bg-white dark:bg-slate-955 hover:bg-slate-50 dark:hover:bg-slate-900 text-[10px] font-black uppercase text-slate-700 dark:text-slate-350 cursor-pointer border border-slate-200 dark:border-slate-800/80 shadow-3xs active:scale-95 transition-all"
+                                  >
+                                    {locationLoading ? (
+                                      <Navigation size={11} className="animate-spin text-[#ff3f6c]" />
+                                    ) : (
+                                      <Navigation size={11} className="text-[#ff3f6c]" />
+                                    )}
+                                    <span>Detect Location</span>
+                                  </button>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
                       )}

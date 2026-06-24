@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { backendUrl } from "../config";
-import { Star, Eye, ShoppingCart, Heart, BarChart2, Truck } from "lucide-react";
+import { Star, Eye, ShoppingCart, Heart, BarChart2, Truck, CheckCircle2 } from "lucide-react";
 import { useComparison } from "../context/ComparisonContext";
 import { getAverageRating, getReviewCount } from "../utils/productRatings";
 
@@ -109,7 +109,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
     const updateEstimate = () => {
       const pCode = localStorage.getItem("delivery_pincode") || "";
       const loc = String(product.location || "Delhi").toLowerCase();
-      
+
       if (!pCode) {
         if (loc === "delhi") setDeliveryEstimate("FREE Delivery Tomorrow");
         else if (loc === "mumbai") setDeliveryEstimate("FREE Delivery in 2 Days");
@@ -137,6 +137,19 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
     return () => window.removeEventListener("pincodeUpdated", updateEstimate);
   }, [product.location]);
 
+  // Add listener for global wishlist updates to keep card state synchronized
+  useEffect(() => {
+    const updateFav = () => {
+      const list = JSON.parse(localStorage.getItem("wishlist")) || [];
+      setIsFavorite(list.includes(product._id));
+    };
+    updateFav();
+    window.addEventListener("wishlistUpdate", updateFav);
+    return () => window.removeEventListener("wishlistUpdate", updateFav);
+  }, [product._id]);
+
+  const savingsAmount = originalVal - product.price;
+
   return (
     <div
       onMouseEnter={() => images[1] && setImgIdx(1)}
@@ -146,161 +159,148 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
           const list = JSON.parse(localStorage.getItem("recently_viewed") || "[]");
           const next = [product._id, ...list.filter(id => id !== product._id)].slice(0, 8);
           localStorage.setItem("recently_viewed", JSON.stringify(next));
-        } catch (e) {}
+        } catch (e) { }
         navigate(`/product/${product._id}`);
       }}
-      className="group flex flex-col bg-white dark:bg-slate-900/30 rounded-3xl border border-slate-200/60 dark:border-slate-800/80 overflow-hidden hover:shadow-2xl hover:-translate-y-1 hover:border-indigo-500/20 dark:hover:border-indigo-500/20 transition-all duration-300 cursor-pointer text-left relative"
+      className="group relative flex flex-col bg-white dark:bg-slate-900 overflow-hidden hover:shadow-[0_15px_30px_rgba(0,0,0,0.1)] transition-all duration-300 cursor-pointer text-left w-full h-full"
     >
-      {/* Image Container with portrait ratio */}
-      <div className="aspect-[3/4] relative w-full overflow-hidden bg-slate-50/70 dark:bg-slate-950/20 flex items-center justify-center">
-        <img
-          src={getSrc(imgIdx)}
-          alt={product.name}
-          loading="lazy"
-          className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-105"
-        />
-
-        {/* Heart Favorite Button with click spring feedback */}
+      {/* Image Section */}
+      <div className="relative w-full h-[290px] bg-slate-50 dark:bg-slate-950 flex items-center justify-center select-none overflow-hidden">
+        
+        {/* Wishlist Button */}
         <button
           type="button"
           onClick={toggleFavorite}
-          className="absolute top-3.5 right-3.5 h-8.5 w-8.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-100 dark:border-slate-800 rounded-full flex items-center justify-center shadow-md z-10 cursor-pointer transition-all active:scale-90 hover:scale-105"
-          title="Save to favorites"
+          className="absolute top-3 right-3 h-8 w-8 bg-white/90 dark:bg-slate-900/90 rounded-full flex items-center justify-center shadow-xs cursor-pointer hover:scale-105 active:scale-95 z-30"
         >
           <Heart
             size={14}
-            className={`transition-all duration-300 ${
-              isFavorite ? "text-rose-500 fill-rose-500 scale-110 animate-bounce" : "text-slate-400 hover:text-rose-500"
+            className={`transition-colors duration-300 ${
+              isFavorite ? "text-rose-500 fill-rose-500 stroke-none" : "text-slate-500 dark:text-slate-400 hover:text-rose-500"
             }`}
           />
         </button>
 
-        {/* Compare Overlay Button */}
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            if (isComparing) {
-              removeFromCompare(product._id);
-            } else {
-              addToCompare(product);
-            }
-          }}
-          className={`absolute top-13 right-3.5 h-8.5 w-8.5 backdrop-blur-md border rounded-full flex items-center justify-center shadow-md z-10 cursor-pointer transition-all active:scale-90 hover:scale-105 ${
-            isComparing
-              ? "bg-indigo-600 border-indigo-500 text-white"
-              : "bg-white/95 dark:bg-slate-900/95 border-slate-100 dark:border-slate-800 text-slate-400 hover:text-indigo-600"
-          }`}
-          title="Compare product"
-        >
-          <BarChart2 size={13} className={isComparing ? "stroke-[2.5px]" : ""} />
-        </button>
+        {/* Dynamic Rating Overlay (Myntra Style: 4.3 ★ | 1.5k) */}
+        {averageRating > 0 && (
+          <div className="absolute bottom-2.5 left-2.5 bg-white/90 dark:bg-slate-900/90 px-1.5 py-0.5 rounded-[2px] text-[10px] font-black text-slate-800 dark:text-slate-200 flex items-center gap-1 z-25 shadow-xs border border-slate-200/20">
+            <span>{averageRating.toFixed(1)}</span>
+            <span className="text-[9px] text-teal-650 dark:text-teal-400">★</span>
+            <span className="text-slate-300 dark:text-slate-700">|</span>
+            <span className="text-slate-500 dark:text-slate-400 font-bold">
+              {reviewCount > 999 ? `${(reviewCount / 1000).toFixed(1)}k` : reviewCount || "0"}
+            </span>
+          </div>
+        )}
 
-        {/* Badges Overlays */}
-        <div className="absolute top-3.5 left-3.5 flex flex-col gap-1.5 z-10">
-          <span className="px-2.5 py-0.5 text-[8.5px] font-black tracking-wider uppercase text-white bg-orange-500 rounded-lg shadow-sm">
-            {discountPercent}% OFF
-          </span>
-          {averageRating >= 4.5 && (
-            <span className="px-2.5 py-0.5 text-[8.5px] font-black tracking-wider uppercase text-slate-800 dark:text-slate-100 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-lg border border-slate-200/50 dark:border-slate-800">
-              🔥 Bestseller
-            </span>
-          )}
-          {isOOS ? (
-            <span className="px-2.5 py-0.5 text-[8.5px] font-black tracking-wider uppercase text-white bg-red-650 rounded-lg shadow-sm animate-pulse">
-              Sold Out
-            </span>
-          ) : isLowStock ? (
-            <span className="px-2.5 py-0.5 text-[8.5px] font-black tracking-wider uppercase text-white bg-amber-500 rounded-lg shadow-sm">
-              Only {product.stock} Left
-            </span>
-          ) : (
-            <span className="px-2.5 py-0.5 text-[8.5px] font-black tracking-wider uppercase text-white bg-emerald-600 rounded-lg shadow-sm">
-              In Stock
-            </span>
+        {/* Dual Product Image - Smooth cross-fade secondary image swap & zoom hover */}
+        <div className="relative w-full h-full flex items-center justify-center">
+          <img
+            src={getSrc(0)}
+            alt={product.name}
+            loading="lazy"
+            className={`max-h-full max-w-full object-cover w-full h-full transition-all duration-500 ease-out ${
+              images[1] && imgIdx === 1 ? "opacity-0" : "opacity-100"
+            }`}
+          />
+          {images[1] && (
+            <img
+              src={getSrc(1)}
+              alt={`${product.name}-alt`}
+              loading="lazy"
+              className={`absolute max-h-full max-w-full object-cover w-full h-full transition-all duration-500 ease-out ${
+                imgIdx === 1 ? "opacity-100" : "opacity-0"
+              }`}
+            />
           )}
         </div>
 
-        {/* Verified Seller Badge */}
-        <span className="absolute bottom-3.5 left-3.5 px-2 py-0.5 text-[8px] font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50/90 dark:bg-indigo-950/80 backdrop-blur-md border border-indigo-200/40 dark:border-indigo-900/30 rounded uppercase tracking-wider">
-          ✓ Verified Seller
-        </span>
-
-        {/* Quick View Glassmorphic Banner */}
-        <div 
-          onClick={(e) => {
-            e.stopPropagation();
-            if (onQuickView) onQuickView(product);
-          }}
-          className="absolute inset-x-3.5 bottom-3.5 opacity-0 group-hover:opacity-100 transition-all duration-350 ease-out z-10 cursor-pointer"
-        >
-          <div className="flex h-9 w-full items-center justify-center gap-1.5 rounded-xl bg-slate-950/85 hover:bg-slate-950 dark:bg-slate-950/85 backdrop-blur-md border border-white/10 text-[10.5px] font-black uppercase tracking-wider text-white transition-all duration-200">
-            <Eye size={12} />
-            Quick View
-          </div>
-        </div>
-      </div>
-
-      {/* Product Card Body */}
-      <div className="flex flex-col flex-1 p-4.5 gap-2.5 bg-white dark:bg-transparent">
-        {/* Brand / Collection */}
-        <div className="flex items-center justify-between">
-          <p className="text-[10px] font-black tracking-wider uppercase text-indigo-600 dark:text-indigo-400">
-            {product.brand || "CartNOW Apparel"}
-          </p>
-          <span className="text-[9.5px] font-bold text-slate-450 dark:text-slate-500 uppercase">
-            {product.location || "Delhi"} Hub
-          </span>
-        </div>
-
-        {/* Title */}
-        <p className="font-bold text-[13.5px] text-slate-800 dark:text-slate-100 line-clamp-2 min-h-[36px] leading-snug group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200">
-          {product.name}
-        </p>
-
-        {/* Rating Line */}
-        <div className="flex items-center gap-1.5 text-[11px] mt-0.5">
-          <div className="flex items-center gap-0.5 bg-amber-500/10 px-2 py-0.5 rounded-md text-amber-500 font-black">
-            <Star size={11} className="fill-amber-500 stroke-none" />
-            <span>{averageRating ? averageRating.toFixed(1) : "New"}</span>
-          </div>
-          <span className="text-slate-400 dark:text-slate-500 font-bold">
-            ({reviewCount || 0} reviews)
-          </span>
-        </div>
-
-        {/* Pricing details */}
-        <div className="flex flex-col gap-1 mt-1">
-          <div className="flex items-baseline gap-2">
-            <span className="text-[18px] font-black text-slate-900 dark:text-slate-100 tracking-tight">
-              ₹{Number(product.price).toLocaleString("en-IN")}
-            </span>
-            <span className="text-[11.5px] text-slate-400 dark:text-slate-500 line-through">
-              ₹{originalVal.toLocaleString("en-IN")}
-            </span>
-          </div>
-          <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-450 dark:text-slate-500">
-            <Truck size={12} className="text-slate-400" />
-            <span>{deliveryEstimate}</span>
-          </div>
-        </div>
-
-        {/* Action Buttons Row */}
-        <div className="grid grid-cols-1 gap-2 mt-2 pt-3 border-t border-slate-100 dark:border-slate-800/80">
+        {/* Quick Actions Hover Drawer (Slides up from bottom) */}
+        <div className="absolute bottom-0 left-0 right-0 p-2.5 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out bg-gradient-to-t from-slate-900/70 to-transparent backdrop-blur-xs flex items-center justify-center gap-2 z-30 select-none">
           <button
             type="button"
             disabled={isOOS}
             onClick={handleAddToCart}
-            className={`flex items-center justify-center gap-1.5 py-2.5 text-[10.5px] font-black uppercase tracking-wider rounded-xl transition-all duration-200 active:scale-95 cursor-pointer w-full ${
+            className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded text-[9px] font-black uppercase tracking-wider transition-all duration-200 active:scale-95 cursor-pointer border-none ${
               isOOS
-                ? "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed border border-slate-200/50 dark:border-slate-800/50"
-                : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-md hover:shadow border border-indigo-500/20"
+                ? "bg-slate-800 text-slate-500 cursor-not-allowed"
+                : "bg-gradient-to-r from-indigo-600 to-violet-600 hover:brightness-110 text-white shadow-sm"
             }`}
           >
-            <ShoppingCart size={11} />
+            <ShoppingCart size={10} className="stroke-[2.5]" />
             <span>{isOOS ? "Sold Out" : "Add to Cart"}</span>
           </button>
+          
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (onQuickView) onQuickView(product);
+            }}
+            className="h-7 w-7 bg-white/95 dark:bg-slate-900/95 text-slate-700 dark:text-slate-200 backdrop-blur-md rounded flex items-center justify-center shadow-sm hover:bg-indigo-650 hover:text-white transition-all duration-200 cursor-pointer active:scale-90 border border-slate-200/20"
+            title="Quick View"
+          >
+            <Eye size={11} className="stroke-[2.5]" />
+          </button>
+
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (isComparing) {
+                removeFromCompare(product._id);
+              } else {
+                addToCompare(product);
+              }
+            }}
+            className={`h-7 w-7 backdrop-blur-md rounded flex items-center justify-center shadow-sm cursor-pointer transition-all duration-200 active:scale-90 border border-slate-200/20 ${
+              isComparing
+                ? "bg-indigo-600 border-none text-white"
+                : "bg-white/95 dark:bg-slate-900/95 text-slate-700 dark:text-slate-200 hover:bg-indigo-650 hover:text-white"
+            }`}
+            title="Compare product"
+          >
+            <BarChart2 size={11} className={isComparing ? "stroke-[2.5]" : ""} />
+          </button>
         </div>
+      </div>
+
+      {/* Content Area */}
+      <div className="flex flex-col flex-1 p-3 gap-1 bg-white dark:bg-slate-900">
+        <div>
+          {/* Brand Name */}
+          <h4 className="font-extrabold text-[13px] text-slate-900 dark:text-slate-100 truncate uppercase tracking-tight">
+            {product.brand || "CartNOW"}
+          </h4>
+          {/* Product Name */}
+          <p className="text-[11.5px] text-slate-500 dark:text-slate-400 truncate leading-tight mt-0.5">
+            {product.name}
+          </p>
+        </div>
+
+        {/* Pricing Layout: Rs. price formatting */}
+        <div className="flex items-baseline gap-1.5 flex-wrap pt-0.5">
+          <span className="text-[12.5px] font-black text-slate-900 dark:text-slate-50">
+            Rs. {Number(product.price).toLocaleString("en-IN")}
+          </span>
+          {originalVal > product.price && (
+            <>
+              <span className="text-[10px] text-slate-400 dark:text-slate-500 line-through font-medium">
+                Rs. {originalVal.toLocaleString("en-IN")}
+              </span>
+              <span className="text-[9.5px] font-black text-rose-500 dark:text-rose-400 uppercase tracking-tight">
+                ({discountPercent}% OFF)
+              </span>
+            </>
+          )}
+        </div>
+
+        {/* Low Stock Warning or Status info */}
+        {(isLowStock || isOOS) && (
+          <div className="text-[9.5px] font-extrabold text-rose-500 mt-0.5">
+            {isOOS ? "Only Out of Stock!" : "Only Few Left!"}
+          </div>
+        )}
       </div>
     </div>
   );

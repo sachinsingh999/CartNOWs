@@ -575,14 +575,36 @@ const Categories = ({ token }) => {
                       Featured
                     </span>
                   )}
-                  {cat.status === "disabled" && (
+                   {cat.status === "disabled" && (
                     <span className="px-1.5 py-0.2 rounded text-[8px] font-black uppercase tracking-wider bg-slate-100 text-slate-400">
                       Disabled
+                    </span>
+                  )}
+                  {cat.status === "pending" && (
+                    <span className="px-1.5 py-0.2 rounded text-[8px] font-black uppercase tracking-wider bg-amber-500 text-white animate-pulse">
+                      Pending Approval
                     </span>
                   )}
                 </div>
 
                 <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
+                  {cat.status === "pending" && (
+                    <button
+                      onClick={async () => {
+                        try {
+                          await axios.post(`${backendUrl}/api/admin/category/update`, { id: cat._id, status: "active" }, { headers: { token } });
+                          toast.success("Category approved successfully!");
+                          fetchCategories();
+                        } catch {
+                          toast.error("Failed to approve category");
+                        }
+                      }}
+                      title="Approve Category"
+                      className="p-1 rounded bg-emerald-500 hover:bg-emerald-600 text-white transition flex items-center justify-center cursor-pointer"
+                    >
+                      <Check size={11} className="stroke-[3]" />
+                    </button>
+                  )}
                   <button
                     onClick={() => moveCategory(categories.indexOf(cat), -1)}
                     disabled={index === 0}

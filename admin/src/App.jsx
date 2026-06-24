@@ -11,6 +11,7 @@ import Support from './pages/Support'
 import Sales from './pages/Sales'
 import Coupons from './pages/Coupons'
 import Categories from './pages/Categories'
+import CollectionsBrands from './pages/CollectionsBrands'
 import Sellers from './pages/Sellers'
 import Customers from './pages/Customers'
 import ProductModeration from './pages/ProductModeration'
@@ -22,6 +23,8 @@ import InvoiceManagement from './pages/InvoiceManagement'
 import Login from './components/Login'
 import { ToastContainer } from 'react-toastify';
 import SystemSettings from './pages/SystemSettings'
+import HeroSlideshow from './pages/HeroSlideshow'
+import Banners from './pages/Banners'
 import axios from 'axios'
 import { backendUrl } from './config'
 
@@ -130,6 +133,7 @@ const App = () => {
                   <Route path="/sales" element={<Sales token={token} />} />
                   <Route path="/coupons" element={<Coupons token={token} />} />
                   <Route path="/categories" element={<Categories token={token} />} />
+                  <Route path="/collections-brands" element={<CollectionsBrands token={token} />} />
                   <Route path="/sellers" element={<Sellers token={token} />} />
                   <Route path="/customers" element={<Customers token={token} />} />
                   <Route path="/product-moderation" element={<ProductModeration token={token} />} />
@@ -139,6 +143,8 @@ const App = () => {
                   <Route path="/invoices" element={<InvoiceManagement token={token} />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/settings" element={<SystemSettings token={token} />} />
+                  <Route path="/hero-slideshow" element={<HeroSlideshow token={token} />} />
+                  <Route path="/banners" element={<Banners token={token} />} />
                 </Routes>
               </div>
             </main>

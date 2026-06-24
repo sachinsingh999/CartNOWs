@@ -38,7 +38,7 @@ const Login = ({ setToken, setSeller }) => {
   };
 
   return (
-    <div className="h-screen w-screen grid lg:grid-cols-[1.1fr_1fr] bg-[#090D1A] text-slate-100 font-sans selection:bg-orange-500 selection:text-white overflow-hidden">
+    <div className="min-h-[100dvh] w-full grid lg:grid-cols-[1.1fr_1fr] bg-[#090D1A] text-slate-100 font-sans selection:bg-orange-500 selection:text-white lg:h-screen lg:overflow-hidden">
       
       {/* Left Panel: Visual/Marketing split */}
       <div className="relative hidden lg:flex flex-col justify-between p-8 overflow-hidden h-full">

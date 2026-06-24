@@ -11,6 +11,8 @@ import categoryTemplateModel from "../models/categoryTemplateModel.js";
 import categorySettingsModel from "../models/categorySettingsModel.js";
 import productAttributeModel from "../models/productAttributeModel.js";
 import categoryModel from "../models/categoryModel.js";
+import collectionModel from "../models/collectionModel.js";
+import brandModel from "../models/brandModel.js";
 import categoryAttributeModel from "../models/categoryAttributeModel.js";
 import categoryAttributeOptionModel from "../models/categoryAttributeOptionModel.js";
 import listingAttributeValueModel from "../models/listingAttributeValueModel.js";
@@ -271,6 +273,16 @@ export const getSellerDashboardStats = async (req, res) => {
   }
 };
 
+const slugify = (text) => {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^\w\-]+/g, "")
+    .replace(/\-\-+/g, "-");
+};
+
 export const createProduct = async (req, res) => {
   try {
     const { name, description, price, category, subCategory, collection, brand, sku, stock, sizes, tags, specifications, coverIndex } = req.body;
@@ -282,15 +294,101 @@ export const createProduct = async (req, res) => {
       return res.status(400).json({ success: false, message: "Missing required fields" });
     }
 
-    // Resolve Category Object
-    const catObj = await categoryModel.findOne({
+    // Resolve Category Object or suggest it
+    let catObj = await categoryModel.findOne({
       $or: [
-        { name: category },
+        { name: new RegExp(`^${category.trim()}$`, "i") },
         { _id: category.match(/^[0-9a-fA-F]{24}$/) ? category : null }
       ].filter(Boolean)
     });
 
+    if (!catObj) {
+      // Suggest category with pending status
+      const catSlug = slugify(category);
+      catObj = await categoryModel.create({
+        name: category.trim(),
+        slug: catSlug,
+        subcategories: subCategory ? [subCategory.trim()] : [],
+        description: "AI-suggested category pending review",
+        status: "pending",
+        isFeatured: false
+      });
+      // Notify Admin
+      await createNotification(null, null, "New Category Suggestion", `AI suggested a new category "${category}" from seller ${req.seller.shopName}. Please verify it.`, "admin");
+    } else {
+      // Add subCategory to existing category if it doesn't exist
+      if (subCategory && !catObj.subcategories.some(s => s.toLowerCase() === subCategory.toLowerCase().trim())) {
+        catObj.subcategories.push(subCategory.trim());
+        await catObj.save();
+      }
+    }
+
     const categoryId = catObj ? catObj._id : null;
+
+    // Resolve or suggest brand
+    let finalBrandName = brand || "";
+    if (brand && brand.trim()) {
+      let brandObj = await brandModel.findOne({
+        name: new RegExp(`^${brand.trim()}$`, "i")
+      });
+      if (!brandObj) {
+        const brandSlug = slugify(brand);
+        brandObj = await brandModel.create({
+          name: brand.trim(),
+          slug: brandSlug,
+          status: "pending",
+          logo: "",
+          banner: ""
+        });
+        finalBrandName = brandObj.name;
+        // Notify Admin
+        await createNotification(null, null, "New Brand Suggestion", `AI suggested a new brand "${brand}" from seller ${req.seller.shopName}. Please verify it.`, "admin");
+      } else {
+        finalBrandName = brandObj.name;
+      }
+    }
+
+    // Parse collections
+    let collectionsList = [];
+    if (req.body.collections) {
+      try {
+        collectionsList = typeof req.body.collections === "string"
+          ? JSON.parse(req.body.collections)
+          : req.body.collections;
+      } catch (e) {
+        if (typeof req.body.collections === "string") {
+          collectionsList = req.body.collections.split(",").map(c => c.trim()).filter(Boolean);
+        }
+      }
+    }
+    if (!Array.isArray(collectionsList)) {
+      collectionsList = collectionsList ? [collectionsList] : [];
+    }
+    if (collection && !collectionsList.includes(collection)) {
+      collectionsList.push(collection);
+    }
+
+    // Resolve or suggest collections
+    const finalizedCollections = [];
+    for (const colName of collectionsList) {
+      if (!colName || !colName.trim()) continue;
+      let colObj = await collectionModel.findOne({
+        name: new RegExp(`^${colName.trim()}$`, "i")
+      });
+      if (!colObj) {
+        const colSlug = slugify(colName);
+        colObj = await collectionModel.create({
+          name: colName.trim(),
+          slug: colSlug,
+          status: "pending",
+          banner: "",
+          description: "AI-suggested collection pending review"
+        });
+        // Notify Admin
+        await createNotification(null, null, "New Collection Suggestion", `AI suggested a new collection "${colName}" from seller ${req.seller.shopName}. Please verify it.`, "admin");
+      }
+      finalizedCollections.push(colObj.name);
+    }
 
     // Fetch Category Settings (fallback to platform settings if not found)
     let catSettings = null;
@@ -310,15 +408,33 @@ export const createProduct = async (req, res) => {
 
     const minImages = catSettings ? catSettings.minImages : settings.minImages;
     const maxImages = catSettings ? catSettings.maxImages : settings.maxImages;
-    const requiresApproval = catSettings ? catSettings.requiresApproval : true;
 
-    if (!req.files || req.files.length < minImages) {
+    // Parse existingImages from body
+    let existingImages = [];
+    if (req.body.existingImages) {
+      try {
+        existingImages = typeof req.body.existingImages === "string"
+          ? JSON.parse(req.body.existingImages)
+          : req.body.existingImages;
+      } catch (e) {
+        if (typeof req.body.existingImages === "string") {
+          existingImages = req.body.existingImages.split(",").map(i => i.trim()).filter(Boolean);
+        }
+      }
+    }
+    if (!Array.isArray(existingImages)) {
+      existingImages = existingImages ? [existingImages] : [];
+    }
+
+    const totalImagesCount = (req.files ? req.files.length : 0) + existingImages.length;
+
+    if (totalImagesCount < minImages) {
       if (req.files) req.files.forEach(f => fs.unlink(f.path, () => {}));
       return res.status(400).json({ success: false, message: `Minimum of ${minImages} images are required for this category` });
     }
 
-    if (req.files.length > maxImages) {
-      req.files.forEach(f => fs.unlink(f.path, () => {}));
+    if (totalImagesCount > maxImages) {
+      if (req.files) req.files.forEach(f => fs.unlink(f.path, () => {}));
       return res.status(400).json({ success: false, message: `Maximum of ${maxImages} images are allowed for this category` });
     }
 
@@ -345,43 +461,95 @@ export const createProduct = async (req, res) => {
 
     // Parse dynamically supplied specifications/attributes from body
     let finalSpecs = [];
-    if (req.body.specifications) {
+    let dynamicAttributes = {};
+    if (req.body.attributes) {
       try {
-        finalSpecs = typeof req.body.specifications === "string"
-          ? JSON.parse(req.body.specifications)
-          : req.body.specifications;
-      } catch (err) {
-        console.error("Failed to parse specifications:", err.message);
-      }
-    } else if (req.body.attributes) {
-      try {
-        finalSpecs = typeof req.body.attributes === "string"
+        dynamicAttributes = typeof req.body.attributes === "string"
           ? JSON.parse(req.body.attributes)
           : req.body.attributes;
       } catch (err) {
-        console.error("Failed to parse attributes:", err.message);
+        console.error("Failed to parse attributes map:", err.message);
       }
     }
 
-    // Map list representation to key-value objects if needed
-    if (typeof finalSpecs === "object" && !Array.isArray(finalSpecs)) {
-      finalSpecs = Object.entries(finalSpecs).map(([key, value]) => ({ key, value }));
+    const isNewFormat = dynamicAttributes && typeof dynamicAttributes === "object" && !Array.isArray(dynamicAttributes);
+    if (isNewFormat) {
+      finalSpecs = Object.entries(dynamicAttributes).map(([key, val]) => ({
+        key,
+        value: Array.isArray(val) ? val.join(", ") : String(val)
+      }));
+    } else {
+      if (req.body.specifications) {
+        try {
+          finalSpecs = typeof req.body.specifications === "string"
+            ? JSON.parse(req.body.specifications)
+            : req.body.specifications;
+        } catch (err) {
+          console.error("Failed to parse specifications:", err.message);
+        }
+      } else if (req.body.attributes) {
+        finalSpecs = dynamicAttributes;
+      }
+      if (typeof finalSpecs === "object" && !Array.isArray(finalSpecs)) {
+        finalSpecs = Object.entries(finalSpecs).map(([key, value]) => ({ key, value }));
+      }
+    }
+
+    let dynamicVariants = [];
+    if (req.body.variants) {
+      try {
+        dynamicVariants = typeof req.body.variants === "string"
+          ? JSON.parse(req.body.variants)
+          : req.body.variants;
+      } catch (err) {
+        console.error("Failed to parse variants array:", err.message);
+      }
+    }
+
+    if (isNewFormat && (!dynamicVariants || dynamicVariants.length === 0)) {
+      const attrKeys = Object.keys(dynamicAttributes).filter(
+        k => Array.isArray(dynamicAttributes[k]) && dynamicAttributes[k].length > 0
+      );
+      if (attrKeys.length > 0) {
+        const combinations = [];
+        const generate = (index, current) => {
+          if (index === attrKeys.length) {
+            combinations.push({ ...current });
+            return;
+          }
+          const key = attrKeys[index];
+          dynamicAttributes[key].forEach(val => {
+            current[key] = val;
+            generate(index + 1, current);
+          });
+        };
+        generate(0, {});
+
+        dynamicVariants = combinations.map((comb, idx) => ({
+          sku: `${sku ? sku : (name ? name.substring(0, 5).toUpperCase() : "PROD")}-${Object.values(comb).join("-").toUpperCase()}-${idx}`,
+          price: Number(price),
+          stock: Number(stock) || 0,
+          attributes: comb
+        }));
+      }
     }
 
     // Upload to Cloudinary or local fallback
-    const imageUrls = [];
-    for (let i = 0; i < req.files.length; i++) {
-      const file = req.files[i];
-      let imageUrl;
-      try {
-        const result = await cloudinary.uploader.upload(file.path, { resource_type: "image" });
-        fs.unlink(file.path, () => {});
-        imageUrl = result.secure_url;
-      } catch (cloudinaryError) {
-        console.log("Cloudinary upload failed, falling back to local file:", cloudinaryError.message);
-        imageUrl = file.path;
+    const imageUrls = [...existingImages];
+    if (req.files && req.files.length > 0) {
+      for (let i = 0; i < req.files.length; i++) {
+        const file = req.files[i];
+        let imageUrl;
+        try {
+          const result = await cloudinary.uploader.upload(file.path, { resource_type: "image" });
+          fs.unlink(file.path, () => {});
+          imageUrl = result.secure_url;
+        } catch (cloudinaryError) {
+          console.log("Cloudinary upload failed, falling back to local file:", cloudinaryError.message);
+          imageUrl = file.path;
+        }
+        imageUrls.push(imageUrl);
       }
-      imageUrls.push(imageUrl);
     }
 
     // Make sure the cover is the first image in the product's images array so that standard listings display it as default/fallback
@@ -404,15 +572,18 @@ export const createProduct = async (req, res) => {
       category: catObj ? catObj.name : category,
       subCategory: subCategory || "",
       collection: collection || "",
-      brand: brand || "",
+      collections: finalizedCollections,
+      audience: req.body.audience || "Unisex",
+      brand: finalBrandName,
       sku: sku || "",
       stock: Number(stock) || 0,
-      sizes: sizes ? (Array.isArray(sizes) ? sizes : sizes.split(",")) : [],
+      sizes: isNewFormat ? (dynamicAttributes["Size"] || []) : (sizes ? (Array.isArray(sizes) ? sizes : sizes.split(",")) : []),
       tags: tags ? (Array.isArray(tags) ? tags : tags.split(",")) : [],
       specifications: finalSpecs,
-      attributes: finalSpecs,
+      attributes: isNewFormat ? dynamicAttributes : finalSpecs,
+      variants: dynamicVariants,
       sellerId: req.seller._id,
-      status: "approved" // Instant auto approval for attributes-driven products!
+      status: "approved" // Set to approved so it is visible to users immediately
     });
 
     // Create productImageModel entries
@@ -482,11 +653,65 @@ export const updateProduct = async (req, res) => {
         } catch (e) {}
       }
       product.specifications = finalSpecs;
-      product.attributes = finalSpecs;
     }
-    
+
+    let dynamicAttributes = req.body.attributes;
+    if (dynamicAttributes) {
+      if (typeof dynamicAttributes === "string") {
+        try {
+          dynamicAttributes = JSON.parse(dynamicAttributes);
+        } catch (e) {}
+      }
+      product.attributes = dynamicAttributes;
+      if (dynamicAttributes && typeof dynamicAttributes === "object" && !Array.isArray(dynamicAttributes)) {
+        product.specifications = Object.entries(dynamicAttributes).map(([key, val]) => ({
+          key,
+          value: Array.isArray(val) ? val.join(", ") : String(val)
+        }));
+        if (dynamicAttributes["Size"]) {
+          product.sizes = dynamicAttributes["Size"];
+        }
+      }
+    }
+
+    let dynamicVariants = req.body.variants;
+    if (dynamicVariants) {
+      if (typeof dynamicVariants === "string") {
+        try {
+          dynamicVariants = JSON.parse(dynamicVariants);
+        } catch (e) {}
+      }
+      product.variants = dynamicVariants;
+    } else if (dynamicAttributes && typeof dynamicAttributes === "object" && !Array.isArray(dynamicAttributes)) {
+      const attrKeys = Object.keys(dynamicAttributes).filter(
+        k => Array.isArray(dynamicAttributes[k]) && dynamicAttributes[k].length > 0
+      );
+      if (attrKeys.length > 0) {
+        const combinations = [];
+        const generate = (index, current) => {
+          if (index === attrKeys.length) {
+            combinations.push({ ...current });
+            return;
+          }
+          const key = attrKeys[index];
+          dynamicAttributes[key].forEach(val => {
+            current[key] = val;
+            generate(index + 1, current);
+          });
+        };
+        generate(0, {});
+
+        product.variants = combinations.map((comb, idx) => ({
+          sku: `${sku || product.sku || "PROD"}-${Object.values(comb).join("-").toUpperCase()}-${idx}`,
+          price: Number(price || product.price),
+          stock: Number(stock || product.stock) || 0,
+          attributes: comb
+        }));
+      }
+    }
+
     product.images = images ?? product.images;
-    product.status = "approved"; // attributes-driven products auto approved
+    product.status = "approved"; // Set to approved so it is visible to users immediately
 
     await product.save();
     res.json({ success: true, message: "Product updated successfully", product });
@@ -537,12 +762,12 @@ export const getSingleProduct = async (req, res) => {
 
 export const getAllSellerProducts = async (req, res) => {
   try {
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = parseInt(req.query.limit) || 1000;
     const page = parseInt(req.query.page) || 1;
     const skip = (page - 1) * limit;
 
     const query = { sellerId: req.seller._id, isDeleted: { $ne: true } };
-    const products = await productModel.find(query).skip(skip).limit(limit).sort({ createdAt: -1 });
+    const products = await productModel.find(query).skip(skip).limit(limit).sort({ date: -1, _id: -1 });
     const total = await productModel.countDocuments(query);
 
     res.json({
@@ -1066,27 +1291,40 @@ export const updateProductAttributes = async (req, res) => {
     if (!product) return res.status(404).json({ success: false, message: "Product not found or unauthorized" });
 
     let finalSpecs = [];
+    let isMap = false;
+    let parsed = attributes;
+
     if (attributes) {
-      if (Array.isArray(attributes)) {
-        finalSpecs = attributes.map(attr => ({ key: attr.key || attr.fieldName || attr.name, value: attr.value }));
-      } else if (typeof attributes === "object") {
-        finalSpecs = Object.entries(attributes).map(([key, value]) => ({ key, value }));
-      } else if (typeof attributes === "string") {
+      if (typeof attributes === "string") {
         try {
-          const parsed = JSON.parse(attributes);
-          if (Array.isArray(parsed)) {
-            finalSpecs = parsed.map(attr => ({ key: attr.key || attr.fieldName || attr.name, value: attr.value }));
-          } else {
-            finalSpecs = Object.entries(parsed).map(([key, value]) => ({ key, value }));
-          }
+          parsed = JSON.parse(attributes);
         } catch (e) {}
+      }
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+        isMap = true;
       }
     }
 
-    product.specifications = finalSpecs;
-    product.attributes = finalSpecs;
-    product.status = "approved"; // attributes-driven products auto approved
+    if (isMap) {
+      product.attributes = parsed;
+      product.specifications = Object.entries(parsed).map(([key, val]) => ({
+        key,
+        value: Array.isArray(val) ? val.join(", ") : String(val)
+      }));
+    } else {
+      if (Array.isArray(parsed)) {
+        finalSpecs = parsed.map(attr => ({ key: attr.key || attr.fieldName || attr.name, value: attr.value }));
+      } else if (parsed && typeof parsed === "object") {
+        finalSpecs = Object.entries(parsed).map(([key, value]) => ({ key, value }));
+      }
+      product.specifications = finalSpecs;
+      // Preserve dynamic attributes map if product has variants
+      if (!product.variants || product.variants.length === 0) {
+        product.attributes = finalSpecs;
+      }
+    }
 
+    product.status = "approved"; // attributes-driven products auto approved
     await product.save();
 
     // Write activity log
@@ -1161,5 +1399,356 @@ export const updateSellerReturnStatus = async (req, res) => {
     res.json({ success: true, message: "Return request updated successfully" });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const generateProduct = async (req, res) => {
+  try {
+    const { name, category, subCategory, price, images, attributes, brand, stock, sku } = req.body;
+
+    if (!name || !category || !subCategory || price === undefined || !images || !Array.isArray(images)) {
+      return res.status(400).json({ success: false, message: "Missing required fields: name, category, subCategory, price, and images array are required." });
+    }
+
+    // 1. Create slug
+    const slugifyName = (str) => {
+      return str
+        .toLowerCase()
+        .replace(/'s/g, "")
+        .replace(/s'/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
+    };
+    const slug = slugifyName(name);
+
+    // 2. Short description
+    const shortDesc = req.body.shortDescription || req.body.seoDescription || `Premium ${name} designed for comfort, style and everyday wear.`;
+
+    // 3. Description
+    const desc = req.body.description || `This ${name} is crafted using quality materials and designed to provide comfort, durability and style. Suitable for daily wear and special occasions.`;
+
+    // 4. Generate tags
+    const getSingular = (str) => {
+      let s = str.trim().toLowerCase();
+      if (s.endsWith("ies")) return s.slice(0, -3) + "y";
+      if (s.endsWith("es")) {
+        if (s.endsWith("sses") || s.endsWith("ches") || s.endsWith("shes") || s.endsWith("xes")) {
+          return s.slice(0, -2);
+        }
+        return s.slice(0, -1);
+      }
+      if (s.endsWith("s") && !s.endsWith("ss")) return s.slice(0, -1);
+      return s;
+    };
+
+    const singularSub = getSingular(subCategory || category || "");
+    const tagsList = [];
+    tagsList.push(name.toLowerCase());
+    if (category) tagsList.push(category.toLowerCase());
+    if (subCategory) tagsList.push(subCategory.toLowerCase());
+
+    const words = name.toLowerCase()
+      .replace(/'s/g, "")
+      .replace(/s'/g, "")
+      .replace(/[^a-z0-9-\s]/g, " ")
+      .split(/\s+/)
+      .map(w => w.trim())
+      .filter(w => w.length > 1);
+
+    words.forEach(word => {
+      if (word !== singularSub && !["and", "for", "with", "the", "a", "of", "to", "in"].includes(word)) {
+        tagsList.push(`${word} ${singularSub}`);
+      }
+    });
+
+    if (singularSub) {
+      tagsList.push(`casual ${singularSub}`);
+    }
+
+    let finalTags = [];
+    if (req.body.tags) {
+      if (Array.isArray(req.body.tags)) {
+        finalTags = req.body.tags;
+      } else if (typeof req.body.tags === 'string') {
+        finalTags = req.body.tags.split(',').map(t => t.trim()).filter(Boolean);
+      }
+    } else {
+      finalTags = [...new Set(tagsList.map(t => t.toLowerCase().trim()))].filter(Boolean);
+    }
+
+    const finalBrand = brand || "Generic";
+
+    // 5. Generate search keywords
+    let keywords = [];
+    if (req.body.searchKeywords || req.body.keywords) {
+      const src = req.body.searchKeywords || req.body.keywords;
+      if (Array.isArray(src)) {
+        keywords = src;
+      } else if (typeof src === 'string') {
+        keywords = src.split(',').map(k => k.trim()).filter(Boolean);
+      }
+    } else {
+      const keywordSource = [name, category, finalBrand, ...finalTags];
+      keywords = [...new Set(
+        keywordSource.join(" ")
+          .toLowerCase()
+          .replace(/[^a-z0-9\s-]/g, "")
+          .split(/\s+/)
+          .filter(w => w.length > 1)
+      )];
+    }
+
+    // 6. Generate highlights
+    let highlights = [];
+    if (req.body.highlights) {
+      if (Array.isArray(req.body.highlights)) {
+        highlights = req.body.highlights;
+      } else if (typeof req.body.highlights === 'string') {
+        highlights = req.body.highlights.split(',').map(h => h.trim()).filter(Boolean);
+      }
+    } else {
+      highlights = [
+        "Premium quality",
+        "Comfortable fit",
+        "Durable material",
+        "Modern design",
+        "Easy maintenance"
+      ];
+    }
+
+    // 7. care instructions
+    let careInstructions = [];
+    if (req.body.careInstructions) {
+      if (Array.isArray(req.body.careInstructions)) {
+        careInstructions = req.body.careInstructions;
+      } else if (typeof req.body.careInstructions === 'string') {
+        careInstructions = req.body.careInstructions.split(',').map(c => c.trim()).filter(Boolean);
+      }
+    } else {
+      careInstructions = [
+        "Machine wash cold",
+        "Do not bleach",
+        "Dry in shade"
+      ];
+    }
+
+    // 8. Generate default rating
+    const ratingObj = {
+      average: 0,
+      count: 0
+    };
+
+    // 9. Generate default stock
+    const finalStock = Number(stock) || 0;
+
+    // 10. specifications using category template
+    const getSpecsTemplate = (cat, subCat) => {
+      const c = `${cat} ${subCat}`.toLowerCase();
+      if (c.includes("women") || c.includes("dress") || c.includes("clothing") || c.includes("fashion") || c.includes("ethnic")) {
+        return { "Material": "", "Pattern": "", "Sleeve Type": "", "Neck Type": "" };
+      }
+      if (c.includes("electronic") || c.includes("mobile") || c.includes("laptop") || c.includes("phone")) {
+        return { "Brand": "", "Model": "", "Processor": "", "RAM": "", "Storage": "" };
+      }
+      if (c.includes("shoe") || c.includes("footwear")) {
+        return { "Material": "", "Closure": "", "Sole": "", "Fit": "" };
+      }
+      if (c.includes("furniture") || c.includes("home")) {
+        return { "Material": "", "Dimensions": "", "Weight": "", "Color": "" };
+      }
+      return { "Manufacturer": "", "Origin": "", "Warranty": "", "Material": "" };
+    };
+    const template = getSpecsTemplate(category, subCategory);
+    let userSpecs = req.body.specifications || [];
+    if (typeof userSpecs === "string") {
+      try {
+        userSpecs = JSON.parse(userSpecs);
+      } catch (e) {
+        userSpecs = [];
+      }
+    }
+    if (!Array.isArray(userSpecs)) {
+      if (userSpecs && typeof userSpecs === "object") {
+        userSpecs = Object.entries(userSpecs).map(([k, v]) => ({ key: k, value: v }));
+      } else {
+        userSpecs = [];
+      }
+    }
+
+    const finalSpecs = [...userSpecs];
+    Object.entries(template).forEach(([key, defaultValue]) => {
+      const exists = finalSpecs.some(s => s && typeof s === "object" && s.key?.toLowerCase() === key.toLowerCase());
+      if (!exists) {
+        finalSpecs.push({ key, value: defaultValue });
+      }
+    });
+
+    // 11. Generate variants
+    let inputAttrs = attributes || {};
+    const standardFields = [
+      'name', 'slug', 'category', 'subCategory', 'price', 'discountPrice', 'images',
+      'brand', 'stock', 'sku', 'description', 'shortDescription', 'tags', 'keywords',
+      'searchKeywords', 'specifications', 'collections', 'rating', 'ratings', 'highlights',
+      'careInstructions', 'variants', 'shipping', 'seller', 'seo', 'isFeatured',
+      'isTrending', 'isActive', 'createdAt', 'preview', 'audience', 'attributes'
+    ];
+    Object.keys(req.body).forEach(key => {
+      if (!standardFields.includes(key)) {
+        if (Array.isArray(req.body[key])) {
+          inputAttrs[key] = req.body[key];
+        } else if (typeof req.body[key] === 'string' && req.body[key].includes(',')) {
+          inputAttrs[key] = req.body[key].split(',').map(s => s.trim()).filter(Boolean);
+        }
+      }
+    });
+
+    const attrKeys = Object.keys(inputAttrs).filter(
+      k => Array.isArray(inputAttrs[k]) && inputAttrs[k].length > 0
+    );
+    let dynamicVariants = [];
+    if (req.body.variants && Array.isArray(req.body.variants) && req.body.variants.length > 0) {
+      dynamicVariants = req.body.variants.map(v => ({
+        sku: v.sku || "",
+        price: Number(v.price) || Number(price),
+        stock: Number(v.stock) || 0,
+        attributes: v.attributes || {}
+      }));
+    } else if (attrKeys.length > 0) {
+      const combinations = [];
+      const generate = (index, current) => {
+        if (index === attrKeys.length) {
+          combinations.push({ ...current });
+          return;
+        }
+        const key = attrKeys[index];
+        inputAttrs[key].forEach(val => {
+          current[key] = val;
+          generate(index + 1, current);
+        });
+      };
+      generate(0, {});
+
+      const baseSku = sku || name.substring(0, 5).toUpperCase().replace(/[^A-Z0-9]/g, "");
+      dynamicVariants = combinations.map((comb, idx) => {
+        const suffix = Object.values(comb).join("+");
+        return {
+          sku: `${baseSku}-${suffix}`,
+          price: Number(price),
+          stock: 0,
+          attributes: comb
+        };
+      });
+    }
+
+    // Resolve Category Object or suggest it
+    let catObj = await categoryModel.findOne({
+      $or: [
+        { name: new RegExp(`^${category.trim()}$`, "i") },
+        { _id: category.match(/^[0-9a-fA-F]{24}$/) ? category : null }
+      ].filter(Boolean)
+    });
+
+    if (req.body.preview) {
+      return res.json({
+        success: true,
+        message: "Product details generated successfully",
+        product: {
+          name,
+          slug,
+          shortDescription: shortDesc,
+          description: desc,
+          price: Number(price),
+          images,
+          category: catObj ? catObj.name : category,
+          subCategory: subCategory || "",
+          brand: finalBrand,
+          stock: finalStock,
+          sizes: inputAttrs["Size"] || [],
+          tags: finalTags,
+          keywords,
+          highlights,
+          careInstructions,
+          attributes: inputAttrs,
+          variants: dynamicVariants,
+          collections: ["New Arrivals", "Best Sellers"],
+          specifications: finalSpecs
+        }
+      });
+    }
+
+    if (!catObj) {
+      const catSlug = slugify(category);
+      catObj = await categoryModel.create({
+        name: category.trim(),
+        slug: catSlug,
+        subcategories: subCategory ? [subCategory.trim()] : [],
+        description: "Rule-generated category pending review",
+        status: "pending",
+        isFeatured: false
+      });
+      await createNotification(null, null, "New Category Suggestion", `AI suggested a new category "${category}" from seller ${req.seller.shopName}. Please verify it.`, "admin");
+    } else {
+      if (subCategory && !catObj.subcategories.some(s => s.toLowerCase() === subCategory.toLowerCase().trim())) {
+        catObj.subcategories.push(subCategory.trim());
+        await catObj.save();
+      }
+    }
+
+    // Save final product directly to database
+    const product = await productModel.create({
+      name,
+      slug,
+      shortDescription: shortDesc,
+      description: desc,
+      price: Number(price),
+      images: images,
+      category: catObj ? catObj.name : category,
+      subCategory: subCategory || "",
+      collection: "",
+      collections: ["New Arrivals", "Best Sellers"],
+      audience: "Unisex",
+      brand: finalBrand,
+      sku: sku || `GEN-${Date.now()}`,
+      stock: finalStock,
+      sizes: inputAttrs["Size"] || [],
+      tags: finalTags,
+      keywords,
+      highlights,
+      careInstructions,
+      rating: ratingObj,
+      averageRating: 0,
+      totalReviews: 0,
+      reviews: [],
+      attributes: inputAttrs,
+      variants: dynamicVariants,
+      sellerId: req.seller._id,
+      status: "approved"
+    });
+
+    // Create listingMediaModel entries for immediate media listing
+    if (images && images.length > 0) {
+      for (let idx = 0; idx < images.length; idx++) {
+        const url = images[idx];
+        await listingMediaModel.create({
+          listingId: product._id,
+          url,
+          type: "image",
+          isCover: idx === 0,
+          displayOrder: idx
+        });
+      }
+    }
+
+    res.json({
+      success: true,
+      message: "Product generated and published successfully",
+      product
+    });
+  } catch (error) {
+    console.log("GENERATE PRODUCT ERROR 👉", error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };

@@ -7,6 +7,7 @@ import crypto from "crypto";
 import { createNotification } from "../utils/notificationHelper.js";
 import { checkAndGenerateInvoice } from "../utils/invoicePdfGenerator.js";
 import deliveryAssignmentModel from "../models/deliveryAssignmentModel.js";
+import { trackPurchase } from "../utils/analyticsHelper.js";
 
 
 
@@ -40,7 +41,14 @@ const cleanUserCart = async (userId, items) => {
       const cartData = { ...user.cartData };
       for (const item of items) {
         const prodId = item.productId || item._id || item.itemId;
-        const key = `${prodId}_${item.size}`;
+        let suffix = item.size || "";
+        if (item.selectedAttributes && typeof item.selectedAttributes === "object") {
+          suffix = Object.keys(item.selectedAttributes)
+            .sort()
+            .map(key => `${key}:${item.selectedAttributes[key]}`)
+            .join(",");
+        }
+        const key = `${prodId}_${suffix}`;
         delete cartData[key];
       }
       user.cartData = cartData;
@@ -84,6 +92,9 @@ const placeOrder = async (req, res) => {
 
     // Remove only ordered items from the user's cart after order placement
     await cleanUserCart(req.user._id, items);
+
+    // Track purchases dynamically
+    await trackPurchase(items);
 
     // Auto-assign delivery agent
     await autoAssignDeliveryAgent(order._id);
@@ -216,6 +227,7 @@ const verifyStripe = async (req, res) => {
       const order = await orderModel.findById(orderId);
       if (order) {
         await cleanUserCart(order.userId, order.items);
+        await trackPurchase(order.items);
       }
       // Auto-assign delivery agent
       await autoAssignDeliveryAgent(orderId);
@@ -321,6 +333,7 @@ const verifyRazorpay = async (req, res) => {
       const order = await orderModel.findById(orderId);
       if (order) {
         await cleanUserCart(order.userId, order.items);
+        await trackPurchase(order.items);
       }
       // Auto-assign delivery agent
       await autoAssignDeliveryAgent(orderId);
@@ -339,6 +352,7 @@ const verifyRazorpay = async (req, res) => {
       const order = await orderModel.findById(orderId);
       if (order) {
         await cleanUserCart(order.userId, order.items);
+        await trackPurchase(order.items);
       }
       // Auto-assign delivery agent
       await autoAssignDeliveryAgent(orderId);
@@ -358,7 +372,31 @@ const verifyRazorpay = async (req, res) => {
 const allOrders = async (req, res) => {
   try {
     const orders = await orderModel.find({}).sort({ date: -1 });
-    res.json({ success: true, orders });
+    
+    // Fetch active assignments for these orders
+    const orderIds = orders.map(o => o._id);
+    const assignments = await deliveryAssignmentModel.find({
+      orderId: { $in: orderIds },
+      status: { $nin: ["Cancelled", "Rejected"] }
+    });
+
+    const ordersWithAssignments = orders.map(order => {
+      const orderObj = order.toObject();
+      if (order.deliverymanId) {
+        const assignment = assignments.find(
+          a => a.orderId.toString() === order._id.toString() &&
+               a.agentId.toString() === order.deliverymanId.toString()
+        );
+        orderObj.assignmentStatus = assignment ? assignment.status : "Assigned";
+        orderObj.assignedAt = assignment ? assignment.assignedAt : null;
+      } else {
+        orderObj.assignmentStatus = null;
+        orderObj.assignedAt = null;
+      }
+      return orderObj;
+    });
+
+    res.json({ success: true, orders: ordersWithAssignments });
   } catch (error) {
     res.json({ success: false, message: error.message });
   }

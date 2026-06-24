@@ -422,14 +422,30 @@ const Orders = ({ token }) => {
                       <td className="py-2.5 px-4">
                         {(() => {
                           const assignedDriver = drivers.find(d => d._id === order.deliverymanId);
-                          return assignedDriver ? (
-                            <span className="text-slate-800 dark:text-slate-205 font-bold">
-                              {assignedDriver.name}
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider">
-                              Unassigned
-                            </span>
+                          if (!assignedDriver) {
+                            return (
+                              <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider">
+                                Unassigned
+                              </span>
+                            );
+                          }
+
+                          const status = order.assignmentStatus || "Assigned";
+                          const isAwaiting = status === "Assigned";
+
+                          return (
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-slate-850 dark:text-slate-200 font-bold">
+                                {assignedDriver.name}
+                              </span>
+                              <span className={`text-[9px] font-black uppercase tracking-wider ${
+                                isAwaiting
+                                  ? "text-amber-500 animate-pulse"
+                                  : "text-slate-400 dark:text-slate-500"
+                              }`}>
+                                {isAwaiting ? "Awaiting Response" : status}
+                              </span>
+                            </div>
                           );
                         })()}
                       </td>

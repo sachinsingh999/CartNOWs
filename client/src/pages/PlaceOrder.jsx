@@ -814,7 +814,13 @@ const PlaceOrder = () => {
       if (cartItems) {
         setProducts(cartItems);
       } else if (singleProduct) {
-        setProducts([{ ...singleProduct, qty, size }]);
+        setProducts([{
+          ...singleProduct,
+          price: location.state?.total / qty || singleProduct.price,
+          qty,
+          size,
+          selectedAttributes: location.state?.selectedAttributes
+        }]);
       } else {
         // Fetch from cart backend / localStorage
         const token = localStorage.getItem("token");
@@ -836,7 +842,9 @@ const PlaceOrder = () => {
 
           const items = [];
           for (const key in cartData) {
-            const [itemId, sizeVal] = key.split("_");
+            const firstUnderscoreIdx = key.indexOf("_");
+            const itemId = firstUnderscoreIdx !== -1 ? key.substring(0, firstUnderscoreIdx) : key;
+            const sizeVal = firstUnderscoreIdx !== -1 ? key.substring(firstUnderscoreIdx + 1) : "";
             const qtyVal = cartData[key];
 
             if (qtyVal > 0) {
@@ -845,10 +853,38 @@ const PlaceOrder = () => {
                   `${backendUrl}/api/product/single/${itemId}`
                 );
                 if (productRes.data.success && productRes.data.product) {
+                  const prod = productRes.data.product;
+                  let itemPrice = prod.price;
+                  let itemStock = prod.stock;
+                  let itemSku = prod.sku;
+                  let selectedAttributes = undefined;
+
+                  if (prod.variants && prod.variants.length > 0 && sizeVal && sizeVal.includes(":")) {
+                    selectedAttributes = {};
+                    sizeVal.split(",").forEach(pair => {
+                      const [k, v] = pair.split(":");
+                      if (k && v) selectedAttributes[k] = v;
+                    });
+
+                    const match = prod.variants.find(variant => {
+                      return Object.keys(selectedAttributes).every(k => variant.attributes?.[k] === selectedAttributes[k]);
+                    });
+
+                    if (match) {
+                      itemPrice = match.price;
+                      itemStock = match.stock;
+                      itemSku = match.sku;
+                    }
+                  }
+
                   items.push({
-                    ...productRes.data.product,
+                    ...prod,
+                    price: itemPrice,
+                    stock: itemStock,
+                    sku: itemSku,
                     qty: qtyVal,
                     size: sizeVal || "N/A",
+                    selectedAttributes
                   });
                 }
               } catch (err) {
@@ -929,6 +965,7 @@ const PlaceOrder = () => {
       price: item.price,
       qty: item.qty,
       size: item.size,
+      selectedAttributes: item.selectedAttributes,
       image: item.images?.[0],
     }));
 
@@ -1441,7 +1478,14 @@ const PlaceOrder = () => {
                         <div className="min-w-0 flex-1 text-xs">
                           <p className="font-extrabold text-slate-900 dark:text-slate-100 truncate">{item.name}</p>
                           <p className="mt-0.5 text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
-                            Qty {item.qty} · Size {item.size}
+                            Qty {item.qty} · {item.size && item.size.includes(":") ? (
+                              item.size.split(",").map(pair => {
+                                const [k, v] = pair.split(":");
+                                return `${k}: ${v}`;
+                              }).join(" • ")
+                            ) : (
+                              `Size ${item.size}`
+                            )}
                           </p>
                           <p className="mt-1 font-bold text-slate-950 dark:text-slate-50">
                             ₹{item.price * item.qty}

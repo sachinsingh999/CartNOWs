@@ -45,7 +45,7 @@ const SignUp = () => {
 
   if (submitted) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center p-4 bg-[#090D1A] text-slate-100 font-sans">
+      <div className="min-h-[100dvh] w-full flex items-center justify-center p-4 bg-[#090D1A] text-slate-100 font-sans">
         <div className="w-full max-w-md bg-slate-900/60 backdrop-blur-xl border border-slate-800/80 rounded-3xl p-8 shadow-2xl text-center space-y-6">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-955 bg-emerald-950/50 text-emerald-400 border border-emerald-800/80 shadow-inner">
             <CheckCircle size={28} className="animate-bounce" />
@@ -71,7 +71,7 @@ const SignUp = () => {
   }
 
   return (
-    <div className="h-screen w-screen grid lg:grid-cols-[1.1fr_1fr] bg-[#090D1A] text-slate-100 font-sans selection:bg-orange-500 selection:text-white overflow-hidden">
+    <div className="min-h-[100dvh] w-full grid lg:grid-cols-[1.1fr_1fr] bg-[#090D1A] text-slate-100 font-sans selection:bg-orange-500 selection:text-white lg:h-screen lg:overflow-hidden">
       
       {/* Left Panel: Visual/Marketing split */}
       <div className="relative hidden lg:flex flex-col justify-between p-8 overflow-hidden h-full">

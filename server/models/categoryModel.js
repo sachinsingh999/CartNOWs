@@ -10,12 +10,15 @@ const categorySchema = new mongoose.Schema(
     bannerImage: { type: String, default: "" },
     parentCategoryId: { type: mongoose.Schema.Types.ObjectId, ref: "category", default: null },
     displayOrder: { type: Number, default: 0 },
-    status: { type: String, enum: ["active", "disabled", "archived"], default: "active" },
+    status: { type: String, enum: ["active", "pending", "disabled", "archived"], default: "active" },
     isFeatured: { type: Boolean, default: false },
     seoTitle: { type: String, default: "" },
     seoDescription: { type: String, default: "" },
     seoKeywords: { type: [String], default: [] },
-    visibilityRules: { type: mongoose.Schema.Types.Mixed, default: {} } // e.g. role-based visibility rules
+    visibilityRules: { type: mongoose.Schema.Types.Mixed, default: {} }, // e.g. role-based visibility rules
+    totalViews: { type: Number, default: 0 },
+    totalSales: { type: Number, default: 0 },
+    totalSearches: { type: Number, default: 0 }
   },
   { timestamps: true, collection: "categories" }
 );

@@ -17,6 +17,7 @@ import coshopRouter from "./routers/coshopRouter.js";
 import adminRouter from "./routers/adminRouter.js";
 import sellerRouter from "./routers/sellerRouter.js";
 import tryOnRouter from "./routers/tryOnRouter.js";
+import { bannerRouter, adminBannerRouter } from "./routers/bannerRouter.js";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import { startTryOnWorker } from "./workers/tryOnWorker.js";
@@ -53,6 +54,8 @@ app.use('/api/coshop', coshopRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/seller', sellerRouter);
 app.use('/api/tryon', tryOnRouter);
+app.use('/api/banners', bannerRouter);
+app.use('/api/admin/banners', adminBannerRouter);
 
 import invoiceRouter from "./routers/invoiceRouter.js";
 import path from "path";
@@ -104,7 +107,12 @@ io.on("connection", (socket) => {
 // start worker
 startTryOnWorker(io);
 
+// start hero asset scheduler
+import { startHeroAssetScheduler } from "./utils/heroScheduler.js";
+startHeroAssetScheduler();
+
 // start server
 httpServer.listen(port, () => {
   console.log("Server started on PORT:", port);
 });
+// Nodemon reload trigger to clear maintenance cache

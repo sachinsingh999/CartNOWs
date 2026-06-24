@@ -4,6 +4,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { Heart, ShoppingBag, Trash2, ArrowRight } from "lucide-react";
 import { backendUrl } from "../config";
+import Loader from "../components/Loader";
 
 const Wishlist = () => {
   const [wishlist, setWishlist] = useState([]);
@@ -115,9 +116,8 @@ const Wishlist = () => {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3">
-        <div className="h-8 w-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
-        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Loading your favorites...</p>
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <Loader message="Loading your favorites..." size="lg" color="rose" />
       </div>
     );
   }

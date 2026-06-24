@@ -121,7 +121,7 @@ const App = () => {
       let data = productData;
       let headers = { token };
 
-      if (productData.images && productData.images.length > 0) {
+      if ((productData.images && productData.images.length > 0) || productData.existingImages) {
         const formData = new FormData();
         Object.entries(productData).forEach(([key, val]) => {
           if (key !== "images") {
@@ -129,9 +129,11 @@ const App = () => {
           }
         });
 
-        productData.images.forEach((file) => {
-          formData.append("images", file);
-        });
+        if (productData.images && productData.images.length > 0) {
+          productData.images.forEach((file) => {
+            formData.append("images", file);
+          });
+        }
 
         data = formData;
         headers = {
@@ -189,7 +191,7 @@ const App = () => {
   };
 
   return (
-    <div className="bg-slate-50/50 min-h-screen flex flex-col antialiased">
+    <div className={`bg-slate-50/50 min-h-screen flex flex-col antialiased ${token ? "h-[100dvh] overflow-hidden" : ""}`}>
       <ToastContainer position="top-right" autoClose={3000} />
       {token === "" ? (
         <Routes>
@@ -199,7 +201,7 @@ const App = () => {
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       ) : (
-        <div className="flex flex-1 h-screen overflow-hidden relative">
+        <div className="flex flex-1 h-[100dvh] overflow-hidden relative">
           
           {/* Mobile Overlay backdrop */}
           <div 
@@ -211,9 +213,9 @@ const App = () => {
 
           {/* Left Sidebar */}
           <aside 
-            className={`fixed inset-y-0 left-0 z-50 bg-[#0F172A] border-r border-slate-800 flex flex-col justify-between text-slate-300 shrink-0 transform transition-all duration-300 ease-in-out lg:static lg:translate-x-0 ${
+            className={`fixed inset-y-0 left-0 z-35 bg-[#0F172A] border-r border-slate-800 flex flex-col justify-between text-slate-300 shrink-0 transform transition-all duration-300 ease-in-out lg:translate-x-0 ${
               isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-            } ${isSidebarCollapsed ? "lg:w-20" : "lg:w-64"} w-64`}
+            } ${isSidebarCollapsed ? "lg:w-20" : "lg:w-64"} w-64 overscroll-y-contain`}
           >
             <div className="p-4 lg:p-6 space-y-6 flex-1 flex flex-col min-h-0">
               
@@ -237,7 +239,7 @@ const App = () => {
                 >
                   {isSidebarCollapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
                 </button>
-
+ 
                 {/* Close Drawer Button for Mobile */}
                 <button
                   onClick={() => setIsMobileSidebarOpen(false)}
@@ -246,9 +248,9 @@ const App = () => {
                   <X size={16} />
                 </button>
               </div>
-
+ 
               {/* Nav Links */}
-              <nav className="space-y-1 flex-1 overflow-y-auto pr-1 custom-scrollbar">
+              <nav className="space-y-1 flex-1 overflow-y-auto pr-1 custom-scrollbar overscroll-y-contain">
                 {[
                   { label: "Dashboard", path: "/", icon: BarChart3, tab: "dashboard" },
                   { label: "Products", path: "/products", icon: Layers, tab: "products" },
@@ -286,7 +288,7 @@ const App = () => {
                 })}
               </nav>
             </div>
-
+ 
             {/* Bottom Profile / Quick Info */}
             <div className="p-4 border-t border-slate-800">
               <button
@@ -316,9 +318,11 @@ const App = () => {
               </button>
             </div>
           </aside>
-
+ 
           {/* Right Main Panel */}
-          <div className="flex-1 flex flex-col overflow-hidden bg-slate-50/20 pb-16 sm:pb-0">
+          <div className={`flex-1 flex flex-col overflow-hidden bg-slate-50/20 pb-16 sm:pb-0 transition-all duration-300 ${
+            isSidebarCollapsed ? "lg:pl-20" : "lg:pl-64"
+          }`}>
             {/* Top Header */}
             <header className="h-16 border-b border-slate-200/80 bg-white px-4 md:px-6 flex items-center justify-between shrink-0 shadow-sm sticky top-0 z-20">
               
@@ -430,6 +434,8 @@ const App = () => {
                       <AddProduct 
                         token={token} 
                         addProduct={addProduct}
+                        products={products}
+                        fetchProducts={fetchProducts}
                       />
                     } 
                   />

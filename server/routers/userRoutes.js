@@ -4,6 +4,7 @@ import {
   registerUser,
   adminLogin,
   getUserProfile,
+  updateUserProfile,
   addUserAddress,
   deleteUserAddress,
   getUserNotifications,
@@ -20,6 +21,7 @@ userRouter.post('/register',registerUser);
 userRouter.post('/login',loginUser);
 userRouter.post('/admin',adminLogin);
 userRouter.get("/profile", authUser, getUserProfile);
+userRouter.put("/update-profile", authUser, updateUserProfile);
 userRouter.post("/add-address", authUser, addUserAddress);
 userRouter.post("/delete-address", authUser, deleteUserAddress);
 userRouter.get("/notifications", authUser, getUserNotifications);

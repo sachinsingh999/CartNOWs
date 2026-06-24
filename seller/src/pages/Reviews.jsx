@@ -115,17 +115,17 @@ const Reviews = ({ token }) => {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <input
                       type="text"
                       placeholder="Type your official response..."
                       value={replyText[r._id] || ""}
                       onChange={(e) => setReplyText((prev) => ({ ...prev, [r._id]: e.target.value }))}
-                      className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold outline-none focus:border-slate-800 transition"
+                      className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold outline-none focus:border-slate-800 transition w-full"
                     />
                     <button
                       onClick={() => handleSendReply(r._id, r.productId)}
-                      className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl px-4 py-2 text-xs font-bold transition active:scale-95 cursor-pointer shadow-sm"
+                      className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl px-4 py-2 text-xs font-bold transition active:scale-95 cursor-pointer shadow-sm w-full sm:w-auto shrink-0"
                     >
                       Post Reply
                     </button>

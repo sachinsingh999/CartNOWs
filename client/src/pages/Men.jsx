@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import ProductCard from "../pages/ProductCard";
-import FilterSidebar from "../componenets/CategoryFilterSidebar";
+import FilterSidebar from "../components/CategoryFilterSidebar";
 import axios from "axios";
 import { backendUrl } from "../config";
 import { toast } from "react-toastify";
@@ -13,7 +13,11 @@ const Men = () => {
   useEffect(() => {
     axios.get(`${backendUrl}/api/product/list`).then((res) => {
       if (res.data.success) {
-        const only = res.data.products.filter((p) => p.collection?.toLowerCase() === "men");
+        const only = res.data.products.filter((p) => 
+          p.collection?.toLowerCase() === "men" ||
+          p.collections?.some(c => c.toLowerCase() === "men") ||
+          p.audience?.toLowerCase() === "men"
+        );
         setMenProducts(only);
         setFilteredList(only);
       } else toast.error(res.data.message);

@@ -68,7 +68,9 @@ const Cart = () => {
       const items = [];
 
       for (const key in cartData) {
-        const [itemId, size] = key.split("_");
+        const firstUnderscoreIdx = key.indexOf("_");
+        const itemId = firstUnderscoreIdx !== -1 ? key.substring(0, firstUnderscoreIdx) : key;
+        const size = firstUnderscoreIdx !== -1 ? key.substring(firstUnderscoreIdx + 1) : "";
         const qty = cartData[key];
 
         if (qty > 0) {
@@ -78,11 +80,37 @@ const Cart = () => {
             );
 
             if (productRes.data.success && productRes.data.product) {
+              const prod = productRes.data.product;
+              let itemPrice = prod.price;
+              let itemStock = prod.stock;
+              let itemSku = prod.sku;
+
+              if (prod.variants && prod.variants.length > 0 && size && size.includes(":")) {
+                const selectedAttributes = {};
+                size.split(",").forEach(pair => {
+                  const [k, v] = pair.split(":");
+                  if (k && v) selectedAttributes[k] = v;
+                });
+
+                const match = prod.variants.find(variant => {
+                  return Object.keys(selectedAttributes).every(k => variant.attributes?.[k] === selectedAttributes[k]);
+                });
+
+                if (match) {
+                  itemPrice = match.price;
+                  itemStock = match.stock;
+                  itemSku = match.sku;
+                }
+              }
+
               items.push({
                 itemId,
                 size,
                 qty,
-                product: productRes.data.product,
+                product: prod,
+                price: itemPrice,
+                stock: itemStock,
+                sku: itemSku,
                 selected: true,
               });
             }
@@ -451,12 +479,15 @@ const Cart = () => {
   // Calculations
   const selectedItems = cartItems.filter((item) => item.selected);
   const total = selectedItems.reduce(
-    (sum, item) => sum + item.product.price * item.qty,
+    (sum, item) => sum + (item.price !== undefined ? item.price : item.product.price) * item.qty,
     0
   );
 
   const originalTotal = selectedItems.reduce(
-    (sum, item) => sum + (item.product.originalPrice || Math.round(item.product.price * 1.25)) * item.qty,
+    (sum, item) => {
+      const price = item.price !== undefined ? item.price : item.product.price;
+      return sum + (item.product.originalPrice ? Math.round(price * (item.product.originalPrice / item.product.price)) : Math.round(price * 1.25)) * item.qty;
+    },
     0
   );
 
@@ -470,10 +501,7 @@ const Cart = () => {
   const itemCount = selectedItems.reduce((sum, item) => sum + item.qty, 0);
   const grandTotal = Math.max(0, total + shipping + wrapFee - couponDiscount);
 
-  // Free shipping progress bar calculations
-  const shippingThreshold = 999;
-  const shippingPercent = Math.min(100, Math.round((total / shippingThreshold) * 100));
-  const shippingDifference = shippingThreshold - total;
+
 
   const handleCheckout = () => {
     if (!token) {
@@ -483,11 +511,26 @@ const Cart = () => {
     }
     navigate("/placeorder", {
       state: {
-        cartItems: selectedItems.map((item) => ({
-          ...item.product,
-          qty: item.qty,
-          size: item.size,
-        })),
+        cartItems: selectedItems.map((item) => {
+          const hasDynamicAttrs = item.product.attributes && typeof item.product.attributes === "object" && !Array.isArray(item.product.attributes) && Object.keys(item.product.attributes).length > 0;
+          let selectedAttributes = undefined;
+          if (hasDynamicAttrs && item.size && item.size.includes(":")) {
+            selectedAttributes = {};
+            item.size.split(",").forEach(pair => {
+              const [k, v] = pair.split(":");
+              if (k && v) selectedAttributes[k] = v;
+            });
+          }
+          return {
+            ...item.product,
+            price: item.price !== undefined ? item.price : item.product.price,
+            stock: item.stock !== undefined ? item.stock : item.product.stock,
+            sku: item.sku !== undefined ? item.sku : item.product.sku,
+            qty: item.qty,
+            size: item.size,
+            selectedAttributes,
+          };
+        }),
         total,
         appliedCoupon,
         giftWrap,
@@ -529,48 +572,7 @@ const Cart = () => {
           </button>
         </div>
 
-        {/* Dynamic Free Shipping Milestone Alert */}
-        {total > 0 && (
-          <div className="mb-6 bg-white dark:bg-[#151b26] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-4.5 text-left shadow-xs transition duration-300">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-2.5">
-              <div className="flex items-center gap-2.5">
-                <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${
-                  total >= shippingThreshold 
-                    ? "bg-emerald-500/10 text-emerald-555" 
-                    : "bg-amber-500/10 text-amber-555"
-                }`}>
-                  {total >= shippingThreshold ? <Sparkles size={16} /> : <Truck size={16} />}
-                </div>
-                <div>
-                  <h4 className="text-xs font-black uppercase tracking-wider">
-                    {total >= shippingThreshold ? "Milestone Unlocked!" : "Free Shipping Goal"}
-                  </h4>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">
-                    {total >= shippingThreshold 
-                      ? "Congratulations! Your order qualifies for free standard delivery." 
-                      : `Add ₹${shippingDifference} more to unlock free standard shipping (Orders over ₹${shippingThreshold}).`
-                    }
-                  </p>
-                </div>
-              </div>
-              <span className="text-[11px] font-black text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">
-                {shippingPercent}% Achieved
-              </span>
-            </div>
-            
-            {/* Custom Interactive Progress Bar */}
-            <div className="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden relative">
-              <div 
-                className={`h-full rounded-full transition-all duration-500 ease-out ${
-                  total >= shippingThreshold 
-                    ? "bg-gradient-to-r from-emerald-500 to-teal-500" 
-                    : "bg-gradient-to-r from-amber-500 to-orange-500 animate-pulse"
-                }`}
-                style={{ width: `${shippingPercent}%` }}
-              />
-            </div>
-          </div>
-        )}
+
 
         {/* Layout Grid */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 items-start">
@@ -602,13 +604,15 @@ const Cart = () => {
             <div className="space-y-3.5">
               {cartItems.map((item, index) => {
                 const avgRating = getAverageRating(item.product) || 4.5;
-                const originalPrice = item.product.originalPrice || Math.round(item.product.price * 1.25);
-                const discountPercent = Math.round(((originalPrice - item.product.price) / originalPrice) * 100);
+                const itemPrice = item.price !== undefined ? item.price : item.product.price;
+                const originalPrice = item.product.originalPrice ? Math.round(itemPrice * (item.product.originalPrice / item.product.price)) : Math.round(itemPrice * 1.25);
+                const discountPercent = Math.round(((originalPrice - itemPrice) / originalPrice) * 100);
+                const itemStock = item.stock !== undefined ? item.stock : item.product.stock;
 
                 return (
                   <div
                     key={`${item.itemId}-${item.size}`}
-                    className={`group flex items-center gap-3.5 rounded-[20px] border p-4 shadow-sm transition-all duration-300 hover:scale-[1.005] hover:shadow-md ${
+                    className={`group flex items-center gap-3.5 rounded-[20px] border p-4 shadow-sm transition-all duration-350 hover:scale-[1.005] hover:shadow-md ${
                       item.selected
                         ? "border-indigo-500/80 bg-indigo-50/5 dark:bg-indigo-950/5"
                         : "border-slate-200/70 dark:border-slate-800/80 bg-white dark:bg-[#151b26]/50 hover:border-slate-300 dark:hover:border-slate-700"
@@ -654,12 +658,19 @@ const Cart = () => {
                             </span>
                             {item.size && (
                               <span className="text-[9px] font-black bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-1.5 py-0.5 rounded border border-slate-200/40 dark:border-white/[0.04] uppercase tracking-wider">
-                                Size {item.size}
+                                {item.size.includes(":") ? (
+                                  item.size.split(",").map(pair => {
+                                    const [k, v] = pair.split(":");
+                                    return `${k}: ${v}`;
+                                  }).join(" • ")
+                                ) : (
+                                  `Size ${item.size}`
+                                )}
                               </span>
                             )}
-                            <span className={`h-1.5 w-1.5 rounded-full ${item.product.stock > 0 ? "bg-emerald-500 animate-pulse" : "bg-rose-500"}`} />
+                            <span className={`h-1.5 w-1.5 rounded-full ${itemStock > 0 ? "bg-emerald-500 animate-pulse" : "bg-rose-500"}`} />
                             <span className="text-[10px] font-bold text-slate-450 dark:text-slate-500">
-                              {item.product.stock > 0 ? `In Stock (${item.product.stock})` : "Out of Stock"}
+                              {itemStock > 0 ? `In Stock (${itemStock})` : "Out of Stock"}
                             </span>
                           </div>
                         </div>
@@ -690,7 +701,7 @@ const Cart = () => {
                         <div className="text-left sm:text-right">
                           <div className="flex items-baseline gap-1.5">
                             <span className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
-                              ₹{item.product.price.toLocaleString("en-IN")}
+                              ₹{itemPrice.toLocaleString("en-IN")}
                             </span>
                             {discountPercent > 0 && (
                               <span className="text-[10px] font-semibold text-slate-400 line-through">

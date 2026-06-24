@@ -1,5 +1,6 @@
 import userModel from "../models/userModel.js";
 import productModel from "../models/productModel.js";
+import { trackWishlistToggle } from "../utils/analyticsHelper.js";
 
 // Toggle a product in wishlist
 export const toggleWishlist = async (req, res) => {
@@ -27,6 +28,9 @@ export const toggleWishlist = async (req, res) => {
 
     user.wishlistData = wishlist;
     await user.save();
+
+    // Track wishlist count changes dynamically
+    await trackWishlistToggle(productId, index === -1);
 
     res.json({ success: true, message: index === -1 ? "Added to wishlist" : "Removed from wishlist", wishlist });
   } catch (error) {

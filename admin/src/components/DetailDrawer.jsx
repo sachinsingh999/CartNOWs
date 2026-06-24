@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   X, MapPin, Phone, KeyRound, AlertTriangle, AlarmClock, UserPlus, CreditCard, ShieldCheck, CheckCircle2, Circle, ArrowUpRight, Activity
 } from "lucide-react";
@@ -73,6 +73,21 @@ const DetailDrawer = ({ order, isOpen, onClose, drivers, onAssign, onStatusUpdat
   const dl = getDeadlineInfo(order.createdAt, order.orderStatus);
   const shortId = order._id.slice(-6).toUpperCase();
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [selectedDriverId, setSelectedDriverId] = useState("");
+  const [assigning, setAssigning] = useState(false);
+
+  useEffect(() => {
+    if (order) {
+      setSelectedDriverId(order.deliverymanId || "");
+    }
+  }, [order]);
+
+  const handleAssignDriver = async () => {
+    if (!onAssign) return;
+    setAssigning(true);
+    await onAssign(order._id, selectedDriverId);
+    setAssigning(false);
+  };
 
   const currentIndex = ORDER_STEPS.indexOf(order.orderStatus);
   const nextStatus = currentIndex < ORDER_STEPS.length - 1 ? ORDER_STEPS[currentIndex + 1] : null;
@@ -134,19 +149,75 @@ const DetailDrawer = ({ order, isOpen, onClose, drivers, onAssign, onStatusUpdat
           {/* Order Timeline Visual Representation */}
           <OrderTimeline currentStatus={order.orderStatus} />
 
-          {/* Deliveryman Assignment Info (Read-only) */}
-          <div className="space-y-2">
-            <p className="font-bold text-[9px] uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
-              <UserPlus size={11} />
-              <span>Assigned Delivery Agent</span>
-            </p>
-            <div className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-350">
-              {(() => {
-                const assignedDriver = drivers.find(driver => driver._id === order.deliverymanId);
-                return assignedDriver 
-                  ? `${assignedDriver.name} (${assignedDriver.deliveryZone || "Central"})` 
-                  : "Unassigned";
-              })()}
+          {/* Deliveryman Assignment Control Panel */}
+          <div className="space-y-3 bg-slate-50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-850 rounded-xl p-4.5">
+            <div className="flex items-center justify-between">
+              <p className="font-bold text-[9px] uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                <UserPlus size={11} />
+                <span>Assigned Delivery Agent</span>
+              </p>
+              
+              {order.deliverymanId && (
+                <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest border ${
+                  order.assignmentStatus === "Assigned"
+                    ? "bg-amber-500/10 text-amber-600 border-amber-500/20 dark:bg-amber-500/5 dark:text-amber-400 dark:border-amber-500/15 animate-pulse"
+                    : "bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:bg-emerald-500/5 dark:text-emerald-400 dark:border-emerald-500/15"
+                }`}>
+                  {order.assignmentStatus === "Assigned" ? "Awaiting Response" : order.assignmentStatus}
+                </span>
+              )}
+            </div>
+
+            {/* Awaiting response notice */}
+            {order.deliverymanId && order.assignmentStatus === "Assigned" && (
+              <div className="flex items-start gap-2 bg-amber-500/[0.07] border border-amber-550/20 rounded-lg p-2.5 text-[10px] text-amber-700 dark:text-amber-400">
+                <AlertTriangle size={13} className="text-amber-500 shrink-0 mt-0.5" />
+                <p className="leading-normal font-semibold">
+                  Agent has not accepted yet. If they are not responding, you can assign another driver below.
+                </p>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-slate-400 dark:text-slate-550 uppercase tracking-wider block">
+                {order.deliverymanId ? "Change Assignment" : "Assign Agent"}
+              </label>
+              
+              <div className="flex flex-col gap-2">
+                <select
+                  value={selectedDriverId}
+                  onChange={(e) => setSelectedDriverId(e.target.value)}
+                  disabled={assigning}
+                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-350 outline-none focus:ring-2 focus:ring-indigo-500/50 disabled:opacity-50 transition"
+                >
+                  <option value="">Unassigned</option>
+                  {drivers
+                    .filter(d => d.status === "active")
+                    .map(d => (
+                      <option key={d._id} value={d._id}>
+                        {d.name} ({d.isOnline ? "Online" : "Offline"} • {d.activeDeliveries || 0} active)
+                      </option>
+                    ))
+                  }
+                </select>
+
+                {selectedDriverId !== (order.deliverymanId || "") && (
+                  <button
+                    onClick={handleAssignDriver}
+                    disabled={assigning}
+                    className="w-full py-2 bg-indigo-650 hover:bg-indigo-700 text-white rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-150 active:scale-98 shadow-sm hover:shadow disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    {assigning ? (
+                      <span>Assigning...</span>
+                    ) : (
+                      <>
+                        <span>Confirm {order.deliverymanId ? "Reassignment" : "Assignment"}</span>
+                        <ArrowUpRight size={12} />
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 

@@ -19,7 +19,7 @@ const RecentTransactions = ({
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse text-xs">
+        <table className="w-full text-left border-collapse text-xs min-w-[500px]">
           <thead>
             <tr className="border-b border-slate-100 text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50/50">
               <th className="py-3 px-3">Order Ref</th>

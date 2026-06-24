@@ -160,7 +160,7 @@ const Notifications = ({ token, products = [], orders = [] }) => {
                   </div>
                   <button
                     onClick={() => handleDeleteLog(log.id)}
-                    className="opacity-0 group-hover:opacity-100 p-1.5 text-slate-400 hover:text-red-500 transition cursor-pointer"
+                    className="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 p-1.5 text-slate-400 hover:text-red-500 transition cursor-pointer"
                     title="Clear notification"
                   >
                     <Trash2 size={14} />

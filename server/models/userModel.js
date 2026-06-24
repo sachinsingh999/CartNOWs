@@ -38,6 +38,11 @@ const userSchema = new mongoose.Schema({
     required: true 
   },
 
+  profilePhoto: {
+    type: String,
+    default: ""
+  },
+
   cartData: { 
     type: Object, 
     default: {} 

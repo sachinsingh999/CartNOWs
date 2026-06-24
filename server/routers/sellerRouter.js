@@ -41,7 +41,8 @@ import {
   getProductAttributes,
   updateProductAttributes,
   getSellerReturns,
-  updateSellerReturnStatus
+  updateSellerReturnStatus,
+  generateProduct
 } from "../controllers/sellerController.js";
 import { listDeliverymen } from "../controllers/deliverymanController.js";
 
@@ -57,6 +58,7 @@ sellerRouter.post("/verify-email", verifyEmail);
 // Protected endpoints (require active seller token)
 sellerRouter.use(sellerAuth);
 
+// Logout
 sellerRouter.post("/logout", logoutSeller);
 sellerRouter.get("/refresh", refreshToken);
 sellerRouter.get("/profile", getCurrentSellerProfile);
@@ -68,6 +70,7 @@ sellerRouter.get("/dashboard/stats", getSellerDashboardStats);
 
 // Products
 sellerRouter.post("/add-product", upload.array("images", 10), createProduct);
+sellerRouter.post("/generate-product", generateProduct);
 sellerRouter.post("/update-product", updateProduct);
 sellerRouter.get("/categories", getCategories);
 sellerRouter.get("/category/:id/template", getCategoryTemplateSeller);

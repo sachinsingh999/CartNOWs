@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import { backendUrl } from "../config";
 import ProductCard from "../pages/ProductCard";
+import Loader from "../components/Loader";
 import { toast } from "react-toastify";
 
 const Category = () => {
@@ -35,7 +36,9 @@ const Category = () => {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-8">
       <h1 className="text-3xl font-bold mb-6 capitalize">{slug.replace(/-/g, " ")}</h1>
       {loading ? (
-        <p className="text-gray-600 dark:text-gray-300">Loading products…</p>
+        <div className="py-20 flex justify-center items-center">
+          <Loader message={`Fetching ${slug.replace(/-/g, " ")} Catalog...`} size="lg" color="blue" />
+        </div>
       ) : products.length === 0 ? (
         <p className="text-gray-600 dark:text-gray-300">No products found for {slug}.</p>
       ) : (

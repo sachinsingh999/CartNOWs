@@ -65,7 +65,19 @@ const translations = {
     step_1: "Uploading your photo...",
     step_2: "Analyzing body shape & posture...",
     step_3: "Mapping clothing texture contours...",
-    step_4: "Refining final details with diffusion..."
+    step_4: "Refining final details with diffusion...",
+    rewards: "Rewards",
+    deliveries: "Deliveries",
+    active: "Active",
+    arriving_today: "Arriving Today",
+    all_delivered: "All Delivered",
+    points_label: "Points",
+    rewards_dashboard: "Rewards Dashboard",
+    recent_activity: "Recent Activity",
+    available_coupons: "Available Coupons",
+    cashback_balance: "Cashback Balance",
+    free_shipping: "Free Shipping Status",
+    loyalty_benefits: "Loyalty Benefits"
   },
   hi: {
     search_placeholder: "उत्पाद, ब्रांड, इलेक्ट्रॉनिक्स, फैशन, एक्सेसरीज़ खोजें...",
@@ -127,7 +139,19 @@ const translations = {
     step_1: "आपका फोटो अपलोड किया जा रहा है...",
     step_2: "शरीर के आकार और मुद्रा का विश्लेषण किया जा रहा है...",
     step_3: "कपड़ों की बनावट की रूपरेखा तैयार की जा रही है...",
-    step_4: "डिफ्यूज़न के साथ अंतिम विवरणों को बेहतर बनाया जा रहा है..."
+    step_4: "डिफ्यूज़न के साथ अंतिम विवरणों को बेहतर बनाया जा रहा है...",
+    rewards: "पुरस्कार",
+    deliveries: "डिलिवरी",
+    active: "सक्रिय",
+    arriving_today: "आज आ रहा है",
+    all_delivered: "सभी वितरित",
+    points_label: "अंक",
+    rewards_dashboard: "पुरस्कार डैशबोर्ड",
+    recent_activity: "हाल की गतिविधि",
+    available_coupons: "उपलब्ध कूपन",
+    cashback_balance: "कैशबैक बैलेंस",
+    free_shipping: "मुफ़्त शिपिंग स्थिति",
+    loyalty_benefits: "लॉयल्टी लाभ"
   },
   es: {
     search_placeholder: "Buscar productos, marcas, electrónica, moda, accesorios...",
@@ -189,7 +213,19 @@ const translations = {
     step_1: "Subiendo tu foto...",
     step_2: "Analizando la forma y postura del cuerpo...",
     step_3: "Mapeando contornos de la textura de la ropa...",
-    step_4: "Refinando detalles finales con difusión..."
+    step_4: "Refinando detalles finales con difusión...",
+    rewards: "Recompensas",
+    deliveries: "Entregas",
+    active: "Activo",
+    arriving_today: "Llega Hoy",
+    all_delivered: "Todo Entregado",
+    points_label: "Puntos",
+    rewards_dashboard: "Panel de Recompensas",
+    recent_activity: "Actividad Reciente",
+    available_coupons: "Cupones Disponibles",
+    cashback_balance: "Saldo Cashback",
+    free_shipping: "Envío Gratis",
+    loyalty_benefits: "Beneficios de Lealtad"
   }
 };
 

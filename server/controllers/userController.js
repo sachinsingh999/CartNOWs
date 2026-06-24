@@ -159,6 +159,7 @@ const getUserProfile = async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
+      profilePhoto: user.profilePhoto || "",
       deliveryVerificationKey: user.deliveryVerificationKey,
       addresses: user.addresses || [],
       appReview: user.appReview || null,
@@ -174,6 +175,74 @@ const getUserProfile = async (req, res) => {
       success: false,
       message: error.message,
     });
+  }
+};
+
+/* ================= UPDATE USER PROFILE ================= */
+const updateUserProfile = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { name, email, profilePhoto, password } = req.body;
+
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.json({ success: false, message: "User not found" });
+    }
+
+    if (name) {
+      const nameCheck = validateName(name);
+      if (!nameCheck.isValid) {
+        return res.json({ success: false, message: nameCheck.message });
+      }
+      user.name = nameCheck.value;
+    }
+
+    if (email) {
+      const emailCheck = validateEmail(email);
+      if (!emailCheck.isValid) {
+        return res.json({ success: false, message: emailCheck.message });
+      }
+      if (emailCheck.value !== user.email) {
+        const emailExists = await userModel.findOne({ email: emailCheck.value });
+        if (emailExists) {
+          return res.json({ success: false, message: "Email already in use" });
+        }
+        user.email = emailCheck.value;
+      }
+    }
+
+    if (profilePhoto !== undefined) {
+      user.profilePhoto = profilePhoto;
+    }
+
+    if (password) {
+      const passwordCheck = validatePassword(password);
+      if (!passwordCheck.isValid) {
+        return res.json({ success: false, message: passwordCheck.message });
+      }
+      user.password = await bcrypt.hash(passwordCheck.value, 10);
+    }
+
+    await user.save();
+
+    const userProfile = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      profilePhoto: user.profilePhoto || "",
+      deliveryVerificationKey: user.deliveryVerificationKey,
+      addresses: user.addresses || [],
+      appReview: user.appReview || null,
+    };
+
+    res.json({
+      success: true,
+      message: "Profile updated successfully",
+      user: userProfile,
+    });
+  } catch (error) {
+    console.log("UPDATE PROFILE ERROR 👉", error);
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -402,6 +471,7 @@ export {
   registerUser,
   adminLogin,
   getUserProfile,
+  updateUserProfile,
   addUserAddress,
   deleteUserAddress,
   getUserNotifications,

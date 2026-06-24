@@ -10,6 +10,7 @@ import {
   Megaphone,
   Ticket,
   Layers,
+  Award,
   Store,
   UserCheck,
   Box,
@@ -51,9 +52,12 @@ const Sidebar = ({ isCollapsed, isMobileOpen, setIsMobileOpen }) => {
       links: [
         { path: "/list", label: "Product List", icon: ClipboardList },
         { path: "/categories", label: "Categories", icon: Layers },
+        { path: "/collections-brands", label: "Collections & Brands", icon: Award },
         { path: "/product-moderation", label: "Moderation", icon: Box },
         { path: "/sellers", label: "Sellers", icon: Store },
         { path: "/customers", label: "Customers", icon: UserCheck },
+        { path: "/hero-slideshow", label: "Hero Models", icon: Megaphone },
+        { path: "/banners", label: "Hero Banners", icon: Megaphone },
       ]
     },
     {

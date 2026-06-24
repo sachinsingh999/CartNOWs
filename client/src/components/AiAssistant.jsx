@@ -101,6 +101,19 @@ const AiAssistant = () => {
   const handleMinimize = () => setMinimized(m => !m);
   const handleClose = () => { setOpen(false); setMinimized(false); };  // hides window, keeps FAB
 
+  useEffect(() => {
+    const handleOpenChat = (e) => {
+      const query = e.detail?.query;
+      if (query) {
+        setOpen(true);
+        setMinimized(false);
+        sendMessage(query);
+      }
+    };
+    window.addEventListener("openAIChat", handleOpenChat);
+    return () => window.removeEventListener("openAIChat", handleOpenChat);
+  }, [messages, loading]);
+
   return (
     <>
       <style>{`

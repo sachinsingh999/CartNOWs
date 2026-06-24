@@ -1,9 +1,22 @@
 import userModel from "../models/userModel.js";
+import { trackCartAdd } from "../utils/analyticsHelper.js";
+
+// Helper to construct serialized key
+const getCartKey = (itemId, size, selectedAttributes) => {
+  let suffix = size || "";
+  if (selectedAttributes && typeof selectedAttributes === "object") {
+    suffix = Object.keys(selectedAttributes)
+      .sort()
+      .map(key => `${key}:${selectedAttributes[key]}`)
+      .join(",");
+  }
+  return `${itemId}_${suffix}`;
+};
 
 /* ================= ADD TO CART ================= */
 const addToCart = async (req, res) => {
   try {
-    const { itemId, size, qty } = req.body;
+    const { itemId, size, qty, selectedAttributes } = req.body;
 
     // ✅ auth check
     if (!req.user || !req.user._id) {
@@ -25,11 +38,14 @@ const addToCart = async (req, res) => {
     // ✅ ensure cart exists
     const cartData = { ...user.cartData };
 
-    const key = `${itemId}_${size}`;
+    const key = getCartKey(itemId, size, selectedAttributes);
     cartData[key] = (cartData[key] || 0) + qty;
 
     user.cartData = cartData;
     await user.save();
+
+    // Track cart additions dynamically
+    await trackCartAdd(itemId, qty);
 
     res.json({
       success: true,
@@ -80,7 +96,7 @@ const getUserCart = async (req, res) => {
 /* ================= UPDATE CART ================= */
 const updateCart = async (req, res) => {
   try {
-    const { itemId, size, qty } = req.body;
+    const { itemId, size, qty, selectedAttributes } = req.body;
 
     if (!req.user || !req.user._id) {
       return res.status(401).json({
@@ -99,7 +115,7 @@ const updateCart = async (req, res) => {
     }
 
     const cartData = { ...user.cartData };
-    const key = `${itemId}_${size}`;
+    const key = getCartKey(itemId, size, selectedAttributes);
 
     if (qty === 0) {
       delete cartData[key];

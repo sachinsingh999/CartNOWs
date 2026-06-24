@@ -4,6 +4,12 @@
 
 html {
   scrollbar-gutter: stable;
+  scroll-behavior: smooth;
+  scroll-padding-top: var(--navbar-height, 80px);
+}
+
+section, [id] {
+  scroll-margin-top: var(--navbar-height, 80px);
 }
 
 /* Smooth transition for theme switching */

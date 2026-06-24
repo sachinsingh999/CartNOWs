@@ -44,6 +44,22 @@ const productSchema = new mongoose.Schema({
     trim: true
   },
 
+  collections: {
+    type: [String],
+    default: []
+  },
+
+  audience: {
+    type: String,
+    default: "Unisex",
+    trim: true
+  },
+
+  keywords: {
+    type: [String],
+    default: []
+  },
+
   brand: {
     type: String,
     default: "",
@@ -83,7 +99,7 @@ const productSchema = new mongoose.Schema({
         },
         value: {
           type: String,
-          required: true,
+          required: false,
           trim: true
         }
       }
@@ -92,18 +108,17 @@ const productSchema = new mongoose.Schema({
   },
 
   attributes: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {}
+  },
+
+  variants: {
     type: [
       {
-        key: {
-          type: String,
-          required: true,
-          trim: true
-        },
-        value: {
-          type: String,
-          required: true,
-          trim: true
-        }
+        sku: { type: String, default: "" },
+        price: { type: Number, required: true },
+        stock: { type: Number, default: 0 },
+        attributes: { type: mongoose.Schema.Types.Mixed, default: {} }
       }
     ],
     default: []
@@ -181,6 +196,71 @@ const productSchema = new mongoose.Schema({
   deletedAt: {
     type: Date,
     default: null
+  },
+
+  viewCount: {
+    type: Number,
+    default: 0
+  },
+
+  wishlistCount: {
+    type: Number,
+    default: 0
+  },
+
+  cartCount: {
+    type: Number,
+    default: 0
+  },
+
+  purchaseCount: {
+    type: Number,
+    default: 0
+  },
+
+  averageRating: {
+    type: Number,
+    default: 0
+  },
+
+  totalReviews: {
+    type: Number,
+    default: 0
+  },
+
+  totalSold: {
+    type: Number,
+    default: 0
+  },
+
+  slug: {
+    type: String,
+    trim: true
+  },
+
+  shortDescription: {
+    type: String,
+    default: ""
+  },
+
+  highlights: {
+    type: [String],
+    default: []
+  },
+
+  careInstructions: {
+    type: [String],
+    default: []
+  },
+
+  rating: {
+    average: { type: Number, default: 0 },
+    count: { type: Number, default: 0 }
+  },
+
+  createdAt: {
+    type: Date,
+    default: Date.now
   },
 
   date: {

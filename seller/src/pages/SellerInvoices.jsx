@@ -59,7 +59,7 @@ const SellerInvoices = ({ token }) => {
   const totalPaidCount = filteredInvoices.filter(i => i.paymentStatus === "Paid").length;
 
   return (
-    <div className="flex flex-col h-[calc(100vh-80px)] space-y-4 text-slate-800">
+    <div className="flex flex-col lg:h-[calc(100vh-160px)] space-y-4 text-slate-800 pb-24 lg:pb-0">
       
       {/* Page Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 shrink-0">
@@ -148,7 +148,8 @@ const SellerInvoices = ({ token }) => {
               <p className="text-xs text-slate-500">Orders must be Paid or COD-Delivered to issue invoices.</p>
             </div>
           ) : (
-            <table className="w-full text-left border-collapse">
+            <div className="overflow-x-auto min-w-full">
+              <table className="w-full text-left border-collapse min-w-[800px]">
               <thead className="bg-slate-50/75 sticky top-0 border-b border-slate-100 z-10">
                 <tr className="text-[10px] font-black uppercase tracking-wider text-slate-450">
                   <th className="px-5 py-3.5">Invoice</th>
@@ -210,7 +211,8 @@ const SellerInvoices = ({ token }) => {
                 ))}
               </tbody>
             </table>
-          )}
+          </div>
+        )}
         </div>
       </div>
 

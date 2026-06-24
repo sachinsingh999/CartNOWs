@@ -2,6 +2,8 @@ import sellerModel from "../models/sellerModel.js";
 import userModel from "../models/userModel.js";
 import deliverymanModel from "../models/deliverymanModel.js";
 import categoryModel from "../models/categoryModel.js";
+import collectionModel from "../models/collectionModel.js";
+import brandModel from "../models/brandModel.js";
 import productModel from "../models/productModel.js";
 import orderModel from "../models/orderModel.js";
 import returnRequestModel from "../models/returnRequestModel.js";
@@ -533,7 +535,35 @@ export const removeProduct = async (req, res) => {
 export const getAllOrdersAdmin = async (req, res) => {
   try {
     const orders = await orderModel.find({}).populate("deliverymanId", "name").sort({ createdAt: -1 });
-    res.json({ success: true, orders });
+    
+    // Fetch active assignments for these orders
+    const orderIds = orders.map(o => o._id);
+    const assignments = await deliveryAssignmentModel.find({
+      orderId: { $in: orderIds },
+      status: { $nin: ["Cancelled", "Rejected"] }
+    });
+
+    const ordersWithAssignments = orders.map(order => {
+      const orderObj = order.toObject();
+      if (order.deliverymanId) {
+        const driverIdStr = order.deliverymanId._id 
+          ? order.deliverymanId._id.toString() 
+          : order.deliverymanId.toString();
+          
+        const assignment = assignments.find(
+          a => a.orderId.toString() === order._id.toString() &&
+               a.agentId.toString() === driverIdStr
+        );
+        orderObj.assignmentStatus = assignment ? assignment.status : "Assigned";
+        orderObj.assignedAt = assignment ? assignment.assignedAt : null;
+      } else {
+        orderObj.assignmentStatus = null;
+        orderObj.assignedAt = null;
+      }
+      return orderObj;
+    });
+
+    res.json({ success: true, orders: ordersWithAssignments });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -1314,6 +1344,127 @@ Return the output STRICTLY as a valid JSON array of objects, and nothing else (n
 
   } catch (error) {
     console.error("AI template fill error:", error.message);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/* ================= COLLECTION & BRAND MANAGEMENT ================= */
+export const getAllCollections = async (req, res) => {
+  try {
+    const collections = await collectionModel.find({}).sort({ createdAt: -1 });
+    res.json({ success: true, collections });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const createCollection = async (req, res) => {
+  try {
+    const { name, banner, description, status } = req.body;
+    const slug = slugify(name);
+    const collection = await collectionModel.create({
+      name,
+      slug,
+      banner: banner || "",
+      description: description || "",
+      status: status || "active"
+    });
+    await writeLog(req, "Create Collection", name, `Created collection with slug: ${slug}`);
+    res.json({ success: true, message: "Collection created successfully", collection });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const updateCollection = async (req, res) => {
+  try {
+    const { id, name, banner, description, status } = req.body;
+    const updateFields = { name, banner, description, status };
+    if (name) {
+      updateFields.slug = slugify(name);
+    }
+    // Remove undefined fields
+    Object.keys(updateFields).forEach(key => updateFields[key] === undefined && delete updateFields[key]);
+
+    const collection = await collectionModel.findByIdAndUpdate(id, updateFields, { new: true });
+    if (!collection) return res.status(404).json({ success: false, message: "Collection not found" });
+
+    await writeLog(req, "Update Collection", collection.name, `Updated collection: ${collection.name}`);
+    res.json({ success: true, message: "Collection updated successfully", collection });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const deleteCollection = async (req, res) => {
+  try {
+    const { id } = req.body;
+    const collection = await collectionModel.findByIdAndDelete(id);
+    if (collection) {
+      await writeLog(req, "Delete Collection", collection.name, `Removed collection ID: ${id}`);
+    }
+    res.json({ success: true, message: "Collection deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getAllBrands = async (req, res) => {
+  try {
+    const brands = await brandModel.find({}).sort({ createdAt: -1 });
+    res.json({ success: true, brands });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const createBrand = async (req, res) => {
+  try {
+    const { name, logo, banner, status } = req.body;
+    const slug = slugify(name);
+    const brand = await brandModel.create({
+      name,
+      slug,
+      logo: logo || "",
+      banner: banner || "",
+      status: status || "active"
+    });
+    await writeLog(req, "Create Brand", name, `Created brand with slug: ${slug}`);
+    res.json({ success: true, message: "Brand created successfully", brand });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const updateBrand = async (req, res) => {
+  try {
+    const { id, name, logo, banner, status } = req.body;
+    const updateFields = { name, logo, banner, status };
+    if (name) {
+      updateFields.slug = slugify(name);
+    }
+    // Remove undefined fields
+    Object.keys(updateFields).forEach(key => updateFields[key] === undefined && delete updateFields[key]);
+
+    const brand = await brandModel.findByIdAndUpdate(id, updateFields, { new: true });
+    if (!brand) return res.status(404).json({ success: false, message: "Brand not found" });
+
+    await writeLog(req, "Update Brand", brand.name, `Updated brand: ${brand.name}`);
+    res.json({ success: true, message: "Brand updated successfully", brand });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const deleteBrand = async (req, res) => {
+  try {
+    const { id } = req.body;
+    const brand = await brandModel.findByIdAndDelete(id);
+    if (brand) {
+      await writeLog(req, "Delete Brand", brand.name, `Removed brand ID: ${id}`);
+    }
+    res.json({ success: true, message: "Brand deleted successfully" });
+  } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };

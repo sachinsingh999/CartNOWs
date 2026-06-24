@@ -19,6 +19,14 @@ import {
   createCategory,
   updateCategory,
   deleteCategory,
+  getAllCollections,
+  createCollection,
+  updateCollection,
+  deleteCollection,
+  getAllBrands,
+  createBrand,
+  updateBrand,
+  deleteBrand,
   getAllProductsAdmin,
   updateProductStatus,
   flagFakeProduct,
@@ -99,6 +107,18 @@ adminRouter.post("/category/settings", configureCategorySettings);
 adminRouter.get("/category/:id/template", getCategoryTemplate);
 adminRouter.post("/category/ai-fill", aiFillCategory);
 adminRouter.post("/category/template/ai-fill", aiFillCategoryTemplate);
+
+// Collection Management
+adminRouter.get("/collections", getAllCollections);
+adminRouter.post("/collection/create", createCollection);
+adminRouter.post("/collection/update", updateCollection);
+adminRouter.post("/collection/delete", deleteCollection);
+
+// Brand Management
+adminRouter.get("/brands", getAllBrands);
+adminRouter.post("/brand/create", createBrand);
+adminRouter.post("/brand/update", updateBrand);
+adminRouter.post("/brand/delete", deleteBrand);
 
 // Product Moderation
 adminRouter.get("/products", getAllProductsAdmin);
