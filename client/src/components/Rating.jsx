@@ -23,11 +23,7 @@ const Rating = ({ reviews = [] }) => {
             <Star
               key={index}
               size={13}
-              className={`${
-                isFull
-                  ? "fill-amber-400 stroke-amber-400"
-                  : "stroke-slate-200 dark:stroke-slate-700 fill-slate-100 dark:fill-slate-800"
-              }`}
+              className={`${ isFull ? "fill-amber-400 stroke-amber-400" : "stroke-slate-200 dark:stroke-slate-700 fill-slate-100 dark:fill-slate-800" }`}
             />
           );
         })}

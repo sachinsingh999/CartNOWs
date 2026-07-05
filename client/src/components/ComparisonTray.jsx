@@ -48,7 +48,7 @@ const ComparisonTray = () => {
                   >
                     <X size={10} />
                   </button>
-                  <div className="h-10 w-10 flex items-center justify-center overflow-hidden bg-white rounded-lg p-0.5 border border-slate-100">
+                  <div className="h-10 w-10 flex items-center justify-center overflow-hidden bg-white dark:bg-slate-900 rounded-lg p-0.5 border border-slate-100">
                     <img src={imgUrl} alt={product.name} className="max-h-full max-w-full object-contain" />
                   </div>
                   <span className="text-[9px] font-bold text-slate-600 dark:text-slate-400 mt-1.5 truncate max-w-full block">
@@ -62,7 +62,7 @@ const ComparisonTray = () => {
           {/* Action button */}
           <button
             onClick={() => setIsModalOpen(true)}
-            className="group flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black uppercase tracking-wider shadow-lg shadow-indigo-150/40 dark:shadow-slate-950 transition-all duration-300 active:scale-95 cursor-pointer"
+            className="group flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-slate-100 dark:text-white text-xs font-black uppercase tracking-wider shadow-lg shadow-indigo-200/40 dark:shadow-slate-950 transition-all duration-300 active:scale-95 cursor-pointer"
           >
             <span>Compare Now</span>
             <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />

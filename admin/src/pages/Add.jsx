@@ -140,15 +140,15 @@ const Add = ({ token }) => {
 
   return (
     <form onSubmit={onSubmitHandler} className="space-y-6">
-      <div className="w-full max-w-5xl rounded-2xl border border-slate-200/80 bg-white p-8 md:p-10 shadow-sm">
+      <div className="w-full max-w-5xl rounded-2xl border border-slate-200/80 bg-white dark:bg-slate-900 p-8 md:p-10 shadow-sm">
         
         {/* Header Section */}
         <div className="flex items-center gap-3.5 mb-8 border-b border-slate-100 pb-6">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-900 text-white shadow-sm shadow-slate-950/10">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-900 text-slate-100 dark:text-white shadow-sm shadow-slate-950/10">
             <PlusCircle size={20} />
           </div>
           <div>
-            <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">Add Product</h2>
+            <h2 className="text-xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Add Product</h2>
             <p className="text-xs text-slate-500 mt-0.5">
               Create a new catalog item with detailed descriptors, attributes, and stock counts.
             </p>
@@ -170,17 +170,17 @@ const Add = ({ token }) => {
               <label 
                 key={id} 
                 htmlFor={id} 
-                className="group relative flex flex-col items-center justify-center h-28 rounded-xl border-2 border-dashed border-slate-200 hover:border-slate-400 bg-slate-50/50 hover:bg-slate-50 cursor-pointer overflow-hidden transition-all duration-200"
+                className="group relative flex flex-col items-center justify-center h-28 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-slate-400 bg-slate-50/50 hover:bg-slate-50 cursor-pointer overflow-hidden transition-all duration-200"
               >
                 {image ? (
-                  <div className="absolute inset-0 p-2 flex items-center justify-center bg-white">
+                  <div className="absolute inset-0 p-2 flex items-center justify-center bg-white dark:bg-slate-900">
                     <img
                       className="h-full w-full object-contain rounded-lg transition duration-200 group-hover:scale-105"
                       src={URL.createObjectURL(image)}
                       alt=""
                     />
                     <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg">
-                      <span className="text-[10px] font-bold text-white uppercase tracking-wider">Change</span>
+                      <span className="text-[10px] font-bold text-slate-100 dark:text-white uppercase tracking-wider">Change</span>
                     </div>
                   </div>
                 ) : (
@@ -375,7 +375,7 @@ const Add = ({ token }) => {
         <div className="mt-8 pt-6 border-t border-slate-100 flex justify-end">
           <button
             type="submit"
-            className="flex items-center gap-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white px-8 py-3.5 text-xs font-bold transition shadow-sm hover:shadow active:scale-98"
+            className="flex items-center gap-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-100 dark:text-white px-8 py-3.5 text-xs font-bold transition shadow-sm hover:shadow active:scale-98"
           >
             <PlusCircle size={15} />
             Publish Product

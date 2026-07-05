@@ -8,6 +8,7 @@ import { trackProductView, trackSearch } from "../utils/analyticsHelper.js";
 import axios from "axios";
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
+import { formatProductResponse } from "../utils/productFormatter.js";
 
 const addProducts = async (req, res) => {
   try {
@@ -481,7 +482,7 @@ const listProducts = async (req, res) => {
 
     res.json({
       success: true,
-      products: enrichedProducts,
+      products: enrichedProducts.map(formatProductResponse),
       total,
       page,
       totalPages,
@@ -712,7 +713,7 @@ const singleProduct = async (req, res) => {
 
     res.json({
       success: true,
-      product: pObj,
+      product: formatProductResponse(pObj),
     });
   } catch (error) {
     console.log(error);
@@ -804,7 +805,7 @@ const addProductReview = async (req, res) => {
     res.json({
       success: true,
       message: existingReview ? "Review updated" : "Review added",
-      product,
+      product: formatProductResponse(product),
     });
   } catch (error) {
     console.log("ADD REVIEW ERROR 👉", error);
@@ -842,7 +843,7 @@ const updateStock = async (req, res) => {
     res.json({
       success: true,
       message: "Stock updated successfully",
-      product: updated,
+      product: formatProductResponse(updated),
     });
   } catch (error) {
     console.log(error);
@@ -1100,7 +1101,7 @@ const getHomepageData = async (req, res) => {
             p.images = [coverItem.url, ...media.filter(m => !m.isCover).map(m => m.url)];
           }
         }
-        enriched.push(p);
+        enriched.push(formatProductResponse(p));
       }
       return enriched;
     };

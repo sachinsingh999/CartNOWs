@@ -61,7 +61,7 @@ const Maintenance = ({ settings }) => {
         
         {/* Brand identity */}
         <div className="flex items-center justify-center gap-2">
-          <div className="h-8 w-8 rounded-xl bg-orange-500 flex items-center justify-center text-white shadow-md shadow-orange-500/20">
+          <div className="h-8 w-8 rounded-xl bg-orange-500 flex items-center justify-center text-slate-100 dark:text-white shadow-md shadow-orange-500/20">
             <Sparkles size={16} />
           </div>
           <span className="text-xl font-black tracking-tight text-slate-900 dark:text-white">CartNOW</span>
@@ -120,7 +120,7 @@ const Maintenance = ({ settings }) => {
         <div className="pt-4 border-t border-slate-100 dark:border-slate-800/80 flex flex-col sm:flex-row gap-3 justify-center items-center">
           <button
             onClick={handleRefresh}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-slate-950 dark:bg-orange-600 hover:bg-slate-850 dark:hover:bg-orange-550 text-white text-xs font-black uppercase tracking-wider transition active:scale-95 shadow-md cursor-pointer"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-slate-950 dark:bg-orange-600 hover:bg-slate-800 dark:hover:bg-orange-500 text-slate-100 dark:text-white text-xs font-black uppercase tracking-wider transition active:scale-95 shadow-md cursor-pointer"
           >
             <RefreshCw size={13} />
             <span>Refresh Page</span>
@@ -131,7 +131,7 @@ const Maintenance = ({ settings }) => {
               {settings.contactEmail && (
                 <a
                   href={`mailto:${settings.contactEmail}`}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-350 text-xs font-black uppercase tracking-wider transition cursor-pointer"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-black uppercase tracking-wider transition cursor-pointer"
                 >
                   <Mail size={13} />
                   <span>Support Email</span>

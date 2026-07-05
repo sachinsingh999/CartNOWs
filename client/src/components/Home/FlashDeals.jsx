@@ -37,17 +37,17 @@ const FlashDeals = ({ deals = [], onQuickView, onAddToCart, onToggleFavorite, wi
     <div className="grid grid-cols-1 lg:grid-cols-[22%_78%] gap-6 lg:gap-8 items-start mb-8 select-none">
       
       {/* Premium Luxury Glowing Card - Exact 390px Height to align with products */}
-      <div className="relative overflow-hidden rounded-2xl p-5 text-white flex flex-col justify-between shadow-xl shadow-indigo-500/5 dark:shadow-black/50 h-[390px] text-left bg-slate-950 border border-slate-800/80">
+      <div className="relative overflow-hidden rounded-2xl p-5 text-slate-100 dark:text-white flex flex-col justify-between shadow-xl shadow-indigo-500/5 dark:shadow-black/50 h-[390px] text-left bg-slate-950 border border-slate-800/80">
         {/* Glowing Mesh Animation */}
         <div className="absolute top-[-30%] left-[-30%] w-[100%] h-[100%] bg-gradient-to-tr from-[#7C3AED]/20 to-transparent rounded-full blur-[90px] pointer-events-none animate-pulse" style={{ animationDuration: "8s" }} />
         <div className="absolute bottom-[-30%] right-[-30%] w-[100%] h-[100%] bg-gradient-to-tr from-[#F97316]/15 to-transparent rounded-full blur-[90px] pointer-events-none animate-pulse" style={{ animationDuration: "6s" }} />
         
         <div className="space-y-3.5 relative z-10">
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 border border-amber-500/30 rounded-full text-[9px] font-black uppercase tracking-wider text-amber-400">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-450 animate-ping" />
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
             <span>Limited Offer</span>
           </div>
-          <h2 className="text-2xl lg:text-3xl font-extrabold tracking-tight leading-none bg-gradient-to-r from-white via-slate-100 to-amber-250 bg-clip-text text-transparent">Flash Deals</h2>
+          <h2 className="text-2xl lg:text-3xl font-extrabold tracking-tight leading-none bg-gradient-to-r from-white via-slate-100 to-amber-200 bg-clip-text text-transparent">Flash Deals</h2>
           <p className="text-[11px] text-slate-400 font-medium leading-relaxed">
             Exclusive campaign styles heavily discounted for a very short period. Grab yours now!
           </p>
@@ -62,7 +62,7 @@ const FlashDeals = ({ deals = [], onQuickView, onAddToCart, onToggleFavorite, wi
             { label: "Secs", val: timeLeft.seconds }
           ].map((item, idx) => (
             <div key={idx} className="bg-slate-900/60 backdrop-blur-md rounded-xl py-2 flex flex-col items-center border border-white/5 shadow-inner transition duration-300">
-              <span className="text-base font-black text-white">{String(item.val).padStart(2, "0")}</span>
+              <span className="text-base font-black text-slate-100 dark:text-white">{String(item.val).padStart(2, "0")}</span>
               <span className="text-[7px] font-black uppercase text-amber-400/80 tracking-wider mt-0.5">{item.label}</span>
             </div>
           ))}
@@ -86,7 +86,7 @@ const FlashDeals = ({ deals = [], onQuickView, onAddToCart, onToggleFavorite, wi
 
         <button
           onClick={() => navigate("/product")}
-          className="group relative w-full py-3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-650 hover:to-amber-650 text-white font-extrabold text-[10px] uppercase tracking-wider rounded-xl shadow-lg shadow-orange-500/20 hover:shadow-orange-500/35 hover:scale-[1.02] active:scale-95 transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 border-none z-10"
+          className="group relative w-full py-3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-slate-100 dark:text-white font-extrabold text-[10px] uppercase tracking-wider rounded-xl shadow-lg shadow-orange-500/20 hover:shadow-orange-500/35 hover:scale-[1.02] active:scale-95 transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 border-none z-10"
         >
           <span>View All Deals</span>
           <ArrowRight size={12} className="transition-transform duration-200 group-hover:translate-x-1" />

@@ -24,6 +24,22 @@ const heroAssetSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
+  order: {
+    type: Number,
+    default: 0
+  },
+  publicId: {
+    type: String,
+    default: ""
+  },
+  folder: {
+    type: String,
+    default: "cartnow/banners"
+  },
+  expiresAt: {
+    type: Date,
+    default: null
+  },
   createdAt: {
     type: Date,
     default: Date.now

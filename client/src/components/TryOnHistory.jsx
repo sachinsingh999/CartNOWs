@@ -107,7 +107,7 @@ const TryOnHistory = ({ token, onSelectLook }) => {
 
         <button 
           onClick={() => document.getElementById("catalog-section")?.scrollIntoView({ behavior: "smooth" })}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 dark:bg-indigo-600 hover:bg-slate-800 text-[10px] font-black text-white uppercase tracking-wider transition active:scale-95 shadow-sm hover:shadow-md cursor-pointer"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 dark:bg-indigo-600 hover:bg-slate-800 text-[10px] font-black text-slate-100 dark:text-white uppercase tracking-wider transition active:scale-95 shadow-sm hover:shadow-md cursor-pointer"
         >
           <span>Browse the Catalog</span>
           <ArrowRight size={12} />
@@ -136,7 +136,7 @@ const TryOnHistory = ({ token, onSelectLook }) => {
             {item.status !== "completed" ? (
               <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-xs flex flex-col items-center justify-center gap-2">
                 <div className="w-5 h-5 rounded-full border-[1.5px] border-white/20 border-t-white animate-spin" />
-                <span className="text-[9px] font-black text-white uppercase tracking-widest">
+                <span className="text-[9px] font-black text-slate-100 dark:text-white uppercase tracking-widest">
                   {item.status || "processing"}
                 </span>
               </div>
@@ -144,7 +144,7 @@ const TryOnHistory = ({ token, onSelectLook }) => {
               /* Hover Overlay tools */
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-3.5">
                 <div className="flex justify-end">
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white/10 backdrop-blur-md border border-white/20 text-[8.5px] font-black uppercase text-white tracking-wider">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white/10 backdrop-blur-md border border-white/20 text-[8.5px] font-black uppercase text-slate-100 dark:text-white tracking-wider">
                     <Sparkles size={9} className="text-orange-400" />
                     <span>AI Look</span>
                   </span>
@@ -160,7 +160,7 @@ const TryOnHistory = ({ token, onSelectLook }) => {
                     {item.generatedImage && (
                       <button 
                         onClick={(e) => downloadImage(item.generatedImage, item.productId?.name, e)}
-                        className="p-1.5 rounded-lg bg-white/10 hover:bg-white/25 border border-white/25 text-white transition-all active:scale-90"
+                        className="p-1.5 rounded-lg bg-white/10 hover:bg-white/25 border border-white/25 text-slate-100 dark:text-white transition-all active:scale-90"
                         title="Download look"
                       >
                         <Download size={12} />

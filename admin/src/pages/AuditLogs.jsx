@@ -106,7 +106,7 @@ const AuditLogs = ({ token }) => {
       {/* Page Header */}
       <div className="flex items-center justify-between gap-4 flex-wrap border-b border-slate-200/60 dark:border-white/[0.06] pb-4">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 bg-blue-600 dark:bg-blue-500/10 text-white dark:text-blue-400 rounded-xl flex items-center justify-center border border-blue-500/10 shadow-lg shadow-blue-500/10">
+          <div className="h-10 w-10 bg-blue-600 dark:bg-blue-500/10 text-slate-100 dark:text-white dark:text-blue-400 rounded-xl flex items-center justify-center border border-blue-500/10 shadow-lg shadow-blue-500/10">
             <Shield size={20} />
           </div>
           <div>
@@ -118,7 +118,7 @@ const AuditLogs = ({ token }) => {
         <button
           onClick={fetchLogs}
           disabled={loading}
-          className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-[#172033] hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-white/[0.08] text-slate-655 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-lg text-xs font-bold transition active:scale-98 disabled:opacity-50 cursor-pointer shadow-xs"
+          className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-white/[0.08] text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-lg text-xs font-bold transition active:scale-98 disabled:opacity-50 cursor-pointer shadow-xs"
         >
           <RefreshCw size={12} className={loading ? "animate-spin" : ""} />
           <span>Refresh Console</span>
@@ -133,7 +133,7 @@ const AuditLogs = ({ token }) => {
           { label: "Critical Actions", value: statistics.critical, subtitle: "SLA / State changes", icon: ShieldAlert, color: "text-rose-500 bg-rose-500/5" },
           { label: "Last Active Time", value: statistics.lastActive, subtitle: "Recent operations", icon: Calendar, color: "text-emerald-500 bg-emerald-500/5" }
         ].map((stat, idx) => (
-          <div key={idx} className="bg-white dark:bg-[#172033] border border-slate-150 dark:border-white/[0.06] p-4 rounded-xl flex items-center justify-between shadow-xs">
+          <div key={idx} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.06] p-4 rounded-xl flex items-center justify-between shadow-xs">
             <div>
               <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">{stat.label}</p>
               <h3 className="text-lg font-black text-slate-900 dark:text-white mt-1.5 tracking-tight">{stat.value}</h3>
@@ -147,7 +147,7 @@ const AuditLogs = ({ token }) => {
       </div>
 
       {/* Search & Filter Controller Panel */}
-      <div className="bg-white dark:bg-[#172033] border border-slate-150 dark:border-white/[0.06] p-4 rounded-xl shadow-xs space-y-3.5">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.06] p-4 rounded-xl shadow-xs space-y-3.5">
         <div className="flex items-center gap-2 text-slate-400 dark:text-slate-500">
           <Filter size={12} />
           <span className="font-bold text-[9px] uppercase tracking-widest leading-none">Console Search Filters</span>
@@ -156,13 +156,13 @@ const AuditLogs = ({ token }) => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {/* Text Search Box */}
           <div className="relative flex items-center">
-            <Search size={14} className="absolute left-3.5 text-slate-450 dark:text-slate-500" />
+            <Search size={14} className="absolute left-3.5 text-slate-400 dark:text-slate-500" />
             <input
               type="text"
               placeholder="Search operators, targets, action..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 text-xs bg-slate-50 dark:bg-[#111827] border border-slate-200 dark:border-white/[0.06] rounded-lg text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-blue-500/50 transition font-semibold"
+              className="w-full pl-9 pr-4 py-2 text-xs bg-slate-50 dark:bg-gray-900 border border-slate-200 dark:border-white/[0.06] rounded-lg text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 outline-none transition font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
             />
           </div>
 
@@ -170,7 +170,7 @@ const AuditLogs = ({ token }) => {
           <select
             value={operatorFilter}
             onChange={(e) => setOperatorFilter(e.target.value)}
-            className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-[#111827] border border-slate-200 dark:border-white/[0.06] rounded-lg text-slate-700 dark:text-slate-250 outline-none cursor-pointer focus:border-blue-500/50 font-semibold"
+            className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-gray-900 border border-slate-200 dark:border-white/[0.06] rounded-lg text-slate-700 dark:text-slate-200 outline-none cursor-pointer font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
           >
             <option value="all">Filter by Operator: All</option>
             {filterOptions.operators.map(op => (
@@ -182,7 +182,7 @@ const AuditLogs = ({ token }) => {
           <select
             value={actionFilter}
             onChange={(e) => setActionFilter(e.target.value)}
-            className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-[#111827] border border-slate-200 dark:border-white/[0.06] rounded-lg text-slate-700 dark:text-slate-250 outline-none cursor-pointer focus:border-blue-500/50 font-semibold"
+            className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-gray-900 border border-slate-200 dark:border-white/[0.06] rounded-lg text-slate-700 dark:text-slate-200 outline-none cursor-pointer font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
           >
             <option value="all">Filter by Action: All</option>
             {filterOptions.actions.map(act => (
@@ -193,10 +193,10 @@ const AuditLogs = ({ token }) => {
       </div>
 
       {/* Main Table Feed */}
-      <div className="bg-white dark:bg-[#172033] border border-slate-150 dark:border-white/[0.06] rounded-2xl p-5 shadow-sm space-y-4">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.06] rounded-2xl p-5 shadow-sm space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xs font-black text-slate-800 dark:text-white tracking-tight uppercase">Operational Security Audit Log</h2>
-          <span className="text-[9px] font-bold bg-slate-100 dark:bg-[#111827] px-2 py-0.5 border border-slate-200 dark:border-white/[0.06] rounded-md text-slate-500 dark:text-slate-400 uppercase tracking-widest select-none">
+          <span className="text-[9px] font-bold bg-slate-100 dark:bg-gray-900 px-2 py-0.5 border border-slate-200 dark:border-white/[0.06] rounded-md text-slate-500 dark:text-slate-400 uppercase tracking-widest select-none">
             {filteredLogs.length} Events Listed
           </span>
         </div>
@@ -218,7 +218,7 @@ const AuditLogs = ({ token }) => {
                   <th className="py-3 pl-4 text-right">Details</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100/50 dark:divide-white/[0.03] text-slate-655 dark:text-slate-300 font-semibold">
+              <tbody className="divide-y divide-slate-100/50 dark:divide-white/[0.03] text-slate-700 dark:text-slate-300 font-semibold">
                 {filteredLogs.map((log) => (
                   <tr key={log._id} className="hover:bg-slate-50/50 dark:hover:bg-white/[0.01] transition">
                     <td className="py-3.5 pr-4 text-slate-400 dark:text-slate-500 whitespace-nowrap font-mono text-[10px]">
@@ -261,7 +261,7 @@ const AuditLogs = ({ token }) => {
       {showDetailModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-950/60 dark:bg-slate-950/80 backdrop-blur-xs" onClick={() => setShowDetailModal(null)} />
-          <div className="relative w-full max-w-md bg-white dark:bg-[#151b26] border border-slate-205 dark:border-white/[0.08] rounded-2xl shadow-2xl p-5 space-y-4 animate-scaleUp">
+          <div className="relative w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.08] rounded-2xl shadow-2xl p-5 space-y-4 animate-scaleUp">
             
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/[0.06] pb-3">
               <div className="flex items-center gap-2">
@@ -286,7 +286,7 @@ const AuditLogs = ({ token }) => {
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-400 dark:text-slate-500">Target Object:</span>
-                <span className="text-slate-850 dark:text-slate-300 font-mono select-all font-bold">{showDetailModal.target || "N/A"}</span>
+                <span className="text-slate-800 dark:text-slate-300 font-mono select-all font-bold">{showDetailModal.target || "N/A"}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-400 dark:text-slate-500">Executed At:</span>

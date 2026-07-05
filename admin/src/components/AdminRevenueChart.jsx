@@ -298,7 +298,7 @@ const AdminRevenueChart = ({
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
-        <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] p-3 rounded-xl shadow-xl text-xs font-semibold">
+        <div className="bg-white dark:bg-gray-900 border border-slate-200 dark:border-white/[0.08] p-3 rounded-xl shadow-xl text-xs font-semibold">
           <p className="text-slate-400 dark:text-slate-500 font-bold mb-1">{data.name}</p>
           <div className="space-y-1">
             <p className="text-slate-900 dark:text-white flex items-center gap-1.5">
@@ -307,14 +307,14 @@ const AdminRevenueChart = ({
               <span className="font-extrabold">{formatCurrency(payload[0].value)}</span>
             </p>
             {data.ordersCount !== undefined && (
-              <p className="text-slate-550 dark:text-slate-400 flex items-center gap-1.5">
+              <p className="text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
                 <span>Orders:</span>
                 <span className="font-bold">{data.ordersCount} shipments</span>
               </p>
             )}
             {data.deliveries !== undefined && (
-              <p className="text-slate-550 dark:text-slate-400 flex items-center gap-1.5">
+              <p className="text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
                 <span>Deliveries:</span>
                 <span className="font-bold">{data.deliveries} runs</span>
@@ -328,8 +328,8 @@ const AdminRevenueChart = ({
   };
 
   const mainContainerStyle = isFullscreen 
-    ? "fixed inset-0 z-50 bg-slate-50 dark:bg-[#0B1220] p-6 overflow-y-auto flex flex-col justify-between"
-    : "bg-white dark:bg-[#172033] border border-slate-200 dark:border-white/[0.08] rounded-xl p-5 shadow-sm space-y-5";
+    ? "fixed inset-0 z-50 bg-slate-50 dark:bg-slate-950 p-6 overflow-y-auto flex flex-col justify-between"
+    : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.08] rounded-xl p-5 shadow-sm space-y-5";
 
   return (
     <div className={mainContainerStyle}>
@@ -337,36 +337,24 @@ const AdminRevenueChart = ({
       {/* Header controls & toggles */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 dark:border-white/[0.06] pb-4">
         <div className="flex items-center gap-3">
-          <div className="flex bg-slate-100 dark:bg-[#111827] border border-slate-250 dark:border-white/[0.08] p-0.5 rounded-xl">
+          <div className="flex bg-slate-100 dark:bg-gray-900 border border-slate-200 dark:border-white/[0.08] p-0.5 rounded-xl">
             <button
               onClick={() => setActiveTab("revenue")}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition duration-200 cursor-pointer ${
-                activeTab === "revenue"
-                  ? "bg-white dark:bg-blue-600 text-slate-900 dark:text-white shadow-xs"
-                  : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
-              }`}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition duration-200 cursor-pointer ${ activeTab === "revenue" ? "bg-white dark:bg-blue-600 text-slate-900 dark:text-white shadow-xs" : "text-slate-500 hover:text-slate-900 dark:hover:text-white" }`}
             >
               <BarChart3 size={13} />
               <span>Platform Revenue</span>
             </button>
             <button
               onClick={() => setActiveTab("sellers")}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition duration-200 cursor-pointer ${
-                activeTab === "sellers"
-                  ? "bg-white dark:bg-blue-600 text-slate-900 dark:text-white shadow-xs"
-                  : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
-              }`}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition duration-200 cursor-pointer ${ activeTab === "sellers" ? "bg-white dark:bg-blue-600 text-slate-900 dark:text-white shadow-xs" : "text-slate-500 hover:text-slate-900 dark:hover:text-white" }`}
             >
               <Store size={13} />
               <span>Seller Earnings</span>
             </button>
             <button
               onClick={() => setActiveTab("agents")}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition duration-200 cursor-pointer ${
-                activeTab === "agents"
-                  ? "bg-white dark:bg-blue-600 text-slate-900 dark:text-white shadow-xs"
-                  : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
-              }`}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold transition duration-200 cursor-pointer ${ activeTab === "agents" ? "bg-white dark:bg-blue-600 text-slate-900 dark:text-white shadow-xs" : "text-slate-500 hover:text-slate-900 dark:hover:text-white" }`}
             >
               <Truck size={13} />
               <span>Agent Earnings</span>
@@ -377,7 +365,7 @@ const AdminRevenueChart = ({
         <div className="flex items-center gap-2">
           {/* Timeframe selector (only relevant for Revenue Trends) */}
           {activeTab === "revenue" && (
-            <div className="flex bg-slate-100 dark:bg-[#111827] border border-slate-200 dark:border-white/[0.08] p-1 rounded-lg">
+            <div className="flex bg-slate-100 dark:bg-gray-900 border border-slate-200 dark:border-white/[0.08] p-1 rounded-lg">
               {[
                 { id: "7d", label: "7 Days" },
                 { id: "30d", label: "30 Days" },
@@ -387,11 +375,7 @@ const AdminRevenueChart = ({
                 <button
                   key={range.id}
                   onClick={() => setTimeRange(range.id)}
-                  className={`px-3 py-1 rounded-md text-[10px] font-bold transition duration-200 cursor-pointer ${
-                    timeRange === range.id
-                      ? "bg-white dark:bg-blue-600 text-slate-900 dark:text-white shadow-xs"
-                      : "text-slate-550 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                  }`}
+                  className={`px-3 py-1 rounded-md text-[10px] font-bold transition duration-200 cursor-pointer ${ timeRange === range.id ? "bg-white dark:bg-blue-600 text-slate-900 dark:text-white shadow-xs" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white" }`}
                 >
                   {range.label}
                 </button>
@@ -402,7 +386,7 @@ const AdminRevenueChart = ({
           {activeTab === "revenue" && (
             <button
               onClick={() => setScaleType(prev => prev === "linear" ? "log" : "linear")}
-              className="px-2.5 py-1.5 bg-slate-50 dark:bg-[#111827] hover:bg-slate-100 dark:hover:bg-white/[0.04] border border-slate-200 dark:border-white/[0.08] text-[10px] font-bold text-slate-600 dark:text-slate-355 rounded-lg transition cursor-pointer"
+              className="px-2.5 py-1.5 bg-slate-50 dark:bg-gray-900 hover:bg-slate-100 dark:hover:bg-white/[0.04] border border-slate-200 dark:border-white/[0.08] text-[10px] font-bold text-slate-600 dark:text-slate-400 rounded-lg transition cursor-pointer"
               title="Toggle Logarithmic Scaling"
             >
               Scale: <span className="text-blue-500 dark:text-blue-400 uppercase font-extrabold">{scaleType}</span>
@@ -471,7 +455,7 @@ const AdminRevenueChart = ({
             },
             { label: "Volatility index", value: `${metrics.stdDev > 0 ? (metrics.stdDev / (metrics.avg || 1) * 100).toFixed(0) : "0"}/100`, icon: Calendar, trendColor: "text-indigo-500" }
           ].map((kpi, idx) => (
-            <div key={idx} className="bg-slate-50/50 dark:bg-slate-900/35 border border-slate-150 dark:border-white/[0.04] p-3 rounded-xl flex flex-col justify-between space-y-1.5 shadow-xs">
+            <div key={idx} className="bg-slate-50/50 dark:bg-slate-900/35 border border-slate-200 dark:border-white/[0.04] p-3 rounded-xl flex flex-col justify-between space-y-1.5 shadow-xs">
               <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{kpi.label}</span>
               <div className="flex items-center justify-between mt-1">
                 <span className={`text-xs font-black tracking-tight text-slate-900 dark:text-white ${kpi.trendColor}`}>{kpi.value}</span>
@@ -583,12 +567,12 @@ const AdminRevenueChart = ({
       </div>
 
       {/* AI Smart Insights Panel */}
-      <div className="bg-slate-50/50 dark:bg-slate-900/35 border border-slate-150 dark:border-white/[0.04] p-4.5 rounded-xl space-y-2.5">
+      <div className="bg-slate-50/50 dark:bg-slate-900/35 border border-slate-200 dark:border-white/[0.04] p-4.5 rounded-xl space-y-2.5">
         <p className="font-bold text-[9px] uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
           <Activity size={10} className="text-blue-500" />
           <span>Operational Trend Insights</span>
         </p>
-        <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px] font-semibold text-slate-655 dark:text-slate-350 list-disc pl-4.5">
+        <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px] font-semibold text-slate-700 dark:text-slate-300 list-disc pl-4.5">
           {activeTab === "revenue" ? (
             insights.map((ins, idx) => (
               <li key={idx} className="leading-relaxed">

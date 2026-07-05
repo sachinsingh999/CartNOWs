@@ -25,11 +25,7 @@ const Loader = ({ size = "md", fullPage = false, message = "Loading...", color =
     <div className="flex flex-col items-center justify-center p-6 text-center select-none">
       <div className="relative flex items-center justify-center">
         {/* Glow effect backdrop */}
-        <div className={`absolute -inset-3 rounded-full blur-xl opacity-20 dark:opacity-35 animate-pulse ${
-          color === "rose" ? "bg-rose-500" :
-          color === "amber" ? "bg-amber-500" :
-          color === "emerald" ? "bg-emerald-500" : "bg-blue-500"
-        }`} />
+        <div className={`absolute -inset-3 rounded-full blur-xl opacity-20 dark:opacity-35 animate-pulse ${ color === "rose" ? "bg-rose-500" : color === "amber" ? "bg-amber-500" : color === "emerald" ? "bg-emerald-500" : "bg-blue-500" }`} />
         
         {/* Rotating outer spinner */}
         <motion.div
@@ -39,11 +35,7 @@ const Loader = ({ size = "md", fullPage = false, message = "Loading...", color =
         />
         
         {/* Inside pulsing dot */}
-        <div className={`absolute rounded-full w-2.5 h-2.5 animate-ping ${
-          color === "rose" ? "bg-rose-500" :
-          color === "amber" ? "bg-amber-500" :
-          color === "emerald" ? "bg-emerald-500" : "bg-blue-500"
-        }`} />
+        <div className={`absolute rounded-full w-2.5 h-2.5 animate-ping ${ color === "rose" ? "bg-rose-500" : color === "amber" ? "bg-amber-500" : color === "emerald" ? "bg-emerald-500" : "bg-blue-500" }`} />
       </div>
 
       {message && (

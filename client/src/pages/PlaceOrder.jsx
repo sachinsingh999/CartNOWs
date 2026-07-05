@@ -1150,7 +1150,7 @@ const PlaceOrder = () => {
           <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Please add items to your cart first.</p>
           <button
             onClick={() => navigate("/product")}
-            className="mt-6 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 px-6 py-3 text-xs font-black uppercase tracking-wider text-white shadow-md shadow-orange-500/10 hover:scale-105 active:scale-95 transition cursor-pointer"
+            className="mt-6 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 px-6 py-3 text-xs font-black uppercase tracking-wider text-slate-100 dark:text-white shadow-md shadow-orange-500/10 hover:scale-105 active:scale-95 transition cursor-pointer"
           >
             Browse Products
           </button>
@@ -1213,18 +1213,10 @@ const PlaceOrder = () => {
           <div className="space-y-4">
             
             {/* STEP 1: SELECT A DELIVERY ADDRESS */}
-            <section className={`rounded-2xl border transition duration-200 bg-white dark:bg-slate-900/40 backdrop-blur-md p-4 sm:p-5 shadow-sm ${
-              activeStep === 1 ? "border-orange-500/30" : "border-slate-200/80 dark:border-slate-800/80"
-            }`}>
+            <section className={`rounded-2xl border transition duration-200 bg-white dark:bg-slate-900/40 backdrop-blur-md p-4 sm:p-5 shadow-sm ${ activeStep === 1 ? "border-orange-500/30" : "border-slate-200/80 dark:border-slate-800/80" }`}>
               <div className="flex items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
                 <div className="flex items-center gap-2">
-                  <div className={`flex h-7 w-7 items-center justify-center rounded-lg font-extrabold text-xs border transition ${
-                    activeStep === 1
-                      ? "bg-orange-500 text-white border-orange-500 shadow-sm shadow-orange-500/20"
-                      : activeStep > 1
-                      ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
-                      : "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700"
-                  }`}>
+                  <div className={`flex h-7 w-7 items-center justify-center rounded-lg font-extrabold text-xs border transition ${ activeStep === 1 ? "bg-orange-500 text-slate-100 dark:text-white border-orange-500 shadow-sm shadow-orange-500/20" : activeStep > 1 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30" : "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700" }`}>
                     {activeStep > 1 ? <Check size={12} /> : "1"}
                   </div>
                   <h2 className="text-sm font-black text-slate-900 dark:text-slate-50 uppercase tracking-wider">Select a delivery address</h2>
@@ -1253,22 +1245,18 @@ const PlaceOrder = () => {
                             <div
                               key={addr._id}
                               onClick={() => handleSelectAddress(addr)}
-                              className={`flex items-start gap-3 p-3 rounded-xl border transition duration-150 cursor-pointer ${
-                                isSelected
-                                  ? "border-orange-500 bg-orange-50/10 dark:bg-orange-950/5 shadow-sm"
-                                  : "border-slate-200 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-900/30"
-                              }`}
+                              className={`flex items-start gap-3 p-3 rounded-xl border transition duration-150 cursor-pointer ${ isSelected ? "border-orange-500 bg-orange-50/10 dark:bg-orange-950/5 shadow-sm" : "border-slate-200 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-900/30" }`}
                             >
                               <input
                                 type="radio"
                                 name="selectedAddress"
                                 checked={isSelected}
                                 onChange={() => handleSelectAddress(addr)}
-                                className="mt-1 h-3.5 w-3.5 text-orange-500 focus:ring-orange-500 border-slate-300 dark:border-slate-800"
+                                className="mt-1 h-3.5 w-3.5 text-orange-500 border-slate-300 dark:border-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                               />
                               <div className="min-w-0 flex-1 text-xs">
                                 <span className="font-extrabold text-slate-900 dark:text-slate-100">{addr.firstName} {addr.lastName}</span>
-                                <p className="text-slate-600 dark:text-slate-405 mt-0.5 leading-snug">{addr.street}</p>
+                                <p className="text-slate-600 dark:text-slate-400 mt-0.5 leading-snug">{addr.street}</p>
                                 <p className="text-slate-400 dark:text-slate-500 mt-0.5">{addr.city}, {addr.state}, {addr.country}</p>
                                 <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-semibold">Phone: {addr.phone}</p>
                                 
@@ -1320,7 +1308,7 @@ const PlaceOrder = () => {
                             handleAutofillLocation();
                           }, 150);
                         }}
-                        className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0082c8] hover:text-[#006ca6] dark:text-sky-400 dark:hover:text-sky-350 transition cursor-pointer"
+                        className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0082c8] hover:text-[#006ca6] dark:text-sky-400 dark:hover:text-sky-300 transition cursor-pointer"
                       >
                         <Navigation size={14} className="animate-pulse" />
                         <span>Use current location</span>
@@ -1331,7 +1319,7 @@ const PlaceOrder = () => {
                       type="button"
                       onClick={handleDeliverToAddress}
                       disabled={!selectedAddressId}
-                      className="rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 px-5 py-2.5 text-xs font-black uppercase tracking-wider text-white shadow-md shadow-orange-500/10 active:scale-95 transition disabled:opacity-50 cursor-pointer"
+                      className="rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 px-5 py-2.5 text-xs font-black uppercase tracking-wider text-slate-100 dark:text-white shadow-md shadow-orange-500/10 active:scale-95 transition disabled:opacity-50 cursor-pointer"
                     >
                       Deliver to this address
                     </button>
@@ -1354,19 +1342,11 @@ const PlaceOrder = () => {
             </section>
 
             {/* STEP 2: SELECT A PAYMENT METHOD */}
-            <section className={`rounded-2xl border transition duration-200 bg-white dark:bg-slate-900/40 backdrop-blur-md p-4 sm:p-5 shadow-sm ${
-              activeStep === 2 ? "border-orange-500/30" : "border-slate-200/80 dark:border-slate-800/80"
-            } ${activeStep < 2 ? "opacity-60" : ""}`}>
+            <section className={`rounded-2xl border transition duration-200 bg-white dark:bg-slate-900/40 backdrop-blur-md p-4 sm:p-5 shadow-sm ${ activeStep === 2 ? "border-orange-500/30" : "border-slate-200/80 dark:border-slate-800/80" } ${activeStep < 2 ? "opacity-60" : ""}`}>
               
               <div className="flex items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
                 <div className="flex items-center gap-2">
-                  <div className={`flex h-7 w-7 items-center justify-center rounded-lg font-extrabold text-xs border transition ${
-                    activeStep === 2
-                      ? "bg-orange-500 text-white border-orange-500 shadow-sm shadow-orange-500/20"
-                      : activeStep > 2
-                      ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
-                      : "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700"
-                  }`}>
+                  <div className={`flex h-7 w-7 items-center justify-center rounded-lg font-extrabold text-xs border transition ${ activeStep === 2 ? "bg-orange-500 text-slate-100 dark:text-white border-orange-500 shadow-sm shadow-orange-500/20" : activeStep > 2 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30" : "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700" }`}>
                     {activeStep > 2 ? <Check size={12} /> : "2"}
                   </div>
                   <h2 className="text-sm font-black text-slate-900 dark:text-slate-50 uppercase tracking-wider">Select a payment method</h2>
@@ -1397,21 +1377,17 @@ const PlaceOrder = () => {
                         <div
                           key={m.id}
                           onClick={() => setMethod(m.id)}
-                          className={`flex items-start gap-3 p-3 rounded-xl border transition cursor-pointer ${
-                            isSelected
-                              ? "border-orange-500 bg-orange-50/10 dark:bg-orange-950/5 shadow-sm"
-                              : "border-slate-200 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-900/30"
-                          }`}
+                          className={`flex items-start gap-3 p-3 rounded-xl border transition cursor-pointer ${ isSelected ? "border-orange-500 bg-orange-50/10 dark:bg-orange-950/5 shadow-sm" : "border-slate-200 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-900/30" }`}
                         >
                           <input
                             type="radio"
                             name="paymentMethod"
                             checked={isSelected}
                             onChange={() => setMethod(m.id)}
-                            className="mt-1 h-3.5 w-3.5 text-orange-500 focus:ring-orange-500 border-slate-300 dark:border-slate-800"
+                            className="mt-1 h-3.5 w-3.5 text-orange-500 border-slate-300 dark:border-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                           />
                           <div className="flex-1 text-xs">
-                            <span className="font-extrabold text-slate-805 dark:text-slate-100 flex items-center gap-1.5">
+                            <span className="font-extrabold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
                               <Icon size={14} className={m.color} />
                               {m.title}
                             </span>
@@ -1427,7 +1403,7 @@ const PlaceOrder = () => {
                       type="button"
                       onClick={handleUsePaymentMethod}
                       disabled={!method}
-                      className="rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 px-5 py-2.5 text-xs font-black uppercase tracking-wider text-white shadow-md shadow-orange-500/10 active:scale-95 transition disabled:opacity-50 cursor-pointer"
+                      className="rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 px-5 py-2.5 text-xs font-black uppercase tracking-wider text-slate-100 dark:text-white shadow-md shadow-orange-500/10 active:scale-95 transition disabled:opacity-50 cursor-pointer"
                     >
                       Use this payment method
                     </button>
@@ -1447,16 +1423,14 @@ const PlaceOrder = () => {
               ) : (
                 /* LOCKED STATE */
                 <div className="text-left py-2.5 pl-9 text-xs text-slate-400 font-bold flex items-center gap-2">
-                  <Lock size={12} className="text-slate-350 dark:text-slate-700" />
+                  <Lock size={12} className="text-slate-300 dark:text-slate-700" />
                   <span>Please complete delivery address details first.</span>
                 </div>
               )}
             </section>
 
             {/* STEP 3: REVIEW ITEMS AND DELIVERY */}
-            <section className={`rounded-2xl border transition duration-200 bg-white dark:bg-slate-900/40 backdrop-blur-md p-4 sm:p-5 shadow-sm ${
-              activeStep === 3 ? "border-orange-500/30" : "border-slate-200/80 dark:border-slate-800/80"
-            } ${activeStep < 3 ? "opacity-60" : ""}`}>
+            <section className={`rounded-2xl border transition duration-200 bg-white dark:bg-slate-900/40 backdrop-blur-md p-4 sm:p-5 shadow-sm ${ activeStep === 3 ? "border-orange-500/30" : "border-slate-200/80 dark:border-slate-800/80" } ${activeStep < 3 ? "opacity-60" : ""}`}>
               
               <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
                 <div className="flex h-7 w-7 items-center justify-center rounded-lg font-extrabold text-xs border transition bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700">
@@ -1504,7 +1478,7 @@ const PlaceOrder = () => {
                     <button
                       type="submit"
                       disabled={loading}
-                      className="w-full sm:w-auto rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 px-6 py-3 text-xs font-black uppercase tracking-wider text-white shadow-lg shadow-orange-500/20 hover:scale-[1.02] active:scale-98 transition disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1.5"
+                      className="w-full sm:w-auto rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 px-6 py-3 text-xs font-black uppercase tracking-wider text-slate-100 dark:text-white shadow-lg shadow-orange-500/20 hover:scale-[1.02] active:scale-98 transition disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1.5"
                     >
                       {loading ? (
                         <>
@@ -1523,7 +1497,7 @@ const PlaceOrder = () => {
               ) : (
                 /* LOCKED STATE */
                 <div className="text-left py-2.5 pl-9 text-xs text-slate-400 font-bold flex items-center gap-2">
-                  <Lock size={12} className="text-slate-350 dark:text-slate-700" />
+                  <Lock size={12} className="text-slate-300 dark:text-slate-700" />
                   <span>Please complete previous steps.</span>
                 </div>
               )}
@@ -1570,7 +1544,7 @@ const PlaceOrder = () => {
               </div>
               
               {discount > 0 && (
-                <div className="flex justify-between text-rose-600 dark:text-rose-455 font-bold">
+                <div className="flex justify-between text-rose-600 dark:text-rose-500 font-bold">
                   <span>Coupon Discount:</span>
                   <span>-₹{discount}</span>
                 </div>
@@ -1602,9 +1576,9 @@ const PlaceOrder = () => {
                 Apply Promo Code
               </p>
               {appliedCoupon ? (
-                <div className="flex items-center justify-between bg-orange-50/40 dark:bg-orange-950/10 border border-orange-100/50 dark:border-orange-900/20 rounded-lg px-2.5 py-1.5 text-[11px] text-orange-700 dark:text-orange-450 font-bold">
+                <div className="flex items-center justify-between bg-orange-50/40 dark:bg-orange-950/10 border border-orange-100/50 dark:border-orange-900/20 rounded-lg px-2.5 py-1.5 text-[11px] text-orange-700 dark:text-orange-400 font-bold">
                   <div className="flex items-center gap-1.5 min-w-0">
-                    <span className="bg-orange-500 text-white px-1.5 py-0.5 rounded text-[9px] uppercase font-black tracking-wider shrink-0">
+                    <span className="bg-orange-500 text-slate-100 dark:text-white px-1.5 py-0.5 rounded text-[9px] uppercase font-black tracking-wider shrink-0">
                       {appliedCoupon.code}
                     </span>
                     <span className="truncate">-₹{appliedCoupon.discountAmount}</span>
@@ -1612,7 +1586,7 @@ const PlaceOrder = () => {
                   <button
                     type="button"
                     onClick={handleRemoveCoupon}
-                    className="text-[10px] text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-350 cursor-pointer transition font-bold"
+                    className="text-[10px] text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-300 cursor-pointer transition font-bold"
                   >
                     Remove
                   </button>
@@ -1624,13 +1598,13 @@ const PlaceOrder = () => {
                     value={couponCode}
                     onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                     placeholder="e.g. WELCOME10"
-                    className="flex-1 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/40 px-2.5 py-1.5 text-xs font-bold uppercase tracking-wider outline-none focus:border-orange-500 text-slate-900 dark:text-slate-100"
+                    className="flex-1 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/40 px-2.5 py-1.5 text-xs font-bold uppercase tracking-wider outline-none text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                   />
                   <button
                     type="button"
                     onClick={handleApplyCoupon}
                     disabled={couponLoading || !couponCode.trim()}
-                    className="bg-slate-900 dark:bg-orange-600 hover:bg-slate-800 dark:hover:bg-orange-700 text-white font-black text-[9px] uppercase tracking-wider px-3 rounded-lg active:scale-95 transition disabled:opacity-50 cursor-pointer"
+                    className="bg-slate-900 dark:bg-orange-600 hover:bg-slate-800 dark:hover:bg-orange-700 text-slate-100 dark:text-white font-black text-[9px] uppercase tracking-wider px-3 rounded-lg active:scale-95 transition disabled:opacity-50 cursor-pointer"
                   >
                     {couponLoading ? "..." : "Apply"}
                   </button>
@@ -1665,7 +1639,7 @@ const PlaceOrder = () => {
               <button
                 type="button"
                 onClick={() => setShowAddressModal(false)}
-                className="h-7 w-7 flex items-center justify-center rounded-full hover:bg-slate-150 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition cursor-pointer"
+                className="h-7 w-7 flex items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition cursor-pointer"
               >
                 <X size={16} />
               </button>
@@ -1693,7 +1667,7 @@ const PlaceOrder = () => {
                       value={mapSearchQuery}
                       onChange={(e) => setMapSearchQuery(e.target.value)}
                       onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleMapSearch(e); } }}
-                      className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 pl-3 pr-8 py-2 text-xs outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500/10 text-slate-900 dark:text-slate-100 placeholder:text-slate-400"
+                      className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 pl-3 pr-8 py-2 text-xs outline-none text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     />
                     <button
                       type="button"
@@ -1708,7 +1682,7 @@ const PlaceOrder = () => {
                     type="button"
                     onClick={handleMapSearch}
                     disabled={searchingMapLocation || !mapSearchQuery.trim()}
-                    className="w-full rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 py-2 text-xs font-bold text-white transition disabled:opacity-50 cursor-pointer"
+                    className="w-full rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 py-2 text-xs font-bold text-slate-100 dark:text-white transition disabled:opacity-50 cursor-pointer"
                   >
                     {searchingMapLocation ? "..." : "Find"}
                   </button>
@@ -1746,7 +1720,7 @@ const PlaceOrder = () => {
                 </div>
 
                 {/* Live Address Preview Card */}
-                <div className="rounded-xl border border-orange-105 dark:border-orange-900/30 bg-orange-50/20 dark:bg-orange-950/5 p-3 text-xs text-left space-y-1">
+                <div className="rounded-xl border border-orange-100 dark:border-orange-900/30 bg-orange-50/20 dark:bg-orange-950/5 p-3 text-xs text-left space-y-1">
                   <span className="text-[9px] font-black uppercase text-orange-500 tracking-wider">
                     Selected Address Preview
                   </span>
@@ -1774,7 +1748,7 @@ const PlaceOrder = () => {
                 <select
                   value={modalFormData.country}
                   onChange={(e) => setModalFormData({ ...modalFormData, country: e.target.value })}
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs focus:ring-2 focus:ring-orange-500/10 focus:border-orange-500 text-slate-900 dark:text-slate-100 outline-none"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs text-slate-900 dark:text-slate-100 outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                 >
                   <option value="India">India</option>
                   <option value="United States">United States</option>
@@ -1796,7 +1770,7 @@ const PlaceOrder = () => {
                     setModalFormData({ ...modalFormData, fullName: val });
                     setModalErrors(prev => ({ ...prev, fullName: validateField("fullName", val) }));
                   }}
-                  className={`${inputClass} ${modalErrors.fullName ? "border-rose-500 focus:border-rose-500 focus:ring-rose-550/10" : ""}`}
+                  className={`${inputClass} ${modalErrors.fullName ? "border-rose-500 " : ""} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900`}
                 />
                 {modalErrors.fullName && (
                   <p className="text-[10px] text-rose-500 font-bold mt-1 pl-1">{modalErrors.fullName}</p>
@@ -1816,7 +1790,7 @@ const PlaceOrder = () => {
                       setModalFormData({ ...modalFormData, phone: val });
                       setModalErrors(prev => ({ ...prev, phone: validateField("phone", val) }));
                     }}
-                    className={`${inputClass} ${modalErrors.phone ? "border-rose-500 focus:border-rose-500 focus:ring-rose-550/10" : ""}`}
+                    className={`${inputClass} ${modalErrors.phone ? "border-rose-500 " : ""} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900`}
                   />
                   {modalErrors.phone ? (
                     <p className="text-[10px] text-rose-500 font-bold mt-1 pl-1">{modalErrors.phone}</p>
@@ -1836,7 +1810,7 @@ const PlaceOrder = () => {
                       setModalFormData({ ...modalFormData, pincode: val });
                       setModalErrors(prev => ({ ...prev, pincode: validateField("pincode", val) }));
                     }}
-                    className={`${inputClass} ${modalErrors.pincode ? "border-rose-500 focus:border-rose-500 focus:ring-rose-555/10" : ""}`}
+                    className={`${inputClass} ${modalErrors.pincode ? "border-rose-500 " : ""} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900`}
                   />
                   {modalErrors.pincode && (
                     <p className="text-[10px] text-rose-500 font-bold mt-1 pl-1">{modalErrors.pincode}</p>
@@ -1867,7 +1841,7 @@ const PlaceOrder = () => {
                     setModalFormData({ ...modalFormData, area: val });
                     setModalErrors(prev => ({ ...prev, area: validateField("area", val) }));
                   }}
-                  className={`${inputClass} ${modalErrors.area ? "border-rose-500 focus:border-rose-500 focus:ring-rose-555/10" : ""}`}
+                  className={`${inputClass} ${modalErrors.area ? "border-rose-500 " : ""} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900`}
                 />
                 {modalErrors.area && (
                   <p className="text-[10px] text-rose-500 font-bold mt-1 pl-1">{modalErrors.area}</p>
@@ -1898,7 +1872,7 @@ const PlaceOrder = () => {
                       setModalFormData({ ...modalFormData, city: val });
                       setModalErrors(prev => ({ ...prev, city: validateField("city", val) }));
                     }}
-                    className={`${inputClass} ${modalErrors.city ? "border-rose-500 focus:border-rose-500 focus:ring-rose-555/10" : ""}`}
+                    className={`${inputClass} ${modalErrors.city ? "border-rose-500 " : ""} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900`}
                   />
                   {modalErrors.city && (
                     <p className="text-[10px] text-rose-500 font-bold mt-1 pl-1">{modalErrors.city}</p>
@@ -1917,7 +1891,7 @@ const PlaceOrder = () => {
                       setModalFormData({ ...modalFormData, state: val });
                       setModalErrors(prev => ({ ...prev, state: validateField("state", val) }));
                     }}
-                    className={`${inputClass} ${modalErrors.state ? "border-rose-500 focus:border-rose-500 focus:ring-rose-555/10" : ""}`}
+                    className={`${inputClass} ${modalErrors.state ? "border-rose-500 " : ""} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900`}
                   />
                   {modalErrors.state && (
                     <p className="text-[10px] text-rose-500 font-bold mt-1 pl-1">{modalErrors.state}</p>

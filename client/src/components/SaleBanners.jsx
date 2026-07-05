@@ -156,7 +156,7 @@ const SaleBanners = () => {
             <div className="shrink-0 flex flex-col items-center gap-2">
               <button
                 onClick={() => navigate(sale.buttonLink || "/product")}
-                className="group inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-white text-slate-900 text-xs md:text-sm font-bold tracking-wider uppercase shadow-lg shadow-black/10 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-300 cursor-pointer"
+                className="group inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs md:text-sm font-bold tracking-wider uppercase shadow-lg shadow-black/10 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-300 cursor-pointer"
               >
                 <span>{sale.buttonText || "Discover Now"}</span>
                 <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
@@ -177,7 +177,7 @@ const SaleBanners = () => {
             <>
               <button
                 onClick={prev}
-                className="absolute left-4 top-1/2 -translate-y-1/2 z-20 flex items-center justify-center w-9 h-9 rounded-full bg-white/15 hover:bg-white/30 border border-white/20 text-white backdrop-blur-sm transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+                className="absolute left-4 top-1/2 -translate-y-1/2 z-20 flex items-center justify-center w-9 h-9 rounded-full bg-white/15 hover:bg-white/30 border border-white/20 text-slate-100 dark:text-white backdrop-blur-sm transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
                 aria-label="Previous banner"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
@@ -186,7 +186,7 @@ const SaleBanners = () => {
               </button>
               <button
                 onClick={next}
-                className="absolute right-4 top-1/2 -translate-y-1/2 z-20 flex items-center justify-center w-9 h-9 rounded-full bg-white/15 hover:bg-white/30 border border-white/20 text-white backdrop-blur-sm transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+                className="absolute right-4 top-1/2 -translate-y-1/2 z-20 flex items-center justify-center w-9 h-9 rounded-full bg-white/15 hover:bg-white/30 border border-white/20 text-slate-100 dark:text-white backdrop-blur-sm transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
                 aria-label="Next banner"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
@@ -205,11 +205,7 @@ const SaleBanners = () => {
               <button
                 key={i}
                 onClick={() => goTo(i)}
-                className={`h-2 rounded-full transition-all duration-300 border-none p-0 cursor-pointer ${
-                  i === current 
-                    ? "w-6 bg-indigo-600" 
-                    : "w-2 bg-slate-300 hover:bg-slate-400"
-                }`}
+                className={`h-2 rounded-full transition-all duration-300 border-none p-0 cursor-pointer ${ i === current ? "w-6 bg-indigo-600" : "w-2 bg-slate-300 hover:bg-slate-400" }`}
                 aria-label={`Go to slide ${i + 1}`}
               />
             ))}

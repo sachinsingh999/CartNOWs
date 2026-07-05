@@ -38,7 +38,7 @@ const Login = ({ setToken, setSeller }) => {
   };
 
   return (
-    <div className="min-h-[100dvh] w-full grid lg:grid-cols-[1.1fr_1fr] bg-[#090D1A] text-slate-100 font-sans selection:bg-orange-500 selection:text-white lg:h-screen lg:overflow-hidden">
+    <div className="min-h-[100dvh] w-full grid lg:grid-cols-[1.1fr_1fr] bg-slate-950 text-slate-100 font-sans selection:bg-orange-500 selection:text-white lg:h-screen lg:overflow-hidden">
       
       {/* Left Panel: Visual/Marketing split */}
       <div className="relative hidden lg:flex flex-col justify-between p-8 overflow-hidden h-full">
@@ -48,7 +48,7 @@ const Login = ({ setToken, setSeller }) => {
           alt="Retail store shelves"
           className="absolute inset-0 h-full w-full object-cover select-none scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#090D1A] via-[#090D1A]/70 to-[#090D1A]/50 z-10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-slate-950/50 z-10" />
         
         {/* Floating background gradient light */}
         <div className="absolute top-[-20%] left-[-20%] h-[500px] w-[500px] rounded-full bg-orange-500/20 blur-[130px] z-0 pointer-events-none" />
@@ -56,7 +56,7 @@ const Login = ({ setToken, setSeller }) => {
         {/* Back Link */}
         <button
           onClick={() => navigate("/")}
-          className="relative z-20 self-start flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-700/80 bg-slate-900/60 backdrop-blur-md text-xs font-bold text-slate-350 hover:text-white hover:border-slate-500 transition cursor-pointer"
+          className="relative z-20 self-start flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-700/80 bg-slate-900/60 backdrop-blur-md text-xs font-bold text-slate-300 hover:text-white hover:border-slate-500 transition cursor-pointer"
         >
           <ArrowLeft size={14} />
           <span>Back</span>
@@ -68,10 +68,10 @@ const Login = ({ setToken, setSeller }) => {
             <Store size={10} />
             <span>Secure Merchant Access</span>
           </div>
-          <h2 className="text-3xl font-black text-white leading-tight">
+          <h2 className="text-3xl font-black text-slate-100 dark:text-white leading-tight">
             Take command of your online store and grow.
           </h2>
-          <p className="mt-3 text-xs leading-relaxed text-slate-355 text-slate-400 font-light">
+          <p className="mt-3 text-xs leading-relaxed text-slate-400 text-slate-400 font-light">
             Upload your inventory catalog, monitor incoming consumer orders, and track your weekly payout statements in real-time.
           </p>
 
@@ -82,11 +82,11 @@ const Login = ({ setToken, setSeller }) => {
                 "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100",
                 "https://images.unsplash.com/photo-1527983359383-4758693f760c?w=100"
               ].map((src, i) => (
-                <img key={i} src={src} alt="Seller avatar" className="h-7 w-7 rounded-full border border-[#090D1A] object-cover" />
+                <img key={i} src={src} alt="Seller avatar" className="h-7 w-7 rounded-full border border-slate-950 object-cover" />
               ))}
             </div>
             <div className="text-[11px] text-slate-400 font-medium">
-              Trusted by <span className="text-white font-extrabold">10k+ active sellers</span> worldwide.
+              Trusted by <span className="text-slate-100 dark:text-white font-extrabold">10k+ active sellers</span> worldwide.
             </div>
           </div>
         </div>
@@ -97,7 +97,7 @@ const Login = ({ setToken, setSeller }) => {
         {/* Mobile top navigation link */}
         <button
           onClick={() => navigate("/")}
-          className="lg:hidden absolute top-5 left-5 flex items-center gap-1.5 text-xs font-bold text-slate-450 hover:text-white transition cursor-pointer"
+          className="lg:hidden absolute top-5 left-5 flex items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-white transition cursor-pointer"
         >
           <ArrowLeft size={14} />
           <span>Back</span>
@@ -107,16 +107,16 @@ const Login = ({ setToken, setSeller }) => {
           {/* Logo / Heading */}
           <div className="flex flex-col items-center text-center space-y-2">
             <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 p-[1px] shadow-md shadow-orange-500/15">
-              <div className="h-full w-full bg-[#090D1A] rounded-xl flex items-center justify-center">
+              <div className="h-full w-full bg-slate-950 rounded-xl flex items-center justify-center">
                 <Logo variant="icon" className="h-6 w-6 text-orange-500" />
               </div>
             </div>
             <div>
-              <h1 className="text-xl font-black text-white tracking-tight flex items-center justify-center gap-1.5">
+              <h1 className="text-xl font-black text-slate-100 dark:text-white tracking-tight flex items-center justify-center gap-1.5">
                 <span>CartNOW</span>
                 <span className="bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent">Seller</span>
               </h1>
-              <p className="text-[11px] text-slate-450 text-slate-400">
+              <p className="text-[11px] text-slate-400 text-slate-400">
                 Enter your merchant credentials to access the hub.
               </p>
             </div>
@@ -135,7 +135,7 @@ const Login = ({ setToken, setSeller }) => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="e.g. seller@cartnow.com"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-800 bg-slate-900/30 text-xs text-white outline-none transition duration-205 placeholder:text-slate-600 focus:bg-slate-950/80 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-800 bg-slate-900/30 text-xs text-slate-100 dark:text-white outline-none transition duration-205 placeholder:text-slate-600 focus:bg-slate-950/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                   required
                 />
               </div>
@@ -152,7 +152,7 @@ const Login = ({ setToken, setSeller }) => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-800 bg-slate-900/30 text-xs text-white outline-none transition duration-205 placeholder:text-slate-600 focus:bg-slate-950/80 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10"
+                  className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-800 bg-slate-900/30 text-xs text-slate-100 dark:text-white outline-none transition duration-205 placeholder:text-slate-600 focus:bg-slate-950/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                   required
                 />
                 <button
@@ -168,7 +168,7 @@ const Login = ({ setToken, setSeller }) => {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full flex items-center justify-center gap-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white py-3 text-xs font-black uppercase tracking-wider transition duration-300 shadow-md hover:shadow-lg hover:shadow-orange-500/20 active:scale-[0.98] cursor-pointer mt-4 disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-slate-100 dark:text-white py-3 text-xs font-black uppercase tracking-wider transition duration-300 shadow-md hover:shadow-lg hover:shadow-orange-500/20 active:scale-[0.98] cursor-pointer mt-4 disabled:opacity-50"
             >
               {submitting ? "Signing in..." : "Access Seller Dashboard"}
             </button>

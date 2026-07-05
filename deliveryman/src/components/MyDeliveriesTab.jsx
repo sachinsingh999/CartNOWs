@@ -193,10 +193,10 @@ const MyDeliveriesTab = ({
           {/* Agent info & Avatar */}
           <div className="flex items-center gap-4.5 w-full md:w-auto">
             <div className="relative">
-              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center text-white font-extrabold text-lg shadow-md border-2 border-white dark:border-slate-900">
+              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center text-slate-100 dark:text-white font-extrabold text-lg shadow-md border-2 border-white/10 dark:border-slate-800 dark:border-slate-900">
                 {driver?.name ? driver.name.split(" ").map(n=>n[0]).join("").toUpperCase() : <User size={24} />}
               </div>
-              <span className={`absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-white dark:border-slate-900 flex items-center justify-center ${stats.isOnline ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`} />
+              <span className={`absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-white/10 dark:border-slate-800 dark:border-slate-900 flex items-center justify-center ${stats.isOnline ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`} />
             </div>
             
             <div>
@@ -239,19 +239,15 @@ const MyDeliveriesTab = ({
           <div className="flex items-center gap-3 w-full md:w-auto justify-end">
             <button
               onClick={toggleDutyStatusHandler}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs font-black tracking-wider uppercase transition-all duration-200 active:scale-95 cursor-pointer ${
-                stats.isOnline
-                  ? "bg-emerald-500/10 border-emerald-500/25 text-emerald-600 dark:text-emerald-450 hover:bg-emerald-500/20"
-                  : "bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500"
-              }`}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs font-black tracking-wider uppercase transition-all duration-200 active:scale-95 cursor-pointer ${ stats.isOnline ? "bg-emerald-500/10 border-emerald-500/25 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20" : "bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500" }`}
             >
               <span>On Duty</span>
-              {stats.isOnline ? <ToggleRight size={18} className="text-emerald-505" /> : <ToggleLeft size={18} />}
+              {stats.isOnline ? <ToggleRight size={18} className="text-emerald-500" /> : <ToggleLeft size={18} />}
             </button>
             
             <button
               onClick={logout}
-              className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/20 hover:bg-rose-100 dark:hover:bg-rose-950/40 text-rose-600 dark:text-rose-450 border border-rose-100 dark:border-rose-950/45 transition active:scale-95 cursor-pointer"
+              className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/20 hover:bg-rose-100 dark:hover:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-rose-950/45 transition active:scale-95 cursor-pointer"
               title="Logout"
             >
               <LogOut size={15} />
@@ -274,7 +270,7 @@ const MyDeliveriesTab = ({
             {pendingAcceptance.map((order) => (
               <div 
                 key={order._id} 
-                className="bg-gradient-to-br from-rose-50/50 to-white dark:from-[#1e1520] dark:to-[#111827] border-2 border-rose-100 dark:border-rose-950/40 rounded-2xl p-5 shadow-sm relative overflow-hidden transition-all duration-300 hover:shadow-md hover:border-rose-200 dark:hover:border-rose-900/60 animate-pulse"
+                className="bg-gradient-to-br from-rose-50/50 to-white dark:from-rose-950 dark:to-gray-900 border-2 border-rose-100 dark:border-rose-950/40 rounded-2xl p-5 shadow-sm relative overflow-hidden transition-all duration-300 hover:shadow-md hover:border-rose-200 dark:hover:border-rose-900/60 animate-pulse"
               >
                 <div className="absolute top-0 right-0 h-24 w-24 bg-rose-500/5 dark:bg-rose-500/10 rounded-full blur-xl pointer-events-none" />
                 
@@ -288,7 +284,7 @@ const MyDeliveriesTab = ({
                     </h4>
                   </div>
                   <div className="text-right">
-                    <span className="text-xs font-mono font-black text-rose-605 dark:text-rose-400">
+                    <span className="text-xs font-mono font-black text-rose-600 dark:text-rose-400">
                       ₹{order.amount}
                     </span>
                     <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">
@@ -299,14 +295,14 @@ const MyDeliveriesTab = ({
 
                 <div className="space-y-2.5 text-xs">
                   <div>
-                    <span className="text-[8px] font-black uppercase tracking-wider text-slate-405 dark:text-slate-500 block">Customer</span>
+                    <span className="text-[8px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 block">Customer</span>
                     <span className="font-bold text-slate-800 dark:text-slate-200">
                       {order.address?.firstName} {order.address?.lastName}
                     </span>
                   </div>
                   <div>
-                    <span className="text-[8px] font-black uppercase tracking-wider text-slate-405 dark:text-slate-500 block">Address</span>
-                    <span className="font-semibold text-slate-655 dark:text-slate-350 line-clamp-2">
+                    <span className="text-[8px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 block">Address</span>
+                    <span className="font-semibold text-slate-700 dark:text-slate-300 line-clamp-2">
                       {formatAddress(order.address)}
                     </span>
                   </div>
@@ -315,13 +311,13 @@ const MyDeliveriesTab = ({
                 <div className="flex gap-2.5 mt-5">
                   <button
                     onClick={() => handleRejectAssignment(order._id)}
-                    className="flex-1 flex items-center justify-center gap-1.5 bg-slate-50 dark:bg-slate-900/60 hover:bg-rose-50 dark:hover:bg-rose-950/20 border border-slate-200 dark:border-slate-800/80 hover:border-rose-200 dark:hover:border-rose-900/60 text-slate-755 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-200 cursor-pointer shadow-xs active:scale-98"
+                    className="flex-1 flex items-center justify-center gap-1.5 bg-slate-50 dark:bg-slate-900/60 hover:bg-rose-50 dark:hover:bg-rose-950/20 border border-slate-200 dark:border-slate-800/80 hover:border-rose-200 dark:hover:border-rose-900/60 text-slate-800 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-200 cursor-pointer shadow-xs active:scale-98"
                   >
                     <span>Reject</span>
                   </button>
                   <button
                     onClick={() => handleAcceptAssignment(order._id)}
-                    className="flex-1 flex items-center justify-center gap-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-200 cursor-pointer shadow-md shadow-emerald-500/10 active:scale-98"
+                    className="flex-1 flex items-center justify-center gap-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-slate-100 dark:text-white py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-200 cursor-pointer shadow-md shadow-emerald-500/10 active:scale-98"
                   >
                     <span>Accept</span>
                   </button>
@@ -344,7 +340,7 @@ const MyDeliveriesTab = ({
               {/* Header Info */}
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800/60 pb-4 mb-4">
                 <div className="flex items-center gap-2.5">
-                  <span className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-extrabold text-[9px] uppercase tracking-widest px-2.5 py-1 rounded-lg shadow-md shadow-blue-500/15">
+                  <span className="bg-gradient-to-r from-blue-600 to-indigo-600 text-slate-100 dark:text-white font-extrabold text-[9px] uppercase tracking-widest px-2.5 py-1 rounded-lg shadow-md shadow-blue-500/15">
                     Primary Dispatch
                   </span>
                   <span className="text-xs font-mono font-bold text-slate-500 dark:text-slate-400">
@@ -376,7 +372,7 @@ const MyDeliveriesTab = ({
                       </p>
                     </div>
                     <div>
-                      <p className="text-[9px] font-black uppercase tracking-wider text-slate-450 dark:text-slate-400">Customer Notes</p>
+                      <p className="text-[9px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-400">Customer Notes</p>
                       <p className="text-xs italic font-medium text-slate-500 dark:text-amber-400/90 mt-1 bg-amber-500/5 dark:bg-amber-500/10 border-l-2 border-amber-500 px-3 py-1.5 rounded-r-xl">
                         "Please call when outside the main gate."
                       </p>
@@ -391,17 +387,13 @@ const MyDeliveriesTab = ({
                         <Navigation2 size={12} className="text-blue-500 fill-blue-500" />
                         <span>3.5 km</span>
                         <span className="text-slate-300 dark:text-slate-700">|</span>
-                        <span className="text-slate-450 dark:text-slate-500 font-medium">Zone A-2 Sector</span>
+                        <span className="text-slate-400 dark:text-slate-500 font-medium">Zone A-2 Sector</span>
                       </p>
                     </div>
                     <div>
                       <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">Payment & Collection</p>
                       <div className="flex items-center gap-2 mt-1.5">
-                        <span className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-wider border ${
-                          nextOrder.paymentMethod.toLowerCase() === "cod"
-                            ? "bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-450"
-                            : "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-450"
-                        }`}>
+                        <span className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-wider border ${ nextOrder.paymentMethod.toLowerCase() === "cod" ? "bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400" : "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400" }`}>
                           {nextOrder.paymentMethod}
                         </span>
                         <span className="text-sm font-black text-slate-900 dark:text-white">
@@ -411,7 +403,7 @@ const MyDeliveriesTab = ({
                     </div>
                     <div>
                       <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">Verification</p>
-                      <p className="text-xs font-semibold text-slate-550 dark:text-slate-400 mt-1 flex items-center gap-1.5">
+                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1.5">
                         <Key size={12} className="text-indigo-500" />
                         <span>Requires Secure OTP delivery confirmation</span>
                       </p>
@@ -423,7 +415,7 @@ const MyDeliveriesTab = ({
                   <div className="h-12 w-12 rounded-full bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 flex items-center justify-center text-slate-400 mb-3">
                     <CheckCircle2 size={24} />
                   </div>
-                  <h4 className="font-extrabold text-slate-800 dark:text-slate-350">Logistics Queue Idle</h4>
+                  <h4 className="font-extrabold text-slate-800 dark:text-slate-300">Logistics Queue Idle</h4>
                   <p className="text-[11px] text-slate-500 mt-1">Currently no active dispatches. Select a job from the pool or wait for auto-assignment.</p>
                 </div>
               )}
@@ -450,22 +442,10 @@ const MyDeliveriesTab = ({
                     
                     return (
                       <div key={step} className="flex flex-col items-center relative z-10">
-                        <div className={`h-6 w-6 rounded-full border-2 flex items-center justify-center text-[9px] font-black transition-all duration-300 ${
-                          isCompleted 
-                            ? "bg-emerald-500 border-emerald-600 text-white shadow-md shadow-emerald-500/15" 
-                            : isCurrent 
-                              ? "bg-blue-600 border-blue-700 text-white shadow-md shadow-blue-500/20 animate-pulse scale-110" 
-                              : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400"
-                        }`}>
+                        <div className={`h-6 w-6 rounded-full border-2 flex items-center justify-center text-[9px] font-black transition-all duration-300 ${ isCompleted ? "bg-emerald-500 border-emerald-600 text-slate-100 dark:text-white shadow-md shadow-emerald-500/15" : isCurrent ? "bg-blue-600 border-blue-700 text-slate-100 dark:text-white shadow-md shadow-blue-500/20 animate-pulse scale-110" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400" }`}>
                           {isCompleted ? "✓" : idx + 1}
                         </div>
-                        <span className={`text-[8px] font-bold uppercase tracking-widest mt-1.5 hidden md:inline ${
-                          isCompleted 
-                            ? "text-emerald-605 dark:text-emerald-450 font-black" 
-                            : isCurrent 
-                              ? "text-blue-600 dark:text-blue-400 font-black" 
-                              : "text-slate-400"
-                        }`}>
+                        <span className={`text-[8px] font-bold uppercase tracking-widest mt-1.5 hidden md:inline ${ isCompleted ? "text-emerald-600 dark:text-emerald-400 font-black" : isCurrent ? "text-blue-600 dark:text-blue-400 font-black" : "text-slate-400" }`}>
                           {step}
                         </span>
                       </div>
@@ -483,15 +463,15 @@ const MyDeliveriesTab = ({
                     href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(formatAddress(nextOrder.address))}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex-1 flex items-center justify-center gap-1.5 bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-250 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-150 cursor-pointer shadow-sm"
+                    className="flex-1 flex items-center justify-center gap-1.5 bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-150 cursor-pointer shadow-sm"
                   >
-                    <Navigation size={12} className="text-blue-505 dark:text-blue-400" />
+                    <Navigation size={12} className="text-blue-500 dark:text-blue-400" />
                     <span>Navigate</span>
                   </a>
                   
                   <a
                     href={`tel:${nextOrder.address.phone}`}
-                    className="flex-1 flex items-center justify-center gap-1.5 bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-250 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-150 cursor-pointer shadow-sm"
+                    className="flex-1 flex items-center justify-center gap-1.5 bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-150 cursor-pointer shadow-sm"
                   >
                     <Phone size={12} className="text-emerald-500" />
                     <span>Call</span>
@@ -499,7 +479,7 @@ const MyDeliveriesTab = ({
 
                   <button
                     onClick={() => setChatModalOpen(true)}
-                    className="flex-1 flex items-center justify-center gap-1.5 bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-250 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-150 cursor-pointer shadow-sm"
+                    className="flex-1 flex items-center justify-center gap-1.5 bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-150 cursor-pointer shadow-sm"
                   >
                     <MessageSquare size={12} className="text-indigo-500" />
                     <span>Chat</span>
@@ -508,7 +488,7 @@ const MyDeliveriesTab = ({
 
                 <button
                   onClick={handleCommandCenterCTA}
-                  className="sm:w-56 w-full flex items-center justify-center gap-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-150 shadow-md shadow-blue-500/10 active:scale-98 cursor-pointer text-center"
+                  className="sm:w-56 w-full flex items-center justify-center gap-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-slate-100 dark:text-white py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-150 shadow-md shadow-blue-500/10 active:scale-98 cursor-pointer text-center"
                 >
                   <CheckCircle size={12} />
                   <span>{getCommandCenterCTAText(nextOrder.orderStatus)}</span>
@@ -530,7 +510,7 @@ const MyDeliveriesTab = ({
           </div>
 
           <div className="absolute top-4 right-4 z-10 flex gap-1.5">
-            <button className="p-2 rounded-xl bg-white/90 dark:bg-slate-900/90 hover:bg-white dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 shadow-md cursor-pointer text-slate-605">
+            <button className="p-2 rounded-xl bg-white/90 dark:bg-slate-900/90 hover:bg-white dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 shadow-md cursor-pointer text-slate-600">
               <Crosshair size={13} />
             </button>
           </div>
@@ -606,11 +586,11 @@ const MyDeliveriesTab = ({
                     <Truck size={14} />
                   </div>
                   <div>
-                    <h6 className="text-[10px] font-black text-slate-850 dark:text-white leading-none">Delivering to Room B-3</h6>
+                    <h6 className="text-[10px] font-black text-slate-800 dark:text-white leading-none">Delivering to Room B-3</h6>
                     <p className="text-[8px] text-slate-400 mt-1 uppercase font-bold tracking-wider">Eta 12 mins • Light traffic</p>
                   </div>
                 </div>
-                <span className="text-xs font-mono font-black text-blue-505 dark:text-blue-400">2.1 km left</span>
+                <span className="text-xs font-mono font-black text-blue-500 dark:text-blue-400">2.1 km left</span>
               </div>
             )}
           </div>
@@ -662,7 +642,7 @@ const MyDeliveriesTab = ({
           <div className="glass-panel border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-4.5 shadow-sm relative overflow-hidden hover:border-slate-300 dark:hover:border-slate-700/80 transition duration-200">
             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Earnings</p>
             <div className="flex items-baseline gap-1 mt-2.5">
-              <span className="text-xl font-black text-emerald-650 dark:text-emerald-400">₹{todayEarningsVal}</span>
+              <span className="text-xl font-black text-emerald-600 dark:text-emerald-400">₹{todayEarningsVal}</span>
               <span className="text-[8px] font-black text-emerald-500 uppercase tracking-wider font-semibold">Daily</span>
             </div>
             {/* SVG Sparkline */}
@@ -678,7 +658,7 @@ const MyDeliveriesTab = ({
           <div className="glass-panel border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-4.5 shadow-sm relative overflow-hidden hover:border-slate-300 dark:hover:border-slate-700/80 transition duration-200">
             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">COD Collected</p>
             <div className="flex items-baseline gap-1 mt-2.5">
-              <span className="text-xl font-black text-amber-600 dark:text-amber-405">₹{stats.cashCollected?.toFixed(0) || "0"}</span>
+              <span className="text-xl font-black text-amber-600 dark:text-amber-400">₹{stats.cashCollected?.toFixed(0) || "0"}</span>
               <span className="text-[8px] font-black text-slate-400 uppercase tracking-wider font-semibold">On hand</span>
             </div>
             {/* SVG Sparkline */}
@@ -736,14 +716,14 @@ const MyDeliveriesTab = ({
                 <Zap size={14} className="text-blue-500" />
                 <span>Today's Optimal Route</span>
               </h4>
-              <span className="text-[8px] font-black uppercase tracking-widest bg-blue-500/10 px-2 py-0.5 rounded text-blue-550 dark:text-blue-400">AI Sequenced</span>
+              <span className="text-[8px] font-black uppercase tracking-widest bg-blue-500/10 px-2 py-0.5 rounded text-blue-500 dark:text-blue-400">AI Sequenced</span>
             </div>
 
             <div className="space-y-3.5">
               {/* Route stop 1 */}
               <div className="flex items-start gap-3 relative">
                 <div className="absolute left-3.5 top-7 bottom-[-14px] w-[2px] bg-slate-200 dark:bg-slate-800" />
-                <div className="h-7 w-7 rounded-full bg-blue-500 text-white font-extrabold text-[10px] flex items-center justify-center shrink-0 shadow-sm shadow-blue-500/20">1</div>
+                <div className="h-7 w-7 rounded-full bg-blue-500 text-slate-100 dark:text-white font-extrabold text-[10px] flex items-center justify-center shrink-0 shadow-sm shadow-blue-500/20">1</div>
                 <div className="text-xs">
                   <p className="font-extrabold text-slate-900 dark:text-white">Main Distribution Hub</p>
                   <p className="text-[10px] text-slate-500 mt-0.5">Pick up packages • Out for dispatch</p>
@@ -753,31 +733,31 @@ const MyDeliveriesTab = ({
               {/* Route stop 2 */}
               <div className="flex items-start gap-3 relative">
                 <div className="absolute left-3.5 top-7 bottom-[-14px] w-[2px] bg-slate-200 dark:bg-slate-800" />
-                <div className="h-7 w-7 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-350 font-extrabold text-[10px] flex items-center justify-center shrink-0">2</div>
+                <div className="h-7 w-7 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-extrabold text-[10px] flex items-center justify-center shrink-0">2</div>
                 <div className="text-xs">
-                  <p className="font-extrabold text-slate-850 dark:text-slate-200">
+                  <p className="font-extrabold text-slate-800 dark:text-slate-200">
                     {nextOrder ? `${nextOrder.address?.firstName} ${nextOrder.address?.lastName}` : "Customer A"}
                   </p>
-                  <p className="text-[10px] text-slate-505 mt-0.5">3.5 km • Next Priority</p>
+                  <p className="text-[10px] text-slate-500 mt-0.5">3.5 km • Next Priority</p>
                 </div>
               </div>
 
               {/* Route stop 3 */}
               <div className="flex items-start gap-3 relative">
                 <div className="absolute left-3.5 top-7 bottom-[-14px] w-[2px] bg-slate-200 dark:bg-slate-800" />
-                <div className="h-7 w-7 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-350 font-extrabold text-[10px] flex items-center justify-center shrink-0">3</div>
+                <div className="h-7 w-7 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-extrabold text-[10px] flex items-center justify-center shrink-0">3</div>
                 <div className="text-xs">
-                  <p className="font-extrabold text-slate-850 dark:text-slate-200">Customer B</p>
-                  <p className="text-[10px] text-slate-505 mt-0.5">5.2 km • 2nd dispatch</p>
+                  <p className="font-extrabold text-slate-800 dark:text-slate-200">Customer B</p>
+                  <p className="text-[10px] text-slate-500 mt-0.5">5.2 km • 2nd dispatch</p>
                 </div>
               </div>
 
               {/* Route stop 4 */}
               <div className="flex items-start gap-3">
-                <div className="h-7 w-7 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-350 font-extrabold text-[10px] flex items-center justify-center shrink-0">4</div>
+                <div className="h-7 w-7 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-extrabold text-[10px] flex items-center justify-center shrink-0">4</div>
                 <div className="text-xs">
-                  <p className="font-extrabold text-slate-850 dark:text-slate-200">Customer C</p>
-                  <p className="text-[10px] text-slate-550 mt-0.5">7.1 km • 3rd dispatch</p>
+                  <p className="font-extrabold text-slate-800 dark:text-slate-200">Customer C</p>
+                  <p className="text-[10px] text-slate-500 mt-0.5">7.1 km • 3rd dispatch</p>
                 </div>
               </div>
             </div>
@@ -790,7 +770,7 @@ const MyDeliveriesTab = ({
             </div>
             <div className="text-right">
               <p className="text-slate-400 font-bold uppercase tracking-wider">Est. Completion</p>
-              <h5 className="text-xs font-black text-blue-555 dark:text-blue-400 mt-0.5">~48 minutes</h5>
+              <h5 className="text-xs font-black text-blue-600 dark:text-blue-400 mt-0.5">~48 minutes</h5>
             </div>
           </div>
         </div>
@@ -805,7 +785,7 @@ const MyDeliveriesTab = ({
               </h4>
               <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-900/65 px-2.5 py-1 rounded-lg border border-slate-100 dark:border-slate-800">
                 <TrendingUp size={10} className="text-emerald-500" />
-                <span className="text-[9px] font-black text-emerald-600 dark:text-emerald-450 uppercase tracking-widest">+18.4% Weekly</span>
+                <span className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">+18.4% Weekly</span>
               </div>
             </div>
 
@@ -896,7 +876,7 @@ const MyDeliveriesTab = ({
                 <p className="text-xs font-black text-slate-900 dark:text-white mt-0.5">62.8 km</p>
               </div>
             </div>
-            <span className="text-emerald-600 dark:text-emerald-450 font-black flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded text-[9px] uppercase tracking-wider">
+            <span className="text-emerald-600 dark:text-emerald-400 font-black flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded text-[9px] uppercase tracking-wider">
               Level 4 Courier Badge
             </span>
           </div>
@@ -915,7 +895,7 @@ const MyDeliveriesTab = ({
           <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
             {/* Search Bar */}
             <div className="relative flex-1 min-w-[140px] md:w-56 md:flex-none">
-              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 dark:text-slate-505 pointer-events-none">
+              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 dark:text-slate-500 pointer-events-none">
                 <Search size={12} />
               </span>
               <input
@@ -926,7 +906,7 @@ const MyDeliveriesTab = ({
                   setSearchQuery(e.target.value);
                   setTablePage(1);
                 }}
-                className="w-full pl-8 pr-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs outline-none text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-blue-600 transition"
+                className="w-full pl-8 pr-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs outline-none text-slate-900 dark:text-white placeholder:text-slate-400 transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
               />
             </div>
 
@@ -937,7 +917,7 @@ const MyDeliveriesTab = ({
                 setStatusFilter(e.target.value);
                 setTablePage(1);
               }}
-              className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-250 outline-none cursor-pointer focus:border-blue-600 transition shrink-0"
+              className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none cursor-pointer transition shrink-0 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
             >
               <option value="All">All Jobs</option>
               <option value="Pending">Pending</option>
@@ -961,11 +941,7 @@ const MyDeliveriesTab = ({
               return (
                 <div 
                   key={order._id}
-                  className={`glass-panel border rounded-2xl p-4.5 shadow-sm transition-all duration-300 relative ${
-                    isNext 
-                      ? "border-blue-400 dark:border-blue-700 bg-blue-500/5 dark:bg-blue-500/10" 
-                      : "border-slate-200 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700"
-                  }`}
+                  className={`glass-panel border rounded-2xl p-4.5 shadow-sm transition-all duration-300 relative ${ isNext ? "border-blue-400 dark:border-blue-700 bg-blue-500/5 dark:bg-blue-500/10" : "border-slate-200 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700" }`}
                 >
                   <div className="flex justify-between items-start gap-4">
                     <div>
@@ -974,24 +950,20 @@ const MyDeliveriesTab = ({
                           #{order._id.slice(-6).toUpperCase()}
                         </span>
                         {isNext && (
-                          <span className="bg-blue-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider">Next</span>
+                          <span className="bg-blue-600 text-slate-100 dark:text-white text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider">Next</span>
                         )}
                         {order.assignmentStatus === "Assigned" && (
                           <span className="bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[8px] font-black px-1.5 py-0.5 rounded border border-amber-500/25 uppercase tracking-wider">Pending Action</span>
                         )}
                       </div>
-                      <h4 className="font-bold text-xs text-slate-800 dark:text-slate-250 mt-1">
+                      <h4 className="font-bold text-xs text-slate-800 dark:text-slate-200 mt-1">
                         {order.address?.firstName} {order.address?.lastName}
                       </h4>
                     </div>
 
                     <div className="text-right">
                       <p className="text-xs font-black text-slate-900 dark:text-white">₹{order.amount}</p>
-                      <span className={`inline-block px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-wider border mt-1 ${
-                        order.orderStatus === "Delivered" 
-                          ? "bg-emerald-50 text-emerald-705 dark:text-emerald-400 border-emerald-100 dark:border-emerald-950/40" 
-                          : "bg-indigo-50 text-indigo-705 dark:text-indigo-400 border-indigo-100 dark:border-indigo-950/40"
-                      }`}>
+                      <span className={`inline-block px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-wider border mt-1 ${ order.orderStatus === "Delivered" ? "bg-emerald-50 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-950/40" : "bg-indigo-50 text-indigo-700 dark:text-indigo-400 border-indigo-100 dark:border-indigo-950/40" }`}>
                         {order.orderStatus}
                       </span>
                     </div>
@@ -1004,7 +976,7 @@ const MyDeliveriesTab = ({
                     
                     <button 
                       onClick={() => setExpandedCardId(isExpanded ? null : order._id)}
-                      className="text-blue-500 dark:text-blue-450 hover:underline flex items-center gap-0.5 font-bold cursor-pointer"
+                      className="text-blue-500 dark:text-blue-400 hover:underline flex items-center gap-0.5 font-bold cursor-pointer"
                     >
                       <span>{isExpanded ? "Collapse" : "Expand"}</span>
                       {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
@@ -1016,13 +988,13 @@ const MyDeliveriesTab = ({
                     <div className="mt-4 space-y-4 pt-3 border-t border-dashed border-slate-200 dark:border-slate-800/80 text-xs">
                       <div>
                         <span className="text-[8px] font-black uppercase tracking-wider text-slate-400 block mb-1">Shipping address</span>
-                        <p className="font-semibold text-slate-655 dark:text-slate-300 leading-normal">{formatAddress(order.address)}</p>
+                        <p className="font-semibold text-slate-700 dark:text-slate-300 leading-normal">{formatAddress(order.address)}</p>
                       </div>
 
                       <div className="flex gap-2">
                         <a
                           href={`tel:${order.address?.phone}`}
-                          className="flex-1 text-center bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-350 py-2 rounded-xl text-[9px] font-black uppercase tracking-wider cursor-pointer"
+                          className="flex-1 text-center bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 py-2 rounded-xl text-[9px] font-black uppercase tracking-wider cursor-pointer"
                         >
                           Call Customer
                         </a>
@@ -1030,7 +1002,7 @@ const MyDeliveriesTab = ({
                           href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(formatAddress(order.address))}`}
                           target="_blank"
                           rel="noreferrer"
-                          className="flex-1 text-center bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-350 py-2 rounded-xl text-[9px] font-black uppercase tracking-wider cursor-pointer"
+                          className="flex-1 text-center bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 py-2 rounded-xl text-[9px] font-black uppercase tracking-wider cursor-pointer"
                         >
                           Navigate Map
                         </a>
@@ -1051,7 +1023,7 @@ const MyDeliveriesTab = ({
                             </button>
                             <button
                               onClick={() => handleAcceptAssignment(order._id)}
-                              className="flex-1 bg-emerald-600 text-white py-2 rounded-xl text-[9px] font-black uppercase tracking-wider cursor-pointer animate-pulse"
+                              className="flex-1 bg-emerald-600 text-slate-100 dark:text-white py-2 rounded-xl text-[9px] font-black uppercase tracking-wider cursor-pointer animate-pulse"
                             >
                               Accept
                             </button>
@@ -1060,7 +1032,7 @@ const MyDeliveriesTab = ({
                           <select
                             value={order.orderStatus}
                             onChange={(e) => handleStatusChange(order._id, e.target.value)}
-                            className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-slate-750 dark:text-slate-300 cursor-pointer"
+                            className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 cursor-pointer"
                           >
                             <option value="Order Placed">Order Placed</option>
                             <option value="Packed">Packed</option>
@@ -1153,11 +1125,11 @@ const MyDeliveriesTab = ({
       <div className="fixed bottom-6 right-6 z-40">
         <button
           onClick={() => setActiveActionsOpen(!activeActionsOpen)}
-          className="h-14 w-14 rounded-full bg-gradient-to-br from-indigo-500 to-blue-600 text-white flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer relative"
+          className="h-14 w-14 rounded-full bg-gradient-to-br from-indigo-500 to-blue-600 text-slate-100 dark:text-white flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer relative"
         >
           {activeActionsOpen ? <X size={20} /> : <Zap size={20} className="fill-white" />}
           {pendingAcceptance.length > 0 && (
-            <span className="absolute -top-1.5 -right-1.5 h-5 w-5 bg-rose-500 rounded-full text-white text-[10px] font-black flex items-center justify-center border-2 border-white dark:border-slate-950 animate-bounce">
+            <span className="absolute -top-1.5 -right-1.5 h-5 w-5 bg-rose-500 rounded-full text-slate-100 dark:text-white text-[10px] font-black flex items-center justify-center border-2 border-white/10 dark:border-slate-800 dark:border-slate-950 animate-bounce">
               {pendingAcceptance.length}
             </span>
           )}
@@ -1175,7 +1147,7 @@ const MyDeliveriesTab = ({
                 onClick={() => { setScanModalOpen(true); setActiveActionsOpen(false); }}
                 className="flex flex-col items-center justify-center gap-2 p-3 bg-slate-50 dark:bg-slate-900/60 hover:bg-indigo-500/10 border border-slate-200 dark:border-slate-800/80 rounded-2xl text-slate-700 dark:text-slate-300 transition duration-150 cursor-pointer text-center"
               >
-                <QrCode size={20} className="text-indigo-550" />
+                <QrCode size={20} className="text-indigo-500" />
                 <span className="text-[9px] font-extrabold uppercase tracking-wider">Scan QR</span>
               </button>
 
@@ -1207,7 +1179,7 @@ const MyDeliveriesTab = ({
             <div className="flex gap-2 border-t border-slate-100 dark:border-slate-800 pt-3">
               <button 
                 onClick={() => { alert("Opening courier support channel..."); setActiveActionsOpen(false); }}
-                className="flex-1 flex items-center justify-center gap-1.5 bg-slate-100 dark:bg-slate-905 border border-slate-200 dark:border-slate-800/80 text-slate-655 dark:text-slate-300 py-2 rounded-xl text-[9px] font-black uppercase tracking-wider transition active:scale-95 cursor-pointer"
+                className="flex-1 flex items-center justify-center gap-1.5 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 text-slate-700 dark:text-slate-300 py-2 rounded-xl text-[9px] font-black uppercase tracking-wider transition active:scale-95 cursor-pointer"
               >
                 <LifeBuoy size={11} />
                 <span>Support</span>
@@ -1215,7 +1187,7 @@ const MyDeliveriesTab = ({
               
               <button 
                 onClick={() => { setEmergencyModalOpen(true); setActiveActionsOpen(false); }}
-                className="flex-1 flex items-center justify-center gap-1.5 bg-rose-600 hover:bg-rose-700 text-white py-2 rounded-xl text-[9px] font-black uppercase tracking-wider transition active:scale-95 cursor-pointer"
+                className="flex-1 flex items-center justify-center gap-1.5 bg-rose-600 hover:bg-rose-700 text-slate-100 dark:text-white py-2 rounded-xl text-[9px] font-black uppercase tracking-wider transition active:scale-95 cursor-pointer"
               >
                 <ShieldAlert size={11} className="animate-pulse" />
                 <span>Emergency</span>
@@ -1232,9 +1204,9 @@ const MyDeliveriesTab = ({
       {/* ✅ CHAT CUSTOMER MODAL */}
       {chatModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-100/50 dark:bg-slate-950/70 backdrop-blur-xs">
-          <div className="relative w-full max-w-sm rounded-3xl bg-white border border-slate-200 dark:bg-slate-950 dark:border-slate-850 shadow-2xl overflow-hidden flex flex-col h-[400px]">
+          <div className="relative w-full max-w-sm rounded-3xl bg-white border border-slate-200 dark:bg-slate-950 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col h-[400px]">
             {/* Header */}
-            <div className="bg-slate-900 px-5 py-4 text-white flex justify-between items-center shrink-0">
+            <div className="bg-slate-900 px-5 py-4 text-slate-100 dark:text-white flex justify-between items-center shrink-0">
               <div className="flex items-center gap-2.5">
                 <div className="h-8 w-8 rounded-full bg-slate-800 flex items-center justify-center text-xs font-black">C</div>
                 <div>
@@ -1251,11 +1223,7 @@ const MyDeliveriesTab = ({
             <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50 dark:bg-slate-900/40">
               {chatMessages.map((msg, i) => (
                 <div key={i} className={`flex flex-col ${msg.sender === "driver" ? "items-end" : "items-start"}`}>
-                  <div className={`p-2.5 rounded-2xl max-w-[80%] text-xs font-medium ${
-                    msg.sender === "driver" 
-                      ? "bg-blue-600 text-white rounded-tr-none" 
-                      : "bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-tl-none"
-                  }`}>
+                  <div className={`p-2.5 rounded-2xl max-w-[80%] text-xs font-medium ${ msg.sender === "driver" ? "bg-blue-600 text-slate-100 dark:text-white rounded-tr-none" : "bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-tl-none" }`}>
                     {msg.text}
                   </div>
                   <span className="text-[8px] text-slate-400 mt-1 font-bold">{msg.time}</span>
@@ -1264,7 +1232,7 @@ const MyDeliveriesTab = ({
             </div>
 
             {/* Input Form */}
-            <form onSubmit={handleSendMessage} className="p-3 border-t border-slate-150 dark:border-slate-850 bg-white dark:bg-slate-950 flex gap-2 shrink-0">
+            <form onSubmit={handleSendMessage} className="p-3 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 flex gap-2 shrink-0">
               <input
                 type="text"
                 placeholder="Type your message..."
@@ -1272,7 +1240,7 @@ const MyDeliveriesTab = ({
                 onChange={(e) => setNewChatMessage(e.target.value)}
                 className="flex-1 px-4 py-2 border border-slate-200 dark:border-slate-800 rounded-xl text-xs outline-none bg-slate-50 dark:bg-slate-900"
               />
-              <button type="submit" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl cursor-pointer">Send</button>
+              <button type="submit" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-slate-100 dark:text-white font-bold text-xs rounded-xl cursor-pointer">Send</button>
             </form>
           </div>
         </div>
@@ -1281,7 +1249,7 @@ const MyDeliveriesTab = ({
       {/* ✅ REPORT ISSUE MODAL */}
       {reportModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-100/50 dark:bg-slate-950/70 backdrop-blur-xs">
-          <div className="relative w-full max-w-sm rounded-3xl bg-white border border-slate-250 dark:bg-slate-950 dark:border-slate-850 shadow-2xl p-6">
+          <div className="relative w-full max-w-sm rounded-3xl bg-white border border-slate-200 dark:bg-slate-950 dark:border-slate-800 shadow-2xl p-6">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
               <h3 className="font-extrabold text-sm text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
                 <AlertOctagon size={16} className="text-amber-500" />
@@ -1296,7 +1264,7 @@ const MyDeliveriesTab = ({
                 <select 
                   value={reportIssueType}
                   onChange={(e) => setReportIssueType(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-205 dark:border-slate-800 rounded-xl px-3 py-2.5 text-xs font-bold cursor-pointer"
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-xs font-bold cursor-pointer"
                 >
                   <option value="Traffic Delay">Traffic / Route Delay</option>
                   <option value="Customer Unreachable">Customer Unreachable</option>
@@ -1313,7 +1281,7 @@ const MyDeliveriesTab = ({
                   value={reportNotes}
                   onChange={(e) => setReportNotes(e.target.value)}
                   placeholder="e.g. Stuck in heavy rain/flooding on main highway..."
-                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-205 dark:border-slate-800 rounded-xl px-3.5 py-2 text-xs outline-none resize-none"
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2 text-xs outline-none resize-none"
                 />
               </div>
 
@@ -1327,7 +1295,7 @@ const MyDeliveriesTab = ({
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 rounded-xl text-xs cursor-pointer"
+                  className="flex-1 bg-amber-600 hover:bg-amber-700 text-slate-100 dark:text-white font-bold py-3 rounded-xl text-xs cursor-pointer"
                 >
                   Submit Report
                 </button>
@@ -1340,8 +1308,8 @@ const MyDeliveriesTab = ({
       {/* ✅ SECURE OTP MODAL */}
       {otpModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-100/50 dark:bg-slate-950/70 backdrop-blur-xs">
-          <div className="relative w-full max-w-sm rounded-3xl bg-white border border-slate-200 dark:bg-slate-950 dark:border-slate-850 shadow-2xl p-6">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-850 pb-3 mb-4">
+          <div className="relative w-full max-w-sm rounded-3xl bg-white border border-slate-200 dark:bg-slate-950 dark:border-slate-800 shadow-2xl p-6">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
               <h3 className="font-extrabold text-sm text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
                 <Key size={16} className="text-indigo-500" />
                 <span>OTP Secure verification</span>
@@ -1362,7 +1330,7 @@ const MyDeliveriesTab = ({
                     setOtpError("");
                   }}
                   placeholder="e.g. EX89K2"
-                  className="w-full text-center text-2xl font-black tracking-[0.3em] uppercase bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-850 focus:border-indigo-500 rounded-2xl py-3.5 outline-none"
+                  className="w-full text-center text-2xl font-black tracking-[0.3em] uppercase bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-2xl py-3.5 outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                   autoFocus
                 />
                 {otpError && <p className="text-[10px] text-rose-500 font-bold mt-1.5">{otpError}</p>}
@@ -1378,7 +1346,7 @@ const MyDeliveriesTab = ({
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl text-xs cursor-pointer"
+                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-slate-100 dark:text-white font-bold py-3 rounded-xl text-xs cursor-pointer"
                 >
                   Confirm Delivery
                 </button>
@@ -1391,8 +1359,8 @@ const MyDeliveriesTab = ({
       {/* ✅ BARCODE / QR SCAN MODAL */}
       {scanModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-100/50 dark:bg-slate-950/70 backdrop-blur-xs">
-          <div className="relative w-full max-w-sm rounded-3xl bg-white border border-slate-200 dark:bg-slate-950 dark:border-slate-850 shadow-2xl p-6 overflow-hidden">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-850 pb-3 mb-4">
+          <div className="relative w-full max-w-sm rounded-3xl bg-white border border-slate-200 dark:bg-slate-950 dark:border-slate-800 shadow-2xl p-6 overflow-hidden">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
               <h3 className="font-extrabold text-sm text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
                 <QrCode size={16} className="text-indigo-500" />
                 <span>Package QR scanner</span>
@@ -1432,7 +1400,7 @@ const MyDeliveriesTab = ({
               {!scanSuccess && (
                 <button
                   onClick={handleScanSimulation}
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl text-xs cursor-pointer flex items-center justify-center gap-2"
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-slate-100 dark:text-white font-bold py-3.5 rounded-xl text-xs cursor-pointer flex items-center justify-center gap-2"
                 >
                   <Activity size={14} className="animate-pulse" />
                   <span>Simulate Camera Scan</span>
@@ -1469,7 +1437,7 @@ const MyDeliveriesTab = ({
                   alert("SOS Emergency Alert Dispatched! Depot and Police authorities notified with GPS coordinates.");
                   setEmergencyModalOpen(false);
                 }}
-                className="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 rounded-xl text-xs cursor-pointer shadow-md"
+                className="flex-1 bg-rose-600 hover:bg-rose-700 text-slate-100 dark:text-white font-bold py-3 rounded-xl text-xs cursor-pointer shadow-md"
               >
                 Trigger SOS Alert
               </button>

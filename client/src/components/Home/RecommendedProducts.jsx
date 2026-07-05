@@ -78,12 +78,12 @@ const RecommendedProducts = ({ recommended = [], trending = [], topRated = [], n
             <Sparkles size={18} className="text-blue-600 dark:text-blue-400 animate-pulse fill-blue-50/20" />
           </h2>
           
-          <p className="text-xs font-bold text-slate-450 dark:text-slate-500 mt-1">
+          <p className="text-xs font-bold text-slate-400 dark:text-slate-500 mt-1">
             Handpicked items based on your preferences, style & activity.
           </p>
 
           {/* Chosen by AI banner */}
-          <div className="flex items-center gap-2 mt-4 bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-855 px-3 py-1.5 rounded-full w-fit">
+          <div className="flex items-center gap-2 mt-4 bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-900 px-3 py-1.5 rounded-full w-fit">
             <div className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-950/40 flex items-center justify-center text-blue-600 dark:text-blue-400">
               <Cpu size={11} className="stroke-[2.5]" />
             </div>
@@ -99,11 +99,7 @@ const RecommendedProducts = ({ recommended = [], trending = [], topRated = [], n
             <button
               key={tab.id}
               onClick={() => setActiveRecommendedTab(tab.id)}
-              className={`px-4 py-2 rounded-xl text-[10.5px] font-extrabold uppercase tracking-wider transition-all duration-200 cursor-pointer border-none flex items-center gap-2 ${
-                activeRecommendedTab === tab.id
-                  ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-md font-black scale-102"
-                  : "text-slate-455 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-355"
-              }`}
+              className={`px-4 py-2 rounded-xl text-[10.5px] font-extrabold uppercase tracking-wider transition-all duration-200 cursor-pointer border-none flex items-center gap-2 ${ activeRecommendedTab === tab.id ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-md font-black scale-102" : "text-slate-500 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-400" }`}
             >
               {React.createElement(tab.icon, { size: 12, className: "stroke-[2.5]" })}
               <span>{tab.label}</span>
@@ -153,9 +149,7 @@ const RecommendedProducts = ({ recommended = [], trending = [], topRated = [], n
                 >
                   <Heart
                     size={13}
-                    className={`transition-colors duration-300 stroke-[2.5] ${
-                      isFav ? "text-rose-500 fill-rose-500" : "text-slate-500 dark:text-slate-400"
-                    }`}
+                    className={`transition-colors duration-300 stroke-[2.5] ${ isFav ? "text-rose-500 fill-rose-500" : "text-slate-500 dark:text-slate-400" }`}
                   />
                 </button>
 
@@ -178,7 +172,7 @@ const RecommendedProducts = ({ recommended = [], trending = [], topRated = [], n
                 <div>
                   {/* Rating + Match score Row */}
                   <div className="flex justify-between items-center text-xs font-bold mb-1.5">
-                    <div className="flex items-center gap-1 text-slate-500 dark:text-slate-450">
+                    <div className="flex items-center gap-1 text-slate-500 dark:text-slate-400">
                       <Star size={12} className="fill-amber-500 text-amber-500 stroke-none" />
                       <span className="text-slate-800 dark:text-slate-200 font-extrabold">{typeof product.rating === 'object' && product.rating ? product.rating.average || "4.8" : product.rating || "4.8"}</span>
                       <span className="text-[10px] text-slate-400 font-medium">
@@ -186,18 +180,18 @@ const RecommendedProducts = ({ recommended = [], trending = [], topRated = [], n
                       </span>
                     </div>
 
-                    <span className="text-[9.5px] font-black text-emerald-655 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/20 px-2 py-0.5 rounded border border-emerald-500/10">
+                    <span className="text-[9.5px] font-black text-emerald-700 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/20 px-2 py-0.5 rounded border border-emerald-500/10">
                       {detail.match}
                     </span>
                   </div>
 
                   {/* Title */}
-                  <h3 className="font-extrabold text-[14px] text-slate-850 dark:text-slate-100 line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200 mt-1">
+                  <h3 className="font-extrabold text-[14px] text-slate-800 dark:text-slate-100 line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200 mt-1">
                     {product.name}
                   </h3>
 
                   {/* Specifications subtext */}
-                  <p className="text-[10px] font-bold text-slate-450 dark:text-slate-500 leading-none mt-1 mb-3">
+                  <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 leading-none mt-1 mb-3">
                     {detail.specs}
                   </p>
                 </div>
@@ -224,7 +218,7 @@ const RecommendedProducts = ({ recommended = [], trending = [], topRated = [], n
                         e.stopPropagation();
                         onAddToCart(product);
                       }}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-[10px] uppercase tracking-wider transition-all duration-200 cursor-pointer shadow-sm active:scale-95 border-none"
+                      className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-slate-100 dark:text-white font-extrabold text-[10px] uppercase tracking-wider transition-all duration-200 cursor-pointer shadow-sm active:scale-95 border-none"
                     >
                       <ShoppingCart size={11} className="stroke-[2.5]" />
                       <span>Add to Cart</span>
@@ -236,7 +230,7 @@ const RecommendedProducts = ({ recommended = [], trending = [], topRated = [], n
                         e.stopPropagation();
                         onQuickView(product);
                       }}
-                      className="px-3 py-3 rounded-xl border border-slate-200/60 dark:border-slate-700 text-slate-655 dark:text-slate-300 font-extrabold text-[10px] uppercase tracking-wider hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-center gap-1 transition-all cursor-pointer bg-transparent"
+                      className="px-3 py-3 rounded-xl border border-slate-200/60 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-extrabold text-[10px] uppercase tracking-wider hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-center gap-1 transition-all cursor-pointer bg-transparent"
                     >
                       <Eye size={11} className="stroke-[2.5]" />
                       <span>Quick View</span>

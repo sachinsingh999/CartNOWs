@@ -561,17 +561,13 @@ const Categories = ({ token }) => {
             <div key={cat._id} className="space-y-1">
               <div 
                 onClick={() => handleSelectCategory(cat)}
-                className={`py-2 px-3 rounded-xl flex items-center justify-between gap-4 cursor-pointer transition ${
-                  isSelected ? "bg-orange-500 text-white shadow-md shadow-orange-500/10" : "hover:bg-slate-50 text-slate-700 bg-white border border-slate-100"
-                }`}
+                className={`py-2 px-3 rounded-xl flex items-center justify-between gap-4 cursor-pointer transition ${ isSelected ? "bg-orange-500 text-slate-100 dark:text-white shadow-md shadow-orange-500/10" : "hover:bg-slate-50 text-slate-700 bg-white dark:bg-slate-900 border border-slate-100" }`}
               >
                 <div className="flex items-center gap-2 overflow-hidden">
                   <FolderTree size={14} className={isSelected ? "text-white" : "text-slate-400"} />
                   <span className="text-xs font-bold truncate">{cat.name}</span>
                   {cat.isFeatured && (
-                    <span className={`px-1.5 py-0.2 rounded text-[8px] font-black uppercase tracking-wider ${
-                      isSelected ? "bg-white text-orange-500" : "bg-orange-100 text-orange-600"
-                    }`}>
+                    <span className={`px-1.5 py-0.2 rounded text-[8px] font-black uppercase tracking-wider ${ isSelected ? "bg-white text-orange-500" : "bg-orange-100 text-orange-600" }`}>
                       Featured
                     </span>
                   )}
@@ -581,7 +577,7 @@ const Categories = ({ token }) => {
                     </span>
                   )}
                   {cat.status === "pending" && (
-                    <span className="px-1.5 py-0.2 rounded text-[8px] font-black uppercase tracking-wider bg-amber-500 text-white animate-pulse">
+                    <span className="px-1.5 py-0.2 rounded text-[8px] font-black uppercase tracking-wider bg-amber-500 text-slate-100 dark:text-white animate-pulse">
                       Pending Approval
                     </span>
                   )}
@@ -600,7 +596,7 @@ const Categories = ({ token }) => {
                         }
                       }}
                       title="Approve Category"
-                      className="p-1 rounded bg-emerald-500 hover:bg-emerald-600 text-white transition flex items-center justify-center cursor-pointer"
+                      className="p-1 rounded bg-emerald-500 hover:bg-emerald-600 text-slate-100 dark:text-white transition flex items-center justify-center cursor-pointer"
                     >
                       <Check size={11} className="stroke-[3]" />
                     </button>
@@ -622,13 +618,13 @@ const Categories = ({ token }) => {
                   <button
                     onClick={() => handleDuplicate(cat._id)}
                     title="Clone Category"
-                    className={`p-1 rounded hover:bg-slate-100 ${isSelected ? "text-orange-200 hover:text-white" : "text-slate-400 hover:text-slate-850"}`}
+                    className={`p-1 rounded hover:bg-slate-100 ${isSelected ? "text-orange-200 hover:text-white" : "text-slate-400 hover:text-slate-800"}`}
                   >
                     <Copy size={11} />
                   </button>
                   <button
                     onClick={() => handleEdit(cat)}
-                    className={`p-1 rounded hover:bg-slate-100 ${isSelected ? "text-orange-200 hover:text-white" : "text-slate-450 hover:text-slate-850"}`}
+                    className={`p-1 rounded hover:bg-slate-100 ${isSelected ? "text-orange-200 hover:text-white" : "text-slate-400 hover:text-slate-800"}`}
                   >
                     <Edit3 size={11} />
                   </button>
@@ -669,11 +665,11 @@ const Categories = ({ token }) => {
     <div className="space-y-6 text-left">
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 bg-orange-500 text-white rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20">
+          <div className="h-10 w-10 bg-orange-500 text-slate-100 dark:text-white rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20">
             <Layers size={20} />
           </div>
           <div>
-            <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">Category Architect</h1>
+            <h1 className="text-xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Category Architect</h1>
             <p className="text-xs text-slate-400">Build parent/sub taxonomies, dynamic seller forms, custom validation rules, and filter presets.</p>
           </div>
         </div>
@@ -681,9 +677,7 @@ const Categories = ({ token }) => {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setViewArchived(!viewArchived)}
-            className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-              viewArchived ? "bg-amber-100 border-amber-300 text-amber-800" : "bg-white border-slate-200 text-slate-650 hover:bg-slate-50"
-            }`}
+            className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${ viewArchived ? "bg-amber-100 border-amber-300 text-amber-800" : "bg-white border-slate-200 dark:border-slate-800 text-slate-600 hover:bg-slate-50" }`}
           >
             <Archive size={13} />
             <span>{viewArchived ? "Hide Archived" : "Show Archived"}</span>
@@ -694,8 +688,8 @@ const Categories = ({ token }) => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* CATEGORY FORM BUILDER */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
-          <h2 className="text-sm font-black text-slate-800 tracking-tight flex items-center gap-1.5">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
+          <h2 className="text-sm font-black text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-1.5">
             <Sparkles size={14} className="text-orange-500" />
             <span>{editingId ? "Edit Category Details" : "Create Product Taxonomy"}</span>
           </h2>
@@ -718,7 +712,7 @@ const Categories = ({ token }) => {
                 placeholder="e.g. Electronics, Laptops, Keyboards"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-4.5 py-2.5 rounded-xl border border-slate-200 text-slate-800 text-xs outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition"
+                className="w-full px-4.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                 required
               />
             </div>
@@ -729,7 +723,7 @@ const Categories = ({ token }) => {
                 <select
                   value={parentCategoryId}
                   onChange={(e) => setParentCategoryId(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-slate-800 text-xs outline-none focus:border-orange-500 bg-white"
+                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-xs outline-none bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                 >
                   <option value="">None (Top-Level)</option>
                   {categories
@@ -746,7 +740,7 @@ const Categories = ({ token }) => {
                   type="number"
                   placeholder="0"
                   value={parentCategoryId ? "" : undefined}
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-slate-800 text-xs outline-none focus:border-orange-500"
+                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-xs outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                 />
               </div>
             </div>
@@ -758,7 +752,7 @@ const Categories = ({ token }) => {
                 value={description}
                 rows={2}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full px-4.5 py-2.5 rounded-xl border border-slate-200 text-slate-800 text-xs outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition resize-none"
+                className="w-full px-4.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-xs outline-none transition resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
               />
             </div>
 
@@ -770,7 +764,7 @@ const Categories = ({ token }) => {
                   placeholder="e.g. laptop, smartphone"
                   value={icon}
                   onChange={(e) => setIcon(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-slate-800 text-xs outline-none focus:border-orange-500"
+                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-xs outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                 />
               </div>
               <div className="space-y-1">
@@ -780,7 +774,7 @@ const Categories = ({ token }) => {
                   placeholder="URL link"
                   value={bannerImage}
                   onChange={(e) => setBannerImage(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-slate-800 text-xs outline-none focus:border-orange-500"
+                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-xs outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                 />
               </div>
             </div>
@@ -796,7 +790,7 @@ const Categories = ({ token }) => {
                   placeholder="e.g. Shop Premium Laptops Online"
                   value={seoTitle}
                   onChange={(e) => setSeoTitle(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-slate-800 text-xs outline-none focus:border-orange-500"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-xs outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                 />
               </div>
 
@@ -807,7 +801,7 @@ const Categories = ({ token }) => {
                   placeholder="e.g. laptop, macbook, electronics"
                   value={seoKeywords}
                   onChange={(e) => setSeoKeywords(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-slate-800 text-xs outline-none focus:border-orange-500"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-xs outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                 />
               </div>
 
@@ -818,7 +812,7 @@ const Categories = ({ token }) => {
                   value={seoDescription}
                   rows={2}
                   onChange={(e) => setSeoDescription(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-slate-800 text-xs outline-none focus:border-orange-500 resize-none"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-xs outline-none resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                 />
               </div>
             </div>
@@ -851,7 +845,7 @@ const Categories = ({ token }) => {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 py-3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-xl text-xs font-black uppercase tracking-wider transition shadow-md hover:shadow-orange-500/20 active:scale-[0.98] disabled:opacity-50 cursor-pointer text-center"
+                className="flex-1 py-3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-slate-100 dark:text-white rounded-xl text-xs font-black uppercase tracking-wider transition shadow-md hover:shadow-orange-500/20 active:scale-[0.98] disabled:opacity-50 cursor-pointer text-center"
               >
                 {loading ? "Saving..." : editingId ? "Save Changes" : "Create Category"}
               </button>
@@ -859,7 +853,7 @@ const Categories = ({ token }) => {
                 <button
                   type="button"
                   onClick={resetCategoryForm}
-                  className="px-4 py-3 bg-slate-100 text-slate-650 font-bold text-xs rounded-xl hover:bg-slate-200 transition cursor-pointer"
+                  className="px-4 py-3 bg-slate-100 text-slate-600 font-bold text-xs rounded-xl hover:bg-slate-200 transition cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -869,9 +863,9 @@ const Categories = ({ token }) => {
         </div>
 
         {/* HIERARCHICAL TREE VIEW */}
-        <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col space-y-4">
+        <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm flex flex-col space-y-4">
           <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-            <h2 className="text-sm font-black text-slate-850 tracking-tight">Interactive Taxonomy Tree</h2>
+            <h2 className="text-sm font-black text-slate-800 dark:text-slate-100 tracking-tight">Interactive Taxonomy Tree</h2>
             <span className="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">
               {categories.length} Categories
             </span>
@@ -879,9 +873,9 @@ const Categories = ({ token }) => {
 
           <div className="flex-1 overflow-y-auto max-h-[650px] pr-1 space-y-2">
             {categories.length === 0 ? (
-              <div className="border border-dashed border-slate-200 rounded-2xl py-12 text-center space-y-2">
-                <FolderMinus className="mx-auto text-slate-350" size={40} />
-                <p className="text-xs font-bold text-slate-800">No categories found</p>
+              <div className="border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl py-12 text-center space-y-2">
+                <FolderMinus className="mx-auto text-slate-300" size={40} />
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-100">No categories found</p>
                 <p className="text-[11px] text-slate-400">Initialize your taxonomy system by creating a category.</p>
               </div>
             ) : (

@@ -41,7 +41,7 @@ const OrderCard = ({ order, drivers, onClick }) => {
   return (
     <div
       onClick={onClick}
-      className="bg-white dark:bg-[#151b26] border border-slate-200/80 dark:border-slate-800/80 rounded-xl p-4.5 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)] dark:shadow-none hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:hover:shadow-[0_8px_30px_rgb(0,0,0,0.3)] hover:border-slate-300 dark:hover:border-slate-700/80 transition-all duration-300 cursor-pointer flex flex-col justify-between min-h-[160px] group relative overflow-hidden"
+      className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-xl p-4.5 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)] dark:shadow-none hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:hover:shadow-[0_8px_30px_rgb(0,0,0,0.3)] hover:border-slate-300 dark:hover:border-slate-700/80 transition-all duration-300 cursor-pointer flex flex-col justify-between min-h-[160px] group relative overflow-hidden"
     >
       {/* Accent hover animation strip */}
       <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -52,7 +52,7 @@ const OrderCard = ({ order, drivers, onClick }) => {
       <div>
         {/* Header line */}
         <div className="flex items-center justify-between gap-1.5 border-b border-slate-100 dark:border-slate-800/80 pb-2.5 mb-3">
-          <span className="font-mono text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-850 px-2 py-0.5 rounded-md shadow-xs">
+          <span className="font-mono text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 px-2 py-0.5 rounded-md shadow-xs">
             #{shortId}
           </span>
           <div className="flex items-center gap-2">
@@ -89,11 +89,7 @@ const OrderCard = ({ order, drivers, onClick }) => {
         </div>
         <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-900 rounded-full overflow-hidden">
           <div 
-            className={`h-full rounded-full transition-all duration-500 ${
-              order.orderStatus === "Delivered" 
-                ? "bg-emerald-500" 
-                : "bg-blue-600"
-            }`}
+            className={`h-full rounded-full transition-all duration-500 ${ order.orderStatus === "Delivered" ? "bg-emerald-500" : "bg-blue-600" }`}
             style={{ width: `${progress}%` }} 
           />
         </div>

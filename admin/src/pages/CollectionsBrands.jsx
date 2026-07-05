@@ -188,7 +188,7 @@ const CollectionsBrands = ({ token }) => {
       {/* Header section */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center shadow-lg shadow-indigo-600/20">
+          <div className="h-10 w-10 bg-indigo-600 text-slate-100 dark:text-white rounded-xl flex items-center justify-center shadow-lg shadow-indigo-600/20">
             <Award size={20} />
           </div>
           <div>
@@ -202,21 +202,13 @@ const CollectionsBrands = ({ token }) => {
       <div className="flex border-b border-slate-200 dark:border-white/[0.08] gap-4">
         <button
           onClick={() => setActiveTab("collections")}
-          className={`pb-3 text-sm font-extrabold uppercase tracking-wider transition-colors border-b-2 cursor-pointer ${
-            activeTab === "collections"
-              ? "border-indigo-650 text-indigo-650 dark:border-indigo-400 dark:text-indigo-400"
-              : "border-transparent text-slate-400 hover:text-slate-600"
-          }`}
+          className={`pb-3 text-sm font-extrabold uppercase tracking-wider transition-colors border-b-2 cursor-pointer ${ activeTab === "collections" ? "border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400" : "border-transparent text-slate-400 hover:text-slate-600" }`}
         >
           Curated Collections ({collections.length})
         </button>
         <button
           onClick={() => setActiveTab("brands")}
-          className={`pb-3 text-sm font-extrabold uppercase tracking-wider transition-colors border-b-2 cursor-pointer ${
-            activeTab === "brands"
-              ? "border-indigo-650 text-indigo-650 dark:border-indigo-400 dark:text-indigo-400"
-              : "border-transparent text-slate-400 hover:text-slate-600"
-          }`}
+          className={`pb-3 text-sm font-extrabold uppercase tracking-wider transition-colors border-b-2 cursor-pointer ${ activeTab === "brands" ? "border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400" : "border-transparent text-slate-400 hover:text-slate-600" }`}
         >
           Marketplace Brands ({brands.length})
         </button>
@@ -225,7 +217,7 @@ const CollectionsBrands = ({ token }) => {
       {activeTab === "collections" ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Create form */}
-          <div className="bg-white dark:bg-[#172033] border border-slate-200 dark:border-white/[0.08] rounded-2xl p-5 shadow-sm space-y-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.08] rounded-2xl p-5 shadow-sm space-y-4">
             <h2 className="text-sm font-black text-slate-800 dark:text-white tracking-tight flex items-center gap-1.5">
               <Plus size={14} className="text-indigo-500" />
               <span>Create Collection Suggestion</span>
@@ -238,7 +230,7 @@ const CollectionsBrands = ({ token }) => {
                   placeholder="e.g. Work From Home"
                   value={colName}
                   onChange={(e) => setColName(e.target.value)}
-                  className="w-full px-4.5 py-2.5 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:border-indigo-500 transition"
+                  className="w-full px-4.5 py-2.5 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                   required
                 />
               </div>
@@ -250,7 +242,7 @@ const CollectionsBrands = ({ token }) => {
                   placeholder="URL link"
                   value={colBanner}
                   onChange={(e) => setColBanner(e.target.value)}
-                  className="w-full px-4.5 py-2.5 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:border-indigo-500 transition"
+                  className="w-full px-4.5 py-2.5 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                 />
               </div>
 
@@ -261,7 +253,7 @@ const CollectionsBrands = ({ token }) => {
                   value={colDescription}
                   rows={3}
                   onChange={(e) => setColDescription(e.target.value)}
-                  className="w-full px-4.5 py-2.5 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:border-indigo-500 transition resize-none"
+                  className="w-full px-4.5 py-2.5 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                 />
               </div>
 
@@ -270,7 +262,7 @@ const CollectionsBrands = ({ token }) => {
                 <select
                   value={colStatus}
                   onChange={(e) => setColStatus(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:border-indigo-500 bg-white"
+                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                 >
                   <option value="active">Active (Published)</option>
                   <option value="pending">Pending Approval (Draft/Suggestion)</option>
@@ -281,7 +273,7 @@ const CollectionsBrands = ({ token }) => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black uppercase tracking-wider transition shadow-md cursor-pointer"
+                className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-slate-100 dark:text-white rounded-xl text-xs font-black uppercase tracking-wider transition shadow-md cursor-pointer"
               >
                 {loading ? "Saving..." : "Add Collection"}
               </button>
@@ -289,7 +281,7 @@ const CollectionsBrands = ({ token }) => {
           </div>
 
           {/* List display */}
-          <div className="lg:col-span-2 bg-white dark:bg-[#172033] border border-slate-200 dark:border-white/[0.08] rounded-2xl p-5 shadow-sm space-y-4">
+          <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.08] rounded-2xl p-5 shadow-sm space-y-4">
             <h2 className="text-sm font-black text-slate-800 dark:text-white tracking-tight pb-2 border-b border-slate-100 dark:border-white/[0.06]">
               Catalog Collections
             </h2>
@@ -307,13 +299,7 @@ const CollectionsBrands = ({ token }) => {
                       <div className="min-w-0 space-y-0.5">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-bold text-xs text-slate-800 dark:text-white">{col.name}</span>
-                          <span className={`px-1.5 py-0.2 text-[8px] font-black uppercase tracking-wider rounded border ${
-                            col.status === "active"
-                              ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-                              : col.status === "pending"
-                                ? "bg-amber-500/10 text-amber-500 border-amber-500/20 animate-pulse"
-                                : "bg-slate-500/10 text-slate-500 border-slate-500/20"
-                          }`}>
+                          <span className={`px-1.5 py-0.2 text-[8px] font-black uppercase tracking-wider rounded border ${ col.status === "active" ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : col.status === "pending" ? "bg-amber-500/10 text-amber-500 border-amber-500/20 animate-pulse" : "bg-slate-500/10 text-slate-500 border-slate-500/20" }`}>
                             {col.status}
                           </span>
                         </div>
@@ -328,7 +314,7 @@ const CollectionsBrands = ({ token }) => {
                         <button
                           onClick={() => approveCollection(col._id)}
                           title="Approve Collection"
-                          className="p-1.5 rounded bg-emerald-500 hover:bg-emerald-600 text-white transition cursor-pointer flex items-center justify-center"
+                          className="p-1.5 rounded bg-emerald-500 hover:bg-emerald-600 text-slate-100 dark:text-white transition cursor-pointer flex items-center justify-center"
                         >
                           <Check size={12} className="stroke-[3]" />
                         </button>
@@ -349,7 +335,7 @@ const CollectionsBrands = ({ token }) => {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Brand Form */}
-          <div className="bg-white dark:bg-[#172033] border border-slate-200 dark:border-white/[0.08] rounded-2xl p-5 shadow-sm space-y-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.08] rounded-2xl p-5 shadow-sm space-y-4">
             <h2 className="text-sm font-black text-slate-800 dark:text-white tracking-tight flex items-center gap-1.5">
               <Plus size={14} className="text-indigo-500" />
               <span>Create Brand Suggestion</span>
@@ -362,7 +348,7 @@ const CollectionsBrands = ({ token }) => {
                   placeholder="e.g. Nike, Apple"
                   value={brandName}
                   onChange={(e) => setBrandName(e.target.value)}
-                  className="w-full px-4.5 py-2.5 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:border-indigo-500 transition"
+                  className="w-full px-4.5 py-2.5 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                   required
                 />
               </div>
@@ -374,7 +360,7 @@ const CollectionsBrands = ({ token }) => {
                   placeholder="Logo URL"
                   value={brandLogo}
                   onChange={(e) => setBrandLogo(e.target.value)}
-                  className="w-full px-4.5 py-2.5 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:border-indigo-500 transition"
+                  className="w-full px-4.5 py-2.5 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                 />
               </div>
 
@@ -385,7 +371,7 @@ const CollectionsBrands = ({ token }) => {
                   placeholder="Banner image link"
                   value={brandBanner}
                   onChange={(e) => setBrandBanner(e.target.value)}
-                  className="w-full px-4.5 py-2.5 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:border-indigo-500 transition"
+                  className="w-full px-4.5 py-2.5 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                 />
               </div>
 
@@ -394,7 +380,7 @@ const CollectionsBrands = ({ token }) => {
                 <select
                   value={brandStatus}
                   onChange={(e) => setBrandStatus(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:border-indigo-500 bg-white"
+                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                 >
                   <option value="active">Active (Published)</option>
                   <option value="pending">Pending Approval (Draft/Suggestion)</option>
@@ -405,7 +391,7 @@ const CollectionsBrands = ({ token }) => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black uppercase tracking-wider transition shadow-md cursor-pointer"
+                className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-slate-100 dark:text-white rounded-xl text-xs font-black uppercase tracking-wider transition shadow-md cursor-pointer"
               >
                 {loading ? "Saving..." : "Add Brand"}
               </button>
@@ -413,7 +399,7 @@ const CollectionsBrands = ({ token }) => {
           </div>
 
           {/* Brand list */}
-          <div className="lg:col-span-2 bg-white dark:bg-[#172033] border border-slate-200 dark:border-white/[0.08] rounded-2xl p-5 shadow-sm space-y-4">
+          <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.08] rounded-2xl p-5 shadow-sm space-y-4">
             <h2 className="text-sm font-black text-slate-800 dark:text-white tracking-tight pb-2 border-b border-slate-100 dark:border-white/[0.06]">
               Marketplace Partners & Brands
             </h2>
@@ -435,13 +421,7 @@ const CollectionsBrands = ({ token }) => {
                       <div className="min-w-0 space-y-0.5">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-bold text-xs text-slate-800 dark:text-white">{b.name}</span>
-                          <span className={`px-1.5 py-0.2 text-[8px] font-black uppercase tracking-wider rounded border ${
-                            b.status === "active"
-                              ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-                              : b.status === "pending"
-                                ? "bg-amber-500/10 text-amber-500 border-amber-500/20 animate-pulse"
-                                : "bg-slate-500/10 text-slate-500 border-slate-500/20"
-                          }`}>
+                          <span className={`px-1.5 py-0.2 text-[8px] font-black uppercase tracking-wider rounded border ${ b.status === "active" ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : b.status === "pending" ? "bg-amber-500/10 text-amber-500 border-amber-500/20 animate-pulse" : "bg-slate-500/10 text-slate-500 border-slate-500/20" }`}>
                             {b.status}
                           </span>
                         </div>
@@ -456,7 +436,7 @@ const CollectionsBrands = ({ token }) => {
                         <button
                           onClick={() => approveBrand(b._id)}
                           title="Approve Brand"
-                          className="p-1.5 rounded bg-emerald-500 hover:bg-emerald-600 text-white transition cursor-pointer flex items-center justify-center"
+                          className="p-1.5 rounded bg-emerald-500 hover:bg-emerald-600 text-slate-100 dark:text-white transition cursor-pointer flex items-center justify-center"
                         >
                           <Check size={12} className="stroke-[3]" />
                         </button>

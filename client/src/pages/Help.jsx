@@ -182,7 +182,7 @@ const Help = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search queries, returns, refund status..."
-                className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md text-sm text-slate-900 dark:text-white placeholder-slate-400 outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 shadow-sm transition-all font-medium"
+                className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md text-sm text-slate-900 dark:text-white placeholder-slate-400 outline-none shadow-sm transition-all font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
               />
             </div>
           </div>
@@ -236,11 +236,7 @@ const Help = () => {
                   <button
                     key={pill.id}
                     onClick={() => setSelectedFaqCategory(pill.id)}
-                    className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                      selectedFaqCategory === pill.id
-                        ? "bg-orange-500 text-white shadow-sm"
-                        : "bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-350"
-                    }`}
+                    className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${ selectedFaqCategory === pill.id ? "bg-orange-500 text-slate-100 dark:text-white shadow-sm" : "bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300" }`}
                   >
                     {pill.label}
                   </button>
@@ -269,9 +265,7 @@ const Help = () => {
                       </button>
                       
                       {/* FAQ Expand Transition */}
-                      <div className={`grid transition-all duration-200 ease-in-out ${
-                        isOpen ? "grid-rows-[1fr] opacity-100 mt-2" : "grid-rows-[0fr] opacity-0 overflow-hidden"
-                      }`}>
+                      <div className={`grid transition-all duration-200 ease-in-out ${ isOpen ? "grid-rows-[1fr] opacity-100 mt-2" : "grid-rows-[0fr] opacity-0 overflow-hidden" }`}>
                         <div className="overflow-hidden">
                           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed pl-1 font-medium">
                             {faq.answer}
@@ -302,10 +296,10 @@ const Help = () => {
                 Loading support tickets...
               </div>
             ) : tickets.length === 0 ? (
-              <div className="p-12 text-center rounded-3xl border border-dashed border-slate-250 dark:border-slate-800 bg-white dark:bg-slate-900/50 shadow-xs">
-                <ShieldQuestion className="mx-auto h-12 w-12 text-slate-350 dark:text-slate-500" />
+              <div className="p-12 text-center rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 shadow-xs">
+                <ShieldQuestion className="mx-auto h-12 w-12 text-slate-300 dark:text-slate-500" />
                 <p className="mt-4 text-base font-black text-slate-800 dark:text-white">No tickets filed yet</p>
-                <p className="mt-2 text-xs text-slate-450 dark:text-slate-500 font-medium max-w-sm mx-auto">
+                <p className="mt-2 text-xs text-slate-400 dark:text-slate-500 font-medium max-w-sm mx-auto">
                   If you have a problem with an order or account settings, file a new request in the panel and we'll reply here.
                 </p>
               </div>
@@ -323,7 +317,7 @@ const Help = () => {
                   return (
                     <article
                       key={ticket._id}
-                      className="rounded-3xl border border-slate-200/70 dark:border-slate-805 bg-white dark:bg-slate-900/50 p-6 shadow-sm hover:border-slate-300 dark:hover:border-slate-700/60 transition-all duration-300"
+                      className="rounded-3xl border border-slate-200/70 dark:border-slate-800 bg-white dark:bg-slate-900/50 p-6 shadow-sm hover:border-slate-300 dark:hover:border-slate-700/60 transition-all duration-300"
                     >
                       <div
                         onClick={() => setExpandedTicketId(isExpanded ? null : ticket._id)}
@@ -344,7 +338,7 @@ const Help = () => {
                         <div className="flex items-center gap-3 self-start sm:self-auto shrink-0">
                           <span className="flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-black bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800/80">
                             <span className={`h-1.5 w-1.5 rounded-full ${dotColor}`} />
-                            <span className="text-[10px] uppercase text-slate-650 dark:text-slate-400">{ticket.status}</span>
+                            <span className="text-[10px] uppercase text-slate-600 dark:text-slate-400">{ticket.status}</span>
                           </span>
                           {isExpanded ? (
                             <ChevronUp size={16} className="text-slate-400" />
@@ -355,14 +349,12 @@ const Help = () => {
                       </div>
 
                       {/* Ticket Timeline Expand Panel */}
-                      <div className={`grid transition-all duration-300 ease-in-out ${
-                        isExpanded ? "grid-rows-[1fr] opacity-100 mt-5 border-t border-slate-100 dark:border-slate-800/60 pt-4" : "grid-rows-[0fr] opacity-0 overflow-hidden"
-                      }`}>
+                      <div className={`grid transition-all duration-300 ease-in-out ${ isExpanded ? "grid-rows-[1fr] opacity-100 mt-5 border-t border-slate-100 dark:border-slate-800/60 pt-4" : "grid-rows-[0fr] opacity-0 overflow-hidden" }`}>
                         <div className="overflow-hidden space-y-4">
                           
                           {/* User Message */}
                           <div className="rounded-2xl bg-slate-50 dark:bg-slate-950/50 p-4 text-xs sm:text-sm text-slate-700 dark:text-slate-300 border border-slate-100 dark:border-slate-800">
-                            <div className="mb-2 flex items-center gap-2 font-black text-[11px] uppercase tracking-wider text-slate-450 dark:text-slate-400">
+                            <div className="mb-2 flex items-center gap-2 font-black text-[11px] uppercase tracking-wider text-slate-400 dark:text-slate-400">
                               <MessageSquareText className="h-3.5 w-3.5 text-orange-500" />
                               Your Enquiry
                             </div>
@@ -371,7 +363,7 @@ const Help = () => {
 
                           {/* Admin Reply */}
                           {ticket.adminReply ? (
-                            <div className="rounded-2xl bg-green-500/[0.04] dark:bg-green-500/[0.02] p-4 text-xs sm:text-sm text-slate-700 dark:text-slate-350 border border-green-500/10 dark:border-green-500/5">
+                            <div className="rounded-2xl bg-green-500/[0.04] dark:bg-green-500/[0.02] p-4 text-xs sm:text-sm text-slate-700 dark:text-slate-300 border border-green-500/10 dark:border-green-500/5">
                               <div className="mb-2 flex items-center gap-2 font-black text-[11px] uppercase tracking-wider text-green-500 dark:text-green-400">
                                 <Headset className="h-3.5 w-3.5 text-green-500" />
                                 Support Executive Response
@@ -417,7 +409,7 @@ const Help = () => {
                   onChange={(event) =>
                     setForm((current) => ({ ...current, category: event.target.value }))
                   }
-                  className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-xs font-bold text-slate-700 dark:text-slate-350 outline-none focus:border-orange-500 transition-colors"
+                  className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-xs font-bold text-slate-700 dark:text-slate-300 outline-none transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                 >
                   {categories.map((item) => (
                     <option key={item} value={item} className="bg-white dark:bg-slate-900">
@@ -435,7 +427,7 @@ const Help = () => {
                     setForm((current) => ({ ...current, subject: event.target.value }))
                   }
                   placeholder="e.g. Order status missing, Refund fail"
-                  className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 px-4 py-3 text-xs text-slate-800 dark:text-slate-200 outline-none focus:border-orange-500 placeholder-slate-400 transition-colors font-semibold"
+                  className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-xs text-slate-800 dark:text-slate-200 outline-none placeholder-slate-400 transition-colors font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                 />
               </div>
 
@@ -448,14 +440,14 @@ const Help = () => {
                     setForm((current) => ({ ...current, message: event.target.value }))
                   }
                   placeholder="Include transaction IDs, product names, dates, or address details if applicable..."
-                  className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 px-4 py-3 text-xs text-slate-800 dark:text-slate-200 outline-none focus:border-orange-500 placeholder-slate-400 resize-none transition-colors font-medium leading-relaxed"
+                  className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-3 text-xs text-slate-800 dark:text-slate-200 outline-none placeholder-slate-400 resize-none transition-colors font-medium leading-relaxed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full flex items-center justify-center gap-1.5 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-black text-xs py-3.5 shadow-md shadow-orange-500/10 hover:shadow-orange-500/20 active:scale-98 transition disabled:opacity-60 cursor-pointer border-none uppercase tracking-wider select-none"
+                className="w-full flex items-center justify-center gap-1.5 rounded-2xl bg-orange-500 hover:bg-orange-600 text-slate-100 dark:text-white font-black text-xs py-3.5 shadow-md shadow-orange-500/10 hover:shadow-orange-500/20 active:scale-98 transition disabled:opacity-60 cursor-pointer border-none uppercase tracking-wider select-none"
               >
                 {submitting ? (
                   <span>Submitting...</span>

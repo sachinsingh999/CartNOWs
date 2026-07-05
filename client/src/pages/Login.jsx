@@ -234,7 +234,7 @@ const Login = () => {
               ease: "easeInOut",
               delay: 1.5
             }}
-            className="absolute top-[40%] right-[12%] z-20 flex items-center justify-center p-3 bg-white/5 dark:bg-slate-900/60 backdrop-blur-md border border-white/10 dark:border-slate-800 rounded-2xl shadow-xl text-rose-455"
+            className="absolute top-[40%] right-[12%] z-20 flex items-center justify-center p-3 bg-white/5 dark:bg-slate-900/60 backdrop-blur-md border border-white/10 dark:border-slate-800 rounded-2xl shadow-xl text-rose-500"
           >
             <ShoppingCart size={20} className="animate-pulse" />
           </motion.div>
@@ -257,7 +257,7 @@ const Login = () => {
               <div className="absolute inset-[-10px] rounded-[38px] border border-indigo-500/20 animate-ping opacity-25" style={{ animationDuration: '3s' }} />
               <div className="absolute inset-[-20px] rounded-[44px] border border-violet-500/10 animate-ping opacity-15" style={{ animationDuration: '4s' }} />
 
-              <ShoppingBag size={64} className="text-white dark:text-indigo-400 drop-shadow-[0_0_15px_rgba(99,102,241,0.5)]" />
+              <ShoppingBag size={64} className="text-slate-100 dark:text-white dark:text-indigo-400 drop-shadow-[0_0_15px_rgba(99,102,241,0.5)]" />
               
               {/* Small sparkles around the central icon */}
               <Sparkles size={18} className="absolute top-5 right-5 text-orange-400 animate-pulse" />
@@ -272,7 +272,7 @@ const Login = () => {
               >
                 CartNOW Platform
               </motion.p>
-              <h1 className="text-3xl font-extrabold text-white tracking-tight leading-none">
+              <h1 className="text-3xl font-extrabold text-slate-100 dark:text-white tracking-tight leading-none">
                 Elevate Your Shopping Flow
               </h1>
               <p className="max-w-xs text-xs font-light text-slate-400 leading-relaxed mx-auto">
@@ -314,7 +314,7 @@ const Login = () => {
 
             <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
               <motion.div variants={itemVariants}>
-                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-350">
+                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                   Email
                 </label>
                 <input
@@ -328,7 +328,7 @@ const Login = () => {
               </motion.div>
 
               <motion.div variants={itemVariants}>
-                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-350">
+                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                   Password
                 </label>
                 <div className="relative">
@@ -356,11 +356,11 @@ const Login = () => {
                   whileTap={{ scale: 0.985 }}
                   type="submit"
                   disabled={loadingSubmit}
-                  className="w-full flex items-center justify-center gap-2 rounded-xl bg-slate-950 dark:bg-indigo-600 hover:bg-slate-900 dark:hover:bg-indigo-700 py-3.5 text-xs font-black uppercase tracking-wider text-white transition cursor-pointer shadow disabled:opacity-75 disabled:cursor-not-allowed"
+                  className="w-full flex items-center justify-center gap-2 rounded-xl bg-slate-950 dark:bg-indigo-600 hover:bg-slate-900 dark:hover:bg-indigo-700 py-3.5 text-xs font-black uppercase tracking-wider text-slate-100 dark:text-white transition cursor-pointer shadow disabled:opacity-75 disabled:cursor-not-allowed"
                 >
                   {loadingSubmit ? (
                     <>
-                      <Loader2 size={14} className="animate-spin text-white" />
+                      <Loader2 size={14} className="animate-spin text-slate-100 dark:text-white" />
                       <span>Verifying...</span>
                     </>
                   ) : (
@@ -401,7 +401,7 @@ const Login = () => {
                   href="https://cartnow-seller.vercel.app"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 text-xs font-bold text-slate-600 dark:text-slate-400 hover:border-orange-500 dark:hover:border-orange-500 hover:bg-orange-50/35 dark:hover:bg-orange-950/20 hover:text-orange-650 dark:hover:text-orange-400 transition-all duration-300 shadow-sm"
+                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 text-xs font-bold text-slate-600 dark:text-slate-400 hover:border-orange-500 dark:hover:border-orange-500 hover:bg-orange-50/35 dark:hover:bg-orange-950/20 hover:text-orange-600 dark:hover:text-orange-400 transition-all duration-300 shadow-sm"
                 >
                   <Store size={15} className="text-orange-500" />
                   <span>Seller Portal</span>
@@ -413,7 +413,7 @@ const Login = () => {
                   href="https://cart-now-deliveryagent.vercel.app/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 text-xs font-bold text-slate-600 dark:text-slate-400 hover:border-blue-500 dark:hover:border-blue-500 hover:bg-blue-50/35 dark:hover:bg-blue-950/20 hover:text-blue-650 dark:hover:text-blue-400 transition-all duration-300 shadow-sm"
+                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 text-xs font-bold text-slate-600 dark:text-slate-400 hover:border-blue-500 dark:hover:border-blue-500 hover:bg-blue-50/35 dark:hover:bg-blue-950/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300 shadow-sm"
                 >
                   <Truck size={15} className="text-blue-500" />
                   <span>Delivery Agent</span>

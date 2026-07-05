@@ -2,7 +2,6 @@ import heroAssetModel from "../models/heroAssetModel.js";
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
 import path from "path";
-import { Client } from "@gradio/client";
 
 // @desc    Get all active hero slideshow assets
 // @route   GET /api/system/hero-assets
@@ -10,8 +9,31 @@ import { Client } from "@gradio/client";
 export const getHeroAssets = async (req, res) => {
   try {
     const { admin } = req.query;
-    const filter = admin === "true" ? {} : { isActive: true };
-    const assets = await heroAssetModel.find(filter).sort({ createdAt: -1 });
+
+    // Optional Cleanup: automatically mark expired slides as inactive
+    await heroAssetModel.updateMany(
+      {
+        isActive: true,
+        expiresAt: { $lte: new Date() }
+      },
+      {
+        $set: {
+          isActive: false
+        }
+      }
+    );
+
+    const filter = admin === "true"
+      ? {}
+      : {
+          isActive: true,
+          $or: [
+            { expiresAt: null },
+            { expiresAt: { $gt: new Date() } }
+          ]
+        };
+
+    const assets = await heroAssetModel.find(filter).sort({ order: 1, createdAt: -1 });
     res.json({ success: true, assets });
   } catch (error) {
     console.error("Error fetching hero assets:", error);
@@ -50,29 +72,38 @@ export const addHeroAsset = async (req, res) => {
     }
 
     let imageUrl = "";
+    let publicId = "";
 
     try {
       console.log("Uploading hero asset to Cloudinary...");
       const result = await cloudinary.uploader.upload(req.file.path, {
         resource_type: "image",
+        folder: "cartnow/banners"
       });
       // Delete local file after successful upload to Cloudinary
       fs.unlink(req.file.path, (err) => {
         if (err) console.log("Failed to delete local temp file:", err.message);
       });
       imageUrl = result.secure_url;
+      publicId = result.public_id;
     } catch (cloudinaryError) {
       console.log("Cloudinary upload failed for hero asset, falling back to local storage:", cloudinaryError.message);
       // Fallback: use local served path
       imageUrl = `/uploads/${req.file.filename}`;
     }
 
+    const tomorrow = new Date();
+    tomorrow.setHours(24, 0, 0, 0); // next midnight
+
     const assetData = {
       name,
       category,
       tagline: tagline || "",
       imageUrl,
-      isActive: true
+      isActive: true,
+      publicId,
+      folder: "cartnow/banners",
+      expiresAt: tomorrow
     };
 
     const newAsset = new heroAssetModel(assetData);
@@ -184,32 +215,39 @@ export const generateHeroAssetImage = async (req, res) => {
   }
 };
 
-// Helper function to remove background using BiRefNet (Matting-HR model for professional cutout quality)
-const removeBackgroundBiRefNet = async (imageUrl) => {
-  try {
-    console.log(`Connecting to ZhengPeng7/BiRefNet_demo for high-quality background removal...`);
-    const client = await Client.connect("ZhengPeng7/BiRefNet_demo");
-    console.log(`Sending image URL to BiRefNet: ${imageUrl}`);
-    const result = await client.predict("/URL", {
-      images: imageUrl,
-      resolution: "1024x1024",
-      weights_file: "Matting-HR" // Matting-HR is optimal for hair, lace, transparent fabrics, and luxury cutouts
-    });
-    
-    if (result?.data && result.data[0] && result.data[0][1]) {
-      const predictionUrl = result.data[0][1].url;
-      console.log(`Background removed successfully. Transparent image URL: ${predictionUrl}`);
-      return predictionUrl;
-    } else {
-      throw new Error("Invalid response format from BiRefNet Space");
-    }
-  } catch (error) {
-    console.error("BiRefNet background removal failed:", error.message);
-    throw error;
+// Helper function to remove background using remove.bg API (using env REMOVE_BG key)
+const removeBackgroundViaRemoveBg = async (localFilePath, mimetype, originalname) => {
+  const removeBgApiKey = process.env.REMOVE_BG;
+  if (!removeBgApiKey) {
+    throw new Error("REMOVE_BG API key is not configured in .env file");
   }
+
+  console.log(`Sending file to remove.bg API...`);
+  
+  const formData = new FormData();
+  const fileBuffer = fs.readFileSync(localFilePath);
+  const fileBlob = new Blob([fileBuffer], { type: mimetype });
+  formData.append("image_file", fileBlob, originalname);
+  formData.append("size", "full");
+
+  const response = await fetch("https://api.remove.bg/v1.0/removebg", {
+    method: "POST",
+    headers: {
+      "X-Api-Key": removeBgApiKey
+    },
+    body: formData
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`remove.bg API error: ${response.statusText} - ${errText}`);
+  }
+
+  const arrayBuffer = await response.arrayBuffer();
+  return Buffer.from(arrayBuffer);
 };
 
-// @desc    Remove background of uploaded image using BiRefNet AI
+// @desc    Remove background of uploaded image using remove.bg API
 // @route   POST /api/system/hero-assets/remove-bg
 // @access  Admin
 export const removeHeroAssetBackground = async (req, res) => {
@@ -218,39 +256,18 @@ export const removeHeroAssetBackground = async (req, res) => {
       return res.status(400).json({ success: false, message: "Please upload an image file" });
     }
 
-    let rawImageUrl = "";
-    // Upload local file to Cloudinary first
+    console.log("Applying remove.bg background removal on uploaded file...");
+    let transparentBuffer;
     try {
-      console.log("Uploading raw user image to Cloudinary...");
-      const result = await cloudinary.uploader.upload(req.file.path, {
-        resource_type: "image",
-      });
-      // Delete local file
+      transparentBuffer = await removeBackgroundViaRemoveBg(req.file.path, req.file.mimetype, req.file.originalname);
+    } finally {
+      // Clean up the local temp file immediately after processing
       fs.unlink(req.file.path, (err) => {
         if (err) console.log("Failed to delete local temp file:", err.message);
       });
-      rawImageUrl = result.secure_url;
-    } catch (uploadError) {
-      // Clean up file if Cloudinary upload fails
-      fs.unlink(req.file.path, (err) => {
-        if (err) console.log("Failed to delete local temp file:", err.message);
-      });
-      return res.status(500).json({ success: false, message: "Cloudinary upload failed: " + uploadError.message });
     }
 
-    console.log("Applying high-quality BiRefNet background removal on uploaded file...");
-    const transparentUrl = await removeBackgroundBiRefNet(rawImageUrl);
-
-    // Download transparent image and upload it to Cloudinary
-    const transparentResponse = await fetch(transparentUrl);
-    if (!transparentResponse.ok) {
-      throw new Error(`Failed to fetch transparent image from BiRefNet: ${transparentResponse.statusText}`);
-    }
-
-    const arrayBuffer = await transparentResponse.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-
-    console.log("Uploading transparent user image to Cloudinary...");
+    console.log("Uploading transparent image from remove.bg to Cloudinary...");
     const cloudinaryUploadTransparent = () => {
       return new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
@@ -264,7 +281,7 @@ export const removeHeroAssetBackground = async (req, res) => {
             }
           }
         );
-        stream.write(buffer);
+        stream.write(transparentBuffer);
         stream.end();
       });
     };
@@ -299,6 +316,7 @@ export const updateHeroAsset = async (req, res) => {
     }
 
     let imageUrl = asset.imageUrl;
+    let publicId = asset.publicId;
     if (req.file) {
       const fileExt = path.extname(req.file.originalname).toLowerCase();
       if (fileExt !== ".png" && fileExt !== ".webp") {
@@ -312,6 +330,7 @@ export const updateHeroAsset = async (req, res) => {
         console.log("Uploading replacement hero asset to Cloudinary...");
         const result = await cloudinary.uploader.upload(req.file.path, {
           resource_type: "image",
+          folder: "cartnow/banners"
         });
         fs.unlink(req.file.path, (err) => {
           if (err) console.log("Failed to delete local temp file:", err.message);
@@ -324,10 +343,21 @@ export const updateHeroAsset = async (req, res) => {
           });
         }
         imageUrl = result.secure_url;
+        publicId = result.public_id;
       } catch (cloudinaryError) {
         console.log("Cloudinary replacement upload failed, falling back to local:", cloudinaryError.message);
         imageUrl = `/uploads/${req.file.filename}`;
       }
+    }
+
+    let expiresAt = asset.expiresAt;
+    const requestedActive = isActive !== undefined ? (isActive === "true" || isActive === true) : asset.isActive;
+
+    // If a slide transitions from inactive to active:
+    if (!asset.isActive && requestedActive) {
+      const tomorrow = new Date();
+      tomorrow.setHours(24, 0, 0, 0);
+      expiresAt = tomorrow;
     }
 
     const updatedData = {
@@ -335,7 +365,10 @@ export const updateHeroAsset = async (req, res) => {
       category: category !== undefined ? category : asset.category,
       tagline: tagline !== undefined ? tagline : asset.tagline,
       imageUrl,
-      isActive: isActive !== undefined ? (isActive === "true" || isActive === true) : asset.isActive
+      isActive: requestedActive,
+      expiresAt,
+      publicId,
+      folder: "cartnow/banners"
     };
 
     const updatedAsset = await heroAssetModel.findByIdAndUpdate(id, updatedData, { new: true });
@@ -353,6 +386,32 @@ export const updateHeroAsset = async (req, res) => {
         if (err) console.log("Failed to delete temp file:", err.message);
       });
     }
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Reorder hero slideshow assets
+// @route   PUT /api/system/hero-assets/reorder
+// @access  Admin
+export const reorderHeroAssets = async (req, res) => {
+  try {
+    const { orderIds } = req.body;
+    if (!Array.isArray(orderIds)) {
+      return res.status(400).json({ success: false, message: "orderIds array is required" });
+    }
+
+    const bulkOps = orderIds.map((id, index) => ({
+      updateOne: {
+        filter: { _id: id },
+        update: { order: index }
+      }
+    }));
+
+    await heroAssetModel.bulkWrite(bulkOps);
+
+    res.json({ success: true, message: "Hero assets reordered successfully" });
+  } catch (error) {
+    console.error("Error reordering hero assets:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };

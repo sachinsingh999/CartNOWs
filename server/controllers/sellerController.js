@@ -472,8 +472,20 @@ export const createProduct = async (req, res) => {
       }
     }
 
-    const isNewFormat = dynamicAttributes && typeof dynamicAttributes === "object" && !Array.isArray(dynamicAttributes);
-    if (isNewFormat) {
+    const isArrayFormat = Array.isArray(dynamicAttributes);
+    const isNewFormat = dynamicAttributes && typeof dynamicAttributes === "object" && !isArrayFormat;
+
+    if (isArrayFormat) {
+      // Extract specification and feature attributes for backward compatible finalSpecs
+      dynamicAttributes.forEach(attr => {
+        if (attr.name && (attr.displayType === "specification" || attr.displayType === "feature")) {
+          finalSpecs.push({
+            key: attr.name,
+            value: attr.value || (attr.values && Array.isArray(attr.values) ? attr.values.join(", ") : "")
+          });
+        }
+      });
+    } else if (isNewFormat) {
       finalSpecs = Object.entries(dynamicAttributes).map(([key, val]) => ({
         key,
         value: Array.isArray(val) ? val.join(", ") : String(val)
@@ -506,31 +518,69 @@ export const createProduct = async (req, res) => {
       }
     }
 
-    if (isNewFormat && (!dynamicVariants || dynamicVariants.length === 0)) {
-      const attrKeys = Object.keys(dynamicAttributes).filter(
-        k => Array.isArray(dynamicAttributes[k]) && dynamicAttributes[k].length > 0
-      );
-      if (attrKeys.length > 0) {
-        const combinations = [];
-        const generate = (index, current) => {
-          if (index === attrKeys.length) {
-            combinations.push({ ...current });
-            return;
-          }
-          const key = attrKeys[index];
-          dynamicAttributes[key].forEach(val => {
-            current[key] = val;
-            generate(index + 1, current);
-          });
-        };
-        generate(0, {});
+    if (!dynamicVariants || dynamicVariants.length === 0) {
+      if (isArrayFormat) {
+        // Auto-generate variants from array-based attributes of type "variant"
+        const variantAttrs = dynamicAttributes.filter(
+          attr => attr.displayType === "variant" && attr.name && Array.isArray(attr.values) && attr.values.length > 0
+        );
+        if (variantAttrs.length > 0) {
+          const combinations = [];
+          const generate = (index, current) => {
+            if (index === variantAttrs.length) {
+              combinations.push({ ...current });
+              return;
+            }
+            const attr = variantAttrs[index];
+            attr.values.forEach(val => {
+              current[attr.name] = val;
+              generate(index + 1, current);
+            });
+          };
+          generate(0, {});
 
-        dynamicVariants = combinations.map((comb, idx) => ({
-          sku: `${sku ? sku : (name ? name.substring(0, 5).toUpperCase() : "PROD")}-${Object.values(comb).join("-").toUpperCase()}-${idx}`,
-          price: Number(price),
-          stock: Number(stock) || 0,
-          attributes: comb
-        }));
+          dynamicVariants = combinations.map((comb, idx) => ({
+            sku: `${sku ? sku : (name ? name.substring(0, 5).toUpperCase() : "PROD")}-${Object.values(comb).join("-").toUpperCase()}-${idx}`,
+            price: Number(price),
+            stock: Number(stock) || 0,
+            images: [],
+            barcode: "",
+            availability: true,
+            attributes: comb
+          }));
+        }
+      } else if (isNewFormat) {
+        const attrKeys = Object.keys(dynamicAttributes).filter(
+          k => {
+            const lowerName = k.toLowerCase();
+            return ["color", "size", "ram", "storage"].includes(lowerName) && Array.isArray(dynamicAttributes[k]) && dynamicAttributes[k].length > 0;
+          }
+        );
+        if (attrKeys.length > 0) {
+          const combinations = [];
+          const generate = (index, current) => {
+            if (index === attrKeys.length) {
+              combinations.push({ ...current });
+              return;
+            }
+            const key = attrKeys[index];
+            dynamicAttributes[key].forEach(val => {
+              current[key] = val;
+              generate(index + 1, current);
+            });
+          };
+          generate(0, {});
+
+          dynamicVariants = combinations.map((comb, idx) => ({
+            sku: `${sku ? sku : (name ? name.substring(0, 5).toUpperCase() : "PROD")}-${Object.values(comb).join("-").toUpperCase()}-${idx}`,
+            price: Number(price),
+            stock: Number(stock) || 0,
+            images: [],
+            barcode: "",
+            availability: true,
+            attributes: comb
+          }));
+        }
       }
     }
 
@@ -564,6 +614,28 @@ export const createProduct = async (req, res) => {
       }
     });
 
+    const resolvedVariants = (dynamicVariants || []).map(v => {
+      let vImages = [];
+      if (Array.isArray(v.images)) {
+        vImages = v.images.map(img => {
+          if (typeof img === "number" || (typeof img === "string" && /^\d+$/.test(img))) {
+            const idx = parseInt(img);
+            return imageUrls[idx] || "";
+          }
+          return img;
+        }).filter(Boolean);
+      }
+      return {
+        sku: v.sku || "",
+        price: Number(v.price) || Number(price),
+        stock: Number(v.stock) || 0,
+        images: vImages,
+        barcode: v.barcode || "",
+        availability: v.availability !== undefined ? !!v.availability : true,
+        attributes: v.attributes || {}
+      };
+    });
+
     const product = await productModel.create({
       name,
       description,
@@ -577,11 +649,16 @@ export const createProduct = async (req, res) => {
       brand: finalBrandName,
       sku: sku || "",
       stock: Number(stock) || 0,
-      sizes: isNewFormat ? (dynamicAttributes["Size"] || []) : (sizes ? (Array.isArray(sizes) ? sizes : sizes.split(",")) : []),
+      sizes: isArrayFormat
+        ? (dynamicAttributes.find(a => a.name.toLowerCase() === "size")?.values || 
+           (dynamicAttributes.find(a => a.name.toLowerCase() === "size")?.value ? [dynamicAttributes.find(a => a.name.toLowerCase() === "size").value] : []))
+        : isNewFormat
+        ? (dynamicAttributes["Size"] || [])
+        : (sizes ? (Array.isArray(sizes) ? sizes : sizes.split(",")) : []),
       tags: tags ? (Array.isArray(tags) ? tags : tags.split(",")) : [],
       specifications: finalSpecs,
-      attributes: isNewFormat ? dynamicAttributes : finalSpecs,
-      variants: dynamicVariants,
+      attributes: (isNewFormat || isArrayFormat) ? dynamicAttributes : finalSpecs,
+      variants: resolvedVariants,
       sellerId: req.seller._id,
       status: "approved" // Set to approved so it is visible to users immediately
     });
@@ -628,10 +705,22 @@ export const createProduct = async (req, res) => {
 
 export const updateProduct = async (req, res) => {
   try {
-    const { id, name, description, price, category, subCategory, collection, brand, sku, stock, sizes, tags, specifications, images } = req.body;
+    const { 
+      id, name, description, price, category, subCategory, collection, brand, sku, stock, sizes, tags, specifications, images,
+      audience, keywords, shortDescription, highlights, careInstructions
+    } = req.body;
     
     const product = await productModel.findOne({ _id: id, sellerId: req.seller._id });
     if (!product) return res.status(404).json({ success: false, message: "Product not found or unauthorized" });
+
+    const parseToArray = (input) => {
+      if (!input) return [];
+      if (Array.isArray(input)) return input;
+      if (typeof input === 'string') {
+        return input.split(',').map(s => s.trim()).filter(Boolean);
+      }
+      return [input];
+    };
 
     product.name = name ?? product.name;
     product.description = description ?? product.description;
@@ -643,7 +732,25 @@ export const updateProduct = async (req, res) => {
     product.sku = sku ?? product.sku;
     product.stock = stock ?? product.stock;
     product.sizes = sizes ?? product.sizes;
-    product.tags = tags ?? product.tags;
+    
+    if (tags !== undefined) {
+      product.tags = parseToArray(tags);
+    }
+    if (keywords !== undefined) {
+      product.keywords = parseToArray(keywords);
+    }
+    if (highlights !== undefined) {
+      product.highlights = parseToArray(highlights);
+    }
+    if (careInstructions !== undefined) {
+      product.careInstructions = parseToArray(careInstructions);
+    }
+    if (audience !== undefined) {
+      product.audience = audience;
+    }
+    if (shortDescription !== undefined) {
+      product.shortDescription = shortDescription;
+    }
     
     let finalSpecs = specifications;
     if (finalSpecs) {
@@ -663,7 +770,28 @@ export const updateProduct = async (req, res) => {
         } catch (e) {}
       }
       product.attributes = dynamicAttributes;
-      if (dynamicAttributes && typeof dynamicAttributes === "object" && !Array.isArray(dynamicAttributes)) {
+      
+      if (Array.isArray(dynamicAttributes)) {
+        // Compile specifications and features
+        const finalSpecs = [];
+        dynamicAttributes.forEach(attr => {
+          if (attr.name && (attr.displayType === "specification" || attr.displayType === "feature")) {
+            finalSpecs.push({
+              key: attr.name,
+              value: attr.value || (attr.values && Array.isArray(attr.values) ? attr.values.join(", ") : "")
+            });
+          }
+        });
+        product.specifications = finalSpecs;
+
+        // Compile sizes
+        const sizeAttr = dynamicAttributes.find(a => a.name.toLowerCase() === "size");
+        if (sizeAttr) {
+          product.sizes = sizeAttr.displayType === "variant" && Array.isArray(sizeAttr.values)
+            ? sizeAttr.values
+            : (sizeAttr.value ? [sizeAttr.value] : []);
+        }
+      } else if (dynamicAttributes && typeof dynamicAttributes === "object") {
         product.specifications = Object.entries(dynamicAttributes).map(([key, val]) => ({
           key,
           value: Array.isArray(val) ? val.join(", ") : String(val)
@@ -674,6 +802,9 @@ export const updateProduct = async (req, res) => {
       }
     }
 
+    const isArrayFormat = Array.isArray(dynamicAttributes);
+    const isNewFormat = dynamicAttributes && typeof dynamicAttributes === "object" && !isArrayFormat;
+
     let dynamicVariants = req.body.variants;
     if (dynamicVariants) {
       if (typeof dynamicVariants === "string") {
@@ -681,10 +812,50 @@ export const updateProduct = async (req, res) => {
           dynamicVariants = JSON.parse(dynamicVariants);
         } catch (e) {}
       }
-      product.variants = dynamicVariants;
-    } else if (dynamicAttributes && typeof dynamicAttributes === "object" && !Array.isArray(dynamicAttributes)) {
+      product.variants = (dynamicVariants || []).map(v => ({
+        sku: v.sku || "",
+        price: Number(v.price) || Number(price || product.price),
+        stock: Number(v.stock) || 0,
+        images: Array.isArray(v.images) ? v.images : [],
+        barcode: v.barcode || "",
+        availability: v.availability !== undefined ? !!v.availability : true,
+        attributes: v.attributes || {}
+      }));
+    } else if (isArrayFormat) {
+      const variantAttrs = dynamicAttributes.filter(
+        attr => attr.displayType === "variant" && attr.name && Array.isArray(attr.values) && attr.values.length > 0
+      );
+      if (variantAttrs.length > 0) {
+        const combinations = [];
+        const generate = (index, current) => {
+          if (index === variantAttrs.length) {
+            combinations.push({ ...current });
+            return;
+          }
+          const attr = variantAttrs[index];
+          attr.values.forEach(val => {
+            current[attr.name] = val;
+            generate(index + 1, current);
+          });
+        };
+        generate(0, {});
+
+        product.variants = combinations.map((comb, idx) => ({
+          sku: `${sku || product.sku || "PROD"}-${Object.values(comb).join("-").toUpperCase()}-${idx}`,
+          price: Number(price || product.price),
+          stock: Number(stock || product.stock) || 0,
+          images: [],
+          barcode: "",
+          availability: true,
+          attributes: comb
+        }));
+      }
+    } else if (isNewFormat) {
       const attrKeys = Object.keys(dynamicAttributes).filter(
-        k => Array.isArray(dynamicAttributes[k]) && dynamicAttributes[k].length > 0
+        k => {
+          const lowerName = k.toLowerCase();
+          return ["color", "size", "ram", "storage"].includes(lowerName) && Array.isArray(dynamicAttributes[k]) && dynamicAttributes[k].length > 0;
+        }
       );
       if (attrKeys.length > 0) {
         const combinations = [];
@@ -705,6 +876,9 @@ export const updateProduct = async (req, res) => {
           sku: `${sku || product.sku || "PROD"}-${Object.values(comb).join("-").toUpperCase()}-${idx}`,
           price: Number(price || product.price),
           stock: Number(stock || product.stock) || 0,
+          images: [],
+          barcode: "",
+          availability: true,
           attributes: comb
         }));
       }
@@ -1575,16 +1749,16 @@ export const generateProduct = async (req, res) => {
       }
     }
 
-    const finalSpecs = [...userSpecs];
-    Object.entries(template).forEach(([key, defaultValue]) => {
-      const exists = finalSpecs.some(s => s && typeof s === "object" && s.key?.toLowerCase() === key.toLowerCase());
-      if (!exists) {
-        finalSpecs.push({ key, value: defaultValue });
+    // Support new attributes structure and auto-detect/normalize
+    let rawAttributes = attributes;
+    if (rawAttributes) {
+      if (typeof rawAttributes === "string") {
+        try {
+          rawAttributes = JSON.parse(rawAttributes);
+        } catch (e) {}
       }
-    });
+    }
 
-    // 11. Generate variants
-    let inputAttrs = attributes || {};
     const standardFields = [
       'name', 'slug', 'category', 'subCategory', 'price', 'discountPrice', 'images',
       'brand', 'stock', 'sku', 'description', 'shortDescription', 'tags', 'keywords',
@@ -1592,52 +1766,178 @@ export const generateProduct = async (req, res) => {
       'careInstructions', 'variants', 'shipping', 'seller', 'seo', 'isFeatured',
       'isTrending', 'isActive', 'createdAt', 'preview', 'audience', 'attributes'
     ];
-    Object.keys(req.body).forEach(key => {
-      if (!standardFields.includes(key)) {
-        if (Array.isArray(req.body[key])) {
-          inputAttrs[key] = req.body[key];
-        } else if (typeof req.body[key] === 'string' && req.body[key].includes(',')) {
-          inputAttrs[key] = req.body[key].split(',').map(s => s.trim()).filter(Boolean);
+
+    let normalizedAttributes = [];
+
+    if (Array.isArray(rawAttributes)) {
+      // 1. Raw attributes is already the new array format
+      normalizedAttributes = rawAttributes.map(attr => {
+        if (!attr || typeof attr !== "object") return null;
+        const name = attr.name ? String(attr.name).trim() : "Unknown";
+        let displayType = attr.displayType;
+
+        // Auto-detect displayType if missing
+        if (!displayType) {
+          const lowerName = name.toLowerCase();
+          if (["color", "size", "ram", "storage"].includes(lowerName)) {
+            displayType = "variant";
+          } else {
+            displayType = "specification";
+          }
+        }
+
+        let inputType = attr.inputType || "Text";
+        let value = "";
+        let values = [];
+
+        if (displayType === "variant") {
+          if (Array.isArray(attr.values)) {
+            values = attr.values.map(v => String(v).trim()).filter(Boolean);
+          } else if (typeof attr.values === "string" && attr.values) {
+            values = attr.values.split(",").map(v => v.trim()).filter(Boolean);
+          } else if (attr.value) {
+            values = [String(attr.value).trim()];
+          }
+          value = attr.value || values[0] || "";
+          inputType = attr.inputType || (name.toLowerCase() === "color" ? "Color Picker" : "Dropdown");
+        } else {
+          value = attr.value !== undefined ? String(attr.value) : (Array.isArray(attr.values) ? attr.values.join(", ") : "");
+          values = [];
+          inputType = attr.inputType || "Text";
+        }
+
+        return {
+          name,
+          displayType,
+          inputType,
+          value,
+          values
+        };
+      }).filter(Boolean);
+    } else {
+      // 2. Legacy format: object or extra body fields
+      const legacyMap = {};
+      if (rawAttributes && typeof rawAttributes === "object") {
+        Object.entries(rawAttributes).forEach(([k, v]) => {
+          legacyMap[k] = v;
+        });
+      }
+      // Mix in extra top-level fields
+      Object.keys(req.body).forEach(key => {
+        if (!standardFields.includes(key)) {
+          legacyMap[key] = req.body[key];
+        }
+      });
+
+      // Convert legacy map to normalized attributes
+      normalizedAttributes = Object.entries(legacyMap).map(([name, val]) => {
+        const lowerName = name.trim().toLowerCase();
+        let displayType = "specification";
+        if (["color", "size", "ram", "storage"].includes(lowerName)) {
+          displayType = "variant";
+        }
+
+        let inputType = "Text";
+        let value = "";
+        let values = [];
+
+        if (displayType === "variant") {
+          if (Array.isArray(val)) {
+            values = val.map(v => String(v).trim()).filter(Boolean);
+          } else if (typeof val === "string" && val) {
+            values = val.split(",").map(v => v.trim()).filter(Boolean);
+          } else {
+            values = [String(val).trim()];
+          }
+          value = values[0] || "";
+          inputType = lowerName === "color" ? "Color Picker" : "Dropdown";
+        } else {
+          value = Array.isArray(val) ? val.join(", ") : String(val);
+          values = [];
+          inputType = "Text";
+        }
+
+        return {
+          name: name.trim(),
+          displayType,
+          inputType,
+          value,
+          values
+        };
+      });
+    }
+
+    const finalSpecs = [...userSpecs];
+    // Mix in dynamic specs/features
+    normalizedAttributes.forEach(attr => {
+      if (attr.name && (attr.displayType === "specification" || attr.displayType === "feature")) {
+        const exists = finalSpecs.some(s => s && typeof s === "object" && s.key?.toLowerCase() === attr.name.toLowerCase());
+        if (!exists) {
+          finalSpecs.push({
+            key: attr.name,
+            value: attr.value || (attr.values ? attr.values.join(", ") : "")
+          });
         }
       }
     });
+    // Mix in template defaults
+    Object.entries(template).forEach(([key, defaultValue]) => {
+      const exists = finalSpecs.some(s => s && typeof s === "object" && s.key?.toLowerCase() === key.toLowerCase());
+      if (!exists) {
+        finalSpecs.push({ key, value: defaultValue });
+      }
+    });
 
-    const attrKeys = Object.keys(inputAttrs).filter(
-      k => Array.isArray(inputAttrs[k]) && inputAttrs[k].length > 0
-    );
+    const sizeAttr = normalizedAttributes.find(a => a.name.toLowerCase() === "size");
+    const finalSizes = sizeAttr
+      ? (sizeAttr.displayType === "variant" && Array.isArray(sizeAttr.values) ? sizeAttr.values : (sizeAttr.value ? [sizeAttr.value] : []))
+      : (req.body.sizes ? (Array.isArray(req.body.sizes) ? req.body.sizes : req.body.sizes.split(",")) : []);
+
+    // 11. Generate variants
     let dynamicVariants = [];
     if (req.body.variants && Array.isArray(req.body.variants) && req.body.variants.length > 0) {
       dynamicVariants = req.body.variants.map(v => ({
         sku: v.sku || "",
         price: Number(v.price) || Number(price),
         stock: Number(v.stock) || 0,
+        images: Array.isArray(v.images) ? v.images : [],
+        barcode: v.barcode || "",
+        availability: v.availability !== undefined ? !!v.availability : true,
         attributes: v.attributes || {}
       }));
-    } else if (attrKeys.length > 0) {
-      const combinations = [];
-      const generate = (index, current) => {
-        if (index === attrKeys.length) {
-          combinations.push({ ...current });
-          return;
-        }
-        const key = attrKeys[index];
-        inputAttrs[key].forEach(val => {
-          current[key] = val;
-          generate(index + 1, current);
-        });
-      };
-      generate(0, {});
-
-      const baseSku = sku || name.substring(0, 5).toUpperCase().replace(/[^A-Z0-9]/g, "");
-      dynamicVariants = combinations.map((comb, idx) => {
-        const suffix = Object.values(comb).join("+");
-        return {
-          sku: `${baseSku}-${suffix}`,
-          price: Number(price),
-          stock: 0,
-          attributes: comb
+    } else {
+      const variantAttrs = normalizedAttributes.filter(
+        attr => attr.displayType === "variant" && attr.name && Array.isArray(attr.values) && attr.values.length > 0
+      );
+      if (variantAttrs.length > 0) {
+        const combinations = [];
+        const generate = (index, current) => {
+          if (index === variantAttrs.length) {
+            combinations.push({ ...current });
+            return;
+          }
+          const attr = variantAttrs[index];
+          attr.values.forEach(val => {
+            current[attr.name] = val;
+            generate(index + 1, current);
+          });
         };
-      });
+        generate(0, {});
+
+        const baseSku = sku || name.substring(0, 5).toUpperCase().replace(/[^A-Z0-9]/g, "");
+        dynamicVariants = combinations.map((comb, idx) => {
+          const suffix = Object.values(comb).join("+");
+          return {
+            sku: `${baseSku}-${suffix}`,
+            price: Number(price),
+            stock: 0,
+            images: [],
+            barcode: "",
+            availability: true,
+            attributes: comb
+          };
+        });
+      }
     }
 
     // Resolve Category Object or suggest it
@@ -1663,12 +1963,12 @@ export const generateProduct = async (req, res) => {
           subCategory: subCategory || "",
           brand: finalBrand,
           stock: finalStock,
-          sizes: inputAttrs["Size"] || [],
+          sizes: finalSizes,
           tags: finalTags,
           keywords,
           highlights,
           careInstructions,
-          attributes: inputAttrs,
+          attributes: normalizedAttributes,
           variants: dynamicVariants,
           collections: ["New Arrivals", "Best Sellers"],
           specifications: finalSpecs
@@ -1710,7 +2010,7 @@ export const generateProduct = async (req, res) => {
       brand: finalBrand,
       sku: sku || `GEN-${Date.now()}`,
       stock: finalStock,
-      sizes: inputAttrs["Size"] || [],
+      sizes: finalSizes,
       tags: finalTags,
       keywords,
       highlights,
@@ -1719,7 +2019,7 @@ export const generateProduct = async (req, res) => {
       averageRating: 0,
       totalReviews: 0,
       reviews: [],
-      attributes: inputAttrs,
+      attributes: normalizedAttributes,
       variants: dynamicVariants,
       sellerId: req.seller._id,
       status: "approved"

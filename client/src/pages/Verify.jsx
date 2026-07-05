@@ -85,7 +85,7 @@ const Verify = () => {
 
         {!verifying && isSuccess && (
           <div className="flex flex-col items-center space-y-4">
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-450 scale-100 animate-bounce">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 scale-100 animate-bounce">
               <CheckCircle2 size={48} />
             </div>
             <h1 className="text-2xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight">Payment Successful</h1>
@@ -98,7 +98,7 @@ const Verify = () => {
             <div className="border-t border-slate-100 dark:border-slate-800 pt-6 w-full">
               <button
                 onClick={() => navigate(`/order-confirmed/${orderId}`)}
-                className="w-full rounded-2xl bg-slate-950 dark:bg-orange-600 py-3.5 text-sm font-bold text-white transition hover:bg-slate-800 dark:hover:bg-orange-500 cursor-pointer"
+                className="w-full rounded-2xl bg-slate-950 dark:bg-orange-600 py-3.5 text-sm font-bold text-slate-100 dark:text-white transition hover:bg-slate-800 dark:hover:bg-orange-500 cursor-pointer"
               >
                 View Order Receipt
               </button>
@@ -112,19 +112,19 @@ const Verify = () => {
               <XCircle size={48} />
             </div>
             <h1 className="text-2xl font-extrabold text-slate-900 dark:text-slate-50 tracking-tight">Payment Verification Failed</h1>
-            <p className="text-sm text-slate-505 dark:text-slate-400 font-medium max-w-xs mx-auto leading-relaxed">
+            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium max-w-xs mx-auto leading-relaxed">
               {errorMessage || "We could not complete payment validation. Your order has been cancelled."}
             </p>
-            <div className="border-t border-slate-100 dark:border-slate-805 pt-6 w-full flex flex-col gap-2">
+            <div className="border-t border-slate-100 dark:border-slate-800 pt-6 w-full flex flex-col gap-2">
               <button
                 onClick={() => navigate("/placeorder")}
-                className="w-full rounded-2xl bg-slate-950 dark:bg-orange-655 py-3.5 text-sm font-bold text-white transition hover:bg-slate-805 dark:hover:bg-orange-500 cursor-pointer"
+                className="w-full rounded-2xl bg-slate-950 dark:bg-orange-700 py-3.5 text-sm font-bold text-slate-100 dark:text-white transition hover:bg-slate-800 dark:hover:bg-orange-500 cursor-pointer"
               >
                 Try Again
               </button>
               <button
                 onClick={() => navigate("/product")}
-                className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-3.5 text-sm font-bold text-slate-707 dark:text-slate-300 transition hover:bg-slate-55 dark:hover:bg-slate-800 cursor-pointer"
+                className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-3.5 text-sm font-bold text-slate-700 dark:text-slate-300 transition hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
               >
                 Continue Shopping
               </button>

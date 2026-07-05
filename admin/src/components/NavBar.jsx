@@ -97,13 +97,13 @@ const NavBar = ({ setToken, toggleSidebar, isCollapsed, theme, setTheme, token }
 
   return (
     <>
-      <nav className="w-full h-[60px] flex items-center justify-between px-6 bg-white dark:bg-[#111827] border-b border-slate-200 dark:border-white/[0.08] z-40 sticky top-0 shadow-xs transition-colors duration-250">
+      <nav className="w-full h-[60px] flex items-center justify-between px-6 bg-white dark:bg-gray-900 border-b border-slate-200 dark:border-white/[0.08] z-40 sticky top-0 shadow-xs transition-colors duration-250">
         
         {/* Left section: Logo & Collapse Toggle */}
         <div className="flex items-center gap-4">
           <button 
             onClick={toggleSidebar}
-            className="text-slate-505 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.04] transition duration-200 cursor-pointer"
+            className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.04] transition duration-200 cursor-pointer"
             title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
           >
             <Menu size={18} />
@@ -122,7 +122,7 @@ const NavBar = ({ setToken, toggleSidebar, isCollapsed, theme, setTheme, token }
             </div>
             <div className="flex flex-col leading-none">
               <span className="text-sm font-bold text-slate-900 dark:text-white tracking-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition duration-200">CartNOW</span>
-              <span className="text-[9px] text-blue-655 dark:text-blue-400 font-bold uppercase tracking-widest mt-0.5">Control Center</span>
+              <span className="text-[9px] text-blue-700 dark:text-blue-400 font-bold uppercase tracking-widest mt-0.5">Control Center</span>
             </div>
           </div>
         </div>
@@ -135,9 +135,9 @@ const NavBar = ({ setToken, toggleSidebar, isCollapsed, theme, setTheme, token }
             placeholder="Search logs, orders, or catalogs..."
             onClick={() => setIsSearchOpen(true)}
             readOnly
-            className="w-full pl-9 pr-12 py-1.5 text-xs bg-slate-50 dark:bg-[#172033] border border-slate-200 dark:border-white/[0.06] rounded-lg text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 cursor-pointer outline-none focus:border-blue-500/50"
+            className="w-full pl-9 pr-12 py-1.5 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/[0.06] rounded-lg text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 cursor-pointer outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
           />
-          <span className="absolute right-3 text-[10px] text-slate-400 dark:text-slate-500 font-bold bg-white dark:bg-[#111827] px-1.5 py-0.5 rounded border border-slate-200 dark:border-white/[0.06] select-none font-mono">
+          <span className="absolute right-3 text-[10px] text-slate-400 dark:text-slate-500 font-bold bg-white dark:bg-gray-900 px-1.5 py-0.5 rounded border border-slate-200 dark:border-white/[0.06] select-none font-mono">
             ⌘K
           </span>
         </div>
@@ -173,9 +173,9 @@ const NavBar = ({ setToken, toggleSidebar, isCollapsed, theme, setTheme, token }
           <div className="relative">
             <button
               onClick={() => setShowDropdown(!showDropdown)}
-              className="flex items-center gap-2 px-2.5 py-1.5 bg-slate-100 dark:bg-[#172033] hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-250 dark:border-white/[0.06] text-slate-900 dark:text-white rounded-lg transition duration-200 cursor-pointer select-none"
+              className="flex items-center gap-2 px-2.5 py-1.5 bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-white/[0.06] text-slate-900 dark:text-white rounded-lg transition duration-200 cursor-pointer select-none"
             >
-              <div className="h-5.5 w-5.5 rounded-full bg-blue-600 flex items-center justify-center text-white font-extrabold text-[10px] uppercase shadow-xs">
+              <div className="h-5.5 w-5.5 rounded-full bg-blue-600 flex items-center justify-center text-slate-100 dark:text-white font-extrabold text-[10px] uppercase shadow-xs">
                 A
               </div>
               <div className="hidden sm:flex flex-col text-left leading-none">
@@ -187,7 +187,7 @@ const NavBar = ({ setToken, toggleSidebar, isCollapsed, theme, setTheme, token }
             {showDropdown && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setShowDropdown(false)}></div>
-                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#172033] border border-slate-200 dark:border-white/[0.08] rounded-xl shadow-xl z-50 text-slate-800 dark:text-slate-200 py-1.5 animate-fadeIn">
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.08] rounded-xl shadow-xl z-50 text-slate-800 dark:text-slate-200 py-1.5 animate-fadeIn">
                   <div className="px-4 py-1.5 text-[9px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider">
                     Operational Control
                   </div>
@@ -210,7 +210,7 @@ const NavBar = ({ setToken, toggleSidebar, isCollapsed, theme, setTheme, token }
                     }}
                     className="w-full text-left px-4 py-2 text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition cursor-pointer flex items-center gap-2"
                   >
-                    <LogOut size={13} className="text-rose-550 dark:text-rose-500" />
+                    <LogOut size={13} className="text-rose-500 dark:text-rose-500" />
                     <span>Sign Out</span>
                   </button>
                 </div>
@@ -230,10 +230,10 @@ const NavBar = ({ setToken, toggleSidebar, isCollapsed, theme, setTheme, token }
           />
 
           {/* Modal Content */}
-          <div className="relative w-full max-w-lg bg-white dark:bg-[#151b26] border border-slate-200 dark:border-white/[0.08] rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[60vh] mx-4 animate-scaleUp">
+          <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.08] rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[60vh] mx-4 animate-scaleUp">
             
             {/* Search Input Box */}
-            <div className="flex items-center gap-3 px-4 py-3.5 border-b border-slate-150 dark:border-white/[0.06]">
+            <div className="flex items-center gap-3 px-4 py-3.5 border-b border-slate-200 dark:border-white/[0.06]">
               <Search size={18} className="text-slate-400 dark:text-slate-500 shrink-0" />
               <input
                 ref={searchInputRef}
@@ -248,7 +248,7 @@ const NavBar = ({ setToken, toggleSidebar, isCollapsed, theme, setTheme, token }
               )}
               <button 
                 onClick={() => { setIsSearchOpen(false); setSearchQuery(""); }}
-                className="text-slate-400 hover:text-slate-650 dark:hover:text-white p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.04] transition cursor-pointer"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.04] transition cursor-pointer"
               >
                 <X size={16} />
               </button>
@@ -268,7 +268,7 @@ const NavBar = ({ setToken, toggleSidebar, isCollapsed, theme, setTheme, token }
                         <button
                           key={link.path}
                           onClick={() => handleNavigate(link.path)}
-                          className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-left font-semibold text-slate-700 dark:text-slate-350 hover:bg-slate-100 dark:hover:bg-white/[0.04] hover:text-slate-900 dark:hover:text-white transition duration-150 cursor-pointer"
+                          className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-left font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/[0.04] hover:text-slate-900 dark:hover:text-white transition duration-150 cursor-pointer"
                         >
                           <Icon size={14} className="text-slate-400" />
                           <span>{link.label}</span>
@@ -288,10 +288,10 @@ const NavBar = ({ setToken, toggleSidebar, isCollapsed, theme, setTheme, token }
                       <button
                         key={prod._id}
                         onClick={() => handleNavigate("/list")}
-                        className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-left hover:bg-slate-100 dark:hover:bg-white/[0.04] text-slate-705 dark:text-slate-300 transition duration-150 cursor-pointer"
+                        className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-left hover:bg-slate-100 dark:hover:bg-white/[0.04] text-slate-700 dark:text-slate-300 transition duration-150 cursor-pointer"
                       >
                         <div className="flex items-center gap-3">
-                          <img src={prod.image?.[0]} alt={prod.name} className="h-6 w-6 rounded-md object-cover bg-slate-50" />
+                          <img src={prod.image?.[0]} alt={prod.name} className="h-6 w-6 rounded-md object-cover bg-slate-50 dark:bg-slate-950" />
                           <div>
                             <p className="font-bold text-slate-900 dark:text-white leading-tight">{prod.name}</p>
                             <p className="text-[10px] text-slate-400 mt-0.5">{prod.category || "General"}</p>
@@ -313,7 +313,7 @@ const NavBar = ({ setToken, toggleSidebar, isCollapsed, theme, setTheme, token }
                       <button
                         key={ord._id}
                         onClick={() => handleNavigate("/orders")}
-                        className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-left hover:bg-slate-100 dark:hover:bg-white/[0.04] text-slate-705 dark:text-slate-300 transition duration-150 cursor-pointer"
+                        className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-left hover:bg-slate-100 dark:hover:bg-white/[0.04] text-slate-700 dark:text-slate-300 transition duration-150 cursor-pointer"
                       >
                         <div>
                           <p className="font-bold text-slate-900 dark:text-white">#{ord._id.slice(-6).toUpperCase()}</p>
@@ -339,8 +339,8 @@ const NavBar = ({ setToken, toggleSidebar, isCollapsed, theme, setTheme, token }
             </div>
 
             {/* Footer tips */}
-            <div className="px-4 py-2 bg-slate-50 dark:bg-slate-900/60 border-t border-slate-150 dark:border-white/[0.06] text-[10px] text-slate-400 dark:text-slate-500 flex items-center justify-between font-bold">
-              <span>Press <kbd className="bg-white dark:bg-[#111827] px-1 py-0.5 rounded border border-slate-250 dark:border-white/[0.08] shadow-xs">ESC</kbd> to close</span>
+            <div className="px-4 py-2 bg-slate-50 dark:bg-slate-900/60 border-t border-slate-200 dark:border-white/[0.06] text-[10px] text-slate-400 dark:text-slate-500 flex items-center justify-between font-bold">
+              <span>Press <kbd className="bg-white dark:bg-gray-900 px-1 py-0.5 rounded border border-slate-200 dark:border-white/[0.08] shadow-xs">ESC</kbd> to close</span>
               <span>⌘K Search Console</span>
             </div>
 

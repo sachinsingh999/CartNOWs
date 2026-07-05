@@ -33,14 +33,14 @@ const RevenueTrendsChart = ({
   const pathArea = pathLine ? `${pathLine} L ${points[points.length - 1].x} 180 L ${points[0].x} 180 Z` : "";
 
   return (
-    <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm space-y-6">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200/80 rounded-3xl p-6 shadow-sm space-y-6">
       <div className="flex items-center justify-between border-b border-slate-100 pb-4">
         <div>
-          <h3 className="text-sm font-black text-slate-900 tracking-tight">Revenue Trends</h3>
-          <p className="text-[11px] text-slate-450 mt-1">Aggregated sales index comparing monthly gross store payouts.</p>
+          <h3 className="text-sm font-black text-slate-900 dark:text-slate-100 tracking-tight">Revenue Trends</h3>
+          <p className="text-[11px] text-slate-400 mt-1">Aggregated sales index comparing monthly gross store payouts.</p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl shadow-sm">
+          <span className="text-[9px] font-black text-slate-500 uppercase tracking-wider bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-3 py-1.5 rounded-xl shadow-sm">
             Monthly Index
           </span>
         </div>
@@ -51,14 +51,14 @@ const RevenueTrendsChart = ({
         {/* Tooltip Overlay */}
         {hoveredTrend !== null && monthlyTrends[hoveredTrend] && (
           <div 
-            className="absolute bg-slate-950 text-white rounded-xl px-3.5 py-2 text-left shadow-2xl border border-slate-800 pointer-events-none z-10 transition-all duration-150"
+            className="absolute bg-slate-950 text-slate-100 dark:text-white rounded-xl px-3.5 py-2 text-left shadow-2xl border border-slate-800 pointer-events-none z-10 transition-all duration-150"
             style={{
               left: `${(hoveredTrend / (monthlyTrends.length - 1)) * 80 + 10}%`,
               top: "-15px",
               transform: "translateX(-50%)"
             }}
           >
-            <p className="text-[8px] font-black text-slate-450 uppercase tracking-widest">
+            <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">
               {monthlyTrends[hoveredTrend].month} Payout
             </p>
             <p className="text-xs font-black text-orange-400 mt-0.5">
@@ -78,7 +78,7 @@ const RevenueTrendsChart = ({
               {/* Gradient for curve line */}
               <linearGradient id="chartLineGrad" x1="0" y1="0" x2="1" y2="0">
                 <stop offset="0%" stopColor="#4f46e5" />
-                <stop offset="50%" stopColor="#ff5100" />
+                <stop offset="50%" stopColor="brand" />
                 <stop offset="100%" stopColor="#ec4899" />
               </linearGradient>
               {/* Glow Filter */}
@@ -126,7 +126,7 @@ const RevenueTrendsChart = ({
                   cx={pt.x}
                   cy={pt.y}
                   r="8"
-                  fill="#ff5100"
+                  fill="brand"
                   opacity="0"
                   className="group-hover/point:opacity-20 transition duration-150"
                 />
@@ -134,7 +134,7 @@ const RevenueTrendsChart = ({
                   cx={pt.x}
                   cy={pt.y}
                   r="4.5"
-                  fill={hoveredTrend === idx ? "#ff5100" : "#ffffff"}
+                  fill={hoveredTrend === idx ? "brand" : "#ffffff"}
                   stroke={hoveredTrend === idx ? "#ffffff" : "#4f46e5"}
                   strokeWidth="2.5"
                   className="transition duration-150 shadow"

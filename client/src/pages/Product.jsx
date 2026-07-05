@@ -787,7 +787,7 @@ const Product = () => {
               <select
                 value={category}
                 onChange={(e) => handleCategoryPillChange(e.target.value)}
-                className="border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 dark:text-slate-255 bg-white dark:bg-slate-900 cursor-pointer outline-none focus:border-indigo-500 shadow-sm"
+                className="border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 dark:text-slate-300 bg-white dark:bg-slate-900 cursor-pointer outline-none shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
               >
                 <option value="all">All Categories</option>
                 {categoriesList.filter(c => c !== "all").map(c => (
@@ -802,7 +802,7 @@ const Product = () => {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 dark:text-slate-255 bg-white dark:bg-slate-900 cursor-pointer outline-none focus:border-indigo-500 shadow-sm"
+                className="border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 dark:text-slate-300 bg-white dark:bg-slate-900 cursor-pointer outline-none shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
               >
                 <option value="featured">Best Matches</option>
                 <option value="popularity">Popularity</option>
@@ -831,7 +831,7 @@ const Product = () => {
               <button
                 key={chip.key}
                 onClick={chip.clear}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-500/5 dark:bg-indigo-500/10 border border-indigo-150 dark:border-indigo-900/30 text-[10.5px] font-extrabold text-indigo-600 dark:text-indigo-400 hover:border-rose-455 hover:text-rose-500 transition-all cursor-pointer capitalize shadow-xs"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-500/5 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-900/30 text-[10.5px] font-extrabold text-indigo-600 dark:text-indigo-400 hover:border-rose-500 hover:text-rose-500 transition-all cursor-pointer capitalize shadow-xs"
               >
                 <span>{chip.label}</span>
                 <X size={10} className="stroke-[3px]" />
@@ -959,7 +959,7 @@ const Product = () => {
               </p>
               <button
                 onClick={() => fetchProducts(page, page === 1)}
-                className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black uppercase tracking-wider transition active:scale-95 shadow cursor-pointer border border-indigo-500/20"
+                className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-slate-100 dark:text-white rounded-xl text-xs font-black uppercase tracking-wider transition active:scale-95 shadow cursor-pointer border border-indigo-500/20"
               >
                 Retry Connection
               </button>
@@ -979,14 +979,14 @@ const Product = () => {
               <span className="text-5xl block animate-bounce">📦</span>
               <div className="space-y-2">
                 <h3 className="text-xl font-black text-slate-800 dark:text-slate-100">No Products Located</h3>
-                <p className="text-xs text-slate-450 dark:text-slate-500 max-w-md mx-auto leading-relaxed">
+                <p className="text-xs text-slate-400 dark:text-slate-500 max-w-md mx-auto leading-relaxed">
                   We couldn't locate any products matching your selected criteria. Wide your search terms, clear filters, or browse trending categories.
                 </p>
               </div>
 
               {/* Suggested categories */}
               <div className="space-y-3">
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-450 dark:text-slate-500">Popular Collections</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Popular Collections</span>
                 <div className="flex flex-wrap gap-2 justify-center">
                   {["Fashion", "Electronics", "Beauty", "Home"].map((dept) => (
                     <button
@@ -996,7 +996,7 @@ const Product = () => {
                         setSelectedSubCategories([]);
                         setSelectedBrands([]);
                       }}
-                      className="px-4 py-2 bg-white/70 dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/80 text-xs font-bold text-slate-700 dark:text-slate-350 rounded-xl hover:bg-indigo-650 hover:text-white hover:border-indigo-650 transition-all duration-200 cursor-pointer shadow-sm"
+                      className="px-4 py-2 bg-white/70 dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/80 text-xs font-bold text-slate-700 dark:text-slate-300 rounded-xl hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all duration-200 cursor-pointer shadow-sm"
                     >
                       {dept}
                     </button>
@@ -1008,7 +1008,7 @@ const Product = () => {
               <div className="pt-2">
                 <button
                   onClick={handleReset}
-                  className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:brightness-110 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition active:scale-95 shadow-md cursor-pointer border-none"
+                  className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:brightness-110 text-slate-100 dark:text-white rounded-2xl text-xs font-black uppercase tracking-wider transition active:scale-95 shadow-md cursor-pointer border-none"
                 >
                   Clear All Filters
                 </button>
@@ -1063,11 +1063,7 @@ const Product = () => {
                         <button
                           key={p}
                           onClick={() => handlePageChange(p)}
-                          className={`h-10 w-10 flex items-center justify-center rounded-full text-xs font-black transition-all duration-200 cursor-pointer active:scale-90 shadow-sm border ${
-                            isCurrent
-                              ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white border-transparent shadow-indigo-500/20"
-                              : "border-slate-200/50 dark:border-slate-800/80 text-slate-600 dark:text-slate-400 bg-white/70 dark:bg-slate-900/60 backdrop-blur-md hover:bg-indigo-600 hover:text-white hover:border-indigo-600 dark:hover:bg-indigo-650"
-                          }`}
+                          className={`h-10 w-10 flex items-center justify-center rounded-full text-xs font-black transition-all duration-200 cursor-pointer active:scale-90 shadow-sm border ${ isCurrent ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-slate-100 dark:text-white border-transparent shadow-indigo-500/20" : "border-slate-200/50 dark:border-slate-800/80 text-slate-600 dark:text-slate-400 bg-white/70 dark:bg-slate-900/60 backdrop-blur-md hover:bg-indigo-600 hover:text-white hover:border-indigo-600 dark:hover:bg-indigo-600" }`}
                         >
                           {p}
                         </button>
@@ -1078,7 +1074,7 @@ const Product = () => {
                   <button
                     disabled={page === totalPages}
                     onClick={() => handlePageChange(page + 1)}
-                    className="h-10 px-4 rounded-full border border-slate-200/50 dark:border-slate-800/80 text-xs font-bold text-slate-700 dark:text-slate-350 bg-white/70 dark:bg-slate-900/60 backdrop-blur-md disabled:opacity-40 disabled:cursor-not-allowed hover:bg-indigo-600 hover:text-white hover:border-indigo-600 dark:hover:bg-indigo-600 transition-all duration-200 cursor-pointer shadow-sm active:scale-95 flex items-center justify-center gap-1.5"
+                    className="h-10 px-4 rounded-full border border-slate-200/50 dark:border-slate-800/80 text-xs font-bold text-slate-700 dark:text-slate-300 bg-white/70 dark:bg-slate-900/60 backdrop-blur-md disabled:opacity-40 disabled:cursor-not-allowed hover:bg-indigo-600 hover:text-white hover:border-indigo-600 dark:hover:bg-indigo-600 transition-all duration-200 cursor-pointer shadow-sm active:scale-95 flex items-center justify-center gap-1.5"
                   >
                     <span className="hidden sm:inline">Next</span>
                     <ChevronRight size={14} className="stroke-[2.5px]" />
@@ -1102,7 +1098,7 @@ const Product = () => {
             >
               <button
                 onClick={() => setQuickViewProduct(null)}
-                className="absolute top-4 right-4 h-9 w-9 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full flex items-center justify-center text-slate-450 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white transition cursor-pointer z-20 shadow-xs border border-slate-200/20"
+                className="absolute top-4 right-4 h-9 w-9 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white transition cursor-pointer z-20 shadow-xs border border-slate-200/20"
               >
                 <X size={16} />
               </button>
@@ -1127,11 +1123,7 @@ const Product = () => {
                       <button
                         key={index}
                         onClick={() => setQuickViewActiveImg(url)}
-                        className={`h-14 w-14 rounded-xl overflow-hidden bg-slate-50 dark:bg-slate-900 p-1 border shrink-0 transition-all duration-200 cursor-pointer ${
-                          isSelected 
-                            ? "border-indigo-600 dark:border-indigo-500 scale-105 ring-2 ring-indigo-500/20" 
-                            : "border-slate-200 dark:border-slate-800 hover:border-indigo-300"
-                        }`}
+                        className={`h-14 w-14 rounded-xl overflow-hidden bg-slate-50 dark:bg-slate-900 p-1 border shrink-0 transition-all duration-200 cursor-pointer ${ isSelected ? "border-indigo-600 dark:border-indigo-500 scale-105 ring-2 ring-indigo-500/20" : "border-slate-200 dark:border-slate-800 hover:border-indigo-300" }`}
                       >
                         <img src={url} alt={`thumbnail-${index}`} className="w-full h-full object-contain" />
                       </button>
@@ -1166,8 +1158,8 @@ const Product = () => {
                     <span className="text-slate-400 dark:text-slate-500 font-bold">
                       ({quickViewProduct.reviewCount || 0} reviews)
                     </span>
-                    <span className="text-slate-200 dark:text-slate-850">|</span>
-                    <span className="text-emerald-600 dark:text-emerald-450 font-extrabold bg-emerald-500/5 dark:bg-emerald-500/10 px-2 py-0.5 rounded-md text-[10px] border border-emerald-500/10">
+                    <span className="text-slate-200 dark:text-slate-800">|</span>
+                    <span className="text-emerald-600 dark:text-emerald-400 font-extrabold bg-emerald-500/5 dark:bg-emerald-500/10 px-2 py-0.5 rounded-md text-[10px] border border-emerald-500/10">
                       Verified Item
                     </span>
                   </div>
@@ -1182,7 +1174,7 @@ const Product = () => {
                         <span className="text-sm text-slate-400 line-through">
                           ₹{Number(quickViewProduct.originalPrice).toLocaleString("en-IN")}
                         </span>
-                        <span className="text-xs font-black text-emerald-650 dark:text-emerald-450 bg-emerald-500/10 dark:bg-emerald-500/5 px-2.5 py-0.5 rounded-md border border-emerald-500/15">
+                        <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 dark:bg-emerald-500/5 px-2.5 py-0.5 rounded-md border border-emerald-500/15">
                           {quickViewProduct.discountPercent}% OFF
                         </span>
                       </>
@@ -1197,7 +1189,7 @@ const Product = () => {
                   {/* Size selection */}
                   {quickViewProduct.sizes?.length > 0 && (
                     <div className="space-y-1.5 pt-2">
-                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-550 block">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 block">
                         Select Sizing:
                       </span>
                       <div className="flex flex-wrap gap-2">
@@ -1207,11 +1199,7 @@ const Product = () => {
                             <button
                               key={sz}
                               onClick={() => setQuickViewSelectedSize(sz)}
-                              className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all duration-200 cursor-pointer capitalize active:scale-95 ${
-                                isSel 
-                                  ? "border-indigo-650 bg-indigo-650 text-white shadow-md shadow-indigo-900/15" 
-                                  : "border-slate-200 dark:border-slate-800 text-slate-655 dark:text-slate-400 bg-white dark:bg-slate-900 hover:bg-slate-50"
-                              }`}
+                              className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all duration-200 cursor-pointer capitalize active:scale-95 ${ isSel ? "border-indigo-600 bg-indigo-600 text-slate-100 dark:text-white shadow-md shadow-indigo-900/15" : "border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-400 bg-white dark:bg-slate-900 hover:bg-slate-50" }`}
                             >
                               {sz}
                             </button>
@@ -1233,7 +1221,7 @@ const Product = () => {
                   {/* Wishlist Icon Button */}
                   <button
                     onClick={toggleQuickViewFavorite}
-                    className="h-12 w-12 rounded-2xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-850 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-350 border border-slate-200 dark:border-slate-800 flex items-center justify-center transition-all duration-200 active:scale-90"
+                    className="h-12 w-12 rounded-2xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 flex items-center justify-center transition-all duration-200 active:scale-90"
                     title="Add to Wishlist"
                   >
                     <Heart 
@@ -1244,7 +1232,7 @@ const Product = () => {
 
                   <button
                     onClick={handleQuickViewAddToCart}
-                    className="flex-1 py-3 bg-slate-50 hover:bg-slate-100 dark:bg-slate-850 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-250 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs font-black uppercase tracking-wider active:scale-95 transition-all duration-200 flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+                    className="flex-1 py-3 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs font-black uppercase tracking-wider active:scale-95 transition-all duration-200 flex items-center justify-center gap-2 shadow-xs cursor-pointer"
                   >
                     <ShoppingCart size={13} className="stroke-[2.5]" />
                     <span>Add To Cart</span>
@@ -1252,7 +1240,7 @@ const Product = () => {
 
                   <button
                     onClick={handleQuickViewBuyNow}
-                    className="flex-1 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:brightness-110 text-white rounded-2xl text-xs font-black uppercase tracking-wider active:scale-95 transition-all duration-200 flex items-center justify-center gap-2 shadow-md shadow-indigo-900/15 cursor-pointer border-none"
+                    className="flex-1 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:brightness-110 text-slate-100 dark:text-white rounded-2xl text-xs font-black uppercase tracking-wider active:scale-95 transition-all duration-200 flex items-center justify-center gap-2 shadow-md shadow-indigo-900/15 cursor-pointer border-none"
                   >
                     <span>Buy Now</span>
                     <ArrowRight size={13} className="stroke-[2.5]" />
@@ -1269,7 +1257,7 @@ const Product = () => {
         {/* Filter Trigger Button */}
         <button
           onClick={() => setShowMobileFilters(true)}
-          className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border border-slate-200/60 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/60 text-xs font-extrabold text-slate-700 dark:text-slate-250 cursor-pointer shadow-xs active:scale-95 hover:bg-slate-50"
+          className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border border-slate-200/60 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/60 text-xs font-extrabold text-slate-700 dark:text-slate-200 cursor-pointer shadow-xs active:scale-95 hover:bg-slate-50"
         >
           <SlidersHorizontal size={14} />
           <span>Filter</span>
@@ -1280,7 +1268,7 @@ const Product = () => {
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="w-full text-center py-2.5 rounded-xl border border-slate-200/60 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/60 text-xs font-extrabold text-slate-700 dark:text-slate-255 cursor-pointer outline-none shadow-xs appearance-none active:scale-95"
+            className="w-full text-center py-2.5 rounded-xl border border-slate-200/60 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/60 text-xs font-extrabold text-slate-700 dark:text-slate-300 cursor-pointer outline-none shadow-xs appearance-none active:scale-95"
           >
             <option value="featured">Featured</option>
             <option value="popularity">Popularity</option>
@@ -1298,7 +1286,7 @@ const Product = () => {
             const searchInput = document.querySelector('input[placeholder*="Search products"]');
             if (searchInput) searchInput.focus();
           }}
-          className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border border-slate-200/60 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/60 text-xs font-extrabold text-slate-700 dark:text-slate-250 cursor-pointer shadow-xs active:scale-95"
+          className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border border-slate-200/60 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/60 text-xs font-extrabold text-slate-700 dark:text-slate-200 cursor-pointer shadow-xs active:scale-95"
         >
           <Search size={14} />
           <span>Search</span>
@@ -1361,7 +1349,7 @@ const AutocompleteSuggestions = ({
               {recentSearches.length > 0 && (
                 <button
                   onClick={onClearRecent}
-                  className="text-[9px] font-black text-slate-450 hover:text-slate-600 uppercase cursor-pointer"
+                  className="text-[9px] font-black text-slate-400 hover:text-slate-600 uppercase cursor-pointer"
                 >
                   Clear
                 </button>
@@ -1373,7 +1361,7 @@ const AutocompleteSuggestions = ({
                   <button
                     key={s}
                     onClick={() => onSelect(s, 'query')}
-                    className="flex items-center gap-2 w-full text-left py-1.5 px-2 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-350 hover:bg-indigo-50/50 dark:hover:bg-slate-800/40 hover:text-indigo-600 transition"
+                    className="flex items-center gap-2 w-full text-left py-1.5 px-2 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-indigo-50/50 dark:hover:bg-slate-800/40 hover:text-indigo-600 transition"
                   >
                     <span>🔍</span>
                     <span>{s}</span>
@@ -1386,7 +1374,7 @@ const AutocompleteSuggestions = ({
           </div>
 
           <div>
-            <span className="text-[10px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest block mb-2">
+            <span className="text-[10px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-widest block mb-2">
               Trending Searches
             </span>
             <div className="flex flex-wrap gap-1.5">
@@ -1394,14 +1382,14 @@ const AutocompleteSuggestions = ({
                 <button
                   key={t}
                   onClick={() => onSelect(t, 'query')}
-                  className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] font-semibold text-slate-600 dark:text-slate-400 hover:bg-indigo-650 hover:text-white transition cursor-pointer"
+                  className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-[11px] font-semibold text-slate-600 dark:text-slate-400 hover:bg-indigo-600 hover:text-white transition cursor-pointer"
                 >
                   {t}
                 </button>
               ))}
             </div>
 
-            <span className="text-[10px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest block mt-4 mb-2">
+            <span className="text-[10px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-widest block mt-4 mb-2">
               Popular Brands
             </span>
             <div className="flex flex-wrap gap-1.5">
@@ -1409,7 +1397,7 @@ const AutocompleteSuggestions = ({
                 <button
                   key={b}
                   onClick={() => onSelect(b, 'brand')}
-                  className="px-2.5 py-1 rounded-lg bg-indigo-50/50 dark:bg-indigo-950/20 text-[11px] font-semibold text-indigo-650 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white transition cursor-pointer border border-indigo-100/40 dark:border-indigo-900/30"
+                  className="px-2.5 py-1 rounded-lg bg-indigo-50/50 dark:bg-indigo-950/20 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white transition cursor-pointer border border-indigo-100/40 dark:border-indigo-900/30"
                 >
                   {b}
                 </button>
@@ -1429,7 +1417,7 @@ const AutocompleteSuggestions = ({
                   <button
                     key={c}
                     onClick={() => onSelect(c, 'category')}
-                    className="flex items-center justify-between w-full text-left py-1.5 px-2.5 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-350 hover:bg-indigo-50/50 dark:hover:bg-slate-800/40 transition capitalize"
+                    className="flex items-center justify-between w-full text-left py-1.5 px-2.5 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-indigo-50/50 dark:hover:bg-slate-800/40 transition capitalize"
                   >
                     <span>{c}</span>
                     <span className="text-[10px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-400">Department</span>
@@ -1449,7 +1437,7 @@ const AutocompleteSuggestions = ({
                   <button
                     key={b}
                     onClick={() => onSelect(b, 'brand')}
-                    className="flex items-center justify-between w-full text-left py-1.5 px-2.5 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-350 hover:bg-indigo-50/50 dark:hover:bg-slate-800/40 transition capitalize"
+                    className="flex items-center justify-between w-full text-left py-1.5 px-2.5 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-indigo-50/50 dark:hover:bg-slate-800/40 transition capitalize"
                   >
                     <span>{b}</span>
                     <span className="text-[10px] bg-indigo-50 dark:bg-indigo-950/30 px-2 py-0.5 rounded text-indigo-500 font-bold border border-indigo-100/20">Brand</span>
@@ -1472,18 +1460,16 @@ const AutocompleteSuggestions = ({
                     <button
                       key={p._id}
                       onClick={() => onSelect(p.name, 'product', p._id)}
-                      className={`flex items-center gap-3 w-full text-left py-1.5 px-2 rounded-lg text-xs font-semibold hover:bg-indigo-50/50 dark:hover:bg-slate-800/40 transition ${
-                        isFocused ? "bg-indigo-50 dark:bg-slate-800/60 border border-indigo-200/50" : ""
-                      }`}
+                      className={`flex items-center gap-3 w-full text-left py-1.5 px-2 rounded-lg text-xs font-semibold hover:bg-indigo-50/50 dark:hover:bg-slate-800/40 transition ${ isFocused ? "bg-indigo-50 dark:bg-slate-800/60 border border-indigo-200/50" : "" }`}
                     >
                       <img
                         src={p.image?.startsWith("http") ? p.image : `${backendUrl}/${p.image}`}
                         alt={p.name}
-                        className="h-8 w-8 rounded-lg object-contain bg-white p-0.5 border"
+                        className="h-8 w-8 rounded-lg object-contain bg-white dark:bg-slate-900 p-0.5 border"
                       />
                       <div className="flex-1 truncate">
                         <span className="block truncate font-bold text-slate-800 dark:text-slate-200">{p.name}</span>
-                        <span className="text-[10px] text-slate-450">in {p.category}</span>
+                        <span className="text-[10px] text-slate-400">in {p.category}</span>
                       </div>
                       <span className="font-extrabold text-slate-900 dark:text-slate-100">₹{p.price.toLocaleString("en-IN")}</span>
                     </button>

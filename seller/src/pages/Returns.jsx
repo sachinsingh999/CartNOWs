@@ -149,11 +149,11 @@ const Returns = ({ token }) => {
       case "Completed":
         return "bg-emerald-50 text-emerald-700 border-emerald-100";
       case "Out for Pickup":
-        return "bg-indigo-50 text-indigo-750 border-indigo-100";
+        return "bg-indigo-50 text-indigo-700 border-indigo-100";
       case "Picked Up":
         return "bg-amber-50 text-amber-700 border-amber-100";
       case "Rejected":
-        return "bg-rose-50 text-rose-700 border-rose-150";
+        return "bg-rose-50 text-rose-700 border-rose-200";
       default:
         return "bg-blue-50 text-blue-700 border-blue-100";
     }
@@ -163,8 +163,8 @@ const Returns = ({ token }) => {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-4">
         <div>
-          <h2 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-            <RotateCcw size={20} className="text-[#FF5100]" />
+          <h2 className="text-xl font-black text-slate-900 dark:text-slate-100 tracking-tight flex items-center gap-2">
+            <RotateCcw size={20} className="text-brand" />
             <span>Product Return Management</span>
           </h2>
           <p className="text-xs text-slate-400 mt-0.5">
@@ -174,9 +174,9 @@ const Returns = ({ token }) => {
       </div>
 
       {/* Date Filter Bar */}
-      <div className="bg-white border border-slate-200/80 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200/80 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm">
         <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-          <span className="text-xs font-bold text-slate-450 uppercase tracking-wider mr-2 flex items-center gap-1.5">
+          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mr-2 flex items-center gap-1.5">
             <Calendar size={14} className="text-slate-400" /> Filter Date:
           </span>
           {[
@@ -196,11 +196,7 @@ const Returns = ({ token }) => {
                   handlePresetChange(preset.id);
                 }
               }}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition duration-150 cursor-pointer ${
-                datePreset === preset.id
-                  ? "bg-slate-900 text-white shadow-sm"
-                  : "text-slate-500 hover:bg-slate-50 border border-slate-100 hover:text-slate-900"
-              }`}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition duration-150 cursor-pointer ${ datePreset === preset.id ? "bg-slate-900 text-slate-100 dark:text-white shadow-sm" : "text-slate-500 hover:bg-slate-50 border border-slate-100 hover:text-slate-900" }`}
             >
               {preset.label}
             </button>
@@ -213,14 +209,14 @@ const Returns = ({ token }) => {
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs font-bold text-slate-800 outline-none transition focus:bg-white focus:border-slate-900 focus:ring-4"
+              className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 px-3 py-2 text-xs font-bold text-slate-800 dark:text-slate-100 outline-none transition focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
             />
             <span className="text-xs text-slate-400 font-bold">to</span>
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs font-bold text-slate-800 outline-none transition focus:bg-white focus:border-slate-900 focus:ring-4"
+              className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 px-3 py-2 text-xs font-bold text-slate-800 dark:text-slate-100 outline-none transition focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
             />
             {(startDate || endDate) && (
               <button
@@ -237,40 +233,40 @@ const Returns = ({ token }) => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white border border-slate-200/80 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-50 text-slate-700">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-700">
             <CornerDownLeft size={20} />
           </div>
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Returns</p>
-            <p className="text-lg font-bold text-slate-900 mt-0.5">{totalReturns}</p>
+            <p className="text-lg font-bold text-slate-900 dark:text-slate-100 mt-0.5">{totalReturns}</p>
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200/80 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
           <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${pendingRequests > 0 ? "bg-amber-50 text-amber-600 animate-pulse" : "bg-slate-50 text-slate-700"}`}>
             <Clock size={20} />
           </div>
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Pending Requests</p>
-            <p className="text-lg font-bold text-slate-900 mt-0.5">{pendingRequests}</p>
+            <p className="text-lg font-bold text-slate-900 dark:text-slate-100 mt-0.5">{pendingRequests}</p>
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200/80 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
             <CheckCircle size={20} />
           </div>
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Completed Jobs</p>
-            <p className="text-lg font-bold text-slate-900 mt-0.5">{completedRequests}</p>
+            <p className="text-lg font-bold text-slate-900 dark:text-slate-100 mt-0.5">{completedRequests}</p>
           </div>
         </div>
       </div>
 
       {/* Returns List */}
       {filteredRequests.length === 0 ? (
-        <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-white py-16 text-center text-sm text-slate-500 shadow-sm flex flex-col items-center justify-center gap-2">
+        <div className="rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-16 text-center text-sm text-slate-500 shadow-sm flex flex-col items-center justify-center gap-2">
           <RotateCcw size={32} className="text-slate-300" />
           <div>
             <p className="font-semibold text-slate-700">No return requests found</p>
@@ -286,11 +282,11 @@ const Returns = ({ token }) => {
             return (
               <div
                 key={request._id}
-                className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm hover:shadow-md transition duration-200"
+                className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 p-6 shadow-sm hover:shadow-md transition duration-200"
               >
                 <div className="grid gap-6 xl:grid-cols-[120px_1fr_300px]">
                   {/* Image Section */}
-                  <div className="h-28 w-28 mx-auto xl:mx-0 overflow-hidden rounded-xl border border-slate-100 bg-slate-50 flex items-center justify-center p-3 shadow-inner">
+                  <div className="h-28 w-28 mx-auto xl:mx-0 overflow-hidden rounded-xl border border-slate-100 bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-3 shadow-inner">
                     {request.itemImage ? (
                       <img
                         src={request.itemImage?.startsWith('http') ? request.itemImage : `${backendUrl}/${request.itemImage}`}
@@ -310,7 +306,7 @@ const Returns = ({ token }) => {
                     <div>
                       <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
                         <div>
-                          <h3 className="text-base font-bold text-slate-900 tracking-tight">{request.itemName}</h3>
+                          <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 tracking-tight">{request.itemName}</h3>
                           <p className="text-xs font-medium text-slate-400 mt-1">
                             Order ID: <span className="font-mono text-slate-700">{request.orderId}</span>
                           </p>
@@ -339,7 +335,7 @@ const Returns = ({ token }) => {
                             Exch Size {request.exchangeSize}
                           </span>
                         )}
-                        <span className="rounded-lg bg-slate-900 px-2.5 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider">
+                        <span className="rounded-lg bg-slate-900 px-2.5 py-0.5 text-[10px] font-bold text-slate-100 dark:text-white uppercase tracking-wider">
                           ₹{request.amount}
                         </span>
                       </div>
@@ -352,7 +348,7 @@ const Returns = ({ token }) => {
                           <FileText size={11} />
                           Reason for Return
                         </p>
-                        <p className="mt-1 text-slate-800 font-medium">{request.reason}</p>
+                        <p className="mt-1 text-slate-800 dark:text-slate-100 font-medium">{request.reason}</p>
                       </div>
 
                       {request.feedback && (
@@ -361,7 +357,7 @@ const Returns = ({ token }) => {
                             <MessageSquare size={11} />
                             Customer Comment
                           </p>
-                          <p className="mt-1 text-slate-800 font-medium">{request.feedback}</p>
+                          <p className="mt-1 text-slate-800 dark:text-slate-100 font-medium">{request.feedback}</p>
                         </div>
                       )}
                     </div>
@@ -373,7 +369,7 @@ const Returns = ({ token }) => {
                           <ShieldAlert size={12} />
                           Admin Obstacle Report / Warning Note
                         </p>
-                        <p className="text-slate-800 font-bold leading-relaxed">{request.adminNote}</p>
+                        <p className="text-slate-800 dark:text-slate-100 font-bold leading-relaxed">{request.adminNote}</p>
                       </div>
                     )}
 
@@ -395,7 +391,7 @@ const Returns = ({ token }) => {
                       <select
                         value={request.status}
                         onChange={(event) => handleStatusUpdate(request._id, event.target.value)}
-                        className={`w-full border rounded-xl px-3 py-2.5 text-xs font-bold bg-white text-slate-800 outline-none transition focus:ring-4 ${getStatusBadgeStyle(request.status)}`}
+                        className={`w-full border rounded-xl px-3 py-2.5 text-xs font-bold bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none transition ${getStatusBadgeStyle(request.status)} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900`}
                       >
                         <option value="Requested">Requested</option>
                         <option value="Approved">Approved</option>
@@ -411,7 +407,7 @@ const Returns = ({ token }) => {
                       <select
                         value={currentType}
                         onChange={(e) => setTypes(prev => ({ ...prev, [request._id]: e.target.value }))}
-                        className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold bg-white text-slate-700 outline-none focus:border-slate-900"
+                        className="w-full border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold bg-white dark:bg-slate-900 text-slate-700 outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                       >
                         <option value="Refund">Refund</option>
                         <option value="Replacement">Replacement</option>
@@ -427,7 +423,7 @@ const Returns = ({ token }) => {
                           value={exchangeSizes[request._id] ?? request.exchangeSize ?? ""}
                           onChange={(e) => setExchangeSizes(prev => ({ ...prev, [request._id]: e.target.value }))}
                           placeholder="e.g. XL, M, L"
-                          className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold bg-white text-slate-700 outline-none"
+                          className="w-full border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold bg-white dark:bg-slate-900 text-slate-700 outline-none"
                         />
                       </div>
                     )}
@@ -437,7 +433,7 @@ const Returns = ({ token }) => {
                       <select
                         value={currentDriver}
                         onChange={(e) => setAssignedDrivers(prev => ({ ...prev, [request._id]: e.target.value }))}
-                        className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold bg-white text-slate-700 outline-none"
+                        className="w-full border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold bg-white dark:bg-slate-900 text-slate-700 outline-none"
                       >
                         <option value="">Unassigned</option>
                         {drivers.map(d => (
@@ -450,7 +446,7 @@ const Returns = ({ token }) => {
 
                     <button
                       onClick={() => handleStatusUpdate(request._id, request.status)}
-                      className="w-full rounded-xl bg-orange-600 hover:bg-orange-700 text-white px-4 py-2.5 text-xs font-bold transition shadow-sm"
+                      className="w-full rounded-xl bg-orange-600 hover:bg-orange-700 text-slate-100 dark:text-white px-4 py-2.5 text-xs font-bold transition shadow-sm"
                     >
                       Save Return Settings
                     </button>

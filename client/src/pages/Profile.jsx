@@ -45,7 +45,7 @@ const PRESET_AVATARS = [
   { id: "aurora", name: "Cosmic Aurora", gradient: "from-pink-500 via-purple-600 to-indigo-700" },
   { id: "gold", name: "Liquid Gold", gradient: "from-yellow-400 via-amber-500 to-orange-600" },
   { id: "neon", name: "Neon Crystal", gradient: "from-cyan-400 via-blue-500 to-indigo-600" },
-  { id: "silver", name: "Silver Silk", gradient: "from-slate-350 via-slate-500 to-slate-700" },
+  { id: "silver", name: "Silver Silk", gradient: "from-slate-300 via-slate-500 to-slate-700" },
   { id: "obsidian", name: "Obsidian Wave", gradient: "from-slate-900 via-purple-950 to-slate-950" },
   { id: "deep", name: "Deep Space", gradient: "from-indigo-900 via-purple-900 to-pink-900" }
 ];
@@ -417,7 +417,7 @@ const Profile = () => {
         <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 mt-4">No user data found.</p>
         <button
           onClick={() => navigate("/login")}
-          className="mt-4 rounded-xl bg-orange-500 hover:bg-orange-600 px-5 py-2.5 text-xs font-bold text-white transition cursor-pointer"
+          className="mt-4 rounded-xl bg-orange-500 hover:bg-orange-600 px-5 py-2.5 text-xs font-bold text-slate-100 dark:text-white transition cursor-pointer"
         >
           Go to Login
         </button>
@@ -428,10 +428,10 @@ const Profile = () => {
   const initial = user.name?.charAt(0)?.toUpperCase();
 
   const getLoyaltyTier = () => {
-    if (totalSpent > 30000) return { name: "Diamond VIP Member", color: "from-blue-600 via-indigo-750 to-slate-955", bg: "bg-blue-500/10 text-blue-400 border-blue-500/20" };
-    if (totalSpent > 15000) return { name: "Platinum VIP Member", color: "from-purple-650 via-indigo-655 to-slate-955", bg: "bg-purple-500/10 text-purple-400 border-purple-500/20" };
-    if (totalSpent > 5000) return { name: "Gold Member", color: "from-amber-500 via-orange-550 to-slate-955", bg: "bg-amber-500/10 text-amber-400 border-amber-500/20" };
-    return { name: "Silver Member", color: "from-slate-500 via-slate-700 to-slate-955", bg: "bg-slate-550/10 text-slate-400 border-slate-550/20" };
+    if (totalSpent > 30000) return { name: "Diamond VIP Member", color: "from-blue-600 via-indigo-700 to-slate-950", bg: "bg-blue-500/10 text-blue-400 border-blue-500/20" };
+    if (totalSpent > 15000) return { name: "Platinum VIP Member", color: "from-purple-600 via-indigo-700 to-slate-950", bg: "bg-purple-500/10 text-purple-400 border-purple-500/20" };
+    if (totalSpent > 5000) return { name: "Gold Member", color: "from-amber-500 via-orange-500 to-slate-950", bg: "bg-amber-500/10 text-amber-400 border-amber-500/20" };
+    return { name: "Silver Member", color: "from-slate-500 via-slate-700 to-slate-950", bg: "bg-slate-500/10 text-slate-400 border-slate-500/20" };
   };
 
   const tier = getLoyaltyTier();
@@ -487,7 +487,7 @@ const Profile = () => {
   const renderAvatarContent = (avatarStr, classes = "h-20 w-20 text-2xl") => {
     if (!avatarStr) {
       return (
-        <div className={`flex items-center justify-center rounded-full bg-slate-900 text-white font-black border-2 border-white/10 ${classes}`}>
+        <div className={`flex items-center justify-center rounded-full bg-slate-900 text-slate-100 dark:text-white font-black border-2 border-white/10 ${classes}`}>
           {initial}
         </div>
       );
@@ -506,13 +506,13 @@ const Profile = () => {
     const preset = PRESET_AVATARS.find(p => p.id === avatarStr);
     if (preset) {
       return (
-        <div className={`rounded-full bg-gradient-to-tr ${preset.gradient} border-2 border-white/10 ${classes} flex items-center justify-center font-black text-white`}>
+        <div className={`rounded-full bg-gradient-to-tr ${preset.gradient} border-2 border-white/10 ${classes} flex items-center justify-center font-black text-slate-100 dark:text-white`}>
           {initial}
         </div>
       );
     }
     return (
-      <div className={`flex items-center justify-center rounded-full bg-slate-900 text-white font-black border-2 border-white/10 ${classes}`}>
+      <div className={`flex items-center justify-center rounded-full bg-slate-900 text-slate-100 dark:text-white font-black border-2 border-white/10 ${classes}`}>
         {initial}
       </div>
     );
@@ -564,18 +564,18 @@ const Profile = () => {
     let tierShadow = "shadow-[0_20px_50px_-10px_rgba(100,116,139,0.3)]";
 
     if (totalSpent > 30000) {
-      cardGradient = "from-slate-955 via-blue-955 to-slate-900 border-blue-500/35";
+      cardGradient = "from-slate-950 via-blue-950 to-slate-900 border-blue-500/35";
       textGlow = "text-blue-400 drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]";
-      chipGradient = "from-cyan-300 via-blue-500 to-indigo-655 border-cyan-400/85";
+      chipGradient = "from-cyan-300 via-blue-500 to-indigo-700 border-cyan-400/85";
       tierShadow = "shadow-[0_20px_50px_-10px_rgba(59,130,246,0.35)]";
     } else if (totalSpent > 15000) {
       cardGradient = "from-purple-950 via-indigo-950 to-slate-950 border-purple-500/30";
       textGlow = "text-purple-400 drop-shadow-[0_0_8px_rgba(168,85,247,0.5)]";
-      chipGradient = "from-slate-100 via-slate-350 to-slate-200 border-slate-300/80";
+      chipGradient = "from-slate-100 via-slate-300 to-slate-200 border-slate-300/80";
       tierShadow = "shadow-[0_20px_50px_-10px_rgba(168,85,247,0.3)]";
     } else if (totalSpent > 5000) {
       cardGradient = "from-amber-950 via-orange-950 to-slate-950 border-amber-500/35";
-      textGlow = "text-amber-455 drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]";
+      textGlow = "text-amber-500 drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]";
       chipGradient = "from-yellow-300 via-amber-500 to-yellow-600 border-amber-400/80";
       tierShadow = "shadow-[0_20px_50px_-10px_rgba(245,158,11,0.35)]";
     }
@@ -590,7 +590,7 @@ const Profile = () => {
           transition: isHovered ? "transform 0.05s ease-out, shadow 0.15s ease" : "transform 0.5s ease, shadow 0.5s ease",
           transformStyle: "preserve-3d"
         }}
-        className={`relative overflow-hidden rounded-[28px] bg-gradient-to-tr ${cardGradient} p-6 sm:p-7 text-white border border-white/[0.08] ${tierShadow} h-56 sm:h-60 w-full flex flex-col justify-between select-none cursor-pointer group`}
+        className={`relative overflow-hidden rounded-[28px] bg-gradient-to-tr ${cardGradient} p-6 sm:p-7 text-slate-100 dark:text-white border border-white/[0.08] ${tierShadow} h-56 sm:h-60 w-full flex flex-col justify-between select-none cursor-pointer group`}
       >
         {/* Shine sweeping sweep */}
         <div className="shine-sweep-animation pointer-events-none absolute inset-0 z-0 opacity-40 mix-blend-overlay" />
@@ -627,12 +627,12 @@ const Profile = () => {
             {/* Smart Card Chip */}
             <div className={`h-8.5 w-11 sm:h-9 sm:w-12 rounded-lg bg-gradient-to-br ${chipGradient} shadow-md p-1 relative flex flex-col justify-between overflow-hidden border`}>
               <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 gap-px opacity-30">
-                <div className="border-r border-b border-black" />
-                <div className="border-r border-b border-black" />
-                <div className="border-b border-black" />
-                <div className="border-r border-b border-black" />
-                <div className="border-r border-b border-black" />
-                <div className="border-b border-black" />
+                <div className="border-r border-b border-slate-800 dark:border-slate-750" />
+                <div className="border-r border-b border-slate-800 dark:border-slate-750" />
+                <div className="border-b border-slate-800 dark:border-slate-750" />
+                <div className="border-r border-b border-slate-800 dark:border-slate-750" />
+                <div className="border-r border-b border-slate-800 dark:border-slate-750" />
+                <div className="border-b border-slate-800 dark:border-slate-750" />
               </div>
               <div className="h-2 w-4 rounded-xs bg-white/30 border border-white/20 z-10" />
             </div>
@@ -647,19 +647,19 @@ const Profile = () => {
           {/* Glass tag for rewards points */}
           <div className="bg-white/10 dark:bg-black/20 backdrop-blur-md border border-white/10 rounded-xl px-2.5 py-1 text-right flex flex-col justify-center">
             <span className="text-[7px] text-white/50 font-black uppercase tracking-wider">REWARD BALANCE</span>
-            <span className="font-mono text-[11px] font-black text-amber-350">{animatedPoints.toLocaleString()} PTS</span>
+            <span className="font-mono text-[11px] font-black text-amber-300">{animatedPoints.toLocaleString()} PTS</span>
           </div>
         </div>
 
         {/* Cashback Points and Card Holder Info */}
         <div className="flex justify-between items-end w-full relative z-10" style={{ transform: "translateZ(35px)" }}>
           <div className="text-left">
-            <p className="text-[7.5px] font-black text-slate-450 uppercase tracking-widest leading-none">VIP CARD HOLDER</p>
+            <p className="text-[7.5px] font-black text-slate-400 uppercase tracking-widest leading-none">VIP CARD HOLDER</p>
             <p className="text-xs sm:text-sm font-black tracking-wider uppercase text-slate-100 mt-1">{user.name}</p>
           </div>
 
           <div className="text-right">
-            <p className="text-[7.5px] font-black text-slate-450 uppercase tracking-widest leading-none">CASHBACK RATIO</p>
+            <p className="text-[7.5px] font-black text-slate-400 uppercase tracking-widest leading-none">CASHBACK RATIO</p>
             <p className="text-xs sm:text-sm font-mono font-black text-emerald-400 mt-1">
               {totalSpent > 30000 ? "8.0% BACK" : totalSpent > 15000 ? "5.0% BACK" : totalSpent > 5000 ? "3.0% BACK" : "1.0% BACK"}
             </p>
@@ -725,61 +725,30 @@ const Profile = () => {
       <div className="w-full max-w-none space-y-8 relative z-10">
 
         {/* Main Grid Wrapper */}
-        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8 items-start">
-
+        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8">
           {/* LEFT SIDEBAR: PROFILE SUMMARY */}
-          <div className="rounded-[32px] glass-panel p-6 space-y-8 luxury-card-glow">
-            {/* User Details & Completion Progress */}
-            <div className="flex flex-col items-center text-center space-y-4">
+          <div className="rounded-[28px] glass-panel p-5 space-y-6 luxury-card-glow">
+            {/* User Details */}
+            <div className="flex flex-col items-center text-center space-y-3.5">
               <div className="relative group select-none cursor-pointer">
-                {/* SVG Progress Ring */}
-                <svg className="absolute -inset-2.5 h-[98px] w-[98px] -rotate-90">
-                  <circle
-                    cx="49"
-                    cy="49"
-                    r="44"
-                    className="stroke-slate-200 dark:stroke-slate-800"
-                    strokeWidth="3.5"
-                    fill="transparent"
-                  />
-                  <motion.circle
-                    cx="49"
-                    cy="49"
-                    r="44"
-                    className="stroke-orange-500 dark:stroke-orange-500"
-                    strokeWidth="4"
-                    fill="transparent"
-                    strokeDasharray={2 * Math.PI * 44}
-                    initial={{ strokeDashoffset: 2 * Math.PI * 44 }}
-                    animate={{ strokeDashoffset: 2 * Math.PI * 44 * (1 - completionPercent / 100) }}
-                    transition={{ duration: 1.2, ease: "easeOut" }}
-                  />
-                </svg>
-
                 {/* Avatar Display */}
                 <div
                   onClick={() => setShowAvatarSelector(true)}
-                  className="relative flex h-20 w-20 rounded-full overflow-hidden shadow-lg active:scale-95 transition group"
+                  className="relative flex h-20 w-20 rounded-full overflow-hidden shadow-md border-2 border-slate-200 dark:border-slate-800 active:scale-95 transition group"
                 >
                   {renderAvatarContent(user.profilePhoto)}
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                    <Camera size={18} className="text-white animate-pulse" />
+                    <Camera size={18} className="text-slate-100 dark:text-white animate-pulse" />
                   </div>
                 </div>
               </div>
 
               <div>
-                <h3 className="text-lg font-black text-slate-900 dark:text-white leading-tight flex items-center justify-center gap-1">
+                <h3 className="text-base font-black text-slate-900 dark:text-white leading-tight flex items-center justify-center gap-1">
                   <span>{user.name}</span>
-                  <Award size={15} className="text-orange-500" />
+                  <Award size={14} className="text-orange-500" />
                 </h3>
-                <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 truncate max-w-[200px] mt-0.5">{user.email}</p>
-              </div>
-
-              {/* Profile Completion Bar */}
-              <div className="w-full bg-slate-200/50 dark:bg-slate-800/80 rounded-full p-2.5 flex items-center justify-between gap-2 border border-black/[0.03] dark:border-white/[0.02]">
-                <div className="text-[9.5px] font-black text-slate-400 dark:text-slate-400 uppercase tracking-widest">Profile Progress</div>
-                <div className="text-[10px] font-black text-orange-500">{completionPercent}%</div>
+                <p className="text-[10.5px] font-semibold text-slate-400 dark:text-slate-500 truncate max-w-[190px] mt-0.5">{user.email}</p>
               </div>
             </div>
 
@@ -796,58 +765,48 @@ const Profile = () => {
                   <button
                     key={tab.id}
                     onClick={() => setActiveProfileTab(tab.id)}
-                    className={`flex w-full items-center justify-between rounded-2xl px-4 py-3 text-xs font-black uppercase tracking-wider transition-all duration-300 relative cursor-pointer group ${isSelected
-                        ? "bg-slate-950 dark:bg-orange-500/10 border border-slate-950 dark:border-orange-550/20 text-white dark:text-orange-400 scale-[1.01] shadow-md"
-                        : "text-slate-500 dark:text-slate-400 hover:bg-slate-100/50 dark:hover:bg-slate-850/50 hover:text-slate-800 dark:hover:text-slate-200 border border-transparent"
-                      }`}
+                    className={`flex w-full items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-black uppercase tracking-wider transition-all duration-200 relative cursor-pointer group ${isSelected ? "bg-slate-950 dark:bg-orange-500/10 border border-slate-950 dark:border-orange-500/20 text-slate-100 dark:text-white dark:text-orange-400 scale-[1.01]" : "text-slate-500 dark:text-slate-400 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 border border-transparent" }`}
                   >
-                    <span className="flex items-center gap-3">
-                      <Icon size={14} className={isSelected ? "text-orange-500" : "text-slate-400 group-hover:text-orange-400 transition-colors"} />
+                    <span className="flex items-center gap-2.5">
+                      <Icon size={13} className={isSelected ? "text-orange-500" : "text-slate-400 group-hover:text-orange-400 transition-colors"} />
                       <span>{tab.label}</span>
                     </span>
-                    <ChevronRight size={12} className={`text-slate-400/80 transition-transform duration-300 ${isSelected ? "translate-x-0.5" : "group-hover:translate-x-0.5"}`} />
+                    <ChevronRight size={11} className={`text-slate-400/80 transition-transform duration-200 ${isSelected ? "translate-x-0.5" : "group-hover:translate-x-0.5"}`} />
                   </button>
                 );
               })}
             </div>
 
             {/* Quick account stats wrapper */}
-            <div className="pt-6 border-t border-slate-200/50 dark:border-slate-800/80 space-y-4">
-              <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 dark:text-slate-500">
-                <span className="uppercase tracking-widest">Membership Tier</span>
-                <span className={`px-2 py-0.5 rounded-full text-[9px] font-black border uppercase tracking-wider ${tier.bg}`}>
-                  {tier.name.split(" ")[0]}
-                </span>
-              </div>
-
-              <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 dark:text-slate-500">
-                <span className="uppercase tracking-widest">Client Age</span>
-                <span className="font-mono text-slate-700 dark:text-slate-350">
+            <div className="pt-4.5 border-t border-slate-200/50 dark:border-slate-800/80 space-y-3.5">
+              <div className="flex justify-between items-center text-[9.5px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                <span>Account Created</span>
+                <span className="font-mono text-slate-700 dark:text-slate-300">
                   {user.createdAt ? new Date(user.createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" }) : "Recently"}
                 </span>
               </div>
 
               {/* Secure verification key drawer */}
-              <div className="space-y-1.5">
-                <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 dark:text-slate-500">
-                  <span className="uppercase tracking-widest">Verification Key</span>
+              <div className="space-y-1">
+                <div className="flex justify-between items-center text-[9.5px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                  <span>Verification Key</span>
                   <button
                     onClick={() => setRevealKey(!revealKey)}
-                    className="text-[9px] font-black text-orange-500 hover:underline uppercase tracking-wider cursor-pointer"
+                    className="text-[8.5px] font-black text-orange-500 hover:underline uppercase tracking-wider cursor-pointer"
                   >
                     {revealKey ? "Hide" : "Reveal"}
                   </button>
                 </div>
-                <div className="flex items-center gap-2 bg-slate-100/70 dark:bg-slate-900/60 border border-slate-200/40 dark:border-slate-800/80 p-2.5 rounded-xl justify-between">
-                  <span className="font-mono text-[10.5px] font-black text-slate-700 dark:text-slate-300 tracking-wider">
+                <div className="flex items-center gap-2 bg-slate-100/60 dark:bg-slate-900/60 border border-slate-200/40 dark:border-slate-800/80 p-2 rounded-lg justify-between">
+                  <span className="font-mono text-[10px] font-black text-slate-700 dark:text-slate-300 tracking-wider pl-1">
                     {revealKey ? user.deliveryVerificationKey : "•••• ••••"}
                   </span>
                   <button
                     onClick={() => copyToClipboard(user.deliveryVerificationKey)}
-                    className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition cursor-pointer"
+                    className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition cursor-pointer pr-1"
                     title="Copy Key"
                   >
-                    {copiedKey ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
+                    {copiedKey ? <Check size={11} className="text-emerald-500" /> : <Copy size={11} />}
                   </button>
                 </div>
               </div>
@@ -856,9 +815,9 @@ const Profile = () => {
             {/* Logout button */}
             <button
               onClick={logoutHandler}
-              className="w-full flex items-center justify-center gap-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 px-4 py-3.5 text-xs font-black uppercase tracking-wider text-red-500 hover:bg-red-500 hover:text-white dark:hover:bg-red-500/10 dark:hover:text-red-400 hover:border-red-500 dark:hover:border-red-500/20 transition-all cursor-pointer shadow-xs active:scale-[0.98]"
+              className="w-full flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 px-3 py-2.5 text-xs font-black uppercase tracking-wider text-red-500 hover:bg-red-500 hover:text-white dark:hover:bg-red-500/10 dark:hover:text-red-400 hover:border-red-500 dark:hover:border-red-500/20 transition-all cursor-pointer shadow-2xs active:scale-[0.98]"
             >
-              <LogOut size={13} />
+              <LogOut size={12} />
               <span>{t("logout")}</span>
             </button>
           </div>
@@ -874,440 +833,158 @@ const Profile = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -15 }}
                   transition={{ duration: 0.35 }}
-                  className="space-y-8 text-left"
+                  className="space-y-6 text-left"
                 >
                   {/* Welcome Message Header */}
                   <div className="flex flex-col sm:flex-row justify-between sm:items-end gap-3">
                     <div>
-                      <p className="text-[10px] font-black uppercase tracking-[0.25em] text-orange-500">CONSUMER ACCOUNT CONSOLE</p>
-                      <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight mt-1">
+                      <p className="text-[9px] font-black uppercase tracking-[0.2em] text-orange-500">CONSUMER ACCOUNT CONSOLE</p>
+                      <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight mt-0.5">
                         {getGreeting()}, {user.name.split(" ")[0]} ✨
                       </h2>
                     </div>
-                    <span className="self-start sm:self-auto text-[10px] font-black uppercase tracking-wider px-3 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-full border border-emerald-500/20 flex items-center gap-1.5">
+                    <span className="self-start sm:self-auto text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-full border border-emerald-500/20 flex items-center gap-1.5">
                       <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                       <span>Security Active</span>
                     </span>
                   </div>
 
-                  {/* Main Dashboard Layout Grid */}
-                  <div className="grid grid-cols-1 xl:grid-cols-[420px_1fr] gap-8 items-start">
+                  {/* Clean, High-Density Key Metrics Row */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {[
+                      { label: t("lifetime_orders"), value: animatedOrdersCount, icon: Package, color: "from-orange-500 to-amber-500", labelColor: "text-orange-500" },
+                      { label: t("total_spent"), value: formatCurrencyCompact(animatedSpent), icon: DollarSign, color: "from-emerald-500 to-teal-500", labelColor: "text-emerald-500" },
+                      { label: t("rewards"), value: `${formatPointsCompact(animatedPoints)} pts`, icon: Sparkles, color: "from-purple-400 to-indigo-500", labelColor: "text-purple-500" },
+                      { label: t("deliveries"), value: `${animatedDeliveries} active`, icon: Truck, color: "from-blue-400 to-cyan-500", labelColor: "text-blue-500" }
+                    ].map((stat, idx) => {
+                      const Icon = stat.icon;
+                      return (
+                        <div key={idx} className="rounded-xl border border-slate-200/50 dark:border-slate-800 bg-white/50 dark:bg-slate-900/30 p-3.5 flex items-center justify-between glass-panel luxury-card-glow shadow-2xs">
+                          <div className="text-left space-y-1 min-w-0">
+                            <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 block truncate">
+                              {stat.label}
+                            </span>
+                            <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white leading-none tracking-tight">
+                              {stat.value}
+                            </h3>
+                          </div>
+                          <div className={`h-8 w-8 rounded-lg bg-gradient-to-br ${stat.color} text-slate-100 dark:text-white flex items-center justify-center shrink-0 shadow-sm`}>
+                            <Icon size={14} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Main Profile Dashboard Split */}
+                  <div className="grid grid-cols-1 xl:grid-cols-[380px_1fr] gap-6 items-start">
                     
-                    {/* LEFT COLUMN: WALLET & BENEFITS CARD */}
-                    <div className="space-y-8 min-w-0">
+                    {/* LEFT COLUMN: loyalty status and wallet details */}
+                    <div className="space-y-6 min-w-0">
                       
-                      {/* 1. VIP Card */}
-                      <div className="w-full relative z-10">
-                        {renderVIPCard()}
-                      </div>
-
-                      {/* 2. Membership Progress Widget */}
-                      <div className="rounded-[32px] glass-panel p-6 space-y-6 luxury-card-glow text-left flex flex-col justify-between border border-slate-200/40 dark:border-white/[0.03]">
-                        <div className="space-y-1">
-                          <h4 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
-                            <Award size={16} className="text-orange-500" />
-                            <span>Membership Progression</span>
+                      {/* VIP Loyalty Card Widget */}
+                      <div className="rounded-[24px] border border-slate-200/40 dark:border-slate-800 bg-white dark:bg-slate-900/30 p-4 glass-panel luxury-card-glow space-y-4">
+                        <div className="text-left">
+                          <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
+                            <Award size={13} className="text-orange-500" />
+                            <span>VIP Loyalty Status</span>
                           </h4>
-                          <p className="text-[11px] text-slate-400 dark:text-slate-500 font-bold">Earn points and unlock luxury milestone incentives automatically.</p>
                         </div>
 
-                        {/* Customized milestone slider bar */}
-                        <div className="space-y-6 py-4">
-                          <div className="relative">
-                            {/* Track bar */}
-                            <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
-                              <motion.div
-                                className="bg-gradient-to-r from-slate-400 via-amber-500 via-purple-500 to-blue-500 h-full"
-                                initial={{ width: 0 }}
-                                animate={{ width: `${progressInfo.progressPercent}%` }}
-                                transition={{ duration: 1.5, ease: "easeOut" }}
-                              />
-                            </div>
-
-                            {/* Level Pins */}
-                            <div className="absolute top-[-3px] inset-x-0">
-                              {/* Silver (0%) */}
-                              <div className="absolute left-0 -translate-x-1/2 flex flex-col items-center">
-                                <div className={`h-4.5 w-4.5 rounded-full border-2 transition-all duration-500 ${
-                                  totalSpent >= 0 
-                                    ? "bg-slate-400 border-white dark:border-slate-950 shadow-[0_0_12px_rgba(148,163,184,0.8)] ring-4 ring-slate-450/30 scale-110" 
-                                    : "bg-slate-200 dark:bg-slate-800 border-slate-300 dark:border-slate-700"
-                                }`} />
-                              </div>
-                              {/* Gold (33.3%) */}
-                              <div className="absolute left-[33.3%] -translate-x-1/2 flex flex-col items-center">
-                                <div className={`h-4.5 w-4.5 rounded-full border-2 transition-all duration-500 ${
-                                  totalSpent >= 5000 
-                                    ? "bg-amber-500 border-white dark:border-slate-955 shadow-[0_0_12px_rgba(245,158,11,0.8)] ring-4 ring-amber-500/30 scale-110" 
-                                    : "bg-slate-200 dark:bg-slate-800 border-slate-300 dark:border-slate-700"
-                                }`} />
-                              </div>
-                              {/* Platinum (66.6%) */}
-                              <div className="absolute left-[66.6%] -translate-x-1/2 flex flex-col items-center">
-                                <div className={`h-4.5 w-4.5 rounded-full border-2 transition-all duration-500 ${
-                                  totalSpent >= 15000 
-                                    ? "bg-purple-500 border-white dark:border-slate-955 shadow-[0_0_12px_rgba(168,85,247,0.8)] ring-4 ring-purple-500/30 scale-110" 
-                                    : "bg-slate-200 dark:bg-slate-800 border-slate-300 dark:border-slate-700"
-                                }`} />
-                              </div>
-                              {/* Diamond (100%) */}
-                              <div className="absolute left-[100%] -translate-x-1/2 flex flex-col items-center">
-                                <div className={`h-4.5 w-4.5 rounded-full border-2 transition-all duration-500 ${
-                                  totalSpent >= 30000 
-                                    ? "bg-blue-500 border-white dark:border-slate-955 shadow-[0_0_12px_rgba(59,130,246,0.8)] ring-4 ring-blue-500/30 scale-110 animate-pulse" 
-                                    : "bg-slate-200 dark:bg-slate-800 border-slate-300 dark:border-slate-700"
-                                }`} />
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Labels for level pins */}
-                          <div className="flex justify-between text-[9px] text-slate-450 dark:text-slate-400 font-black uppercase tracking-wider font-mono">
-                            <span className={totalSpent < 5000 ? "text-slate-650 dark:text-slate-300 font-extrabold" : ""}>Silver (₹0)</span>
-                            <span className={totalSpent >= 5000 && totalSpent < 15000 ? "text-amber-500 font-extrabold" : ""}>Gold (₹5k)</span>
-                            <span className={totalSpent >= 15000 && totalSpent < 30000 ? "text-purple-400 font-extrabold" : ""}>Platinum (₹15k)</span>
-                            <span className={totalSpent >= 30000 ? "text-blue-400 font-extrabold" : ""}>Diamond (₹30k+)</span>
-                          </div>
+                        {/* Card container */}
+                        <div className="w-full relative z-10">
+                          {renderVIPCard()}
                         </div>
 
-                        {/* Tier unlock cards grid */}
-                        <div className="grid grid-cols-2 gap-4 mt-2">
-                          {[
-                            { name: "Silver", threshold: 0, cashback: "1% Back", delivery: "Standard", color: "slate", icon: Award },
-                            { name: "Gold", threshold: 5000, cashback: "3% Back", delivery: "Priority", color: "amber", icon: Sparkles },
-                            { name: "Platinum", threshold: 15000, cashback: "5% Back", delivery: "Free Express", color: "purple", icon: CreditCard },
-                            { name: "Diamond", threshold: 30000, cashback: "8% Back", delivery: "Free Express", color: "blue", icon: ShieldCheck }
-                          ].map((tierItem, index) => {
-                            const isUnlocked = totalSpent >= tierItem.threshold;
-                            const currentTierIndex = totalSpent >= 30000 ? 3 : totalSpent >= 15000 ? 2 : totalSpent >= 5000 ? 1 : 0;
-                            const isCurrent = currentTierIndex === index;
-                            const Icon = tierItem.icon;
-                            
-                            let borderClass = "border-slate-200/40 dark:border-slate-800 bg-slate-50/20 dark:bg-slate-900/10 opacity-50";
-                            let ringClass = "";
-                            let badgeBg = "bg-slate-200/50 text-slate-500 dark:bg-slate-850 dark:text-slate-400";
-                            let badgeText = "Locked";
-                            
-                            if (isUnlocked) {
-                              badgeText = "Unlocked";
-                              if (tierItem.color === "slate") {
-                                borderClass = "border-slate-400/30 bg-slate-400/5 text-slate-400";
-                                badgeBg = "bg-slate-400/10 text-slate-400 border border-slate-400/20";
-                              } else if (tierItem.color === "amber") {
-                                borderClass = "border-amber-500/20 bg-amber-500/5 text-amber-400";
-                                badgeBg = "bg-amber-500/10 text-amber-400 border border-amber-500/20";
-                              } else if (tierItem.color === "purple") {
-                                borderClass = "border-purple-500/20 bg-purple-500/5 text-purple-400";
-                                badgeBg = "bg-purple-500/10 text-purple-400 border border-purple-500/20";
-                              } else if (tierItem.color === "blue") {
-                                borderClass = "border-blue-500/20 bg-blue-500/5 text-blue-400";
-                                badgeBg = "bg-blue-500/10 text-blue-400 border border-blue-500/20";
-                              }
-                            }
-                            
-                            if (isCurrent) {
-                              badgeText = "Active";
-                              if (tierItem.color === "slate") {
-                                ringClass = "ring-2 ring-slate-400 shadow-[0_0_12px_rgba(148,163,184,0.3)]";
-                              } else if (tierItem.color === "amber") {
-                                ringClass = "ring-2 ring-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.3)]";
-                              } else if (tierItem.color === "purple") {
-                                ringClass = "ring-2 ring-purple-500 shadow-[0_0_12px_rgba(168,85,247,0.3)]";
-                              } else if (tierItem.color === "blue") {
-                                ringClass = "ring-2 ring-blue-500 shadow-[0_0_12px_rgba(59,130,246,0.3)]";
-                              }
-                            }
-                            
-                            return (
-                              <div key={tierItem.name} className={`rounded-2xl border p-3 flex flex-col justify-between space-y-3 transition-all duration-300 ${borderClass} ${ringClass}`}>
-                                <div className="flex justify-between items-start">
-                                  <div className={`p-1.5 rounded-lg ${isUnlocked ? "bg-white/10" : "bg-black/5 dark:bg-white/5"}`}>
-                                    <Icon size={12} className={isUnlocked ? "" : "text-slate-500"} />
-                                  </div>
-                                  <span className={`text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-md ${badgeBg}`}>
-                                    {badgeText}
-                                  </span>
-                                </div>
-                                <div>
-                                  <h5 className="text-[11px] font-black text-slate-800 dark:text-slate-200">{tierItem.name}</h5>
-                                  <p className="text-[9px] text-slate-455 font-bold leading-normal mt-0.5">{tierItem.cashback} • {tierItem.delivery}</p>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-
-                        {/* Milestone details footer summary */}
-                        <div className="p-4 rounded-2xl bg-slate-100/50 dark:bg-slate-900/60 border border-slate-200/30 dark:border-slate-800/80 flex flex-col justify-between items-stretch gap-3">
-                          <div className="text-left">
-                            <p className="text-xs font-black text-slate-850 dark:text-slate-250 uppercase tracking-wide">
-                              {totalSpent >= 30000
-                                ? "All luxury benefits unlocked!"
-                                : totalSpent >= 15000
-                                  ? `₹${(30000 - totalSpent).toLocaleString()} needed for Diamond VIP`
-                                  : totalSpent >= 5000
-                                    ? `₹${(15000 - totalSpent).toLocaleString()} needed for Platinum VIP`
-                                    : `₹${(5000 - totalSpent).toLocaleString()} needed for Gold Tier`}
-                            </p>
-                            <p className="text-[10px] text-slate-455 dark:text-slate-550 font-bold mt-1 leading-normal">
-                              {totalSpent >= 30000
-                                ? "You are at the maximum level! Enjoy 8% cashback, free express shipping, and exclusive events."
-                                : totalSpent >= 15000
-                                  ? "Unlock 8% cashback, a dedicated support concierge, and early pre-order access."
-                                  : totalSpent >= 5000
-                                    ? "Unlock 5% cashback, free express shipping, and priority dispatch."
-                                    : "Unlock 3% cashback, priority shipping, and member rewards."}
-                            </p>
+                        {/* Loyalty tier progression indicator */}
+                        <div className="space-y-1.5 text-left bg-slate-100/50 dark:bg-slate-900/20 p-3 rounded-xl border border-slate-200/30 dark:border-slate-800/80">
+                          <div className="flex justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
+                            <span className="uppercase text-[8.5px] tracking-wider">Next Tier Milestone</span>
+                            <span className="text-orange-500 font-mono text-[9.5px]">{progressInfo.progressPercent.toFixed(0)}%</span>
                           </div>
-                          <span className="text-[9.5px] text-center font-black bg-orange-500/10 text-orange-500 border border-orange-500/20 px-2.5 py-1.5 rounded-lg uppercase tracking-wider">
-                            {totalSpent >= 30000 ? "Maximum VIP Tier" : totalSpent >= 15000 ? "Diamond VIP Next" : totalSpent >= 5000 ? "Platinum VIP Next" : "Gold Tier Next"}
-                          </span>
+                          <div className="w-full bg-slate-200 dark:bg-slate-800/60 rounded-full h-1.5 overflow-hidden">
+                            <motion.div 
+                              className="bg-gradient-to-r from-orange-500 via-amber-500 to-indigo-500 h-full rounded-full" 
+                              style={{ width: `${progressInfo.progressPercent}%` }}
+                              initial={{ width: 0 }}
+                              animate={{ width: `${progressInfo.progressPercent}%` }}
+                              transition={{ duration: 1.2, ease: "easeOut" }}
+                            />
+                          </div>
+                          <p className="text-[9.5px] text-slate-500 dark:text-slate-500 leading-normal font-semibold">
+                            {totalSpent >= 30000
+                              ? "Maximum Diamond VIP level unlocked!"
+                              : totalSpent >= 15000
+                                ? `₹${(30000 - totalSpent).toLocaleString()} spent needed to unlock Diamond VIP`
+                                : totalSpent >= 5000
+                                  ? `₹${(15000 - totalSpent).toLocaleString()} spent needed to unlock Platinum VIP`
+                                  : `₹${(5000 - totalSpent).toLocaleString()} spent needed to unlock Gold Tier`}
+                          </p>
+                          <div className="pt-2 border-t border-slate-200/30 dark:border-slate-800/80 flex flex-wrap gap-1.5 mt-2">
+                            {totalSpent >= 30000 && <span className="text-[8px] font-black uppercase bg-blue-500/10 text-blue-500 dark:text-blue-400 px-1.5 py-0.5 rounded-md border border-blue-500/10">24/7 Concierge</span>}
+                            {totalSpent >= 15000 && <span className="text-[8px] font-black uppercase bg-purple-500/10 text-purple-500 dark:text-purple-400 px-1.5 py-0.5 rounded-md border border-purple-500/10">AI Try-On VIP</span>}
+                            {totalSpent >= 5000 ? <span className="text-[8px] font-black uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded-md border border-emerald-500/10">Express Delivery</span> : <span className="text-[8px] font-black uppercase bg-slate-500/10 text-slate-500 px-1.5 py-0.5 rounded-md border border-slate-500/10">Standard Shipping</span>}
+                            <span className="text-[8px] font-black uppercase bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded-md border border-amber-500/10">Cashback Active</span>
+                          </div>
                         </div>
                       </div>
 
-                      {/* 3. Rewards Dashboard Console */}
-                      <div className="rounded-[32px] glass-panel p-6 space-y-5 luxury-card-glow text-left flex flex-col justify-between border border-slate-200/40 dark:border-slate-800">
-                        <div className="space-y-1">
-                          <h4 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
-                            <CreditCard size={15} className="text-emerald-400" />
-                            <span>{t("rewards_dashboard")}</span>
+                      {/* Rewards & Coupons Console */}
+                      <div className="rounded-[24px] border border-slate-200/40 dark:border-slate-800 bg-white dark:bg-slate-900/30 p-4 glass-panel luxury-card-glow space-y-4">
+                        <div className="text-left">
+                          <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
+                            <CreditCard size={13} className="text-emerald-500" />
+                            <span>Wallet & Rewards</span>
                           </h4>
-                          <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold">Manage available coupons & cashback rebates.</p>
                         </div>
 
-                        <div className="space-y-3 flex-1 mt-2">
-                          {/* Cashback Balance Row */}
-                          <div className="p-3 rounded-2xl border border-slate-200/40 dark:border-slate-800 bg-emerald-500/5 flex justify-between items-center">
+                        <div className="space-y-2.5">
+                          {/* Cashback Balance */}
+                          <div className="p-3 rounded-xl border border-slate-200/40 dark:border-slate-800 bg-emerald-500/5 flex justify-between items-center text-left">
                             <div>
-                              <p className="text-[9px] font-black uppercase tracking-wider text-emerald-500">{t("cashback_balance")}</p>
+                              <p className="text-[8.5px] font-black uppercase tracking-wider text-emerald-500">{t("cashback_balance")}</p>
                               <p className="text-sm font-black text-slate-900 dark:text-white mt-0.5">₹{Math.floor(totalSpent * 0.05).toLocaleString("en-IN")}</p>
                             </div>
-                            <span className="text-[9.5px] font-black px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">Active</span>
+                            <span className="text-[9px] font-black px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">Active</span>
                           </div>
 
-                          {/* Available Coupons Row */}
-                          <div className="p-3 rounded-2xl border border-slate-200/40 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/10 flex justify-between items-center">
+                          {/* Available Coupons */}
+                          <div className="p-3 rounded-xl border border-slate-200/40 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/10 flex justify-between items-center text-left">
                             <div>
-                              <p className="text-[9px] font-black uppercase tracking-wider text-slate-455">{t("available_coupons")}</p>
+                              <p className="text-[8.5px] font-black uppercase tracking-wider text-slate-400">{t("available_coupons")}</p>
                               <p className="text-xs font-black text-slate-900 dark:text-white mt-0.5">2 Coupons Available</p>
                             </div>
-                            <span className="text-[9px] font-black bg-purple-500/10 text-purple-400 border border-purple-500/20 px-2 py-0.5 rounded-md uppercase tracking-wider">VIP500</span>
+                            <span className="text-[8.5px] font-black bg-purple-500/10 text-purple-400 border border-purple-500/20 px-2 py-0.5 rounded uppercase tracking-wider">VIP500</span>
                           </div>
-
-                          {/* Perks Usage Analytics */}
-                          <div className="p-3 rounded-2xl border border-slate-200/40 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/10 space-y-3">
-                            <p className="text-[9px] font-black uppercase tracking-wider text-slate-450">VIP Perks Usage</p>
-                            
-                            {/* Perk 1: AI Fitting Room Renders */}
-                            <div className="space-y-1">
-                              <div className="flex justify-between text-[9px] font-bold text-slate-500 dark:text-slate-400">
-                                <span>AI Fitting Room Renders</span>
-                                <span className="font-mono text-[9px]">{totalSpent >= 30000 ? "Unlimited" : totalSpent >= 15000 ? "14/20 Used" : "3/5 Used"}</span>
-                              </div>
-                              <div className="w-full bg-slate-200 dark:bg-slate-800/80 rounded-full h-1 overflow-hidden">
-                                <div 
-                                  className="bg-indigo-500 h-full rounded-full" 
-                                  style={{ width: totalSpent >= 30000 ? "100%" : totalSpent >= 15000 ? "70%" : "60%" }} 
-                                />
-                              </div>
-                            </div>
-
-                            {/* Perk 2: Free Express Shipping */}
-                            <div className="space-y-1">
-                              <div className="flex justify-between text-[9px] font-bold text-slate-500 dark:text-slate-400">
-                                <span>Free Express Shipments</span>
-                                <span className="font-mono text-[9px]">{totalSpent >= 15000 ? "Unlimited" : totalSpent >= 5000 ? "2/5 Used" : "0/1 Used"}</span>
-                              </div>
-                              <div className="w-full bg-slate-200 dark:bg-slate-800/80 rounded-full h-1 overflow-hidden">
-                                <div 
-                                  className="bg-emerald-500 h-full rounded-full" 
-                                  style={{ width: totalSpent >= 15000 ? "100%" : totalSpent >= 5000 ? "40%" : "0%" }} 
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* 4. Curated Exclusives / Recommendations */}
-                      <div className="rounded-[32px] glass-panel p-6 space-y-5 luxury-card-glow text-left flex flex-col justify-between border border-slate-200/40 dark:border-slate-800">
-                        <div className="space-y-1">
-                          <h4 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
-                            <Sparkles size={15} className="text-indigo-400" />
-                            <span>{t("fitting_room")} Exclusives</span>
-                          </h4>
-                          <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold">Premium items with tier-exclusive rates.</p>
-                        </div>
-
-                        <div className="space-y-3 flex-1 mt-2">
-                          {[
-                            { name: "Obsidian Smart Watch Pro", price: "₹24,999", discount: "5% VIP Reward", image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=150" },
-                            { name: "Signature Amber Parfum 100ml", price: "₹12,200", discount: "Express Freebie", image: "https://images.unsplash.com/photo-1541643600914-78b084683601?w=150" }
-                          ].map((prod, pIdx) => (
-                            <div key={pIdx} className="rounded-2xl border border-slate-200/40 dark:border-slate-800 overflow-hidden bg-slate-50/20 dark:bg-slate-900/10 flex p-2 gap-3 items-center group hover:shadow-md transition-all duration-300">
-                              <div className="h-16 w-16 rounded-xl overflow-hidden shrink-0 bg-slate-100 dark:bg-slate-900">
-                                <img src={prod.image} alt={prod.name} className="h-full w-full object-cover group-hover:scale-105 transition duration-500" />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <h5 className="text-[11.5px] font-black text-slate-900 dark:text-white truncate">{prod.name}</h5>
-                                <p className="text-[9.5px] font-bold text-slate-455 dark:text-slate-500">{prod.price} • <span className="text-indigo-400 font-black">{prod.discount}</span></p>
-                              </div>
-                              <button onClick={() => navigate("/shop")} className="h-7 w-7 rounded-lg bg-slate-200/50 dark:bg-slate-800/80 flex items-center justify-center text-slate-600 dark:text-slate-350 hover:bg-orange-500 hover:text-white transition-all cursor-pointer shrink-0">
-                                <ArrowRight size={12} />
-                              </button>
-                            </div>
-                          ))}
                         </div>
                       </div>
 
                     </div>
 
-                    {/* RIGHT COLUMN: MAIN METRICS & HISTORY */}
-                    <div className="space-y-8 min-w-0">
+                    {/* RIGHT COLUMN: RECENT DELIVERIES, LOYALTY PRIVILEGES & ACTIVITIES */}
+                    <div className="space-y-6 min-w-0">
                       
-                      {/* 1. Stats Grid */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        
-                        {/* Stat 1: Lifetime Orders */}
-                        <div className="group rounded-[24px] border border-slate-200/50 dark:border-slate-800 bg-white/50 dark:bg-slate-900/30 p-5 shadow-xs hover:shadow-md hover:border-orange-500/20 transition-all duration-300 flex items-stretch justify-between glass-panel luxury-card-glow min-h-[130px]">
-                          <div className="flex flex-col justify-between text-left space-y-2 flex-1 min-w-0 pr-4">
-                            <div className="space-y-1">
-                              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 block truncate" title={t("lifetime_orders")}>
-                                {t("lifetime_orders")}
-                              </span>
-                              <h3 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white leading-none tracking-tight">
-                                {animatedOrdersCount}
-                              </h3>
-                            </div>
-                            <div className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-500">
-                              <TrendingUp size={12} className="shrink-0" />
-                              <span className="truncate">+12.4% <span className="text-slate-400 dark:text-slate-555 font-normal">this month</span></span>
-                            </div>
-                          </div>
-                          <div className="flex flex-col justify-between items-end shrink-0 w-20">
-                            <div className="flex h-7.5 w-7.5 items-center justify-center rounded-lg bg-gradient-to-br from-orange-400 to-amber-500 text-white transition-all duration-300 group-hover:scale-110 shadow-md shadow-orange-500/10">
-                              <Package size={12} />
-                            </div>
-                            <div className="w-full flex justify-end">
-                              <svg className="w-16 h-7 text-orange-500 stroke-current fill-none opacity-80" viewBox="0 0 120 40" strokeWidth="3" strokeLinecap="round">
-                                <path d={generateSparklinePath(orderCounts)} />
-                              </svg>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Stat 2: Total Spent */}
-                        <div className="group rounded-[24px] border border-slate-200/50 dark:border-slate-800 bg-white/50 dark:bg-slate-900/30 p-5 shadow-xs hover:shadow-md hover:border-emerald-500/20 transition-all duration-300 flex items-stretch justify-between glass-panel luxury-card-glow min-h-[130px]">
-                          <div className="flex flex-col justify-between text-left space-y-2 flex-1 min-w-0 pr-4">
-                            <div className="space-y-1">
-                              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 block truncate" title={t("total_spent")}>
-                                {t("total_spent")}
-                              </span>
-                              <h3 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white leading-none tracking-tight">
-                                {formatCurrencyCompact(animatedSpent)}
-                              </h3>
-                            </div>
-                            <div className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-500">
-                              <TrendingUp size={12} className="shrink-0" />
-                              <span className="truncate">+18.7% <span className="text-slate-400 dark:text-slate-555 font-normal">this year</span></span>
-                            </div>
-                          </div>
-                          <div className="flex flex-col justify-between items-end shrink-0 w-20">
-                            <div className="flex h-7.5 w-7.5 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-450 to-teal-550 text-white transition-all duration-300 group-hover:scale-110 shadow-md shadow-emerald-500/10">
-                              <DollarSign size={12} />
-                            </div>
-                            <div className="w-full flex justify-end">
-                              <svg className="w-16 h-7 text-emerald-500 stroke-current fill-none opacity-80" viewBox="0 0 120 40" strokeWidth="3" strokeLinecap="round">
-                                <path d={generateSparklinePath(orderAmounts)} />
-                              </svg>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Stat 3: Reward Points */}
-                        <div className="group rounded-[24px] border border-slate-200/50 dark:border-slate-800 bg-white/50 dark:bg-slate-900/30 p-5 shadow-xs hover:shadow-md hover:border-purple-500/20 transition-all duration-300 flex items-stretch justify-between glass-panel luxury-card-glow min-h-[130px]">
-                          <div className="flex flex-col justify-between text-left space-y-2 flex-1 min-w-0 pr-4">
-                            <div className="space-y-1">
-                              <span className="text-[10px] font-black uppercase tracking-wider text-slate-450 block truncate" title={t("rewards")}>
-                                {t("rewards")}
-                              </span>
-                              <h3 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white leading-none tracking-tight">
-                                {formatPointsCompact(animatedPoints)}
-                              </h3>
-                            </div>
-                            <div className="flex items-center gap-1.5 text-[11px] font-bold text-purple-500">
-                              <Award size={12} className="shrink-0" />
-                              <span className="truncate">{tier.name.split(" ")[0]} Perks</span>
-                            </div>
-                          </div>
-                          <div className="flex flex-col justify-between items-end shrink-0 w-20">
-                            <div className="flex h-7.5 w-7.5 items-center justify-center rounded-xl bg-gradient-to-br from-purple-400 to-indigo-500 text-white transition-all duration-300 group-hover:scale-110 shadow-md shadow-purple-500/10">
-                              <Sparkles size={12} />
-                            </div>
-                            <div className="w-full flex justify-end">
-                              <svg className="w-16 h-7 text-purple-500 stroke-current fill-none opacity-80" viewBox="0 0 120 40" strokeWidth="3" strokeLinecap="round">
-                                <path d={generateSparklinePath(orderAmounts.map(v => v * 0.5))} />
-                              </svg>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Stat 4: Deliveries */}
-                        <div className="group rounded-[24px] border border-slate-200/50 dark:border-slate-800 bg-white/50 dark:bg-slate-900/30 p-5 shadow-xs hover:shadow-md hover:border-blue-500/20 transition-all duration-300 flex items-stretch justify-between glass-panel luxury-card-glow min-h-[130px]">
-                          <div className="flex flex-col justify-between text-left space-y-2 flex-1 min-w-0 pr-4">
-                            <div className="space-y-1">
-                              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 block truncate" title={t("deliveries")}>
-                                {t("deliveries")}
-                              </span>
-                              <h3 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white leading-none tracking-tight">
-                                {animatedDeliveries} <span className="text-xs font-normal text-slate-400">{t("active")}</span>
-                              </h3>
-                            </div>
-                            <div className="flex items-center gap-1.5 text-[11px] font-bold text-blue-500">
-                              <Truck size={12} className="shrink-0" />
-                              <span className="truncate">
-                                {activeShipments > 0 ? `${activeShipments} ${t("arriving_today")}` : t("all_delivered")}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="flex flex-col justify-between items-end shrink-0 w-20">
-                            <div className="flex h-7.5 w-7.5 items-center justify-center rounded-xl bg-gradient-to-br from-blue-400 to-cyan-500 text-white transition-all duration-300 group-hover:scale-110 shadow-md shadow-blue-500/10">
-                              <Truck size={12} />
-                            </div>
-                            <div className="w-full flex justify-end">
-                              <svg className="w-16 h-7 text-blue-500 stroke-current fill-none opacity-80" viewBox="0 0 120 40" strokeWidth="3" strokeLinecap="round">
-                                <path d={generateSparklinePath(orderAmounts.map((_, i) => (i % 2 === 0 ? 10 : 25)))} />
-                              </svg>
-                            </div>
-                          </div>
-                        </div>
-
-                      </div>
-
-                      {/* 2. Recent Deliveries */}
-                      <div className="rounded-[32px] glass-panel p-6 space-y-6 luxury-card-glow text-left flex flex-col justify-between border border-slate-200/40 dark:border-slate-800">
-                        <div className="space-y-1">
-                          <h4 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
-                            <Clock size={16} className="text-orange-500 animate-spin-slow" />
+                      {/* Recent Deliveries */}
+                      <div className="rounded-[24px] border border-slate-200/40 dark:border-slate-800 bg-white dark:bg-slate-900/30 p-4 glass-panel luxury-card-glow text-left flex flex-col justify-between">
+                        <div className="space-y-0.5">
+                          <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
+                            <Clock size={13} className="text-orange-500 animate-spin-slow" />
                             <span>Recent Deliveries</span>
                           </h4>
-                          <p className="text-[11px] text-slate-400 dark:text-slate-500 font-bold">Track the path of your active products.</p>
+                          <p className="text-[9.5px] text-slate-400 dark:text-slate-500 font-bold">Track the path of your active products.</p>
                         </div>
 
-                        <div className="space-y-4 flex-1 mt-4 overflow-y-auto max-h-48 custom-scrollbar pr-1">
+                        <div className="space-y-3 flex-1 mt-3 overflow-y-auto max-h-48 custom-scrollbar pr-1">
                           {orders.length === 0 ? (
-                            <div className="text-center py-6 text-slate-400 dark:text-slate-500 text-xs font-semibold uppercase tracking-wider">
+                            <div className="text-center py-4 text-slate-400 dark:text-slate-600 text-[10px] font-semibold uppercase tracking-wider">
                               No orders placed yet
                             </div>
                           ) : (
                             orders.slice(0, 2).map((order, idx) => (
-                              <div key={order._id || idx} className="rounded-2xl border border-slate-200/40 dark:border-slate-800/80 p-3 bg-slate-50/50 dark:bg-slate-950/20 flex flex-col gap-2 relative group hover:border-orange-500/10 transition-colors">
-                                <div className="flex justify-between items-center text-[10px] font-black uppercase">
-                                  <span className="text-slate-450 dark:text-slate-500 font-mono">ID: #{order._id?.slice(-8).toUpperCase()}</span>
-                                  <span className={`px-2 py-0.5 rounded-md ${order.orderStatus?.toLowerCase() === "delivered"
-                                      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                                      : "bg-amber-500/10 text-amber-500 border border-amber-500/20"
-                                    }`}>
+                              <div key={order._id || idx} className="rounded-xl border border-slate-200/40 dark:border-slate-800/80 p-2.5 bg-slate-50/50 dark:bg-slate-950/20 flex flex-col gap-2 relative group hover:border-orange-500/10 transition-colors">
+                                <div className="flex justify-between items-center text-[9px] font-black uppercase">
+                                  <span className="text-slate-500 dark:text-slate-500 font-mono">ID: #{order._id?.slice(-8).toUpperCase()}</span>
+                                  <span className={`px-1.5 py-0.5 rounded-md ${order.orderStatus?.toLowerCase() === "delivered" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-amber-500/10 text-amber-500 border border-amber-500/20" }`}>
                                     {order.orderStatus || "Processing"}
                                   </span>
                                 </div>
@@ -1315,32 +992,32 @@ const Profile = () => {
                                 <div className="flex justify-between items-end">
                                   <div>
                                     <p className="text-xs font-black text-slate-900 dark:text-white">₹{order.amount.toLocaleString("en-IN")}</p>
-                                    <p className="text-[9px] text-slate-400 font-bold mt-0.5">{new Date(order.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</p>
+                                    <p className="text-[8.5px] text-slate-400 font-bold mt-0.5">{new Date(order.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</p>
                                   </div>
                                   <button
                                     onClick={() => navigate("/orderdetail")}
-                                    className="h-6 w-6 rounded-lg bg-slate-200/50 dark:bg-slate-800/80 flex items-center justify-center text-slate-600 dark:text-slate-350 group-hover:bg-orange-500 group-hover:text-white transition-all cursor-pointer"
+                                    className="h-5.5 w-5.5 rounded bg-slate-200/50 dark:bg-slate-800/80 flex items-center justify-center text-slate-600 dark:text-slate-300 group-hover:bg-orange-500 group-hover:text-white transition-all cursor-pointer"
                                   >
-                                    <ArrowRight size={11} />
+                                    <ArrowRight size={10} />
                                   </button>
                                 </div>
                               </div>
                             ))
                           )}
-                        </div>
+                          </div>
                       </div>
 
-                      {/* 3. Activity Feed */}
-                      <div className="rounded-[32px] glass-panel p-6 space-y-5 luxury-card-glow text-left flex flex-col justify-between border border-slate-200/40 dark:border-slate-800">
-                        <div className="space-y-1">
-                          <h4 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
-                            <Bell size={15} className="text-purple-400 animate-bounce" />
+                      {/* Recent Activity Feed */}
+                      <div className="rounded-[24px] border border-slate-200/40 dark:border-slate-800 bg-white dark:bg-slate-900/30 p-4 glass-panel luxury-card-glow text-left flex flex-col justify-between">
+                        <div className="space-y-0.5">
+                          <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
+                            <Bell size={13} className="text-purple-400 animate-pulse" />
                             <span>{t("recent_activity")}</span>
                           </h4>
-                          <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold">Latest status updates of your account profile.</p>
+                          <p className="text-[9.5px] text-slate-400 dark:text-slate-500 font-bold">Latest status updates of your account profile.</p>
                         </div>
 
-                        <div className="space-y-3.5 flex-1 mt-2">
+                        <div className="space-y-2.5 flex-1 mt-3">
                           {[
                             { title: "Cashback Earned", desc: `₹${Math.floor(totalSpent * 0.05).toLocaleString()} added to rewards balance`, time: "Just Now", status: "emerald" },
                             { title: "VIP Tier Upgraded", desc: `Welcome to ${tier.name}!`, time: "1 day ago", status: "purple" },
@@ -1354,112 +1031,24 @@ const Profile = () => {
                               orange: "bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.6)]",
                             };
                             return (
-                              <div key={aIdx} className="flex gap-3 text-left">
-                                <span className={`h-2 w-2 rounded-full mt-1.5 shrink-0 ${statusColorMap[act.status] || 'bg-slate-500'}`} />
+                              <div key={aIdx} className="flex gap-2 text-left">
+                                <span className={`h-1.5 w-1.5 rounded-full mt-1.5 shrink-0 ${statusColorMap[act.status] || 'bg-slate-500'}`} />
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-[11.5px] font-black text-slate-900 dark:text-white leading-tight">{act.title}</p>
-                                  <p className="text-[10px] text-slate-450 dark:text-slate-500 font-semibold leading-normal mt-0.5 truncate">{act.desc}</p>
+                                  <p className="text-[11px] font-black text-slate-900 dark:text-white leading-tight">{act.title}</p>
+                                  <p className="text-[9px] text-slate-500 dark:text-slate-500 font-semibold leading-normal mt-0.5 truncate">{act.desc}</p>
                                 </div>
-                                <span className="text-[8.5px] font-bold text-slate-400 shrink-0 mt-0.5">{act.time}</span>
+                                <span className="text-[8px] font-bold text-slate-400 shrink-0 mt-0.5">{act.time}</span>
                               </div>
                             );
                           })}
                         </div>
                       </div>
 
-                      {/* 4. Loyalty Benefits */}
-                      <div className="rounded-[32px] glass-panel p-6 space-y-5 luxury-card-glow text-left flex flex-col justify-between border border-slate-200/40 dark:border-slate-800">
-                        <div className="space-y-1">
-                          <h4 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
-                            <ShieldCheck size={16} className="text-blue-400" />
-                            <span>Active Loyalty Benefits</span>
-                          </h4>
-                          <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold">VIP privileges active for your current status tier.</p>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-2">
-                          {[
-                            { title: "Insured Express Delivery", desc: "Priority delivery routes with zero shipping fees.", active: totalSpent >= 15000 },
-                            { title: "AI Try-On Priority Queue", desc: "Unlimited VTON try-on renders with instant output.", active: totalSpent >= 15000 },
-                            { title: "Exclusive Cash Rebates", desc: "Upto 8% cashback on all fashion & electronics.", active: true },
-                            { title: "24/7 Dedicated Support", desc: "Direct access line to senior customer concierge.", active: totalSpent >= 30000 }
-                          ].map((benefit, bIdx) => (
-                            <div key={bIdx} className={`p-3 rounded-2xl border ${benefit.active ? 'border-emerald-500/20 bg-emerald-500/5' : 'border-slate-200/40 dark:border-slate-800 bg-slate-50/20 dark:bg-slate-950/10 opacity-60'} flex gap-3 text-left items-start`}>
-                              <div className={`p-1 rounded-full shrink-0 ${benefit.active ? 'bg-emerald-500/10 text-emerald-500' : 'bg-slate-200 dark:bg-slate-800 text-slate-400'}`}>
-                                <Check size={11} />
-                              </div>
-                              <div>
-                                <h6 className="text-[11px] font-black text-slate-800 dark:text-slate-200 leading-tight">{benefit.title}</h6>
-                                <p className="text-[9px] text-slate-450 dark:text-slate-500 font-bold mt-0.5 leading-normal">{benefit.desc}</p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
                     </div>
 
                   </div>
 
-                  {/* Quick-Jump Dashboard Settings previews */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-slate-200/50 dark:border-slate-800">
-                    <div className="rounded-[28px] border border-slate-200/50 dark:border-slate-800 bg-white/50 dark:bg-slate-900/30 p-5 glass-panel text-left flex flex-col justify-between gap-4">
-                      <div className="h-8.5 w-8.5 rounded-xl flex items-center justify-center bg-orange-500/10 border border-orange-500/20 text-orange-500">
-                        <MapPin size={15} />
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-black uppercase text-slate-900 dark:text-white leading-tight">Addresses Management</h4>
-                        <p className="text-[10.5px] text-slate-400 dark:text-slate-500 font-bold mt-1.5 leading-normal">You have {user.addresses?.length || 0} saved shipping address locations active.</p>
-                      </div>
-                      <button
-                        onClick={() => setActiveProfileTab("addresses")}
-                        className="inline-flex items-center gap-1.5 text-xs font-black uppercase text-orange-500 hover:text-orange-655 cursor-pointer self-start"
-                      >
-                        <span>Manage Address</span>
-                        <ArrowRight size={11} />
-                      </button>
-                    </div>
 
-                    <div className="rounded-[28px] border border-slate-200/50 dark:border-slate-800 bg-white/50 dark:bg-slate-900/30 p-5 glass-panel text-left flex flex-col justify-between gap-4">
-                      <div className="h-8.5 w-8.5 rounded-xl flex items-center justify-center bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
-                        <Settings size={15} />
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-black uppercase text-slate-900 dark:text-white leading-tight">Credentials & Settings</h4>
-                        <p className="text-[10.5px] text-slate-400 dark:text-slate-500 font-bold mt-1.5 leading-normal">Update email, name, custom SaaS profile avatar presets.</p>
-                      </div>
-                      <button
-                        onClick={() => setActiveProfileTab("settings")}
-                        className="inline-flex items-center gap-1.5 text-xs font-black uppercase text-orange-500 hover:text-orange-655 cursor-pointer self-start"
-                      >
-                        <span>Edit profile Settings</span>
-                        <ArrowRight size={11} />
-                      </button>
-                    </div>
-
-                    <div className="rounded-[28px] border border-slate-200/50 dark:border-slate-800 bg-white/50 dark:bg-slate-900/30 p-5 glass-panel text-left flex flex-col justify-between gap-4">
-                      <div className="h-8.5 w-8.5 rounded-xl flex items-center justify-center bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
-                        <ShieldCheck size={15} />
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-black uppercase text-slate-900 dark:text-white leading-tight">Secure verification key</h4>
-                        <p className="text-[10.5px] text-slate-400 dark:text-slate-500 font-bold mt-1.5 leading-normal">Generate or refresh your secure verification access keys.</p>
-                      </div>
-                      <button
-                        onClick={() => {
-                          setActiveProfileTab("settings");
-                          // Scroll to bottom (security section)
-                          setTimeout(() => {
-                            window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
-                          }, 100);
-                        }}
-                        className="inline-flex items-center gap-1.5 text-xs font-black uppercase text-orange-500 hover:text-orange-655 cursor-pointer self-start"
-                      >
-                        <span>Check Security keys</span>
-                        <ArrowRight size={11} />
-                      </button>
-                    </div>
-                  </div>
 
                 </motion.div>
               )}
@@ -1481,7 +1070,7 @@ const Profile = () => {
                     </div>
                     <button
                       onClick={() => setShowAddressModal(true)}
-                      className="self-start sm:self-center inline-flex items-center gap-2 rounded-2xl bg-orange-500 hover:bg-orange-600 px-4.5 py-3 text-xs font-black uppercase tracking-wider text-white shadow-md active:scale-95 transition cursor-pointer"
+                      className="self-start sm:self-center inline-flex items-center gap-2 rounded-2xl bg-orange-500 hover:bg-orange-600 px-4.5 py-3 text-xs font-black uppercase tracking-wider text-slate-100 dark:text-white shadow-md active:scale-95 transition cursor-pointer"
                     >
                       <Plus size={14} />
                       <span>Add Address</span>
@@ -1491,7 +1080,7 @@ const Profile = () => {
                   {(!user.addresses || user.addresses.length === 0) ? (
                     <div className="rounded-[32px] border border-dashed border-slate-200 dark:border-slate-800 p-12 text-center bg-slate-50/20 dark:bg-slate-950/10">
                       <MapPin size={28} className="mx-auto text-slate-400 mb-3" />
-                      <p className="text-xs font-black text-slate-850 dark:text-slate-200 uppercase tracking-wider">No saved addresses</p>
+                      <p className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">No saved addresses</p>
                       <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1.5 font-semibold">Your address list is currently empty. Click "Add Address" to populate.</p>
                     </div>
                   ) : (
@@ -1505,12 +1094,12 @@ const Profile = () => {
                             <p className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
                               {addr.firstName} {addr.lastName}
                             </p>
-                            <div className="space-y-0.5 text-slate-655 dark:text-slate-350 text-xs font-bold leading-relaxed">
+                            <div className="space-y-0.5 text-slate-700 dark:text-slate-300 text-xs font-bold leading-relaxed">
                               <p>{addr.street}</p>
                               <p>{addr.city}, {addr.state}</p>
-                              <p className="text-[10px] text-slate-450 dark:text-slate-500 uppercase tracking-widest">{addr.country}</p>
+                              <p className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-widest">{addr.country}</p>
                             </div>
-                            <p className="text-xs text-slate-455 dark:text-slate-500 font-bold pt-2 border-t border-slate-100 dark:border-slate-850/80">
+                            <p className="text-xs text-slate-500 dark:text-slate-500 font-bold pt-2 border-t border-slate-100 dark:border-slate-800/80">
                               📞 {addr.phone}
                             </p>
                           </div>
@@ -1561,7 +1150,7 @@ const Profile = () => {
                             value={editName}
                             onChange={(e) => setEditName(e.target.value)}
                             placeholder="Display Name"
-                            className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20 text-xs font-semibold outline-none focus:border-orange-500 transition text-slate-900 dark:text-slate-100 placeholder-slate-400"
+                            className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                           />
                         </div>
 
@@ -1574,7 +1163,7 @@ const Profile = () => {
                             value={editEmail}
                             onChange={(e) => setEditEmail(e.target.value)}
                             placeholder="Email Address"
-                            className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-955/20 text-xs font-semibold outline-none focus:border-orange-500 transition text-slate-900 dark:text-slate-100 placeholder-slate-400"
+                            className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                           />
                         </div>
 
@@ -1586,7 +1175,7 @@ const Profile = () => {
                             value={editPassword}
                             onChange={(e) => setEditPassword(e.target.value)}
                             placeholder="Update Password (leave blank to keep current)"
-                            className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-955/20 text-xs font-semibold outline-none focus:border-orange-500 transition text-slate-900 dark:text-slate-100 placeholder-slate-400"
+                            className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                           />
                         </div>
 
@@ -1594,7 +1183,7 @@ const Profile = () => {
                           <button
                             type="submit"
                             disabled={savingProfile}
-                            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-orange-500 hover:bg-orange-600 text-xs font-black uppercase tracking-wider text-white px-6 py-3.5 transition active:scale-95 disabled:opacity-50 shadow-md cursor-pointer"
+                            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-orange-500 hover:bg-orange-600 text-xs font-black uppercase tracking-wider text-slate-100 dark:text-white px-6 py-3.5 transition active:scale-95 disabled:opacity-50 shadow-md cursor-pointer"
                           >
                             {savingProfile ? (
                               <>
@@ -1613,7 +1202,7 @@ const Profile = () => {
                     <div className="rounded-[32px] border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900/30 p-6 glass-panel space-y-5 flex flex-col justify-between">
                       <div>
                         <h4 className="text-xs font-black uppercase text-slate-900 dark:text-white tracking-wider">Luxury Avatar Presets</h4>
-                        <p className="text-[10px] text-slate-450 dark:text-slate-550 font-bold mt-1">Select an premium gradient design or upload a custom image file.</p>
+                        <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold mt-1">Select an premium gradient design or upload a custom image file.</p>
                       </div>
 
                       {/* Presets grid */}
@@ -1627,13 +1216,12 @@ const Profile = () => {
                                 setSelectedAvatar(avatar.id);
                                 toast.info(`Selected Preset: ${avatar.name} 🎨`);
                               }}
-                              className={`h-11 rounded-xl bg-gradient-to-tr ${avatar.gradient} relative cursor-pointer border ${isSelected ? "border-orange-500 ring-2 ring-orange-500/25 scale-102" : "border-white/10"
-                                } hover:scale-102 transition`}
+                              className={`h-11 rounded-xl bg-gradient-to-tr ${avatar.gradient} relative cursor-pointer border ${isSelected ? "border-orange-500 ring-2 ring-orange-500/25 scale-102" : "border-white/10" } hover:scale-102 transition`}
                               title={avatar.name}
                             >
                               {isSelected && (
                                 <span className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-xl">
-                                  <Check size={14} className="text-white" />
+                                  <Check size={14} className="text-slate-100 dark:text-white" />
                                 </span>
                               )}
                             </button>
@@ -1641,7 +1229,7 @@ const Profile = () => {
                         })}
                       </div>
 
-                      <div className="border-t border-slate-200/40 dark:border-slate-850 pt-4 flex flex-col gap-3">
+                      <div className="border-t border-slate-200/40 dark:border-slate-800 pt-4 flex flex-col gap-3">
                         <input
                           type="file"
                           accept="image/*"
@@ -1662,7 +1250,7 @@ const Profile = () => {
                             <div className="h-8 w-8 rounded-full overflow-hidden border border-slate-200 dark:border-slate-800 shrink-0">
                               <img src={selectedAvatar} alt="Upload preview" className="h-full w-full object-cover" />
                             </div>
-                            <span className="text-[10px] font-bold text-slate-450 dark:text-slate-500">Custom Image Linked</span>
+                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">Custom Image Linked</span>
                             <button
                               onClick={() => setSelectedAvatar("")}
                               className="text-red-500 hover:underline text-[9px] font-black uppercase ml-auto tracking-wider cursor-pointer"
@@ -1679,7 +1267,7 @@ const Profile = () => {
                   <div className="rounded-[32px] border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900/30 p-6 sm:p-8 glass-panel space-y-6">
                     <div>
                       <h4 className="text-xs font-black uppercase text-slate-900 dark:text-white tracking-wider">App Experience Feedback</h4>
-                      <p className="text-[10.5px] text-slate-450 dark:text-slate-500 font-bold mt-1">
+                      <p className="text-[10.5px] text-slate-400 dark:text-slate-500 font-bold mt-1">
                         Tell us how we are doing! We use ratings to optimize routing speeds, fitting room maps, and pricing transparency.
                       </p>
                     </div>
@@ -1696,10 +1284,7 @@ const Profile = () => {
                               title={`${star} Star${star > 1 ? 's' : ''}`}
                             >
                               <svg
-                                className={`h-8 w-8 ${star <= appRating
-                                    ? "text-amber-400 fill-amber-400 animate-pulse"
-                                    : "text-current"
-                                  }`}
+                                className={`h-8 w-8 ${star <= appRating ? "text-amber-400 fill-amber-400 animate-pulse" : "text-current" }`}
                                 viewBox="0 0 20 20"
                                 fill="currentColor"
                               >
@@ -1722,9 +1307,9 @@ const Profile = () => {
                           rows={4}
                           maxLength={500}
                           placeholder="Share details about checkout speeds, product quality, or virtual fitting room options..."
-                          className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-950/40 p-4 text-xs font-semibold outline-none focus:border-orange-500 dark:focus:border-orange-500/80 transition text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-600 resize-none"
+                          className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-950/40 p-4 text-xs font-semibold outline-none dark: transition text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-600 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                         />
-                        <div className="mt-1 flex justify-end text-[9px] text-slate-400 dark:text-slate-505 font-mono">
+                        <div className="mt-1 flex justify-end text-[9px] text-slate-400 dark:text-slate-500 font-mono">
                           <span>{appComment.length} / 500 characters</span>
                         </div>
                       </div>
@@ -1733,7 +1318,7 @@ const Profile = () => {
                         <button
                           type="submit"
                           disabled={submittingReview || appRating === 0}
-                          className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-950 dark:bg-orange-600 hover:bg-slate-850 dark:hover:bg-orange-550 text-white text-xs font-black uppercase tracking-wider px-5 py-3 transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-md cursor-pointer"
+                          className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-950 dark:bg-orange-600 hover:bg-slate-800 dark:hover:bg-orange-500 text-slate-100 dark:text-white text-xs font-black uppercase tracking-wider px-5 py-3 transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-md cursor-pointer"
                         >
                           <span>{user.appReview ? "Update Feedback" : "Submit Feedback"}</span>
                         </button>
@@ -1762,7 +1347,7 @@ const Profile = () => {
               <button
                 type="button"
                 onClick={() => setShowAddressModal(false)}
-                className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-805 text-slate-500 dark:text-slate-400 transition cursor-pointer"
+                className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition cursor-pointer"
               >
                 <X size={16} />
               </button>
@@ -1777,7 +1362,7 @@ const Profile = () => {
                     required
                     value={newAddress.firstName}
                     onChange={(e) => setNewAddress({ ...newAddress, firstName: e.target.value })}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-955/40 px-4 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 transition text-slate-900 dark:text-slate-100"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     placeholder="John"
                   />
                 </div>
@@ -1787,7 +1372,7 @@ const Profile = () => {
                     type="text"
                     value={newAddress.lastName}
                     onChange={(e) => setNewAddress({ ...newAddress, lastName: e.target.value })}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-955/40 px-4 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 transition text-slate-900 dark:text-slate-100"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     placeholder="Doe"
                   />
                 </div>
@@ -1801,7 +1386,7 @@ const Profile = () => {
                     required
                     value={newAddress.email}
                     onChange={(e) => setNewAddress({ ...newAddress, email: e.target.value })}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-805 bg-slate-50/50 dark:bg-slate-955/40 px-4 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 transition text-slate-900 dark:text-slate-100"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     placeholder="john@example.com"
                   />
                 </div>
@@ -1812,7 +1397,7 @@ const Profile = () => {
                     required
                     value={newAddress.phone}
                     onChange={(e) => setNewAddress({ ...newAddress, phone: e.target.value })}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-805 bg-slate-50/50 dark:bg-slate-955/40 px-4 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 transition text-slate-900 dark:text-slate-100"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     placeholder="e.g. +91 9988776655"
                   />
                 </div>
@@ -1825,7 +1410,7 @@ const Profile = () => {
                   required
                   value={newAddress.street}
                   onChange={(e) => setNewAddress({ ...newAddress, street: e.target.value })}
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-955/40 px-4 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 transition text-slate-900 dark:text-slate-100"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                   placeholder="Apartment, block, street details"
                 />
               </div>
@@ -1838,7 +1423,7 @@ const Profile = () => {
                     required
                     value={newAddress.city}
                     onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-850 bg-slate-50/50 dark:bg-slate-955/40 px-4 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 transition text-slate-900 dark:text-slate-100"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     placeholder="City"
                   />
                 </div>
@@ -1849,7 +1434,7 @@ const Profile = () => {
                     required
                     value={newAddress.state}
                     onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value })}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-850 bg-slate-50/50 dark:bg-slate-955/40 px-4 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 transition text-slate-900 dark:text-slate-100"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     placeholder="State"
                   />
                 </div>
@@ -1860,24 +1445,24 @@ const Profile = () => {
                     required
                     value={newAddress.country}
                     onChange={(e) => setNewAddress({ ...newAddress, country: e.target.value })}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-850 bg-slate-50/50 dark:bg-slate-955/40 px-4 py-2.5 text-xs font-semibold outline-none focus:border-orange-500 transition text-slate-900 dark:text-slate-100"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     placeholder="Country"
                   />
                 </div>
               </div>
 
-              <div className="flex gap-3 justify-end pt-4 border-t border-slate-150 dark:border-slate-850">
+              <div className="flex gap-3 justify-end pt-4 border-t border-slate-200 dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => setShowAddressModal(false)}
-                  className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-black uppercase tracking-wider text-slate-655 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"
+                  className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={adding}
-                  className="px-5 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-xs font-black uppercase tracking-wider text-white shadow-md active:scale-95 transition cursor-pointer disabled:opacity-50"
+                  className="px-5 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-xs font-black uppercase tracking-wider text-slate-100 dark:text-white shadow-md active:scale-95 transition cursor-pointer disabled:opacity-50"
                 >
                   {adding ? "Saving..." : "Save Address"}
                 </button>

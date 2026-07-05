@@ -34,7 +34,7 @@ const ShopByCollections = ({ trendingCollections = [] }) => {
       {
         badge: "Tech Gear",
         badgeIcon: Flame,
-        colorClass: "bg-[#F5F3FF] dark:bg-[#1E1B4B]/30 border-[#DDD6FE]/30 dark:border-[#4338CA]/20",
+        colorClass: "bg-[#F5F3FF] dark:bg-indigo-950/30 border-[#DDD6FE]/30 dark:border-[#4338CA]/20",
         badgeColor: "bg-[#EDE9FE] dark:bg-[#312E81]/60 text-[#7C3AED] dark:text-[#A78BFA]",
         btnGradient: "from-[#7C3AED] to-[#6D28D9] hover:from-[#6D28D9] hover:to-[#5B21B6] shadow-purple-500/10",
         pillsColor: "bg-white/70 dark:bg-slate-900/60 border-[#DDD6FE]/40 dark:border-[#4338CA]/20 text-[#6D28D9] dark:text-[#C084FC] hover:bg-white dark:hover:bg-slate-900",
@@ -116,16 +116,16 @@ const ShopByCollections = ({ trendingCollections = [] }) => {
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate("/collections")}
-            className="px-4 py-2 rounded-full border border-blue-600/30 hover:border-blue-600 text-blue-650 dark:text-blue-400 font-extrabold text-xs flex items-center gap-1.5 hover:bg-blue-50/20 dark:hover:bg-blue-950/10 transition-all cursor-pointer bg-transparent"
+            className="px-4 py-2 rounded-full border border-blue-600/30 hover:border-blue-600 text-blue-600 dark:text-blue-400 font-extrabold text-xs flex items-center gap-1.5 hover:bg-blue-50/20 dark:hover:bg-blue-950/10 transition-all cursor-pointer bg-transparent"
           >
             <span>View All</span>
             <ArrowRight size={12} className="stroke-[2.5]" />
           </button>
           <div className="flex gap-2">
-            <button className="w-8 h-8 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors shadow-sm cursor-pointer">
+            <button className="w-8 h-8 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors shadow-sm cursor-pointer">
               <ChevronLeft size={16} />
             </button>
-            <button className="w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-700 flex items-center justify-center text-white transition-colors shadow-md cursor-pointer">
+            <button className="w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-700 flex items-center justify-center text-slate-100 dark:text-white transition-colors shadow-md cursor-pointer">
               <ChevronRight size={16} />
             </button>
           </div>
@@ -152,7 +152,7 @@ const ShopByCollections = ({ trendingCollections = [] }) => {
 
             {/* Heading & description */}
             <div className="mb-3">
-              <h3 className="text-lg font-black text-slate-855 dark:text-slate-100">{col.title}</h3>
+              <h3 className="text-lg font-black text-slate-900 dark:text-slate-100">{col.title}</h3>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 font-bold leading-relaxed mt-1 max-w-[270px]">
                 {col.subtitle}
               </p>
@@ -190,7 +190,7 @@ const ShopByCollections = ({ trendingCollections = [] }) => {
             {/* CTA Button */}
             <button
               onClick={() => navigate(`/collections/${col.id}`)}
-              className={`w-full py-3 bg-gradient-to-r ${col.btnGradient} text-white font-extrabold text-[11px] uppercase tracking-widest rounded-xl shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-1.5 border-none cursor-pointer`}
+              className={`w-full py-3 bg-gradient-to-r ${col.btnGradient} text-slate-100 dark:text-white font-extrabold text-[11px] uppercase tracking-widest rounded-xl shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-1.5 border-none cursor-pointer`}
             >
               <ShoppingBag size={12} className="stroke-[2.5]" />
               <span>Shop Collection</span>

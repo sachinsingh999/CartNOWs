@@ -111,7 +111,7 @@ const Signup = () => {
 
             <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
               <div>
-                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-350">
+                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                   Full Name
                 </label>
                 <input
@@ -124,7 +124,7 @@ const Signup = () => {
               </div>
 
               <div>
-                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-705 dark:text-slate-350">
+                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                   Email
                 </label>
                 <input
@@ -138,7 +138,7 @@ const Signup = () => {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-705 dark:text-slate-350">
+                  <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                     Password
                   </label>
                   <input
@@ -151,7 +151,7 @@ const Signup = () => {
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-705 dark:text-slate-350">
+                  <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                     Confirm Password
                   </label>
                   <input
@@ -166,7 +166,7 @@ const Signup = () => {
 
               <button
                 type="submit"
-                className="w-full rounded-xl bg-black dark:bg-indigo-600 hover:bg-slate-805 dark:hover:bg-indigo-700 py-3.5 text-xs font-black uppercase tracking-wider text-white transition active:scale-98 cursor-pointer shadow"
+                className="w-full rounded-xl bg-slate-950 dark:bg-slate-900 dark:bg-indigo-600 hover:bg-slate-800 dark:hover:bg-indigo-700 py-3.5 text-xs font-black uppercase tracking-wider text-slate-100 dark:text-white transition active:scale-98 cursor-pointer shadow"
               >
                 Sign Up
               </button>
@@ -191,7 +191,7 @@ const Signup = () => {
             className="absolute inset-0 h-full w-full object-cover"
           />
           <div className="absolute inset-0 bg-black/50" />
-          <div className="relative z-10 flex h-full flex-col justify-end p-10 text-white text-left">
+          <div className="relative z-10 flex h-full flex-col justify-end p-10 text-slate-100 dark:text-white text-left">
             <p className="text-sm font-medium uppercase tracking-wide text-white/70">
               Shop better
             </p>

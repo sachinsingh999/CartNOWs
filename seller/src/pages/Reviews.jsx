@@ -65,7 +65,7 @@ const Reviews = ({ token }) => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-black text-slate-900 tracking-tight">Customer Reviews</h2>
+        <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">Customer Reviews</h2>
         <p className="text-xs text-slate-500 font-semibold mt-1">
           Monitor customer testimonials, address feedback, and track aggregate score stars.
         </p>
@@ -77,17 +77,17 @@ const Reviews = ({ token }) => {
           {loading ? (
             <p className="text-xs text-slate-500">Loading reviews...</p>
           ) : reviews.length === 0 ? (
-            <div className="bg-white border border-slate-200/80 rounded-2xl p-8 text-center text-xs text-slate-400 font-semibold">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200/80 rounded-2xl p-8 text-center text-xs text-slate-400 font-semibold">
               No product reviews received yet.
             </div>
           ) : (
             reviews.map((r) => (
-              <div key={r._id} className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm space-y-4">
+              <div key={r._id} className="bg-white dark:bg-slate-900 border border-slate-200/80 rounded-2xl p-5 shadow-sm space-y-4">
                 <div className="flex justify-between items-start">
                   <div className="space-y-1 text-left">
-                    <h4 className="font-extrabold text-slate-900 text-sm">{r.name}</h4>
+                    <h4 className="font-extrabold text-slate-900 dark:text-slate-100 text-sm">{r.name}</h4>
                     <p className="text-[10px] text-slate-400">
-                      Product: <strong className="text-slate-650">{r.productName || "Product"}</strong> · {new Date(r.date).toLocaleDateString()}
+                      Product: <strong className="text-slate-600">{r.productName || "Product"}</strong> · {new Date(r.date).toLocaleDateString()}
                     </p>
                   </div>
                   <div className="flex items-center gap-1">
@@ -101,7 +101,7 @@ const Reviews = ({ token }) => {
                   </div>
                 </div>
 
-                <p className="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-100/50 text-left">
+                <p className="text-xs text-slate-600 leading-relaxed bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-100/50 text-left">
                   "{r.comment}"
                 </p>
 
@@ -111,7 +111,7 @@ const Reviews = ({ token }) => {
                     <CornerDownRight size={16} className="text-indigo-400 shrink-0 mt-0.5" />
                     <div>
                       <span className="font-black text-[9px] uppercase tracking-wider text-indigo-500">Your Response:</span>
-                      <p className="mt-0.5 leading-relaxed font-semibold text-slate-800">{r.reply}</p>
+                      <p className="mt-0.5 leading-relaxed font-semibold text-slate-800 dark:text-slate-100">{r.reply}</p>
                     </div>
                   </div>
                 ) : (
@@ -121,11 +121,11 @@ const Reviews = ({ token }) => {
                       placeholder="Type your official response..."
                       value={replyText[r._id] || ""}
                       onChange={(e) => setReplyText((prev) => ({ ...prev, [r._id]: e.target.value }))}
-                      className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold outline-none focus:border-slate-800 transition w-full"
+                      className="flex-1 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-semibold outline-none transition w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     />
                     <button
                       onClick={() => handleSendReply(r._id, r.productId)}
-                      className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl px-4 py-2 text-xs font-bold transition active:scale-95 cursor-pointer shadow-sm w-full sm:w-auto shrink-0"
+                      className="bg-slate-900 hover:bg-slate-800 text-slate-100 dark:text-white rounded-xl px-4 py-2 text-xs font-bold transition active:scale-95 cursor-pointer shadow-sm w-full sm:w-auto shrink-0"
                     >
                       Post Reply
                     </button>
@@ -137,8 +137,8 @@ const Reviews = ({ token }) => {
         </div>
 
         {/* Rating Summary card */}
-        <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm space-y-4">
-          <h3 className="font-black text-sm text-slate-900">Score Summary</h3>
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 rounded-3xl p-6 shadow-sm space-y-4">
+          <h3 className="font-black text-sm text-slate-900 dark:text-slate-100">Score Summary</h3>
           <div className="flex items-center gap-3">
             <span className="text-4xl font-black text-slate-950">{avg > 0 ? avg.toFixed(1) : "0.0"}</span>
             <div className="space-y-1">

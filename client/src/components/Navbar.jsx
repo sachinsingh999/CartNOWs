@@ -28,6 +28,7 @@ import {
   Check,
   Copy,
   Mic,
+  LayoutGrid,
 } from "lucide-react";
 import axios from "axios";
 import { backendUrl } from "../config";
@@ -38,14 +39,14 @@ import Logo from "./Logo";
 /* ─────────────── Mobile Bottom Nav items ─────────────── */
 const BOTTOM_NAV = [
   { label: "Home", icon: Home, to: "/" },
-  { label: "Shop", icon: Tag, to: "/product" },
+  { label: "Categories", icon: LayoutGrid, to: "/categories" },
   { label: "Wishlist", icon: Heart, to: "/wishlist" },
   { label: "Orders", icon: Package, to: "/orderdetail" },
   { label: "Account", icon: User, to: null, isProfile: true },
 ];
 
 /* ─────────────── Main Component ─────────────── */
-const CATEGORIES = [
+const DEFAULT_CATEGORIES = [
   { label: "Electronics", to: "/category/electronics", emoji: "🔌" },
   { label: "Fashion", to: "/category/fashion", emoji: "👗" },
   { label: "Home", to: "/category/home", emoji: "🏠" },
@@ -57,6 +58,7 @@ const Navbar = () => {
   const { language, changeLanguage, t } = useLanguage();
 
   /* State */
+  const [navCategories, setNavCategories] = useState([]);
   const [cartCount, setCartCount] = useState(0);
   const [open, setOpen] = useState(false);
   const [notiOpen, setNotiOpen] = useState(false);
@@ -69,6 +71,23 @@ const Navbar = () => {
   });
   const [locationLoading, setLocationLoading] = useState(false);
   const [cartBump, setCartBump] = useState(false);
+  
+  useEffect(() => {
+    axios.get(`${backendUrl}/api/product/categories`)
+      .then(res => {
+        if (res.data.success) {
+          const topCats = (res.data.categories || [])
+            .filter(c => !c.parentCategoryId && c.status === "active")
+            .map(c => ({
+              label: c.name,
+              to: `/category/${c.slug || c.name.toLowerCase()}`,
+              emoji: c.icon || "📦"
+            }));
+          setNavCategories(topCats);
+        }
+      })
+      .catch(err => console.error("Failed to load categories in navbar:", err));
+  }, []);
   const [activeTab, setActiveTab] = useState("all");
   const [copiedNotiId, setCopiedNotiId] = useState(null);
   const [expandedNotis, setExpandedNotis] = useState({});
@@ -101,10 +120,13 @@ const Navbar = () => {
   const mobileSearchInputRef = useRef(null);
 
   /* Dark mode */
-  const [isDarkMode, setIsDarkMode] = useState(() =>
-    localStorage.getItem("theme") === "dark" ||
-    document.documentElement.classList.contains("dark")
-  );
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme) {
+      return savedTheme === "dark";
+    }
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  });
 
   useEffect(() => {
     if (isDarkMode) {
@@ -470,15 +492,11 @@ const Navbar = () => {
               {/* ── Desktop Search (Minimalist Capsule) ── */}
               <div
                 ref={searchRef}
-                className={`relative hidden md:flex flex-1 min-w-0 mx-auto transition-all duration-300 ease-in-out z-50 ${searchFocused ? "max-w-2xl" : "max-w-md"
-                  }`}
+                className={`relative hidden md:flex flex-1 min-w-0 mx-auto transition-all duration-300 ease-in-out z-50 ${searchFocused ? "max-w-2xl" : "max-w-md" }`}
               >
                 <form
                   onSubmit={(e) => { e.preventDefault(); submitSearch(); }}
-                  className={`flex w-full items-center overflow-hidden rounded-md border transition-all duration-300 ${searchFocused
-                    ? "border-slate-350 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xs"
-                    : "border-transparent bg-slate-100 dark:bg-slate-900/60"
-                    }`}
+                  className={`flex w-full items-center overflow-hidden rounded-md border transition-all duration-300 ${searchFocused ? "border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xs" : "border-transparent bg-slate-100 dark:bg-slate-900/60" }`}
                 >
                   <Search className="ml-3 h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500" />
                   <input
@@ -498,7 +516,7 @@ const Navbar = () => {
                     <button
                       type="button"
                       onClick={() => { setSearchValue(""); setShowSuggestions(false); }}
-                      className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-750 text-slate-500 dark:text-slate-400 hover:bg-slate-350 dark:hover:bg-slate-700 transition cursor-pointer"
+                      className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-300 dark:hover:bg-slate-700 transition cursor-pointer"
                     >
                       <X size={10} />
                     </button>
@@ -507,7 +525,7 @@ const Navbar = () => {
                   <button
                     type="button"
                     onClick={handleVoiceSearch}
-                    className={`mr-3 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-slate-450 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition cursor-pointer ${isListening ? "bg-red-500/10 text-red-500" : ""}`}
+                    className={`mr-3 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-slate-400 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition cursor-pointer ${isListening ? "bg-red-500/10 text-red-500" : ""}`}
                     title="Search by Voice"
                   >
                     <Mic size={13} className={isListening ? "animate-pulse" : ""} />
@@ -541,7 +559,7 @@ const Navbar = () => {
                                   setShowSuggestions(false);
                                   navigate(item.to);
                                 }}
-                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/60 text-xs font-bold text-slate-700 dark:text-slate-350 hover:border-orange-500 hover:bg-orange-50/10 dark:hover:bg-orange-950/10 hover:text-orange-500 dark:hover:text-orange-400 transition cursor-pointer"
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/60 text-xs font-bold text-slate-700 dark:text-slate-300 hover:border-orange-500 hover:bg-orange-50/10 dark:hover:bg-orange-950/10 hover:text-orange-500 dark:hover:text-orange-400 transition cursor-pointer"
                               >
                                 <span>{item.emoji}</span>
                                 <span>{item.label}</span>
@@ -555,7 +573,7 @@ const Navbar = () => {
                             <RotateCcw size={11} /> Recent Searches
                           </p>
                           {recentSearches.length === 0 ? (
-                            <p className="text-[11px] font-medium text-slate-400 dark:text-slate-505 italic pl-1">No recent searches</p>
+                            <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500 italic pl-1">No recent searches</p>
                           ) : (
                             <div className="space-y-1">
                               {recentSearches.map((item, index) => (
@@ -566,7 +584,7 @@ const Navbar = () => {
                                       setSearchValue(item);
                                       submitSearch(item);
                                     }}
-                                    className="flex-1 text-left text-xs font-semibold text-slate-600 dark:text-slate-350 hover:text-orange-500 dark:hover:text-orange-400 py-1 transition-colors cursor-pointer"
+                                    className="flex-1 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-orange-500 dark:hover:text-orange-400 py-1 transition-colors cursor-pointer"
                                   >
                                     {item}
                                   </button>
@@ -614,7 +632,7 @@ const Navbar = () => {
                       /* If search query has value, show matching suggestions list */
                       <div className="text-left space-y-3">
                         <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
-                          <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-505">
+                          <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
                             Matching Products
                           </p>
                           <span className="text-[10px] font-bold text-slate-400">{suggestions.length} suggestions</span>
@@ -681,7 +699,7 @@ const Navbar = () => {
                 {/* AI Try-On */}
                 <Link
                   to="/tryon"
-                  className={`hidden sm:inline-flex items-center gap-1.5 h-9 rounded-md bg-gradient-to-r from-[#ff3f6c] to-rose-600 px-3 text-[11px] font-black uppercase tracking-wider text-white shadow-md shadow-rose-500/15 hover:shadow-rose-500/30 active:scale-95 transition-all duration-300 cursor-pointer select-none whitespace-nowrap border-none ${searchFocused ? "max-w-0 opacity-0 overflow-hidden px-0 py-0 mr-0 pointer-events-none" : "max-w-[150px] opacity-100"}`}
+                  className={`hidden sm:inline-flex items-center gap-1.5 h-9 rounded-md bg-gradient-to-r from-[#ff3f6c] to-rose-600 px-3 text-[11px] font-black uppercase tracking-wider text-slate-100 dark:text-white shadow-md shadow-rose-500/15 hover:shadow-rose-500/30 active:scale-95 transition-all duration-300 cursor-pointer select-none whitespace-nowrap border-none ${searchFocused ? "max-w-0 opacity-0 overflow-hidden px-0 py-0 mr-0 pointer-events-none" : "max-w-[150px] opacity-100"}`}
                 >
                   <Sparkles size={13} className="shrink-0" />
                   <span>{t("ai_tryon")}</span>
@@ -704,10 +722,7 @@ const Navbar = () => {
                     <button
                       onClick={() => setNotiOpen((p) => !p)}
                       title="Notifications"
-                      className={`relative flex h-9 w-9 items-center justify-center rounded-xl border transition cursor-pointer hover:scale-105 active:scale-95 ${notiOpen
-                        ? "border-orange-400 bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400"
-                        : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900"
-                        }`}
+                      className={`relative flex h-9 w-9 items-center justify-center rounded-xl border transition cursor-pointer hover:scale-105 active:scale-95 ${notiOpen ? "border-orange-400 bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400" : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900" }`}
                     >
                       <div className="relative flex items-center justify-center h-4 w-4">
                         <Bell size={16} className={unreadCount > 0 ? "animate-wiggle" : ""} />
@@ -726,7 +741,7 @@ const Navbar = () => {
                           <div className="flex items-center gap-2">
                             <span className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">Notifications</span>
                             {unreadCount > 0 && (
-                              <span className="bg-orange-100 dark:bg-orange-950/40 text-orange-600 dark:text-orange-455 text-[10px] font-black px-2 py-0.5 rounded-full">
+                              <span className="bg-orange-100 dark:bg-orange-950/40 text-orange-600 dark:text-orange-500 text-[10px] font-black px-2 py-0.5 rounded-full">
                                 {unreadCount} new
                               </span>
                             )}
@@ -734,7 +749,7 @@ const Navbar = () => {
                           {unreadCount > 0 && (
                             <button
                               onClick={handleMarkAllRead}
-                              className="text-[10px] font-bold text-orange-500 hover:text-orange-600 dark:hover:text-orange-455 flex items-center gap-1 transition cursor-pointer"
+                              className="text-[10px] font-bold text-orange-500 hover:text-orange-600 dark:hover:text-orange-500 flex items-center gap-1 transition cursor-pointer"
                             >
                               <CheckCheck size={12} />
                               <span>Mark all read</span>
@@ -746,19 +761,13 @@ const Navbar = () => {
                         <div className="flex gap-1.5 px-4 py-2 border-b border-slate-100/50 dark:border-slate-800/30 bg-slate-50/30 dark:bg-slate-900/10">
                           <button
                             onClick={() => setActiveTab("all")}
-                            className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${activeTab === "all"
-                              ? "bg-slate-900 text-white dark:bg-white dark:text-slate-950 shadow-sm scale-105"
-                              : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-150/40 dark:hover:bg-slate-800/20"
-                              }`}
+                            className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${activeTab === "all" ? "bg-slate-900 text-slate-100 dark:text-white dark:bg-white dark:text-slate-950 shadow-sm scale-105" : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200/40 dark:hover:bg-slate-800/20" }`}
                           >
                             All {notifications.length > 0 && `(${notifications.length})`}
                           </button>
                           <button
                             onClick={() => setActiveTab("unread")}
-                            className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${activeTab === "unread"
-                              ? "bg-orange-500 text-white shadow-sm scale-105"
-                              : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-150/40 dark:hover:bg-slate-800/20"
-                              }`}
+                            className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${activeTab === "unread" ? "bg-orange-500 text-slate-100 dark:text-white shadow-sm scale-105" : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200/40 dark:hover:bg-slate-800/20" }`}
                           >
                             Unread {unreadCount > 0 && `(${unreadCount})`}
                           </button>
@@ -777,7 +786,7 @@ const Navbar = () => {
                               <p className="text-xs font-black text-slate-800 dark:text-slate-200">
                                 {activeTab === "unread" ? "No unread alerts" : "Inbox Clean & Clear"}
                               </p>
-                              <p className="text-[10px] text-slate-400 dark:text-slate-505 mt-1 max-w-[200px] leading-relaxed">
+                              <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 max-w-[200px] leading-relaxed">
                                 {activeTab === "unread"
                                   ? "You have read all notifications. Switch to 'All' to view history."
                                   : "You're all caught up! When order updates arrive, you'll see them here."}
@@ -843,10 +852,7 @@ const Navbar = () => {
                                     }
                                     setNotiOpen(false);
                                   }}
-                                  className={`px-5 py-4 flex gap-3.5 text-left transition cursor-pointer hover:bg-orange-500/[0.03] dark:hover:bg-orange-500/[0.03] relative group border-l-4 ${!n.isRead
-                                    ? "bg-orange-500/[0.01] dark:bg-orange-500/[0.01] border-orange-500"
-                                    : "border-transparent"
-                                    }`}
+                                  className={`px-5 py-4 flex gap-3.5 text-left transition cursor-pointer hover:bg-orange-500/[0.03] dark:hover:bg-orange-500/[0.03] relative group border-l-4 ${!n.isRead ? "bg-orange-500/[0.01] dark:bg-orange-500/[0.01] border-orange-500" : "border-transparent" }`}
                                 >
                                   {getNotificationIcon(n.title)}
                                   <div className="min-w-0 flex-1">
@@ -885,7 +891,7 @@ const Navbar = () => {
                                                 }));
                                               }
                                             }}
-                                            className={`text-[10.5px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed break-words ${shouldTruncate ? "cursor-pointer hover:text-slate-700 dark:hover:text-slate-350" : ""}`}
+                                            className={`text-[10.5px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed break-words ${shouldTruncate ? "cursor-pointer hover:text-slate-700 dark:hover:text-slate-300" : ""}`}
                                             title={shouldTruncate ? (isExpanded ? "Click to collapse" : "Click to view more") : undefined}
                                           >
                                             {displayText}
@@ -930,7 +936,7 @@ const Navbar = () => {
                                               toast.success("Verification code copied!");
                                               setTimeout(() => setCopiedNotiId(null), 2000);
                                             }}
-                                            className="flex items-center gap-1 text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded bg-amber-500 text-white hover:bg-amber-600 active:scale-95 transition cursor-pointer shadow-sm shadow-amber-500/20"
+                                            className="flex items-center gap-1 text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded bg-amber-500 text-slate-100 dark:text-white hover:bg-amber-600 active:scale-95 transition cursor-pointer shadow-sm shadow-amber-500/20"
                                           >
                                             {isCopied ? <Check size={10} /> : <Copy size={10} />}
                                             <span>{isCopied ? "Copied" : "Copy"}</span>
@@ -961,7 +967,7 @@ const Navbar = () => {
                                               toast.success("Promo code copied!");
                                               setTimeout(() => setCopiedNotiId(null), 2000);
                                             }}
-                                            className="flex items-center gap-1 text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded bg-orange-500 text-white hover:bg-orange-600 active:scale-95 transition cursor-pointer shadow-sm shadow-orange-500/20"
+                                            className="flex items-center gap-1 text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded bg-orange-500 text-slate-100 dark:text-white hover:bg-orange-600 active:scale-95 transition cursor-pointer shadow-sm shadow-orange-500/20"
                                           >
                                             {isCopied ? <Check size={10} /> : <Copy size={10} />}
                                             <span>{isCopied ? "Copied" : "Copy"}</span>
@@ -970,7 +976,7 @@ const Navbar = () => {
                                       );
                                     })()}
 
-                                    <p className="text-[9px] text-slate-400 dark:text-slate-505 mt-2 font-bold tracking-wide">
+                                    <p className="text-[9px] text-slate-400 dark:text-slate-500 mt-2 font-bold tracking-wide">
                                       {new Date(n.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })} · {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </p>
                                   </div>
@@ -992,7 +998,7 @@ const Navbar = () => {
                   <ShoppingCart size={16} />
                   {cartCount > 0 && (
                     <span
-                      className="absolute -right-1.5 -top-1.5 flex min-w-[18px] h-[18px] items-center justify-center rounded-full bg-[#ff3f6c] px-[3px] text-[9px] font-black text-white ring-2 ring-white dark:ring-slate-950 shadow-md transition-transform"
+                      className="absolute -right-1.5 -top-1.5 flex min-w-[18px] h-[18px] items-center justify-center rounded-full bg-[#ff3f6c] px-[3px] text-[9px] font-black text-slate-100 dark:text-white ring-2 ring-white dark:ring-slate-950 shadow-md transition-transform"
                     >
                       {cartCount > 99 ? "99+" : cartCount}
                     </span>
@@ -1003,12 +1009,9 @@ const Navbar = () => {
                 <div ref={profileRef} className="relative hidden lg:block">
                   <button
                     onClick={() => { setOpen((p) => !p); setPincodeOpen(false); }}
-                    className={`flex h-9 items-center gap-2 rounded-md border px-2.5 font-bold text-sm transition-all cursor-pointer select-none ${open
-                      ? "border-slate-350 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 text-slate-800 dark:text-slate-200"
-                      : "border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900"
-                      }`}
+                    className={`flex h-9 items-center gap-2 rounded-md border px-2.5 font-bold text-sm transition-all cursor-pointer select-none ${open ? "border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 text-slate-800 dark:text-slate-200" : "border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900" }`}
                   >
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-[#ff3f6c] to-rose-600 text-[10px] font-black text-white shadow-sm">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-[#ff3f6c] to-rose-600 text-[10px] font-black text-slate-100 dark:text-white shadow-sm">
                       {token && initials ? initials : <User size={12} />}
                     </span>
                     <span className="hidden sm:block max-w-[70px] truncate capitalize text-[12px]">
@@ -1024,12 +1027,12 @@ const Navbar = () => {
                         <>
                           {/* User greeting */}
                           <div className="flex items-center gap-3 bg-gradient-to-r from-orange-500/[0.04] to-amber-500/[0.02] dark:from-orange-500/[0.08] dark:to-transparent px-5 py-4 border-b border-slate-100 dark:border-slate-900/60">
-                            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[#ff3f6c] to-rose-600 text-sm font-black text-white shadow-md shadow-rose-500/25">
+                            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[#ff3f6c] to-rose-600 text-sm font-black text-slate-100 dark:text-white shadow-md shadow-rose-500/25">
                               {initials || <User size={16} />}
                             </div>
                             <div className="min-w-0">
-                              <p className="text-xs font-black tracking-wider uppercase text-slate-405 dark:text-slate-500">Welcome back,</p>
-                              <p className="text-sm font-black text-slate-850 dark:text-white truncate capitalize mt-0.5">{username || "My Account"}</p>
+                              <p className="text-xs font-black tracking-wider uppercase text-slate-400 dark:text-slate-500">Welcome back,</p>
+                              <p className="text-sm font-black text-slate-800 dark:text-white truncate capitalize mt-0.5">{username || "My Account"}</p>
                             </div>
                           </div>
 
@@ -1044,9 +1047,9 @@ const Navbar = () => {
                               <button
                                 key={to}
                                 onClick={() => { setOpen(false); navigate(to); }}
-                                className="flex w-full items-center gap-3 px-5 py-2.5 text-left text-xs font-bold text-slate-650 dark:text-slate-350 hover:bg-orange-500/[0.04] dark:hover:bg-slate-800/40 hover:text-orange-500 dark:hover:text-orange-400 hover:translate-x-0.5 transition-all duration-200 cursor-pointer group"
+                                className="flex w-full items-center gap-3 px-5 py-2.5 text-left text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-orange-500/[0.04] dark:hover:bg-slate-800/40 hover:text-orange-500 dark:hover:text-orange-400 hover:translate-x-0.5 transition-all duration-200 cursor-pointer group"
                               >
-                                <Icon size={14} className="text-slate-405 group-hover:text-orange-500 dark:group-hover:text-orange-400 transition-colors" />
+                                <Icon size={14} className="text-slate-400 group-hover:text-orange-500 dark:group-hover:text-orange-400 transition-colors" />
                                 <span>{label}</span>
                               </button>
                             ))}
@@ -1055,160 +1058,23 @@ const Navbar = () => {
                           {/* Settings section */}
                           <div className="px-5 py-4 border-t border-slate-100 dark:border-slate-900/60 bg-slate-50/50 dark:bg-slate-900/30 space-y-3.5">
                             <div className="flex items-center justify-between">
-                              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-505">Interface Theme</span>
-                              <button
-                                onClick={() => setIsDarkMode(!isDarkMode)}
-                                className={`relative h-5.5 w-10.5 rounded-full transition-all duration-300 cursor-pointer ${isDarkMode ? "bg-orange-500" : "bg-slate-200 dark:bg-slate-800"}`}
-                              >
-                                <span className={`absolute top-0.5 left-0.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-white shadow transition-transform duration-300 ${isDarkMode ? "translate-x-5" : "translate-x-0"}`}>
-                                  {isDarkMode ? <Moon size={9} className="text-orange-500" /> : <Sun size={9} className="text-amber-500" />}
-                                </span>
-                              </button>
-                            </div>
-
-                            <div className="flex items-center justify-between">
-                              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-505">Language (Lang)</span>
-                              <select
-                                value={language}
-                                onChange={(e) => changeLanguage(e.target.value)}
-                                className="h-6.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-2 text-[10px] font-black text-slate-700 dark:text-slate-300 focus:outline-none focus:border-orange-500 cursor-pointer transition-colors"
-                              >
-                                <option value="en">English (EN)</option>
-                                <option value="hi">Hindi (HI)</option>
-                                <option value="es">Español (ES)</option>
-                              </select>
-                            </div>
-
-                            {/* Delivery location */}
-                            <div className="border-t border-slate-100 dark:border-slate-800/80 pt-3 mt-1.5">
-                              <div className="flex items-center justify-between mb-2">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-405 dark:text-slate-550">Delivery Area</span>
-                                <button
-                                  type="button"
-                                  onClick={() => setPincodeOpen(!pincodeOpen)}
-                                  className="text-[10px] font-black uppercase text-orange-500 hover:text-orange-650 dark:hover:text-orange-400 transition-colors"
-                                >
-                                  {pincodeOpen ? "Close" : "Change"}
-                                </button>
-                              </div>
-
-                              {!pincodeOpen ? (
-                                <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-955 px-3 py-2 rounded-xl border border-slate-100 dark:border-slate-900/60 shadow-2xs">
-                                  <MapPin size={12} className="text-[#ff3f6c] shrink-0" />
-                                  <span className="truncate max-w-[150px]" title={locationLabel}>{locationLabel}</span>
-                                </div>
-                              ) : (
-                                <div className="space-y-2 animate-in fade-in duration-200">
-                                  <form
-                                    onSubmit={(e) => {
-                                      e.preventDefault();
-                                      const val = pincodeInput.trim();
-                                      if (!/^\d{6}$/.test(val)) {
-                                        toast.error("Please enter a valid 6-digit Pincode.");
-                                        return;
-                                      }
-                                      let city = "Delhi NCR";
-                                      if (val.startsWith("4")) city = "Mumbai";
-                                      else if (val.startsWith("5") || val.startsWith("6")) city = "Bangalore";
-                                      else if (val.startsWith("7")) city = "Kolkata";
-                                      else if (val.startsWith("3")) city = "Gujarat/Rajasthan";
-
-                                      const label = `${city} (${val})`;
-                                      localStorage.setItem("delivery_pincode", val);
-                                      localStorage.setItem("delivery_location", label);
-                                      setLocationLabel(label);
-                                      setPincodeOpen(false);
-                                      window.dispatchEvent(new Event("pincodeUpdated"));
-                                      toast.success(`Delivery pincode set to ${val}`);
-                                    }}
-                                    className="flex gap-1.5"
-                                  >
-                                    <input
-                                      type="text"
-                                      maxLength={6}
-                                      value={pincodeInput}
-                                      onChange={(e) => setPincodeInput(e.target.value.replace(/\D/g, ""))}
-                                      placeholder="Pincode"
-                                      className="w-full h-8 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-2.5 text-xs text-slate-850 dark:text-slate-100 placeholder-slate-400 outline-none focus:border-orange-500 transition-colors font-semibold"
-                                    />
-                                    <button
-                                      type="submit"
-                                      className="h-8 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-[10px] px-3 uppercase border-none cursor-pointer active:scale-95 transition-all"
-                                    >
-                                      Apply
-                                    </button>
-                                  </form>
-                                  <button
-                                    type="button"
-                                    onClick={handleGetLocation}
-                                    className="flex items-center justify-center gap-1.5 w-full h-8 rounded-xl bg-white dark:bg-slate-955 hover:bg-slate-50 dark:hover:bg-slate-900 text-[10px] font-black uppercase text-slate-700 dark:text-slate-350 cursor-pointer border border-slate-200 dark:border-slate-800/80 shadow-3xs active:scale-95 transition-all"
-                                  >
-                                    {locationLoading ? (
-                                      <Navigation size={11} className="animate-spin text-[#ff3f6c]" />
-                                    ) : (
-                                      <Navigation size={11} className="text-[#ff3f6c]" />
-                                    )}
-                                    <span>Detect Location</span>
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Logout */}
-                          <button
-                            onClick={handleLogout}
-                            className="flex w-full items-center gap-3 px-5 py-3.5 text-left text-xs font-black text-rose-500 dark:text-rose-400 hover:bg-rose-500/[0.04] dark:hover:bg-rose-500/[0.02] hover:text-rose-600 dark:hover:text-rose-300 transition-all duration-200 cursor-pointer border-t border-slate-100 dark:border-slate-900/60"
-                          >
-                            <LogOut size={14} className="text-rose-500" />
-                            <span>{t("logout")}</span>
-                          </button>
-                        </>
-                      ) : (
-                        <div className="p-5 space-y-4">
-                          <div className="text-center pb-2 border-b border-slate-100 dark:border-slate-900/60">
-                            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500/5 text-orange-500 border border-orange-500/10">
-                              <User size={20} />
-                            </div>
-                            <h4 className="text-sm font-black text-slate-800 dark:text-white">Welcome Guest!</h4>
-                            <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-semibold">Sign in to track orders & details</p>
-                          </div>
-
-                          <div className="space-y-2">
-                            <button
-                              onClick={() => { setOpen(false); navigate("/login"); }}
-                              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-center text-xs font-black text-white shadow-md shadow-orange-500/15 active:scale-95 transition-all cursor-pointer border-none uppercase tracking-wider"
-                            >
-                              {t("login")}
-                            </button>
-                            <button
-                              onClick={() => { setOpen(false); navigate("/signup"); }}
-                              className="w-full py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-center text-xs font-black text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 active:scale-95 transition-all cursor-pointer uppercase tracking-wider"
-                            >
-                              Create Account
-                            </button>
-                          </div>
-
-                          {/* Settings section for guests */}
-                          <div className="pt-2.5 border-t border-slate-100 dark:border-slate-900/60 space-y-3.5">
-                            <div className="flex items-center justify-between">
                               <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Interface Theme</span>
                               <button
                                 onClick={() => setIsDarkMode(!isDarkMode)}
                                 className={`relative h-5.5 w-10.5 rounded-full transition-all duration-300 cursor-pointer ${isDarkMode ? "bg-orange-500" : "bg-slate-200 dark:bg-slate-800"}`}
                               >
-                                <span className={`absolute top-0.5 left-0.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-white shadow transition-transform duration-300 ${isDarkMode ? "translate-x-5" : "translate-x-0"}`}>
+                                <span className={`absolute top-0.5 left-0.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-white dark:bg-slate-900 shadow transition-transform duration-300 ${isDarkMode ? "translate-x-5" : "translate-x-0"}`}>
                                   {isDarkMode ? <Moon size={9} className="text-orange-500" /> : <Sun size={9} className="text-amber-500" />}
                                 </span>
                               </button>
                             </div>
 
                             <div className="flex items-center justify-between">
-                              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Language</span>
+                              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Language (Lang)</span>
                               <select
                                 value={language}
                                 onChange={(e) => changeLanguage(e.target.value)}
-                                className="h-6.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-955 px-2 text-[10px] font-black text-slate-700 dark:text-slate-300 focus:outline-none focus:border-orange-500 cursor-pointer transition-colors"
+                                className="h-6.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-2 text-[10px] font-black text-slate-700 dark:text-slate-300 cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                               >
                                 <option value="en">English (EN)</option>
                                 <option value="hi">Hindi (HI)</option>
@@ -1219,11 +1085,11 @@ const Navbar = () => {
                             {/* Delivery location */}
                             <div className="border-t border-slate-100 dark:border-slate-800/80 pt-3 mt-1.5">
                               <div className="flex items-center justify-between mb-2">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-405 dark:text-slate-550">Delivery Area</span>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Delivery Area</span>
                                 <button
                                   type="button"
                                   onClick={() => setPincodeOpen(!pincodeOpen)}
-                                  className="text-[10px] font-black uppercase text-orange-500 hover:text-orange-655 dark:hover:text-orange-400 transition-colors"
+                                  className="text-[10px] font-black uppercase text-orange-500 hover:text-orange-600 dark:hover:text-orange-400 transition-colors"
                                 >
                                   {pincodeOpen ? "Close" : "Change"}
                                 </button>
@@ -1266,11 +1132,11 @@ const Navbar = () => {
                                       value={pincodeInput}
                                       onChange={(e) => setPincodeInput(e.target.value.replace(/\D/g, ""))}
                                       placeholder="Pincode"
-                                      className="w-full h-8 rounded-xl border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-950 px-2.5 text-xs text-slate-850 dark:text-slate-100 placeholder-slate-400 outline-none focus:border-orange-500 transition-colors font-semibold"
+                                      className="w-full h-8 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-2.5 text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 outline-none transition-colors font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                                     />
                                     <button
                                       type="submit"
-                                      className="h-8 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-[10px] px-3 uppercase border-none cursor-pointer active:scale-95 transition-all"
+                                      className="h-8 rounded-xl bg-orange-500 hover:bg-orange-600 text-slate-100 dark:text-white font-bold text-[10px] px-3 uppercase border-none cursor-pointer active:scale-95 transition-all"
                                     >
                                       Apply
                                     </button>
@@ -1278,7 +1144,144 @@ const Navbar = () => {
                                   <button
                                     type="button"
                                     onClick={handleGetLocation}
-                                    className="flex items-center justify-center gap-1.5 w-full h-8 rounded-xl bg-white dark:bg-slate-955 hover:bg-slate-50 dark:hover:bg-slate-900 text-[10px] font-black uppercase text-slate-700 dark:text-slate-350 cursor-pointer border border-slate-200 dark:border-slate-800/80 shadow-3xs active:scale-95 transition-all"
+                                    className="flex items-center justify-center gap-1.5 w-full h-8 rounded-xl bg-white dark:bg-slate-950 hover:bg-slate-50 dark:hover:bg-slate-900 text-[10px] font-black uppercase text-slate-700 dark:text-slate-300 cursor-pointer border border-slate-200 dark:border-slate-800/80 shadow-3xs active:scale-95 transition-all"
+                                  >
+                                    {locationLoading ? (
+                                      <Navigation size={11} className="animate-spin text-[#ff3f6c]" />
+                                    ) : (
+                                      <Navigation size={11} className="text-[#ff3f6c]" />
+                                    )}
+                                    <span>Detect Location</span>
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Logout */}
+                          <button
+                            onClick={handleLogout}
+                            className="flex w-full items-center gap-3 px-5 py-3.5 text-left text-xs font-black text-rose-500 dark:text-rose-400 hover:bg-rose-500/[0.04] dark:hover:bg-rose-500/[0.02] hover:text-rose-600 dark:hover:text-rose-300 transition-all duration-200 cursor-pointer border-t border-slate-100 dark:border-slate-900/60"
+                          >
+                            <LogOut size={14} className="text-rose-500" />
+                            <span>{t("logout")}</span>
+                          </button>
+                        </>
+                      ) : (
+                        <div className="p-5 space-y-4">
+                          <div className="text-center pb-2 border-b border-slate-100 dark:border-slate-900/60">
+                            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500/5 text-orange-500 border border-orange-500/10">
+                              <User size={20} />
+                            </div>
+                            <h4 className="text-sm font-black text-slate-800 dark:text-white">Welcome Guest!</h4>
+                            <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-semibold">Sign in to track orders & details</p>
+                          </div>
+
+                          <div className="space-y-2">
+                            <button
+                              onClick={() => { setOpen(false); navigate("/login"); }}
+                              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-center text-xs font-black text-slate-100 dark:text-white shadow-md shadow-orange-500/15 active:scale-95 transition-all cursor-pointer border-none uppercase tracking-wider"
+                            >
+                              {t("login")}
+                            </button>
+                            <button
+                              onClick={() => { setOpen(false); navigate("/signup"); }}
+                              className="w-full py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-center text-xs font-black text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 active:scale-95 transition-all cursor-pointer uppercase tracking-wider"
+                            >
+                              Create Account
+                            </button>
+                          </div>
+
+                          {/* Settings section for guests */}
+                          <div className="pt-2.5 border-t border-slate-100 dark:border-slate-900/60 space-y-3.5">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Interface Theme</span>
+                              <button
+                                onClick={() => setIsDarkMode(!isDarkMode)}
+                                className={`relative h-5.5 w-10.5 rounded-full transition-all duration-300 cursor-pointer ${isDarkMode ? "bg-orange-500" : "bg-slate-200 dark:bg-slate-800"}`}
+                              >
+                                <span className={`absolute top-0.5 left-0.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-white dark:bg-slate-900 shadow transition-transform duration-300 ${isDarkMode ? "translate-x-5" : "translate-x-0"}`}>
+                                  {isDarkMode ? <Moon size={9} className="text-orange-500" /> : <Sun size={9} className="text-amber-500" />}
+                                </span>
+                              </button>
+                            </div>
+
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Language</span>
+                              <select
+                                value={language}
+                                onChange={(e) => changeLanguage(e.target.value)}
+                                className="h-6.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-2 text-[10px] font-black text-slate-700 dark:text-slate-300 cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                              >
+                                <option value="en">English (EN)</option>
+                                <option value="hi">Hindi (HI)</option>
+                                <option value="es">Español (ES)</option>
+                              </select>
+                            </div>
+
+                            {/* Delivery location */}
+                            <div className="border-t border-slate-100 dark:border-slate-800/80 pt-3 mt-1.5">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Delivery Area</span>
+                                <button
+                                  type="button"
+                                  onClick={() => setPincodeOpen(!pincodeOpen)}
+                                  className="text-[10px] font-black uppercase text-orange-500 hover:text-orange-700 dark:hover:text-orange-400 transition-colors"
+                                >
+                                  {pincodeOpen ? "Close" : "Change"}
+                                </button>
+                              </div>
+
+                              {!pincodeOpen ? (
+                                <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-950 px-3 py-2 rounded-xl border border-slate-100 dark:border-slate-900/60 shadow-2xs">
+                                  <MapPin size={12} className="text-[#ff3f6c] shrink-0" />
+                                  <span className="truncate max-w-[150px]" title={locationLabel}>{locationLabel}</span>
+                                </div>
+                              ) : (
+                                <div className="space-y-2 animate-in fade-in duration-200">
+                                  <form
+                                    onSubmit={(e) => {
+                                      e.preventDefault();
+                                      const val = pincodeInput.trim();
+                                      if (!/^\d{6}$/.test(val)) {
+                                        toast.error("Please enter a valid 6-digit Pincode.");
+                                        return;
+                                      }
+                                      let city = "Delhi NCR";
+                                      if (val.startsWith("4")) city = "Mumbai";
+                                      else if (val.startsWith("5") || val.startsWith("6")) city = "Bangalore";
+                                      else if (val.startsWith("7")) city = "Kolkata";
+                                      else if (val.startsWith("3")) city = "Gujarat/Rajasthan";
+
+                                      const label = `${city} (${val})`;
+                                      localStorage.setItem("delivery_pincode", val);
+                                      localStorage.setItem("delivery_location", label);
+                                      setLocationLabel(label);
+                                      setPincodeOpen(false);
+                                      window.dispatchEvent(new Event("pincodeUpdated"));
+                                      toast.success(`Delivery pincode set to ${val}`);
+                                    }}
+                                    className="flex gap-1.5"
+                                  >
+                                    <input
+                                      type="text"
+                                      maxLength={6}
+                                      value={pincodeInput}
+                                      onChange={(e) => setPincodeInput(e.target.value.replace(/\D/g, ""))}
+                                      placeholder="Pincode"
+                                      className="w-full h-8 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-2.5 text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 outline-none transition-colors font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                                    />
+                                    <button
+                                      type="submit"
+                                      className="h-8 rounded-xl bg-orange-500 hover:bg-orange-600 text-slate-100 dark:text-white font-bold text-[10px] px-3 uppercase border-none cursor-pointer active:scale-95 transition-all"
+                                    >
+                                      Apply
+                                    </button>
+                                  </form>
+                                  <button
+                                    type="button"
+                                    onClick={handleGetLocation}
+                                    className="flex items-center justify-center gap-1.5 w-full h-8 rounded-xl bg-white dark:bg-slate-950 hover:bg-slate-50 dark:hover:bg-slate-900 text-[10px] font-black uppercase text-slate-700 dark:text-slate-300 cursor-pointer border border-slate-200 dark:border-slate-800/80 shadow-3xs active:scale-95 transition-all"
                                   >
                                     {locationLoading ? (
                                       <Navigation size={11} className="animate-spin text-[#ff3f6c]" />
@@ -1370,7 +1373,7 @@ const Navbar = () => {
                   <TrendingUp size={10} /> Popular Categories
                 </p>
                 <div className="grid grid-cols-2 gap-2">
-                  {CATEGORIES.slice(0, 4).map(({ label, to, emoji }) => (
+                  {(navCategories.length > 0 ? navCategories : DEFAULT_CATEGORIES).slice(0, 4).map(({ label, to, emoji }) => (
                     <Link
                       key={to}
                       to={to}
@@ -1388,7 +1391,7 @@ const Navbar = () => {
               <div className="border-t border-slate-100 dark:border-slate-800 p-4">
                 <button
                   onClick={() => submitSearch()}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 py-3 text-sm font-bold text-white hover:bg-orange-600 active:scale-95 transition cursor-pointer"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 py-3 text-sm font-bold text-slate-100 dark:text-white hover:bg-orange-600 active:scale-95 transition cursor-pointer"
                 >
                   <Search size={14} />
                   Search all results for "{searchValue}"
@@ -1415,19 +1418,15 @@ const Navbar = () => {
                       navigate("/login");
                     }
                   }}
-                  className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all cursor-pointer ${active ? "text-orange-500" : "text-slate-500 dark:text-slate-400"
-                    }`}
+                  className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all cursor-pointer ${active ? "text-[#F43F5E]" : "text-slate-500 dark:text-slate-400" }`}
                 >
-                  <div className={`relative flex h-7 w-7 items-center justify-center rounded-full transition-all ${active
-                    ? "bg-orange-500 text-white shadow-md shadow-orange-500/30"
-                    : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
-                    }`}>
+                  <div className={`relative flex h-7 w-7 items-center justify-center rounded-full transition-all ${active ? "bg-[#F43F5E] text-slate-100 dark:text-white shadow-md shadow-[#F43F5E]/30" : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400" }`}>
                     {token && initials
                       ? <span className="text-[11px] font-black">{initials}</span>
                       : <Icon size={14} />
                     }
                   </div>
-                  <span className={`text-[9px] font-bold transition-colors ${active ? "text-orange-500" : "text-slate-400 dark:text-slate-500"}`}>{label}</span>
+                  <span className={`text-[9px] font-bold transition-colors ${active ? "text-[#F43F5E]" : "text-slate-400 dark:text-slate-600"}`}>{label}</span>
                 </button>
               );
             }
@@ -1436,22 +1435,17 @@ const Navbar = () => {
               <Link
                 key={to}
                 to={to}
-                className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all relative ${active ? "text-orange-500" : "text-slate-500 dark:text-slate-400"
-                  }`}
+                className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all relative ${active ? "text-[#F43F5E]" : "text-slate-500 dark:text-slate-400" }`}
               >
-                <div className={`relative flex h-7 w-7 items-center justify-center rounded-xl transition-all ${active ? "bg-orange-100 dark:bg-orange-950/30" : ""
-                  }`}>
+                <div className={`relative flex h-7 w-7 items-center justify-center rounded-xl transition-all ${active ? "bg-rose-100 dark:bg-rose-950/30 text-[#F43F5E]" : "" }`}>
                   <Icon size={17} />
-                  {label === "Wishlist" && (
-                    <></>
-                  )}
                   {label === "Orders" && token && (
-                    <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-orange-500" />
+                    <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-[#F43F5E]" />
                   )}
                 </div>
-                <span className={`text-[9px] font-bold transition-colors ${active ? "text-orange-500" : "text-slate-400 dark:text-slate-500"}`}>{label}</span>
+                <span className={`text-[9px] font-bold transition-colors ${active ? "text-[#F43F5E]" : "text-slate-400 dark:text-slate-500"}`}>{label}</span>
                 {active && (
-                  <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 h-0.5 w-4 rounded-full bg-orange-500" />
+                  <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 h-0.5 w-4 rounded-full bg-[#F43F5E]" />
                 )}
               </Link>
             );

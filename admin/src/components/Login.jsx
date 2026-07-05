@@ -33,21 +33,21 @@ const Login = ({ setToken }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-950 relative overflow-hidden">
       
       {/* Background ambient glows */}
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 rounded-full bg-slate-900/5 blur-3xl pointer-events-none"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 rounded-full bg-slate-900/5 blur-3xl pointer-events-none"></div>
 
-      <div className="w-full max-w-md bg-white border border-slate-200/80 rounded-2xl p-8 md:p-10 shadow-xl shadow-slate-100/80 flex flex-col gap-6 relative z-10 animate-fadeIn">
+      <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200/80 rounded-2xl p-8 md:p-10 shadow-xl shadow-slate-100/80 flex flex-col gap-6 relative z-10 animate-fadeIn">
         
         {/* Header Branding */}
         <div className="flex flex-col items-center text-center space-y-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900 text-white shadow-md shadow-slate-950/10">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900 text-slate-100 dark:text-white shadow-md shadow-slate-950/10">
             <ShieldAlert size={22} className="animate-pulse" />
           </div>
           <div>
-            <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">Control Panel</h2>
+            <h2 className="text-xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Control Panel</h2>
             <p className="text-xs text-slate-500 mt-1">
               Authorized personnel only. Please sign in.
             </p>
@@ -67,7 +67,7 @@ const Login = ({ setToken }) => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@cartnow.com"
-                className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 bg-slate-50/30 text-sm text-slate-900 outline-none transition duration-200 placeholder:text-slate-400 focus:bg-white focus:border-slate-950 focus:ring-4 focus:ring-slate-950/5"
+                className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/30 text-sm text-slate-900 dark:text-slate-100 outline-none transition duration-200 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                 required
               />
             </div>
@@ -84,7 +84,7 @@ const Login = ({ setToken }) => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-11 pr-11 py-3 rounded-xl border border-slate-200 bg-slate-50/30 text-sm text-slate-900 outline-none transition duration-200 placeholder:text-slate-400 focus:bg-white focus:border-slate-950 focus:ring-4 focus:ring-slate-950/5"
+                className="w-full pl-11 pr-11 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/30 text-sm text-slate-900 dark:text-slate-100 outline-none transition duration-200 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                 required
               />
               <button
@@ -100,7 +100,7 @@ const Login = ({ setToken }) => {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full flex items-center justify-center gap-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white py-3.5 text-xs font-bold transition shadow-sm active:scale-98 cursor-pointer mt-6 disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-100 dark:text-white py-3.5 text-xs font-bold transition shadow-sm active:scale-98 cursor-pointer mt-6 disabled:opacity-50"
           >
             {submitting ? "Authenticating..." : "Sign In to Admin"}
           </button>

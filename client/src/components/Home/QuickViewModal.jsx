@@ -32,7 +32,7 @@ const QuickViewModal = ({ product, onClose, onAddToCart }) => {
           <button
             type="button"
             onClick={onClose}
-            className="absolute top-4 right-4 h-9 w-9 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-705 rounded-full flex items-center justify-center cursor-pointer transition active:scale-90 border-none"
+            className="absolute top-4 right-4 h-9 w-9 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full flex items-center justify-center cursor-pointer transition active:scale-90 border-none"
           >
             <X size={14} className="text-slate-600 dark:text-slate-400" />
           </button>
@@ -59,13 +59,13 @@ const QuickViewModal = ({ product, onClose, onAddToCart }) => {
               <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
                 {product.brand || "CartNOW"}
               </span>
-              <h3 className="text-lg font-black text-slate-850 dark:text-slate-100 leading-snug mt-1">
+              <h3 className="text-lg font-black text-slate-800 dark:text-slate-100 leading-snug mt-1">
                 {product.name}
               </h3>
               <div className="flex items-center gap-1.5 text-xs text-amber-500 mt-2 font-black">
                 <Star size={11} className="fill-amber-500 stroke-none" />
                 <span>{(typeof product.rating === 'number' ? product.rating : getAverageRating(product)) || 4.5}</span>
-                <span className="text-slate-400 dark:text-slate-550 font-bold">({(typeof product.reviewCount === 'number' ? product.reviewCount : getReviewCount(product)) || 8} reviews)</span>
+                <span className="text-slate-400 dark:text-slate-500 font-bold">({(typeof product.reviewCount === 'number' ? product.reviewCount : getReviewCount(product)) || 8} reviews)</span>
               </div>
             </div>
 
@@ -73,7 +73,7 @@ const QuickViewModal = ({ product, onClose, onAddToCart }) => {
               <span className="text-xl font-black text-slate-900 dark:text-white">
                 ₹{Number(product.price).toLocaleString("en-IN")}
               </span>
-              <span className="text-xs text-slate-400 dark:text-slate-550 line-through font-bold">
+              <span className="text-xs text-slate-400 dark:text-slate-500 line-through font-bold">
                 ₹{Math.round(product.price * 1.25).toLocaleString("en-IN")}
               </span>
             </div>
@@ -81,18 +81,14 @@ const QuickViewModal = ({ product, onClose, onAddToCart }) => {
             <div className="space-y-3">
               {product.sizes?.length > 0 && (
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-extrabold uppercase text-slate-455 dark:text-slate-400">Size:</span>
+                  <span className="text-[10px] font-extrabold uppercase text-slate-500 dark:text-slate-400">Size:</span>
                   <div className="flex gap-1.5">
                     {product.sizes.map((sz, i) => (
                       <button
                         key={i}
                         type="button"
                         onClick={() => setQvSize(sz)}
-                        className={`px-2.5 py-1 text-[10px] font-extrabold border rounded-lg cursor-pointer ${
-                          qvSize === sz
-                            ? "bg-blue-600 border-blue-600 text-white"
-                            : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
-                        }`}
+                        className={`px-2.5 py-1 text-[10px] font-extrabold border rounded-lg cursor-pointer ${ qvSize === sz ? "bg-blue-600 border-blue-600 text-white" : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300" }`}
                       >
                         {sz}
                       </button>
@@ -103,7 +99,7 @@ const QuickViewModal = ({ product, onClose, onAddToCart }) => {
 
               {/* Quantity selector */}
               <div className="flex items-center gap-3">
-                <span className="text-[10px] font-extrabold uppercase text-slate-455 dark:text-slate-400">Quantity:</span>
+                <span className="text-[10px] font-extrabold uppercase text-slate-500 dark:text-slate-400">Quantity:</span>
                 <div className="flex items-center border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden h-8">
                   <button
                     type="button"
@@ -131,7 +127,7 @@ const QuickViewModal = ({ product, onClose, onAddToCart }) => {
                   onAddToCart(product, qvQty, qvSize);
                   onClose();
                 }}
-                className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-md transition cursor-pointer active:scale-98 flex items-center justify-center gap-1.5 border-none"
+                className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-slate-100 dark:text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-md transition cursor-pointer active:scale-98 flex items-center justify-center gap-1.5 border-none"
               >
                 <ShoppingCart size={12} />
                 <span>Add to Cart</span>

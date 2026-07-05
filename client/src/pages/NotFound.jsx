@@ -474,7 +474,7 @@ const NotFound = () => {
                 Error Code 404
               </span>
               <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
-              <span className="text-[10px] font-bold text-slate-400 dark:text-slate-505 uppercase tracking-wider">
+              <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                 Lost in Style
               </span>
             </div>
@@ -499,14 +499,14 @@ const NotFound = () => {
                 placeholder={`Search ${suggestions[suggestionIdx]}`}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-11 pr-20 py-3.5 text-xs bg-slate-100/80 dark:bg-slate-950/60 border border-slate-200/60 dark:border-slate-800/80 rounded-2xl text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 dark:focus:ring-indigo-500/5 transition shadow-inner"
+                className="w-full pl-11 pr-20 py-3.5 text-xs bg-slate-100/80 dark:bg-slate-950/60 border border-slate-200/60 dark:border-slate-800/80 rounded-2xl text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 dark: transition shadow-inner focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
               />
               <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors">
                 <Search size={15} />
               </div>
               <button
                 type="submit"
-                className="absolute right-2 top-2 px-3.5 py-1.5 rounded-xl bg-slate-950 dark:bg-slate-800 hover:bg-slate-850 dark:hover:bg-slate-700 text-white text-[10px] font-black uppercase tracking-wider transition active:scale-95 cursor-pointer"
+                className="absolute right-2 top-2 px-3.5 py-1.5 rounded-xl bg-slate-950 dark:bg-slate-800 hover:bg-slate-800 dark:hover:bg-slate-700 text-slate-100 dark:text-white text-[10px] font-black uppercase tracking-wider transition active:scale-95 cursor-pointer"
               >
                 Search
               </button>
@@ -539,13 +539,13 @@ const NotFound = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-lg">
             <div 
               onClick={() => navigate("/tryon")}
-              className="group rounded-2xl border border-slate-200/60 dark:border-slate-800/80 bg-white/40 dark:bg-slate-900/20 p-4 flex flex-col justify-between items-start gap-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:border-slate-350 dark:hover:border-slate-700 cursor-pointer"
+              className="group rounded-2xl border border-slate-200/60 dark:border-slate-800/80 bg-white/40 dark:bg-slate-900/20 p-4 flex flex-col justify-between items-start gap-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:border-slate-300 dark:hover:border-slate-700 cursor-pointer"
             >
               <div className="h-9 w-9 rounded-xl flex items-center justify-center border text-indigo-500 bg-indigo-500/10 border-indigo-500/10">
                 <Sparkles size={16} />
               </div>
               <div>
-                <h4 className="text-[11px] font-black uppercase tracking-wider text-slate-850 dark:text-white leading-none flex items-center gap-1.5">
+                <h4 className="text-[11px] font-black uppercase tracking-wider text-slate-800 dark:text-white leading-none flex items-center gap-1.5">
                   AI Try-On Room <ArrowRight size={10} className="group-hover:translate-x-0.5 transition-transform" />
                 </h4>
                 <p className="text-[10px] font-medium text-slate-400 mt-1.5 leading-normal">
@@ -556,13 +556,13 @@ const NotFound = () => {
 
             <div 
               onClick={() => navigate("/product")}
-              className="group rounded-2xl border border-slate-200/60 dark:border-slate-800/80 bg-white/40 dark:bg-slate-900/20 p-4 flex flex-col justify-between items-start gap-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:border-slate-350 dark:hover:border-slate-700 cursor-pointer"
+              className="group rounded-2xl border border-slate-200/60 dark:border-slate-800/80 bg-white/40 dark:bg-slate-900/20 p-4 flex flex-col justify-between items-start gap-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:border-slate-300 dark:hover:border-slate-700 cursor-pointer"
             >
               <div className="h-9 w-9 rounded-xl flex items-center justify-center border text-orange-500 bg-orange-500/10 border-orange-500/10">
                 <ShoppingBag size={16} />
               </div>
               <div>
-                <h4 className="text-[11px] font-black uppercase tracking-wider text-slate-850 dark:text-white leading-none flex items-center gap-1.5">
+                <h4 className="text-[11px] font-black uppercase tracking-wider text-slate-800 dark:text-white leading-none flex items-center gap-1.5">
                   Browse Store Catalog <ArrowRight size={10} className="group-hover:translate-x-0.5 transition-transform" />
                 </h4>
                 <p className="text-[10px] font-medium text-slate-400 mt-1.5 leading-normal">
@@ -576,7 +576,7 @@ const NotFound = () => {
           <div className="flex items-center gap-4 pt-4 border-t border-slate-100 dark:border-slate-900">
             <button
               onClick={() => navigate("/")}
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-indigo-500 hover:brightness-105 text-white text-[11px] font-black uppercase tracking-widest shadow-md transition active:scale-95 cursor-pointer"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-indigo-500 hover:brightness-105 text-slate-100 dark:text-white text-[11px] font-black uppercase tracking-widest shadow-md transition active:scale-95 cursor-pointer"
             >
               <Home size={12} />
               <span>Back to Homepage</span>
@@ -595,10 +595,10 @@ const NotFound = () => {
         {/* Right Side: Retro "Cart Catcher" Mini-game console */}
         <div className="md:col-span-5 flex items-center justify-center relative z-10">
           
-          <div className="w-full max-w-[320px] flex flex-col bg-slate-900 dark:bg-slate-950 border-4 border-slate-850 dark:border-slate-900 rounded-[28px] overflow-hidden shadow-2xl relative">
+          <div className="w-full max-w-[320px] flex flex-col bg-slate-900 dark:bg-slate-950 border-4 border-slate-800 dark:border-slate-900 rounded-[28px] overflow-hidden shadow-2xl relative">
             
             {/* Console topbar status layout */}
-            <div className="bg-slate-950 px-4 py-2.5 flex justify-between items-center border-b border-slate-850 dark:border-slate-900 text-white font-mono text-[9px] font-bold uppercase tracking-wider">
+            <div className="bg-slate-950 px-4 py-2.5 flex justify-between items-center border-b border-slate-800 dark:border-slate-900 text-slate-100 dark:text-white font-mono text-[9px] font-bold uppercase tracking-wider">
               <div className="flex items-center gap-1.5">
                 <Gamepad2 size={12} className="text-indigo-400" />
                 <span>Cart Catcher</span>
@@ -607,13 +607,13 @@ const NotFound = () => {
                 <button
                   type="button"
                   onClick={() => setIsMuted(prev => !prev)}
-                  className="hover:text-indigo-400 transition text-[11px] pr-2 focus:outline-none"
+                  className="hover:text-indigo-400 transition text-[11px] pr-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                   title={isMuted ? "Unmute Sound" : "Mute Sound"}
                 >
                   {isMuted ? <VolumeX size={12} className="text-slate-500" /> : <Volume2 size={12} className="text-indigo-400" />}
                 </button>
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <span key={i} className={`text-xs leading-none ${i < gameState.lives ? "text-rose-500" : "text-slate-850"}`}>
+                  <span key={i} className={`text-xs leading-none ${i < gameState.lives ? "text-rose-500" : "text-slate-800"}`}>
                     ♥
                   </span>
                 ))}
@@ -689,7 +689,7 @@ const NotFound = () => {
 
                   {/* Cart catcher */}
                   <div
-                    className="absolute bottom-2.5 flex items-center justify-center h-8 w-12 bg-indigo-500 rounded-lg text-white border-b-4 border-indigo-600 shadow-md shadow-indigo-500/10 transition-all duration-75 ease-out"
+                    className="absolute bottom-2.5 flex items-center justify-center h-8 w-12 bg-indigo-500 rounded-lg text-slate-100 dark:text-white border-b-4 border-indigo-600 shadow-md shadow-indigo-500/10 transition-all duration-75 ease-out"
                     style={{
                       left: `${cartX}%`,
                       transform: "translateX(-50%)"
@@ -702,12 +702,12 @@ const NotFound = () => {
 
               {/* Start Screen */}
               {!gameState.isPlaying && !gameState.isGameOver && !gameState.showDiscountOverlay && (
-                <div className="absolute inset-0 bg-slate-955/90 flex flex-col items-center justify-center p-5 text-center space-y-4 z-30">
+                <div className="absolute inset-0 bg-slate-950/90 flex flex-col items-center justify-center p-5 text-center space-y-4 z-30">
                   <div className="h-11 w-11 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 animate-bounce">
                     <Gamepad2 size={20} />
                   </div>
                   <div className="space-y-1">
-                    <h3 className="text-xs font-black text-white uppercase tracking-widest font-mono">
+                    <h3 className="text-xs font-black text-slate-100 dark:text-white uppercase tracking-widest font-mono">
                       Play Catcher Game
                     </h3>
                     <p className="text-[9.5px] text-slate-500 font-mono leading-relaxed max-w-[200px] mx-auto">
@@ -716,7 +716,7 @@ const NotFound = () => {
                   </div>
                   <button
                     onClick={startGame}
-                    className="px-5 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white text-[10px] font-black uppercase tracking-wider transition active:scale-95 shadow-md shadow-indigo-500/20 cursor-pointer"
+                    className="px-5 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-slate-100 dark:text-white text-[10px] font-black uppercase tracking-wider transition active:scale-95 shadow-md shadow-indigo-500/20 cursor-pointer"
                   >
                     Play Now
                   </button>
@@ -731,12 +731,12 @@ const NotFound = () => {
 
               {/* Game Over Screen */}
               {gameState.isGameOver && (
-                <div className="absolute inset-0 bg-slate-955/95 flex flex-col items-center justify-center p-5 text-center space-y-3 z-30">
+                <div className="absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-center p-5 text-center space-y-3 z-30">
                   <h3 className="text-base font-black text-rose-500 uppercase tracking-widest font-mono">
                     Game Over
                   </h3>
                   <div className="text-slate-400 text-xs font-mono">
-                    Final Score: <span className="text-white font-bold">{gameState.score}</span>
+                    Final Score: <span className="text-slate-100 dark:text-white font-bold">{gameState.score}</span>
                   </div>
                   {gameState.score >= 10 && (
                     <div className="text-[10px] text-green-400 font-bold uppercase tracking-wider font-mono">
@@ -746,7 +746,7 @@ const NotFound = () => {
                   <div className="flex gap-2 pt-2">
                     <button
                       onClick={startGame}
-                      className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-[10px] font-bold uppercase transition active:scale-95 cursor-pointer flex items-center gap-1"
+                      className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-100 dark:text-white text-[10px] font-bold uppercase transition active:scale-95 cursor-pointer flex items-center gap-1"
                     >
                       <RefreshCw size={10} />
                       Play Again
@@ -754,7 +754,7 @@ const NotFound = () => {
                     {gameState.score >= 10 && (
                       <button
                         onClick={() => setGameState(prev => ({ ...prev, showDiscountOverlay: true, isGameOver: false }))}
-                        className="px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white text-[10px] font-bold uppercase transition active:scale-95 cursor-pointer flex items-center gap-1"
+                        className="px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-slate-100 dark:text-white text-[10px] font-bold uppercase transition active:scale-95 cursor-pointer flex items-center gap-1"
                       >
                         Claim Coupon
                       </button>
@@ -765,7 +765,7 @@ const NotFound = () => {
 
               {/* Discount Unlocked Screen */}
               {gameState.showDiscountOverlay && (
-                <div className="absolute inset-0 bg-slate-955/95 flex flex-col items-center justify-center p-5 text-center space-y-3.5 z-30">
+                <div className="absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-center p-5 text-center space-y-3.5 z-30">
                   <div className="h-10 w-10 rounded-full bg-orange-500/10 border border-orange-500/25 flex items-center justify-center text-orange-400">
                     <Flame size={18} className="animate-pulse" />
                   </div>
@@ -780,10 +780,10 @@ const NotFound = () => {
                   
                   {/* Voucher card copy panel */}
                   <div className="flex items-center bg-slate-900 border border-slate-800 rounded-xl p-1.5 w-full max-w-[210px] justify-between">
-                    <span className="font-mono text-xs font-black text-white pl-2 tracking-wider animate-pulse">CART404</span>
+                    <span className="font-mono text-xs font-black text-slate-100 dark:text-white pl-2 tracking-wider animate-pulse">CART404</span>
                     <button
                       onClick={copyCoupon}
-                      className="px-3 py-1.5 rounded-lg bg-indigo-500 hover:bg-indigo-650 text-white text-[9px] font-black transition active:scale-95 cursor-pointer"
+                      className="px-3 py-1.5 rounded-lg bg-indigo-500 hover:bg-indigo-600 text-slate-100 dark:text-white text-[9px] font-black transition active:scale-95 cursor-pointer"
                     >
                       {isCopied ? "Copied!" : "Copy"}
                     </button>
@@ -792,13 +792,13 @@ const NotFound = () => {
                   <div className="flex gap-2">
                     <button
                       onClick={() => setGameState(prev => ({ ...prev, isPlaying: true, showDiscountOverlay: false }))}
-                      className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-850 text-[9px] font-bold text-slate-400 transition active:scale-95 cursor-pointer"
+                      className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-[9px] font-bold text-slate-400 transition active:scale-95 cursor-pointer"
                     >
                       Keep Playing
                     </button>
                     <button
                       onClick={() => navigate("/product")}
-                      className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-orange-500 to-indigo-500 text-[9px] font-black text-white transition active:scale-95 cursor-pointer"
+                      className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-orange-500 to-indigo-500 text-[9px] font-black text-slate-100 dark:text-white transition active:scale-95 cursor-pointer"
                     >
                       Apply & Shop
                     </button>
@@ -808,7 +808,7 @@ const NotFound = () => {
             </div>
 
             {/* Console instructions */}
-            <div className="bg-slate-950 p-3 border-t border-slate-850 dark:border-slate-900 flex flex-col items-center justify-center text-center space-y-1 font-mono text-[9px] text-slate-500">
+            <div className="bg-slate-950 p-3 border-t border-slate-800 dark:border-slate-900 flex flex-col items-center justify-center text-center space-y-1 font-mono text-[9px] text-slate-500">
               <div className="flex items-center gap-2">
                 <span>◀ Keys ▶</span>
                 <span>•</span>

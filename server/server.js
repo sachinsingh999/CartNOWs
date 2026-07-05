@@ -18,11 +18,13 @@ import adminRouter from "./routers/adminRouter.js";
 import sellerRouter from "./routers/sellerRouter.js";
 import tryOnRouter from "./routers/tryOnRouter.js";
 import { bannerRouter, adminBannerRouter } from "./routers/bannerRouter.js";
+import { dealOfDayRouter, adminDealOfDayRouter } from "./routers/dealOfDayRouter.js";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import { startTryOnWorker } from "./workers/tryOnWorker.js";
 import maintenanceMiddleware from "./middleware/maintenanceMiddleware.js";
 import systemRouter from "./routers/systemRouter.js";
+import { startCleanupCron } from "./utils/cloudinaryCron.js";
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -56,6 +58,8 @@ app.use('/api/seller', sellerRouter);
 app.use('/api/tryon', tryOnRouter);
 app.use('/api/banners', bannerRouter);
 app.use('/api/admin/banners', adminBannerRouter);
+app.use('/api/dealofday', dealOfDayRouter);
+app.use('/api/admin/dealofday', adminDealOfDayRouter);
 
 import invoiceRouter from "./routers/invoiceRouter.js";
 import path from "path";
@@ -107,9 +111,8 @@ io.on("connection", (socket) => {
 // start worker
 startTryOnWorker(io);
 
-// start hero asset scheduler
-import { startHeroAssetScheduler } from "./utils/heroScheduler.js";
-startHeroAssetScheduler();
+// Start Cloudinary storage cleanup scheduler
+startCleanupCron();
 
 // start server
 httpServer.listen(port, () => {

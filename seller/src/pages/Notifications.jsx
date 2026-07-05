@@ -95,7 +95,7 @@ const Notifications = ({ token, products = [], orders = [] }) => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight">System Logs</h2>
+          <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">System Logs</h2>
           <p className="text-xs text-slate-500 font-semibold mt-1">
             Track background updates, order placements, stock alarms, and billing logs.
           </p>
@@ -103,7 +103,7 @@ const Notifications = ({ token, products = [], orders = [] }) => {
         {logs.some((l) => !l.isRead) && (
           <button
             onClick={handleMarkAllRead}
-            className="flex items-center gap-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition active:scale-95 cursor-pointer shadow-sm"
+            className="flex items-center gap-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-slate-100 dark:text-white rounded-xl text-xs font-bold transition active:scale-95 cursor-pointer shadow-sm"
           >
             <CheckCheck size={14} />
             <span>Mark all read</span>
@@ -111,7 +111,7 @@ const Notifications = ({ token, products = [], orders = [] }) => {
         )}
       </div>
 
-      <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm space-y-4">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200/80 rounded-3xl p-6 shadow-sm space-y-4">
         {loading ? (
           <div className="py-12 text-center text-xs text-slate-400 font-semibold">
             Syncing logs feed...
@@ -128,7 +128,7 @@ const Notifications = ({ token, products = [], orders = [] }) => {
                   case "warning":
                     return <AlertCircle className="text-red-500" size={16} />;
                   case "order":
-                    return <Tag className="text-[#FF5100]" size={16} />;
+                    return <Tag className="text-brand" size={16} />;
                   case "payout":
                     return <Landmark className="text-emerald-500" size={16} />;
                   default:
@@ -139,19 +139,17 @@ const Notifications = ({ token, products = [], orders = [] }) => {
               return (
                 <div
                   key={log.id}
-                  className={`py-4 flex gap-4 items-start justify-between group ${
-                    !log.isRead ? "bg-orange-500/[0.01]" : ""
-                  }`}
+                  className={`py-4 flex gap-4 items-start justify-between group ${ !log.isRead ? "bg-orange-500/[0.01]" : "" }`}
                 >
                   <div className="flex gap-3 items-start">
-                    <div className="h-9 w-9 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0">
+                    <div className="h-9 w-9 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-100 flex items-center justify-center shrink-0">
                       {getIcon()}
                     </div>
                     <div className="space-y-1">
-                      <h4 className="font-extrabold text-slate-900 text-xs flex items-center gap-2">
+                      <h4 className="font-extrabold text-slate-900 dark:text-slate-100 text-xs flex items-center gap-2">
                         {log.title}
                         {!log.isRead && (
-                          <span className="h-1.5 w-1.5 rounded-full bg-[#FF5100]" />
+                          <span className="h-1.5 w-1.5 rounded-full bg-brand" />
                         )}
                       </h4>
                       <p className="text-xs text-slate-500 max-w-xl leading-relaxed">{log.msg}</p>

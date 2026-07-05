@@ -1,6 +1,7 @@
 import userModel from "../models/userModel.js";
 import productModel from "../models/productModel.js";
 import { trackWishlistToggle } from "../utils/analyticsHelper.js";
+import { formatProductResponse } from "../utils/productFormatter.js";
 
 // Toggle a product in wishlist
 export const toggleWishlist = async (req, res) => {
@@ -53,7 +54,7 @@ export const getWishlist = async (req, res) => {
     // Populate product details
     const products = await productModel.find({ _id: { $in: wishlistIds } });
 
-    res.json({ success: true, wishlist: wishlistIds, products });
+    res.json({ success: true, wishlist: wishlistIds, products: products.map(formatProductResponse) });
   } catch (error) {
     console.log(error);
     res.json({ success: false, message: error.message });

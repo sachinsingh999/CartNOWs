@@ -2,6 +2,10 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+* {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
 @media (hover: hover) {
   /* Prevent layout/visual hover shifts globally by disabling hover translations, scales, and rotations */
   [class*="hover:-translate"]:hover,

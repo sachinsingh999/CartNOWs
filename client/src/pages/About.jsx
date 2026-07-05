@@ -55,7 +55,7 @@ const About = () => {
         </div>
 
         {/* TRUST SECTION */}
-        <div className="mt-20 bg-black dark:bg-slate-900 border border-transparent dark:border-slate-800 text-white rounded-lg p-12 text-center shadow-lg dark:shadow-slate-950/30">
+        <div className="mt-20 bg-slate-950 dark:bg-slate-900 dark:bg-slate-900 border border-transparent dark:border-slate-800 text-slate-100 dark:text-white rounded-lg p-12 text-center shadow-lg dark:shadow-slate-950/30">
 
           <h2 className="text-3xl font-bold mb-4">
             Why Shop With Us?

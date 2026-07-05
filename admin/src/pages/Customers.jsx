@@ -73,18 +73,14 @@ const Customers = ({ token }) => {
 
       <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-3 gap-6 pb-6">
         {/* Customer Directory */}
-        <div className="lg:col-span-2 bg-white/90 dark:bg-[#151b26]/90 backdrop-blur-xs border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm flex flex-col min-h-0">
+        <div className="lg:col-span-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm flex flex-col min-h-0">
           <h2 className="text-sm font-black text-slate-800 dark:text-white tracking-tight shrink-0 mb-4">Registered Customers</h2>
           <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar space-y-2">
             {customers.map((cust) => (
               <div
                 key={cust._id}
                 onClick={() => handleSelectCustomer(cust)}
-                className={`p-4 rounded-xl flex items-center justify-between gap-4 border transition duration-200 cursor-pointer ${
-                  selectedCustomer?._id === cust._id 
-                    ? "bg-slate-900 dark:bg-blue-600/20 border-slate-900 dark:border-blue-600/50 shadow-md scale-[1.01]" 
-                    : "bg-slate-50/50 dark:bg-slate-900/30 border-slate-200/50 dark:border-slate-800/50 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-xs"
-                }`}
+                className={`p-4 rounded-xl flex items-center justify-between gap-4 border transition duration-200 cursor-pointer ${ selectedCustomer?._id === cust._id ? "bg-slate-900 dark:bg-blue-600/20 border-slate-900 dark:border-blue-600/50 shadow-md scale-[1.01]" : "bg-slate-50/50 dark:bg-slate-900/30 border-slate-200/50 dark:border-slate-800/50 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-xs" }`}
               >
                 <div className="space-y-1.5">
                   <div className="flex items-center gap-2">
@@ -106,11 +102,7 @@ const Customers = ({ token }) => {
                     e.stopPropagation();
                     handleToggleBlock(cust);
                   }}
-                  className={`p-2.5 rounded-xl border transition shadow-xs cursor-pointer active:scale-95 ${
-                    cust.isBlocked 
-                      ? "border-emerald-200/80 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-500/10 hover:bg-emerald-100 dark:hover:bg-emerald-500/20" 
-                      : "border-rose-200/80 dark:border-rose-500/30 text-rose-600 dark:text-rose-400 bg-rose-50/50 dark:bg-rose-500/10 hover:bg-rose-100 dark:hover:bg-rose-500/20"
-                  }`}
+                  className={`p-2.5 rounded-xl border transition shadow-xs cursor-pointer active:scale-95 ${ cust.isBlocked ? "border-emerald-200/80 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-500/10 hover:bg-emerald-100 dark:hover:bg-emerald-500/20" : "border-rose-200/80 dark:border-rose-500/30 text-rose-600 dark:text-rose-400 bg-rose-50/50 dark:bg-rose-500/10 hover:bg-rose-100 dark:hover:bg-rose-500/20" }`}
                   title={cust.isBlocked ? "Unblock" : "Block User"}
                 >
                   {cust.isBlocked ? <ShieldCheck size={15} /> : <UserX size={15} />}
@@ -121,7 +113,7 @@ const Customers = ({ token }) => {
         </div>
 
         {/* Detailed Profile View */}
-        <div className="bg-white/90 dark:bg-[#151b26]/90 backdrop-blur-xs border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm flex flex-col min-h-0">
+        <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm flex flex-col min-h-0">
           {loadingDetails ? (
             <div className="flex-1 flex items-center justify-center text-slate-400 text-[11px] uppercase tracking-wider font-bold animate-pulse">Loading profile metadata...</div>
           ) : selectedCustomer ? (

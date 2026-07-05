@@ -66,7 +66,7 @@ const SplashLoader = ({ stage, onComplete }) => {
       variants={containerVariants}
       initial="initial"
       exit="exit"
-      className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-950 text-white overflow-hidden select-none"
+      className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-950 text-slate-100 dark:text-white overflow-hidden select-none"
     >
       <style>{`
         .splash-logo-active .logo-wheel {
@@ -131,15 +131,14 @@ const SplashLoader = ({ stage, onComplete }) => {
           initial="initial"
           className="flex items-center justify-center relative z-10"
         >
-          <Logo className="h-13 sm:h-15 w-auto text-white splash-logo-active" />
+          <Logo className="h-13 sm:h-15 w-auto text-slate-100 dark:text-white splash-logo-active" />
         </motion.div>
 
         {/* Minimalist horizontal progress bar */}
-        <div className={`mt-8 flex flex-col items-center justify-center w-full transition-all duration-550 ${stage === "splash-move" ? "opacity-0 scale-95 pointer-events-none" : "opacity-100 scale-100"
-          }`}>
+        <div className={`mt-8 flex flex-col items-center justify-center w-full transition-all duration-550 ${stage === "splash-move" ? "opacity-0 scale-95 pointer-events-none" : "opacity-100 scale-100" }`}>
           <div className="w-36 h-[2px] bg-white/10 rounded-full overflow-hidden relative">
             <motion.div
-              className="absolute left-0 top-0 h-full bg-white"
+              className="absolute left-0 top-0 h-full bg-white dark:bg-slate-900"
               initial={{ width: "0%" }}
               animate={{ width: `${progress}%` }}
               transition={{ ease: "easeOut" }}
@@ -152,8 +151,7 @@ const SplashLoader = ({ stage, onComplete }) => {
       </div>
 
       {/* Clean low-profile bottom branding */}
-      <div className={`absolute bottom-8 left-0 right-0 text-center pointer-events-none transition-opacity duration-550 ${stage === "splash-move" ? "opacity-0" : "opacity-35"
-        }`}>
+      <div className={`absolute bottom-8 left-0 right-0 text-center pointer-events-none transition-opacity duration-550 ${stage === "splash-move" ? "opacity-0" : "opacity-35" }`}>
         <span className="text-[9px] font-mono tracking-[0.3em] uppercase text-slate-500">
           CARTNOW PREMIUM RETAIL
         </span>

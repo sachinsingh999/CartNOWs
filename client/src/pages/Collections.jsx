@@ -28,7 +28,7 @@ const Collections = () => {
     const hash = name.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
     const styles = [
       {
-        colorClass: "bg-[#F5F3FF] dark:bg-[#1E1B4B]/30 border-[#DDD6FE]/30 dark:border-[#4338CA]/20",
+        colorClass: "bg-[#F5F3FF] dark:bg-indigo-950/30 border-[#DDD6FE]/30 dark:border-[#4338CA]/20",
         badgeColor: "bg-[#EDE9FE] dark:bg-[#312E81]/60 text-[#7C3AED] dark:text-[#A78BFA]",
         btnGradient: "from-[#7C3AED] to-[#6D28D9]",
         badgeIcon: Flame
@@ -53,13 +53,13 @@ const Collections = () => {
       },
       {
         colorClass: "bg-[#F0FDFA] dark:bg-[#115E59]/20 border-teal-100 dark:border-teal-900/30",
-        badgeColor: "bg-teal-100 dark:bg-teal-950 text-teal-650 dark:text-teal-400",
+        badgeColor: "bg-teal-100 dark:bg-teal-950 text-teal-600 dark:text-teal-400",
         btnGradient: "from-teal-500 to-teal-600",
         badgeIcon: GraduationCap
       },
       {
         colorClass: "bg-[#FFFDF5] dark:bg-[#451a03]/25 border-amber-100 dark:border-amber-900/30",
-        badgeColor: "bg-amber-150 dark:bg-amber-950 text-amber-600 dark:text-amber-400",
+        badgeColor: "bg-amber-200 dark:bg-amber-950 text-amber-600 dark:text-amber-400",
         btnGradient: "from-amber-500 to-amber-600",
         badgeIcon: Gem
       }
@@ -109,19 +109,19 @@ const Collections = () => {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 px-6 sm:px-12 lg:px-20 py-12 text-left">
       {/* Glow blobs */}
-      <div className="absolute top-20 left-1/3 w-96 h-96 bg-purple-400/5 dark:bg-purple-650/5 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute top-80 right-1/4 w-96 h-96 bg-rose-400/5 dark:bg-rose-650/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-20 left-1/3 w-96 h-96 bg-purple-400/5 dark:bg-purple-600/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-80 right-1/4 w-96 h-96 bg-rose-400/5 dark:bg-rose-600/5 rounded-full blur-[120px] pointer-events-none" />
 
       {/* Header section */}
       <div className="mb-12">
-        <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-purple-650 bg-purple-50 dark:text-purple-300 dark:bg-purple-950/40 px-3 py-1.5 rounded-lg mb-3">
+        <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-purple-600 bg-purple-50 dark:text-purple-300 dark:bg-purple-950/40 px-3 py-1.5 rounded-lg mb-3">
           <Award size={11} className="stroke-[2.5]" />
           Curated Catalogues
         </span>
         <h1 className="text-4xl font-black tracking-tight text-slate-800 dark:text-slate-100">
-          Shop By <span className="text-purple-650 dark:text-purple-400">Collections</span>
+          Shop By <span className="text-purple-600 dark:text-purple-400">Collections</span>
         </h1>
-        <p className="text-sm font-bold text-slate-450 dark:text-slate-500 mt-2 max-w-[480px]">
+        <p className="text-sm font-bold text-slate-400 dark:text-slate-500 mt-2 max-w-[480px]">
           Discover tailored capsules built for specific lifestyles, aesthetics, and high-performance requirements.
         </p>
       </div>
@@ -130,7 +130,7 @@ const Collections = () => {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {[1, 2, 3].map(n => (
-            <div key={n} className="bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800 rounded-[32px] p-5 h-[340px] animate-pulse flex flex-col justify-between">
+            <div key={n} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[32px] p-5 h-[340px] animate-pulse flex flex-col justify-between">
               <div>
                 <div className="h-6 bg-slate-200 dark:bg-slate-800 rounded-full w-24 mb-4" />
                 <div className="h-8 bg-slate-200 dark:bg-slate-800 rounded-full w-48 mb-2" />
@@ -143,9 +143,9 @@ const Collections = () => {
         </div>
       ) : collections.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 border border-dashed border-slate-200 dark:border-slate-800 rounded-[32px] bg-white dark:bg-slate-900 text-center">
-          <ShoppingBag size={40} className="text-slate-350 dark:text-slate-650 mb-3" />
+          <ShoppingBag size={40} className="text-slate-300 dark:text-slate-600 mb-3" />
           <h3 className="text-base font-black text-slate-800 dark:text-white">No Collections Found</h3>
-          <p className="text-xs text-slate-450 dark:text-slate-500 font-bold max-w-[280px] mt-1">
+          <p className="text-xs text-slate-400 dark:text-slate-500 font-bold max-w-[280px] mt-1">
             Check back later for curated catalogues.
           </p>
         </div>
@@ -197,10 +197,10 @@ const Collections = () => {
 
             {/* Bottom action bar */}
             <div className="pt-4 border-t border-slate-200/40 dark:border-slate-800/40 flex items-center justify-between">
-              <span className="text-xs font-black text-slate-450 dark:text-slate-500">{col.count} Products</span>
+              <span className="text-xs font-black text-slate-400 dark:text-slate-500">{col.count} Products</span>
               <button
                 onClick={() => navigate(`/collections/${col.slug}`)}
-                className={`px-4 py-2.5 bg-gradient-to-r ${col.btnGradient} text-white font-extrabold text-[10px] uppercase tracking-wider rounded-xl hover:shadow-lg transition-all flex items-center gap-1.5 border-none cursor-pointer`}
+                className={`px-4 py-2.5 bg-gradient-to-r ${col.btnGradient} text-slate-100 dark:text-white font-extrabold text-[10px] uppercase tracking-wider rounded-xl hover:shadow-lg transition-all flex items-center gap-1.5 border-none cursor-pointer`}
               >
                 <ShoppingBag size={11} className="stroke-[2.5]" />
                 <span>Shop Collection</span>

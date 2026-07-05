@@ -379,15 +379,15 @@ const updateOrderStatus = async (req, res) => {
           }
           order.verificationCode = code;
           await order.save();
-
-          // Notify customer about the secret key
-          await createNotification(
-            order.userId,
-            order._id,
-            "Delivery Verification Code",
-            `A secret key has been generated for order #${order._id.toString().slice(-6).toUpperCase()}. Please provide code ${code} to the delivery agent to confirm delivery.`
-          );
         }
+
+        // Notify customer about the secret key
+        await createNotification(
+          order.userId,
+          order._id,
+          "Delivery Verification Code",
+          `A secret key has been generated for order #${order._id.toString().slice(-6).toUpperCase()}. Please provide code ${order.verificationCode} to the delivery agent to confirm delivery.`
+        );
 
         return res.json({
           success: false,
@@ -444,6 +444,22 @@ const updateOrderStatus = async (req, res) => {
         order._id,
         "Order Status Updated",
         `Your order #${order._id.toString().slice(-6).toUpperCase()} is now "${status}".`
+      );
+    } else if (status === "Out for Delivery") {
+      if (!order.verificationCode) {
+        const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+        let code = "";
+        for (let i = 0; i < 6; i++) {
+          code += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        order.verificationCode = code;
+      }
+
+      await createNotification(
+        order.userId,
+        order._id,
+        "Delivery Verification Code",
+        `Your order #${order._id.toString().slice(-6).toUpperCase()} is Out for Delivery! Please provide code ${order.verificationCode} to the delivery agent to confirm delivery.`
       );
     } else {
       // General status update notification

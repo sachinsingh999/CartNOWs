@@ -147,7 +147,7 @@ const Wishlist = () => {
           </div>
           <Link
             to="/product"
-            className="inline-flex items-center gap-2 bg-[#FF5100] hover:bg-orange-600 text-white font-black text-xs uppercase tracking-wider px-6 py-3 rounded-xl transition duration-200 shadow-lg shadow-orange-500/10 active:scale-95"
+            className="inline-flex items-center gap-2 bg-[#FF5100] hover:bg-orange-600 text-slate-100 dark:text-white font-black text-xs uppercase tracking-wider px-6 py-3 rounded-xl transition duration-200 shadow-lg shadow-orange-500/10 active:scale-95"
           >
             <span>Start Shopping</span>
             <ArrowRight size={14} />
@@ -187,7 +187,7 @@ const Wishlist = () => {
               <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex gap-2">
                 <button
                   onClick={() => handleAddToCart(product)}
-                  className="flex-1 inline-flex items-center justify-center gap-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-orange-600 dark:hover:bg-orange-700 text-white font-black text-[10px] uppercase tracking-wider py-2.5 rounded-xl cursor-pointer active:scale-95 transition-all"
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-orange-600 dark:hover:bg-orange-700 text-slate-100 dark:text-white font-black text-[10px] uppercase tracking-wider py-2.5 rounded-xl cursor-pointer active:scale-95 transition-all"
                 >
                   <ShoppingBag size={12} />
                   <span>Add to Cart</span>

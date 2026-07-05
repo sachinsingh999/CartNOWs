@@ -29,7 +29,7 @@ const TrendingProducts = ({ bestSellers = [], newArrivals = [], mostViewed = [],
     <div className="grid grid-cols-1 lg:grid-cols-[22%_78%] gap-6 lg:gap-8 items-start mb-8 select-none">
       
       {/* Premium Luxury Sidebar Panel - Stacked Symmetrical design */}
-      <div className="relative overflow-hidden rounded-2xl p-5 text-white flex flex-col justify-between shadow-xl shadow-blue-500/5 dark:shadow-black/50 h-[390px] text-left bg-slate-950 border border-slate-800/80">
+      <div className="relative overflow-hidden rounded-2xl p-5 text-slate-100 dark:text-white flex flex-col justify-between shadow-xl shadow-blue-500/5 dark:shadow-black/50 h-[390px] text-left bg-slate-950 border border-slate-800/80">
         {/* Glowing Mesh Animation */}
         <div className="absolute top-[-30%] left-[-30%] w-[100%] h-[100%] bg-gradient-to-tr from-blue-500/15 to-transparent rounded-full blur-[90px] pointer-events-none animate-pulse" style={{ animationDuration: "9s" }} />
         <div className="absolute bottom-[-30%] right-[30%] w-[100%] h-[100%] bg-gradient-to-tr from-indigo-500/15 to-transparent rounded-full blur-[90px] pointer-events-none animate-pulse" style={{ animationDuration: "7s" }} />
@@ -55,11 +55,7 @@ const TrendingProducts = ({ bestSellers = [], newArrivals = [], mostViewed = [],
             <button
               key={tab.id}
               onClick={() => setActiveTrendingTab(tab.id)}
-              className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-wider text-left transition-all duration-200 cursor-pointer ${
-                activeTrendingTab === tab.id
-                  ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md hover:brightness-105 active:scale-[0.98]"
-                  : "bg-slate-900/40 text-slate-400 hover:bg-slate-900/60 hover:text-white border border-white/5"
-              }`}
+              className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-wider text-left transition-all duration-200 cursor-pointer ${ activeTrendingTab === tab.id ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-slate-100 dark:text-white shadow-md hover:brightness-105 active:scale-[0.98]" : "bg-slate-900/40 text-slate-400 hover:bg-slate-900/60 hover:text-white border border-white/5" }`}
             >
               {React.createElement(tab.icon, { size: 13, className: `${tab.iconColor} shrink-0` })}
               <span>{tab.label}</span>
@@ -69,7 +65,7 @@ const TrendingProducts = ({ bestSellers = [], newArrivals = [], mostViewed = [],
 
         <button
           onClick={() => navigate("/product")}
-          className="group relative w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-[10px] uppercase tracking-wider rounded-xl shadow-md transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 border border-white/5 z-10"
+          className="group relative w-full py-3 bg-slate-900 hover:bg-slate-800 text-slate-100 dark:text-white font-extrabold text-[10px] uppercase tracking-wider rounded-xl shadow-md transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 border border-white/5 z-10"
         >
           <span>Explore Catalog</span>
           <ArrowRight size={12} className="transition-transform duration-200 group-hover:translate-x-1" />
@@ -89,13 +85,13 @@ const TrendingProducts = ({ bestSellers = [], newArrivals = [], mostViewed = [],
           <div className="flex gap-2">
             <button
               onClick={() => scrollSlider("left")}
-              className="h-8.5 w-8.5 rounded-full border border-slate-200/50 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md hover:bg-white dark:hover:bg-slate-800 text-slate-700 dark:text-slate-330 flex items-center justify-center shadow-sm hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
+              className="h-8.5 w-8.5 rounded-full border border-slate-200/50 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md hover:bg-white dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center shadow-sm hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
             >
               <ChevronLeft size={15} />
             </button>
             <button
               onClick={() => scrollSlider("right")}
-              className="h-8.5 w-8.5 rounded-full border border-slate-200/50 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md hover:bg-white dark:hover:bg-slate-800 text-slate-700 dark:text-slate-330 flex items-center justify-center shadow-sm hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
+              className="h-8.5 w-8.5 rounded-full border border-slate-200/50 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md hover:bg-white dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center shadow-sm hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
             >
               <ChevronRight size={15} />
             </button>

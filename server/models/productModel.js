@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { validatePrice } from "../utils/validation.js";
+import { validatePrice, validateDynamicAttributes } from "../utils/validation.js";
 
 const productSchema = new mongoose.Schema({
   name: {
@@ -109,7 +109,17 @@ const productSchema = new mongoose.Schema({
 
   attributes: {
     type: mongoose.Schema.Types.Mixed,
-    default: {}
+    default: {},
+    validate: {
+      validator: (v) => {
+        if (v === undefined || v === null) return true;
+        return validateDynamicAttributes(v).isValid;
+      },
+      message: (props) => {
+        const result = validateDynamicAttributes(props.value);
+        return result.message || "Invalid dynamic attributes format.";
+      }
+    }
   },
 
   variants: {
@@ -118,6 +128,9 @@ const productSchema = new mongoose.Schema({
         sku: { type: String, default: "" },
         price: { type: Number, required: true },
         stock: { type: Number, default: 0 },
+        images: { type: [String], default: [] },
+        barcode: { type: String, default: "" },
+        availability: { type: Boolean, default: true },
         attributes: { type: mongoose.Schema.Types.Mixed, default: {} }
       }
     ],

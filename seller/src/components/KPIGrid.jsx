@@ -89,7 +89,7 @@ const KPIGrid = ({
       trendType: revenueTrendType,
       icon: TrendingUp,
       bgColor: "bg-orange-50 dark:bg-orange-950/20",
-      textColor: "text-[#FF5100] dark:text-orange-400",
+      textColor: "text-brand dark:text-orange-400",
       borderColor: "border-orange-100 dark:border-orange-900/30"
     }
   ];
@@ -101,14 +101,14 @@ const KPIGrid = ({
         return (
           <div 
             key={m.label} 
-            className="bg-white border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between h-36 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group cursor-default"
+            className="bg-white dark:bg-slate-900 border border-slate-200/80 rounded-2xl p-5 flex flex-col justify-between h-36 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group cursor-default"
           >
             <div className="flex items-start justify-between">
               <div className="space-y-1">
                 <span className="text-[10px] uppercase font-black text-slate-400 tracking-wider">
                   {m.label}
                 </span>
-                <h3 className="text-xl font-black text-slate-900 tracking-tight mt-1">
+                <h3 className="text-xl font-black text-slate-900 dark:text-slate-100 tracking-tight mt-1">
                   {m.value}
                 </h3>
               </div>

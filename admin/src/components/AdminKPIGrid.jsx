@@ -192,7 +192,7 @@ const AdminKPIGrid = ({
           return (
             <div 
               key={idx} 
-              className="col-span-1 sm:col-span-2 lg:col-span-1 bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 dark:from-slate-950 dark:via-[#111827] dark:to-[#1e1b4b] border border-slate-800 dark:border-indigo-500/20 rounded-xl p-4 flex flex-col justify-between hover:shadow-lg transition-all duration-300 group relative overflow-hidden"
+              className="col-span-1 sm:col-span-2 lg:col-span-1 bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 dark:from-slate-950 dark:via-gray-900 dark:to-indigo-950 border border-slate-800 dark:border-indigo-500/20 rounded-xl p-4 flex flex-col justify-between hover:shadow-lg transition-all duration-300 group relative overflow-hidden"
             >
               <div className="absolute top-0 right-0 -mt-4 -mr-4 h-24 w-24 bg-emerald-500/5 rounded-full blur-xl pointer-events-none" />
               <div className="flex items-center justify-between z-10">
@@ -205,7 +205,7 @@ const AdminKPIGrid = ({
               </div>
 
               <div className="mt-3.5 z-10">
-                <p className="text-2xl font-black tracking-tight text-white">
+                <p className="text-2xl font-black tracking-tight text-slate-100 dark:text-white">
                   {kpi.val}
                 </p>
                 <div className="grid grid-cols-2 gap-2.5 mt-3 pt-3 border-t border-white/[0.06] text-[10px]">
@@ -226,7 +226,7 @@ const AdminKPIGrid = ({
         return (
           <div 
             key={idx} 
-            className="bg-white dark:bg-[#172033] border border-slate-200 dark:border-white/[0.08] rounded-xl p-4 flex flex-col justify-between hover:border-slate-300 dark:hover:border-slate-700/80 transition-all duration-300 group shadow-sm"
+            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.08] rounded-xl p-4 flex flex-col justify-between hover:border-slate-300 dark:hover:border-slate-700/80 transition-all duration-300 group shadow-sm"
           >
             <div className="flex items-center justify-between">
               <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
@@ -248,9 +248,7 @@ const AdminKPIGrid = ({
                   ) : (
                     <ArrowDownRight size={10} className="text-rose-400" />
                   )}
-                  <span className={`text-[9px] font-bold uppercase tracking-wider ${
-                    kpi.isPos ? "text-emerald-400" : "text-rose-400"
-                  }`}>
+                  <span className={`text-[9px] font-bold uppercase tracking-wider ${ kpi.isPos ? "text-emerald-400" : "text-rose-400" }`}>
                     {kpi.trend}
                   </span>
                 </div>

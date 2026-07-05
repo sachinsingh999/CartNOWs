@@ -99,7 +99,7 @@ const CategoryFilterSidebar = ({ productList, setFilteredList }) => {
             Filters
           </span>
           {activeCount > 0 && (
-            <span className="text-[10px] font-black text-white bg-indigo-600 dark:bg-indigo-500 px-2 py-0.5 rounded-full shadow-sm animate-pulse">
+            <span className="text-[10px] font-black text-slate-100 dark:text-white bg-indigo-600 dark:bg-indigo-500 px-2 py-0.5 rounded-full shadow-sm animate-pulse">
               {activeCount}
             </span>
           )}
@@ -121,9 +121,7 @@ const CategoryFilterSidebar = ({ productList, setFilteredList }) => {
           >
             <span>Category</span>
             <svg
-              className={`w-3 h-3 transform transition-transform duration-300 ${
-                expanded.category ? "rotate-180" : ""
-              }`}
+              className={`w-3 h-3 transform transition-transform duration-300 ${ expanded.category ? "rotate-180" : "" }`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -148,11 +146,7 @@ const CategoryFilterSidebar = ({ productList, setFilteredList }) => {
                         setCategory(cat);
                         applyFilter(cat, price, rating);
                       }}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all duration-200 cursor-pointer hover:-translate-y-0.5 active:translate-y-0 capitalize ${
-                        isActive
-                          ? "border-indigo-600 dark:border-indigo-500 bg-indigo-600 dark:bg-indigo-500 text-white shadow-md shadow-indigo-100 dark:shadow-slate-950 scale-102"
-                          : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-355 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
-                      }`}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all duration-200 cursor-pointer hover:-translate-y-0.5 active:translate-y-0 capitalize ${ isActive ? "border-indigo-600 dark:border-indigo-500 bg-indigo-600 dark:bg-indigo-500 text-slate-100 dark:text-white shadow-md shadow-indigo-100 dark:shadow-slate-950 scale-102" : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800" }`}
                     >
                       {cat === "all" ? "All" : cat}
                     </button>
@@ -171,9 +165,7 @@ const CategoryFilterSidebar = ({ productList, setFilteredList }) => {
           >
             <span>Price Range</span>
             <svg
-              className={`w-3 h-3 transform transition-transform duration-300 ${
-                expanded.price ? "rotate-180" : ""
-              }`}
+              className={`w-3 h-3 transform transition-transform duration-300 ${ expanded.price ? "rotate-180" : "" }`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -206,7 +198,7 @@ const CategoryFilterSidebar = ({ productList, setFilteredList }) => {
                   setPrice(v);
                   applyFilter(category, v, rating);
                 }}
-                className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-600 dark:accent-indigo-500 transition-all focus:outline-none"
+                className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-600 dark:accent-indigo-500 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
               />
               <div className="flex justify-between text-[10px] text-slate-400 dark:text-slate-500 mt-1.5 font-bold">
                 <span>₹0</span>
@@ -224,9 +216,7 @@ const CategoryFilterSidebar = ({ productList, setFilteredList }) => {
           >
             <span>Min Rating</span>
             <svg
-              className={`w-3 h-3 transform transition-transform duration-300 ${
-                expanded.rating ? "rotate-180" : ""
-              }`}
+              className={`w-3 h-3 transform transition-transform duration-300 ${ expanded.rating ? "rotate-180" : "" }`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -251,27 +241,19 @@ const CategoryFilterSidebar = ({ productList, setFilteredList }) => {
                       setRating(next);
                       applyFilter(category, price, next);
                     }}
-                    className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl border w-full text-left transition-all duration-200 cursor-pointer hover:-translate-y-0.5 active:translate-y-0 ${
-                      isActive
-                        ? "border-indigo-600 dark:border-indigo-500 bg-indigo-600 dark:bg-indigo-500 text-white shadow-sm shadow-indigo-100 dark:shadow-slate-950"
-                        : "border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-350 hover:border-slate-300 dark:hover:border-slate-700"
-                    }`}
+                    className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl border w-full text-left transition-all duration-200 cursor-pointer hover:-translate-y-0.5 active:translate-y-0 ${ isActive ? "border-indigo-600 dark:border-indigo-500 bg-indigo-600 dark:bg-indigo-500 text-slate-100 dark:text-white shadow-sm shadow-indigo-100 dark:shadow-slate-950" : "border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700" }`}
                   >
                     <span className="text-amber-500 text-sm tracking-tighter flex gap-0.5">
                       {"★".repeat(r)}
                       <span className="opacity-25">{"★".repeat(5 - r)}</span>
                     </span>
                     <span
-                      className={`text-xs font-bold ${
-                        isActive
-                          ? "text-white"
-                          : "text-slate-600 dark:text-slate-400"
-                      }`}
+                      className={`text-xs font-bold ${ isActive ? "text-white" : "text-slate-600 dark:text-slate-400" }`}
                     >
                       {r}+ stars
                     </span>
                     {isActive && (
-                      <span className="ml-auto text-white text-xs font-black">
+                      <span className="ml-auto text-slate-100 dark:text-white text-xs font-black">
                         ✓
                       </span>
                     )}

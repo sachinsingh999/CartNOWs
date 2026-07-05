@@ -21,7 +21,9 @@ import {
   Leaf,
   Droplet,
   FlaskConical,
-  Award
+  Award,
+  Hourglass,
+  LayoutGrid
 } from "lucide-react";
 
 // Import local premium WebP studio campaign photography assets
@@ -33,7 +35,7 @@ import beautyFallback from "../../assets/brand_asset_beauty.webp";
 import accessoriesFallback from "../../assets/brand_asset_accessories.webp";
 import sportswearFallback from "../../assets/brand_asset_sportswear.webp";
 
-const HomeHero = () => {
+const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
   const navigate = useNavigate();
   const [slideIdx, setSlideIdx] = useState(0);
   const [slides, setSlides] = useState([]);
@@ -336,9 +338,9 @@ const HomeHero = () => {
       };
     }
     return {
-      badge1: { text: "Fast Shipping", icon: Truck, iconColor: "text-indigo-550" },
-      badge2: { text: "Best Seller", icon: Award, iconColor: "text-amber-550" },
-      badge3: { text: "Top Rated", icon: Star, iconColor: "text-yellow-550" }
+      badge1: { text: "Fast Shipping", icon: Truck, iconColor: "text-indigo-500" },
+      badge2: { text: "Best Seller", icon: Award, iconColor: "text-amber-500" },
+      badge3: { text: "Top Rated", icon: Star, iconColor: "text-yellow-500" }
     };
   }, [currentSlide]);
 
@@ -369,10 +371,74 @@ const HomeHero = () => {
     }
   };
 
+  const [timeLeft, setTimeLeft] = useState(null);
+
+  useEffect(() => {
+    if (customBanners.length === 0 || !customBanners[slideIdx]) return;
+    const banner = customBanners[slideIdx];
+    
+    const calculateTime = () => {
+      if (!banner.endDate) return null;
+      const difference = new Date(banner.endDate) - new Date();
+      if (difference <= 0) {
+        return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+      }
+      return {
+        days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+        minutes: Math.floor((difference / 1000 / 60) % 60),
+        seconds: Math.floor((difference / 1000) % 60)
+      };
+    };
+
+    setTimeLeft(calculateTime());
+
+    const timer = setInterval(() => {
+      setTimeLeft(calculateTime());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [slideIdx, customBanners]);
+
+  const progressPercent = useMemo(() => {
+    if (customBanners.length === 0 || !customBanners[slideIdx]) return 0;
+    const banner = customBanners[slideIdx];
+    if (!banner.startDate || !banner.endDate) return 0;
+    const start = new Date(banner.startDate).getTime();
+    const end = new Date(banner.endDate).getTime();
+    const now = Date.now();
+    if (now >= end) return 100;
+    if (now <= start) return 0;
+    const total = end - start;
+    const elapsed = now - start;
+    return Math.round((elapsed / total) * 100);
+  }, [slideIdx, customBanners]);
+
   const currentBanner = customBanners[slideIdx] || customBanners[0];
 
   return (
-    <AnimatePresence mode="wait">
+    <div className="w-full flex flex-col relative">
+      {/* Top Announcement Bar */}
+      <div className="w-full bg-[#0B0F19] dark:bg-[#070A13] border-b border-slate-800/60 py-2.5 px-4 sm:px-8 lg:px-12 flex items-center justify-between text-slate-100 dark:text-white cursor-pointer hover:bg-slate-900/60 transition duration-300">
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-[#ff3f6c] animate-pulse" />
+          <span className="text-[10px] sm:text-xs font-black uppercase tracking-[0.15em] text-[#ff3f6c] dark:text-[#ff3f6c]">
+            MIDNIGHT CAMPAIGN LIVE
+          </span>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5">
+            <div className="flex -space-x-1.5">
+              <img className="inline-block h-5 w-5 rounded-full ring-2 ring-slate-950 object-cover" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop" alt="" />
+              <img className="inline-block h-5 w-5 rounded-full ring-2 ring-slate-950 object-cover" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&h=80&fit=crop" alt="" />
+              <img className="inline-block h-5 w-5 rounded-full ring-2 ring-slate-950 object-cover" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop" alt="" />
+            </div>
+            <span className="text-[10px] sm:text-xs font-bold text-slate-400">10k+ shopping right now</span>
+          </div>
+          <ArrowRight size={14} className="text-slate-400 stroke-[2.5]" />
+        </div>
+      </div>
+      <AnimatePresence mode="wait">
       {showBanners && customBanners.length > 0 ? (
         <motion.section
           key="banners"
@@ -380,119 +446,194 @@ const HomeHero = () => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.8 }}
-          className="relative overflow-hidden h-[calc(100vh-var(--navbar-height,80px))] min-h-[480px] sm:min-h-[600px] lg:min-h-[750px] xl:min-h-[850px] bg-slate-900 text-white flex items-center select-none w-full"
+          className="relative overflow-visible bg-slate-50 dark:bg-slate-950 text-[#0F172A] dark:text-slate-100 flex items-center justify-center py-16 md:py-24 select-none w-full min-h-[480px] sm:min-h-[550px] lg:min-h-[620px]"
         >
-          <style>{`
-            @keyframes zoom-slow {
-              0% { transform: scale(1); }
-              100% { transform: scale(1.05); }
-            }
-            .animate-zoom-slow {
-              animation: zoom-slow 8s ease-out forwards;
-            }
-          `}</style>
+          {/* Main Slider Wrapper */}
+          <div className="max-w-7xl mx-auto px-6 sm:px-12 lg:px-20 w-full flex flex-col items-center justify-center relative overflow-visible">
+            
+            {/* Banner Main Card */}
+            <div className={`relative w-full h-[360px] md:h-[400px] rounded-[32px] overflow-visible shadow-2xl flex flex-row items-center border border-slate-200/50 dark:border-white/10 text-slate-100 dark:text-white transition-all duration-500 ${currentBanner.backgroundTheme || 'bg-gradient-to-r from-slate-900 to-indigo-950'}`}>
+              
+              {/* Glassmorphic sheen layout layers */}
+              <div className="absolute inset-0 bg-white/[0.02] backdrop-blur-[1px] rounded-[32px] pointer-events-none" />
+              <div className="absolute left-[-20px] top-[10%] w-40 h-40 bg-white/5 rounded-full blur-2xl pointer-events-none" />
 
-          {/* Banner Images Cross-fade */}
-          <div className="absolute inset-0 w-full h-full">
-            <AnimatePresence>
-              <motion.div
-                key={slideIdx}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.8 }}
-                onClick={() => handleBannerClick(currentBanner.categoryIds)}
-                className="absolute inset-0 w-full h-full cursor-pointer overflow-hidden group"
-              >
-                {/* Background Image */}
-                <img
-                  src={currentBanner.image.startsWith("http") ? currentBanner.image : `${backendUrl}${currentBanner.image}`}
-                  alt={currentBanner.title}
-                  className="w-full h-full object-cover animate-zoom-slow"
-                />
+              {/* Left Section (60%) */}
+              <div className="w-full lg:w-3/5 h-full flex flex-col justify-center p-8 sm:p-12 z-10 space-y-3 sm:space-y-4 text-left">
+                {/* Campaign badge */}
+                {currentBanner.badge && (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-orange-400 text-[10px] font-black uppercase tracking-widest shadow-sm w-fit animate-pulse">
+                    <Flame size={12} className="text-orange-400 fill-orange-400" />
+                    <span>{currentBanner.badge}</span>
+                  </span>
+                )}
 
-                {/* Gradient Overlay for Legibility */}
-                <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/35 to-transparent" />
+                {/* Product brand and name */}
+                {currentBanner.productId && (
+                  <div className="space-y-0.5">
+                    {currentBanner.productId.brand && (
+                      <span className="text-[10px] md:text-xs uppercase tracking-widest font-black text-slate-400 block">
+                        {currentBanner.productId.brand}
+                      </span>
+                    )}
+                    <h2 
+                      onClick={() => navigate(`/product/${currentBanner.productId._id || currentBanner.productId}`)}
+                      className="text-sm md:text-base font-extrabold opacity-85 select-text cursor-pointer hover:underline truncate max-w-[90%]"
+                    >
+                      {currentBanner.productId.name}
+                    </h2>
+                  </div>
+                )}
 
-                {/* Overlaid Content */}
-                <div className="absolute inset-0 flex items-center">
-                  <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 w-full text-left">
-                    <div className="max-w-2xl space-y-4 sm:space-y-6">
-                      {/* Category Tags */}
-                      <div className="flex flex-wrap gap-2.5 z-10 relative justify-center lg:justify-start">
-                        {currentBanner.categoryIds && currentBanner.categoryIds.map(catId => {
-                          const found = categories.find(c => c._id === catId);
-                          return (
-                            <span key={catId} className="px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md text-orange-400 border border-white/20 text-[9px] sm:text-[10px] font-black uppercase tracking-widest shadow-md flex items-center gap-1.5">
-                              <Sparkles size={10} className="text-orange-400 animate-pulse" />
-                              <span>{found ? found.name : "Category"}</span>
-                            </span>
-                          );
-                        })}
-                      </div>
+                {/* Campaign Headings */}
+                <div className="space-y-1.5">
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black leading-tight tracking-tight uppercase font-sans drop-shadow-md text-slate-100 dark:text-white">
+                    {currentBanner.title}
+                  </h1>
+                  {currentBanner.subtitle && (
+                    <p className="text-[11px] md:text-sm text-slate-300 font-semibold leading-relaxed line-clamp-2 max-w-[95%]">
+                      {currentBanner.subtitle}
+                    </p>
+                  )}
+                </div>
 
-                      {/* Title */}
-                      <motion.h1
-                        initial={{ y: 20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ delay: 0.2, duration: 0.5 }}
-                        className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black leading-[1.02] tracking-tighter text-white drop-shadow-md z-10 relative text-center lg:text-left"
-                      >
-                        {currentBanner.title}
-                      </motion.h1>
+                {/* Dynamic Price Display */}
+                {currentBanner.productId && (
+                  <div className="flex items-center gap-4 flex-wrap pt-0.5">
+                    <div className="flex flex-col">
+                      <span className="text-[8px] md:text-[9px] uppercase tracking-widest text-slate-400 font-black">Deal Price</span>
+                      <span className="text-lg md:text-2xl font-black text-orange-400 select-text">
+                        ₹{currentBanner.productId.price}
+                      </span>
+                    </div>
 
-                      {/* Subtitle */}
-                      {currentBanner.subtitle && (
-                        <motion.p
-                          initial={{ y: 20, opacity: 0 }}
-                          animate={{ y: 0, opacity: 1 }}
-                          transition={{ delay: 0.3, duration: 0.5 }}
-                          className="text-xs sm:text-base md:text-lg lg:text-xl xl:text-2xl text-slate-200 leading-relaxed font-semibold max-w-2xl drop-shadow-sm z-10 relative text-center lg:text-left"
-                        >
-                          {currentBanner.subtitle}
-                        </motion.p>
-                      )}
-
-                      {/* CTA Button */}
-                      <motion.div
-                        initial={{ y: 20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ delay: 0.4, duration: 0.5 }}
-                        className="pt-2 sm:pt-4 z-10 relative flex justify-center lg:justify-start"
-                      >
-                        <span className="inline-flex items-center gap-2 sm:gap-3 px-6 sm:px-10 py-3 sm:py-4.5 rounded-xl sm:rounded-2xl bg-gradient-to-r from-orange-550 to-red-600 hover:from-orange-600 hover:to-red-750 text-white text-[10px] sm:text-xs font-black uppercase tracking-widest shadow-lg shadow-orange-500/25 active:scale-98 transition-all duration-300">
-                          <span>Shop The Collection</span>
-                          <ArrowRight size={14} className="stroke-[3]" />
+                    {currentBanner.productId.originalPrice > currentBanner.productId.price && (
+                      <>
+                        <div className="flex flex-col opacity-60">
+                          <span className="text-[8px] md:text-[9px] uppercase tracking-widest text-slate-400 font-black">M.R.P.</span>
+                          <span className="text-xs md:text-sm font-bold line-through">₹{currentBanner.productId.originalPrice}</span>
+                        </div>
+                        <span className="bg-red-500 text-slate-100 dark:text-white text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full border border-red-500/20 shadow-md">
+                          {Math.round(((currentBanner.productId.originalPrice - currentBanner.productId.price) / currentBanner.productId.originalPrice) * 100)}% OFF
                         </span>
-                      </motion.div>
+                      </>
+                    )}
+
+                    {/* Ratings */}
+                    <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-2 py-1 rounded-lg text-[10px] font-black text-slate-200">
+                      <Star size={11} className="fill-amber-400 text-amber-400" />
+                      <span>{currentBanner.productId.averageRating || currentBanner.productId.rating?.average || 4.5}</span>
+                      <span className="opacity-60">({currentBanner.productId.reviewCount || currentBanner.productId.rating?.count || 12})</span>
                     </div>
                   </div>
+                )}
+
+                {/* Countdown timer & progress bar */}
+                {timeLeft && (
+                  <div className="flex items-center gap-3 pt-1">
+                    <div className="flex items-center gap-1.5 bg-black/35 backdrop-blur-xs border border-white/5 px-3 py-1 rounded-xl text-slate-100 dark:text-white">
+                      <Hourglass size={12} className="text-orange-400 animate-pulse" />
+                      <span className="text-[9px] uppercase tracking-widest font-black mr-1 opacity-70">Ends in:</span>
+                      <div className="flex items-center gap-1 text-[11px] font-bold font-mono">
+                        <span>{String(timeLeft.days).padStart(2, "0")}d</span>:
+                        <span>{String(timeLeft.hours).padStart(2, "0")}h</span>:
+                        <span>{String(timeLeft.minutes).padStart(2, "0")}m</span>:
+                        <span>{String(timeLeft.seconds).padStart(2, "0")}s</span>
+                      </div>
+                    </div>
+                    
+                    {/* Progress Bar showing campaign elapsed time */}
+                    <div className="hidden sm:block flex-1 max-w-[120px] h-[3px] bg-white/10 rounded-full overflow-hidden relative">
+                      <div 
+                        className="absolute left-0 top-0 h-full bg-gradient-to-r from-orange-400 to-red-500 rounded-full transition-all duration-1000"
+                        style={{ width: `${progressPercent}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* CTA Button */}
+                <div className="pt-2 flex flex-wrap gap-3">
+                  {currentBanner.productId && (
+                    <button
+                      onClick={() => navigate(`/product/${currentBanner.productId._id || currentBanner.productId}`)}
+                      className="inline-flex items-center gap-2 sm:gap-2.5 px-6 sm:px-8 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 active:scale-98 transition text-slate-100 dark:text-white text-[10px] md:text-xs font-black uppercase tracking-widest shadow-md border-none cursor-pointer"
+                    >
+                      <span>{currentBanner.ctaText || "Shop Now"}</span>
+                      <ArrowRight size={13} className="stroke-[3]" />
+                    </button>
+                  )}
+
                 </div>
-              </motion.div>
-            </AnimatePresence>
-          </div>
+              </div>
 
-          {/* Cinematic Ambient Glow Backlights */}
-          <div className="absolute top-[20%] right-[10%] w-[500px] h-[500px] bg-orange-500/10 rounded-full blur-[160px] pointer-events-none z-0" />
-          <div className="absolute bottom-[10%] left-[20%] w-[400px] h-[400px] bg-red-500/5 rounded-full blur-[140px] pointer-events-none z-0" />
+              {/* Right Section (40%) - Editorial Overflow */}
+              <div className="hidden lg:flex w-2/5 h-full relative overflow-visible items-center justify-center">
+                {/* Ambient Slogan Label */}
+                <span className="absolute text-[80px] xl:text-[100px] font-black text-white/[0.03] uppercase tracking-tighter leading-none select-none pointer-events-none z-0 rotate-[-15deg]">
+                  CAMPAIGN
+                </span>
 
-          {/* Indicators / Navigation Dots */}
-          <div className="absolute bottom-10 left-0 right-0 z-20 flex justify-center gap-3">
-            {customBanners.map((_, i) => (
-              <button
-                key={i}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSlideIdx(i);
-                }}
-                className={`h-3 rounded-full transition-all duration-300 ${
-                  slideIdx === i 
-                    ? "w-10 bg-gradient-to-r from-orange-500 to-red-500 shadow-md" 
-                    : "w-3 bg-white/30 hover:bg-white/50"
-                }`}
-                aria-label={`Go to slide ${i + 1}`}
-              />
-            ))}
+                {/* Transparent overflow model image */}
+                <img
+                  src={currentBanner.modelImage ? (currentBanner.modelImage.startsWith("http") ? currentBanner.modelImage : `${backendUrl}${currentBanner.modelImage}`) : (currentBanner.image ? (currentBanner.image.startsWith("http") ? currentBanner.image : `${backendUrl}${currentBanner.image}`) : "")}
+                  alt={currentBanner.title}
+                  style={{
+                    WebkitMaskImage: "linear-gradient(to top, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 8%)",
+                  }}
+                  className="absolute top-[-70px] md:top-[-90px] xl:top-[-110px] right-[-10px] xl:right-[-20px] h-[135%] md:h-[140%] xl:h-[145%] w-auto object-contain object-bottom select-none z-10 drop-shadow-2xl transition duration-500 hover:scale-[1.03] pointer-events-none"
+                />
+
+                {/* Floating catalog item card */}
+                {currentBanner.productId && currentBanner.productId.images?.[0] && (
+                  <div 
+                    onClick={() => navigate(`/product/${currentBanner.productId._id || currentBanner.productId}`)}
+                    className="absolute bottom-6 left-[-30px] z-20 bg-white/10 dark:bg-slate-900/60 backdrop-blur-xl border border-white/20 dark:border-white/[0.08] p-2 rounded-2xl flex items-center gap-2.5 shadow-xl hover:bg-white/20 dark:hover:bg-slate-900/80 cursor-pointer transition select-none animate-float-slow"
+                  >
+                    <img 
+                      src={currentBanner.productId.images?.[0]?.startsWith("http") ? currentBanner.productId.images[0] : `${backendUrl}/${currentBanner.productId.images?.[0] || ""}`} 
+                      alt="" 
+                      className="w-9 h-9 object-contain bg-white dark:bg-slate-900 rounded-xl p-1 border border-slate-200/50"
+                    />
+                    <div className="text-slate-100 dark:text-white text-[9px] font-bold tracking-tight pr-1.5 flex flex-col justify-center text-left">
+                      <span className="opacity-60 text-[6.5px] uppercase font-black tracking-widest leading-none">Featured Item</span>
+                      <span className="leading-tight truncate max-w-[90px] font-black">{currentBanner.productId.name}</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Floating discount badge */}
+                {currentBanner.productId && currentBanner.productId.originalPrice > currentBanner.productId.price && (
+                  <div className="absolute top-8 right-10 z-20 bg-orange-500 text-slate-100 dark:text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg border border-white/20 rotate-[12deg] animate-pulse">
+                    Save {Math.round(((currentBanner.productId.originalPrice - currentBanner.productId.price) / currentBanner.productId.originalPrice) * 100)}%
+                  </div>
+                )}
+              </div>
+
+              {/* On Mobile / Small screens, show a subtle background image of the model */}
+              <div className="absolute inset-0 block lg:hidden z-0 opacity-[0.08] pointer-events-none rounded-[32px] overflow-hidden">
+                <img
+                  src={currentBanner.modelImage ? (currentBanner.modelImage.startsWith("http") ? currentBanner.modelImage : `${backendUrl}${currentBanner.modelImage}`) : (currentBanner.image ? (currentBanner.image.startsWith("http") ? currentBanner.image : `${backendUrl}${currentBanner.image}`) : "")}
+                  alt=""
+                  className="w-full h-full object-cover object-center"
+                />
+              </div>
+            </div>
+
+            {/* Slide Navigation Dots */}
+            <div className="flex justify-center gap-2.5 mt-6 z-20">
+              {customBanners.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSlideIdx(i);
+                  }}
+                  className={`h-2.5 rounded-full transition-all duration-300 ${ slideIdx === i ? "w-8 bg-orange-500 shadow-md" : "w-2.5 bg-slate-300 dark:bg-slate-800 hover:bg-slate-400 dark:hover:bg-slate-700" }`}
+                  aria-label={`Go to slide ${i + 1}`}
+                />
+              ))}
+            </div>
           </div>
         </motion.section>
       ) : (
@@ -535,6 +676,8 @@ const HomeHero = () => {
             .animate-orb-1 { animation: float-orb-1 12s ease-in-out infinite; }
             .animate-orb-2 { animation: float-orb-2 14s ease-in-out infinite; }
             .animate-marquee { display: inline-block; animation: marquee 24s linear infinite; }
+            .animate-twinkle { animation: twinkle 4s ease-in-out infinite; }
+            .animate-twinkle-delayed { animation: twinkle 5s ease-in-out infinite 1.5s; }
           `}</style>
           {/* Subtle Ambient Lighting Overlay */}
           {isDark ? (
@@ -549,30 +692,13 @@ const HomeHero = () => {
             </>
           )}
 
-          <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 w-full grid grid-cols-1 lg:grid-cols-[45%_55%] gap-8 lg:gap-12 items-center z-10 relative">
+          <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 w-full grid grid-cols-[58%_42%] sm:grid-cols-[50%_50%] lg:grid-cols-[45%_55%] gap-2 sm:gap-8 lg:gap-12 items-center z-10 relative">
 
             {/* Left Side Content Area */}
-            <div className="flex flex-col space-y-5 lg:space-y-6 text-center lg:text-left max-w-xl mx-auto lg:mx-0 items-center lg:items-start z-10 relative">
-
-              {/* Social Proof + Announcement Row */}
-              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3">
-                <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-slate-100 dark:bg-slate-900/80 border border-slate-200/50 dark:border-slate-800 shadow-xs w-fit text-[9px] font-black uppercase tracking-[0.2em] text-[#4F46E5] dark:text-indigo-455">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#4F46E5] dark:bg-indigo-400 animate-pulse" />
-                  <span>{isDark ? "Midnight Campaign Live" : "New Campaign Live"}</span>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <div className="flex -space-x-1.5">
-                    <img className="inline-block h-5 w-5 rounded-full ring-2 ring-white dark:ring-slate-950" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop" alt="" />
-                    <img className="inline-block h-5 w-5 rounded-full ring-2 ring-white dark:ring-slate-950" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&h=80&fit=crop" alt="" />
-                    <img className="inline-block h-5 w-5 rounded-full ring-2 ring-white dark:ring-slate-950" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop" alt="" />
-                  </div>
-                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">10k+ shopping right now</span>
-                </div>
-              </div>
+            <div className="flex flex-col space-y-4 sm:space-y-5 lg:space-y-6 text-left max-w-xl mx-auto lg:mx-0 items-start z-10 relative">
 
               {/* Dynamic Headline: updates dynamically per slide */}
-              <div className="min-h-[140px] md:min-h-[180px] lg:min-h-[220px] flex flex-col justify-center">
+              <div className="min-h-[120px] md:min-h-[160px] lg:min-h-[200px] flex flex-col justify-center">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={slideIdx}
@@ -580,50 +706,57 @@ const HomeHero = () => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.3, ease: "easeOut" }}
-                    className="space-y-2.5"
+                    className="space-y-2"
                   >
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">
+                    <span className="text-[9px] sm:text-[10px] font-black text-amber-500 dark:text-amber-400 uppercase tracking-widest block">
                       {currentSlide.category}
                     </span>
-                    <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-extrabold leading-[1.05] tracking-tight text-slate-900 dark:text-white">
+                    <h1 className="text-xl sm:text-4xl lg:text-5xl xl:text-6xl font-extrabold leading-[1.1] sm:leading-[1.05] tracking-tight text-slate-900 dark:text-white">
                       {currentSlide.name}
                     </h1>
-                    <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 leading-relaxed font-medium mt-3">
+                    <p className="text-[11px] sm:text-base text-slate-500 dark:text-slate-400 leading-relaxed font-medium mt-1 sm:mt-2">
                       {currentSlide.tagline}
                     </p>
+                    {/* Gold Divider Accent Line */}
+                    <div className="w-12 sm:w-16 h-[2px] sm:h-1 bg-amber-500 dark:bg-amber-400 rounded-full mt-2.5 sm:mt-4" />
                   </motion.div>
                 </AnimatePresence>
               </div>
 
               {/* First Purchase Promo Banner */}
-              <div className="flex items-center gap-3 bg-gradient-to-r from-emerald-500/10 to-indigo-500/5 border border-emerald-500/20 dark:border-emerald-500/30 rounded-2xl px-4 py-2.5 select-none w-fit mx-auto lg:mx-0 text-left">
-                <span className="text-xs animate-bounce">🎉</span>
+              <div className="flex items-center gap-2.5 sm:gap-3.5 bg-slate-900/10 dark:bg-slate-900/60 border border-amber-500/30 dark:border-amber-500/20 rounded-xl sm:rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 select-none w-fit text-left shadow-md">
+                <div className="bg-amber-500/10 p-1.5 sm:p-2 rounded-lg sm:rounded-xl border border-amber-500/20 shrink-0">
+                  <Award size={14} className="text-amber-500 dark:text-amber-400 sm:w-[18px] sm:h-[18px]" />
+                </div>
                 <div className="flex flex-col">
-                  <span className="text-[9px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400">First Purchase Offer</span>
-                  <span className="text-[10.5px] font-bold text-slate-505 dark:text-slate-350">Get extra 10% off with coupon code <span className="font-mono bg-emerald-500/20 text-emerald-700 dark:text-emerald-350 px-1.5 py-0.5 rounded font-black border border-emerald-500/25">CARTNOW10</span></span>
+                  <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400">First Purchase Offer</span>
+                  <span className="text-[9.5px] sm:text-[10.5px] font-bold text-slate-600 dark:text-slate-300 leading-tight">Get extra 10% off with coupon code <span className="font-mono border border-dashed border-amber-500 bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded font-black text-[9px] sm:text-[10px]">CARTNOW10</span></span>
                 </div>
               </div>
 
               {/* Action CTAs */}
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-stretch sm:items-center justify-center lg:justify-start w-full sm:w-auto">
+              <div className="flex flex-wrap gap-2 sm:gap-4 items-center w-full">
                 <motion.button
                   whileHover={{ scale: 1.02, y: -1 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => handleModelClick(currentSlide.category)}
-                  className="inline-flex items-center justify-center gap-2.5 px-6 xl:px-8 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all cursor-pointer border-none bg-slate-900 text-white dark:bg-[#ff3f6c] dark:text-white hover:bg-slate-800 dark:hover:bg-[#e0355c] shadow-lg shadow-indigo-500/10 dark:shadow-rose-500/20"
+                  className="inline-flex items-center justify-center gap-1.5 px-4 sm:px-8 py-2.5 sm:py-3 rounded-full text-[9px] sm:text-xs font-black uppercase tracking-widest transition-all cursor-pointer border-none bg-slate-900 text-slate-100 dark:text-white dark:bg-[#ff3f6c] dark:text-white hover:bg-slate-800 dark:hover:bg-[#e0355c] shadow-lg shadow-indigo-500/10 dark:shadow-rose-500/20"
                 >
                   <span>Shop Now</span>
-                  <ArrowRight size={14} className="stroke-[2.5]" />
+                  <ArrowRight size={12} className="stroke-[2.5] sm:w-[14px] sm:h-[14px]" />
                 </motion.button>
 
                 <motion.button
                   whileHover={{ scale: 1.02, y: -1 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => navigate("/products")}
-                  className="inline-flex items-center justify-center gap-2 px-6 xl:px-8 py-3 rounded-xl bg-white dark:bg-slate-900 text-slate-850 dark:text-slate-205 text-xs font-bold uppercase tracking-widest border border-slate-200/80 dark:border-slate-800 shadow-xs hover:bg-slate-50 dark:hover:bg-slate-850 cursor-pointer transition-all"
+                  className="inline-flex items-center justify-center gap-1.5 px-4 sm:px-8 py-2.5 sm:py-3 rounded-full bg-transparent text-slate-800 dark:text-white text-[9px] sm:text-xs font-black uppercase tracking-widest border border-slate-300 dark:border-white/20 shadow-xs hover:bg-slate-50 dark:hover:bg-slate-900 cursor-pointer transition-all"
                 >
+                  <LayoutGrid size={12} className="stroke-[2] sm:w-[14px] sm:h-[14px]" />
                   <span>View Catalog</span>
                 </motion.button>
+
+
               </div>
 
               {/* Quick Shop Category Buttons */}
@@ -649,26 +782,23 @@ const HomeHero = () => {
                       e.stopPropagation();
                       setSlideIdx(i);
                     }}
-                    className={`h-2 rounded-full transition-all duration-300 ${slideIdx === i
-                        ? "w-8 bg-[#ff3f6c] dark:bg-[#ff3f6c]"
-                        : "w-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-350 dark:hover:bg-slate-700"
-                      }`}
+                    className={`h-2 rounded-full transition-all duration-300 ${slideIdx === i ? "w-8 bg-[#ff3f6c] dark:bg-[#ff3f6c]" : "w-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700" }`}
                     aria-label={`Go to slide ${i + 1}`}
                   />
                 ))}
               </div>
 
               {/* Trust Indicators */}
-              <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 dark:text-slate-555 pt-5 border-t border-slate-200/50 dark:border-slate-800/80 sm:flex sm:flex-wrap sm:items-center sm:gap-x-6 sm:gap-y-3">
-                <div className="flex items-center gap-2 hover:text-slate-855 dark:hover:text-slate-300 transition-colors duration-250">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 dark:text-slate-600 pt-5 border-t border-slate-200/50 dark:border-slate-800/80 sm:flex sm:flex-wrap sm:items-center sm:gap-x-6 sm:gap-y-3">
+                <div className="flex items-center gap-2 hover:text-slate-900 dark:hover:text-slate-300 transition-colors duration-250">
                   <ShieldCheck size={14} className="text-emerald-500 stroke-[2.5]" />
                   <span>Secure Checkout</span>
                 </div>
-                <div className="flex items-center gap-2 hover:text-slate-855 dark:hover:text-slate-300 transition-colors duration-250">
+                <div className="flex items-center gap-2 hover:text-slate-900 dark:hover:text-slate-300 transition-colors duration-250">
                   <Truck size={14} className="text-indigo-500 stroke-[2.5]" />
                   <span>Express Shipping</span>
                 </div>
-                <div className="flex items-center gap-2 hover:text-slate-855 dark:hover:text-slate-300 transition-colors duration-250">
+                <div className="flex items-center gap-2 hover:text-slate-900 dark:hover:text-slate-300 transition-colors duration-250">
                   <RotateCcw size={14} className="text-rose-500 stroke-[2.5]" />
                   <span>Easy Returns</span>
                 </div>
@@ -676,7 +806,18 @@ const HomeHero = () => {
             </div>
 
             {/* Right Side Luxury Slideshow Component */}
-            <div className="absolute lg:relative inset-0 lg:inset-auto w-full h-full lg:h-[85%] xl:h-[90%] flex items-end justify-center select-none bg-transparent opacity-40 dark:opacity-20 lg:opacity-100 z-0 pointer-events-none lg:pointer-events-auto">
+            <div className="relative w-full h-full flex items-end justify-center select-none bg-transparent opacity-100 z-10 pointer-events-auto">
+
+              {/* Twinkling Gold Stars */}
+              <div className="absolute inset-0 pointer-events-none z-0">
+                <Sparkles size={16} className="absolute top-[15%] left-[10%] text-amber-400/70 animate-twinkle" />
+                <Sparkles size={12} className="absolute top-[35%] right-[5%] text-amber-400/60 animate-twinkle-delayed" />
+                <Sparkles size={14} className="absolute bottom-[25%] left-[25%] text-amber-400/50 animate-twinkle" />
+              </div>
+
+              {/* Circular Golden Glowing Paths around model */}
+              <div className="absolute w-[85%] h-[85%] max-w-[440px] max-h-[440px] rounded-full border border-amber-500/10 dark:border-amber-400/10 pointer-events-none z-0" />
+              <div className="absolute w-[95%] h-[95%] max-w-[480px] max-h-[480px] rounded-full border border-dashed border-amber-500/5 pointer-events-none z-0 animate-rotate-slow" />
 
               {/* Ambient Glow Backlight behind the model (Clean and Minimalist) */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden select-none">
@@ -759,6 +900,37 @@ const HomeHero = () => {
         </motion.section>
       )}
     </AnimatePresence>
+
+    {/* Floating Glassmorphic Deal of the Day Badge */}
+    {hasActiveDeal && (
+      <motion.button
+        whileHover={{ scale: 1.08 }}
+        whileTap={{ scale: 0.95 }}
+        animate={{ y: ["-50%", "-55%", "-50%"] }}
+        transition={{
+          y: {
+            duration: 3,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }
+        }}
+        onClick={onShowDealOfDay}
+        className="fixed md:absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center justify-center gap-1.5 p-3 rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-orange-500/30 dark:border-orange-500/20 hover:border-orange-500/60 dark:hover:border-orange-500/40 shadow-lg cursor-pointer transition-all duration-300 select-none group"
+        style={{
+          boxShadow: "0 0 20px rgba(249, 115, 22, 0.15)",
+        }}
+      >
+        {/* Pulsing glow ring around icon */}
+        <div className="relative w-10 h-10 flex items-center justify-center rounded-xl bg-orange-500/10 text-orange-500 group-hover:bg-orange-500/20 transition-colors">
+          <Flame size={20} className="fill-orange-500/20 animate-pulse" />
+          <span className="absolute inset-0 rounded-xl border border-orange-500/40 animate-ping opacity-60 pointer-events-none" />
+        </div>
+        <span className="text-[8px] font-black uppercase tracking-widest text-orange-600 dark:text-orange-400">
+          Deal
+        </span>
+      </motion.button>
+    )}
+    </div>
   );
 };
 

@@ -152,15 +152,11 @@ const WriteReviewModal = ({ isOpen, onClose, onSubmit, loading }) => {
                     type="button"
                     onClick={() => setRating(star)}
                     onMouseEnter={() => setHoverRating(star)}
-                    className="h-8 w-8 flex items-center justify-center active:scale-90 focus:outline-none cursor-pointer"
+                    className="h-8 w-8 flex items-center justify-center active:scale-90 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                   >
                     <Star
                       size={20}
-                      className={`transition-all duration-150 origin-center cursor-pointer hover:scale-125 hover:rotate-6 ${
-                        star <= (hoverRating || rating)
-                          ? "fill-amber-400 stroke-amber-400 drop-shadow-[0_0_4px_rgba(251,191,36,0.5)]"
-                          : "stroke-slate-300 dark:stroke-slate-700 fill-transparent hover:stroke-slate-400"
-                      }`}
+                      className={`transition-all duration-150 origin-center cursor-pointer hover:scale-125 hover:rotate-6 ${ star <= (hoverRating || rating) ? "fill-amber-400 stroke-amber-400 drop-shadow-[0_0_4px_rgba(251,191,36,0.5)]" : "stroke-slate-300 dark:stroke-slate-700 fill-transparent hover:stroke-slate-400" }`}
                     />
                   </button>
                 ))}
@@ -175,7 +171,7 @@ const WriteReviewModal = ({ isOpen, onClose, onSubmit, loading }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Pros */}
             <div className="space-y-2">
-              <label className="block text-[10px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-450">
+              <label className="block text-[10px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
                 Pros (What did you love?)
               </label>
               <div className="flex gap-2">
@@ -185,7 +181,7 @@ const WriteReviewModal = ({ isOpen, onClose, onSubmit, loading }) => {
                   onChange={(e) => setProInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddPro())}
                   placeholder="e.g., Fast delivery, Premium feel"
-                  className="flex-1 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs bg-transparent outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 dark:text-white"
+                  className="flex-1 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs bg-transparent outline-none dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                 />
                 <button
                   type="button"
@@ -216,7 +212,7 @@ const WriteReviewModal = ({ isOpen, onClose, onSubmit, loading }) => {
 
             {/* Cons */}
             <div className="space-y-2">
-              <label className="block text-[10px] font-black uppercase tracking-widest text-rose-600 dark:text-rose-450">
+              <label className="block text-[10px] font-black uppercase tracking-widest text-rose-600 dark:text-rose-400">
                 Cons (Any improvements?)
               </label>
               <div className="flex gap-2">
@@ -226,7 +222,7 @@ const WriteReviewModal = ({ isOpen, onClose, onSubmit, loading }) => {
                   onChange={(e) => setConInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddCon())}
                   placeholder="e.g., Short cable, Heavy"
-                  className="flex-1 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs bg-transparent outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 dark:text-white"
+                  className="flex-1 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs bg-transparent outline-none dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                 />
                 <button
                   type="button"
@@ -266,7 +262,7 @@ const WriteReviewModal = ({ isOpen, onClose, onSubmit, loading }) => {
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="Tell us about the design, fit, delivery speed, or performance. How are you using this product?"
-              className="w-full border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm resize-none outline-none transition duration-200 focus:border-slate-800 dark:focus:border-indigo-500 dark:bg-slate-950 dark:text-white"
+              className="w-full border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm resize-none outline-none transition duration-200 dark: dark:bg-slate-950 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
             />
             <div className="flex justify-between items-center text-[10px] text-slate-400">
               <span>Min 10 characters</span>
@@ -302,14 +298,14 @@ const WriteReviewModal = ({ isOpen, onClose, onSubmit, loading }) => {
                       {media.type === "image" ? (
                         <img src={media.url} alt="upload" className="w-full h-full object-cover" />
                       ) : (
-                        <div className="w-full h-full bg-slate-900 flex items-center justify-center text-white text-[8px] font-black uppercase">
+                        <div className="w-full h-full bg-slate-900 flex items-center justify-center text-slate-100 dark:text-white text-[8px] font-black uppercase">
                           Video
                         </div>
                       )}
                       <button
                         type="button"
                         onClick={() => handleRemoveMedia(index)}
-                        className="absolute -top-1 -right-1 bg-rose-600 text-white rounded-full p-0.5 shadow hover:scale-110 transition cursor-pointer"
+                        className="absolute -top-1 -right-1 bg-rose-600 text-slate-100 dark:text-white rounded-full p-0.5 shadow hover:scale-110 transition cursor-pointer"
                       >
                         <X size={8} />
                       </button>
@@ -329,7 +325,7 @@ const WriteReviewModal = ({ isOpen, onClose, onSubmit, loading }) => {
                 type="checkbox"
                 checked={anonymous}
                 onChange={(e) => setAnonymous(e.target.checked)}
-                className="rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 h-4.5 w-4.5 dark:bg-slate-950 dark:border-slate-800 cursor-pointer"
+                className="rounded text-indigo-600 border-slate-300 h-4.5 w-4.5 dark:bg-slate-950 dark:border-slate-800 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
               />
               <div className="text-left">
                 <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">Post Anonymously</span>
@@ -348,7 +344,7 @@ const WriteReviewModal = ({ isOpen, onClose, onSubmit, loading }) => {
               <button
                 type="submit"
                 disabled={loading}
-                className="px-5 py-2.5 bg-slate-950 dark:bg-indigo-600 hover:bg-slate-800 dark:hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-black uppercase tracking-wider rounded-xl transition active:scale-95 flex items-center gap-1.5 shadow cursor-pointer"
+                className="px-5 py-2.5 bg-slate-950 dark:bg-indigo-600 hover:bg-slate-800 dark:hover:bg-indigo-500 disabled:opacity-50 text-slate-100 dark:text-white text-xs font-black uppercase tracking-wider rounded-xl transition active:scale-95 flex items-center gap-1.5 shadow cursor-pointer"
               >
                 {loading ? "Posting..." : "Submit Review"}
               </button>

@@ -18,7 +18,9 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  RotateCcw
+  RotateCcw,
+  Sun,
+  Moon
 } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import axios from "axios";
@@ -48,6 +50,21 @@ const App = () => {
   const [seller, setSeller] = useState(
     JSON.parse(localStorage.getItem("seller_info")) || null
   );
+
+  const [theme, setTheme] = useState(() => {
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme) return savedTheme;
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  });
+
+  useEffect(() => {
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+    localStorage.setItem("theme", theme);
+  }, [theme]);
 
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -191,8 +208,8 @@ const App = () => {
   };
 
   return (
-    <div className={`bg-slate-50/50 min-h-screen flex flex-col antialiased ${token ? "h-[100dvh] overflow-hidden" : ""}`}>
-      <ToastContainer position="top-right" autoClose={3000} />
+    <div className={`bg-slate-50/50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col antialiased transition-colors duration-200 ${token ? "h-[100dvh] overflow-hidden" : ""}`}>
+      <ToastContainer position="top-right" autoClose={3000} theme={theme} />
       {token === "" ? (
         <Routes>
           <Route path="/" element={<Landing />} />
@@ -205,28 +222,24 @@ const App = () => {
           
           {/* Mobile Overlay backdrop */}
           <div 
-            className={`fixed inset-0 z-40 bg-slate-950/45 backdrop-blur-xs transition-opacity lg:hidden ${
-              isMobileSidebarOpen ? "opacity-100 visible" : "opacity-0 invisible pointer-events-none"
-            }`}
+            className={`fixed inset-0 z-40 bg-slate-950/45 backdrop-blur-xs transition-opacity lg:hidden ${ isMobileSidebarOpen ? "opacity-100 visible" : "opacity-0 invisible pointer-events-none" }`}
             onClick={() => setIsMobileSidebarOpen(false)}
           />
 
           {/* Left Sidebar */}
           <aside 
-            className={`fixed inset-y-0 left-0 z-35 bg-[#0F172A] border-r border-slate-800 flex flex-col justify-between text-slate-300 shrink-0 transform transition-all duration-300 ease-in-out lg:translate-x-0 ${
-              isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-            } ${isSidebarCollapsed ? "lg:w-20" : "lg:w-64"} w-64 overscroll-y-contain`}
+            className={`fixed inset-y-0 left-0 z-35 bg-[#0F172A] border-r border-slate-800 flex flex-col justify-between text-slate-300 shrink-0 transform transition-all duration-300 ease-in-out lg:translate-x-0 ${ isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0" } ${isSidebarCollapsed ? "lg:w-20" : "lg:w-64"} w-64 overscroll-y-contain`}
           >
             <div className="p-4 lg:p-6 space-y-6 flex-1 flex flex-col min-h-0">
               
               {/* Logo Section */}
               <div className="flex items-center gap-3">
                 <div className="h-9 w-9 rounded-xl border border-slate-800 bg-slate-950 flex items-center justify-center shrink-0">
-                  <Logo variant="icon" className="h-full w-full p-1 text-white" />
+                  <Logo variant="icon" className="h-full w-full p-1 text-slate-100 dark:text-white" />
                 </div>
                 {!isSidebarCollapsed && (
                   <div className="flex flex-col leading-none transition-opacity duration-200">
-                    <span className="text-sm font-extrabold text-white tracking-tight">CartNOW</span>
+                    <span className="text-sm font-extrabold text-slate-100 dark:text-white tracking-tight">CartNOW</span>
                     <span className="text-[10px] text-orange-500 font-black uppercase tracking-wider mt-0.5">Seller Hub</span>
                   </div>
                 )}
@@ -275,11 +288,7 @@ const App = () => {
                         setIsMobileSidebarOpen(false);
                       }}
                       title={isSidebarCollapsed ? item.label : undefined}
-                      className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer ${
-                        isActive
-                          ? "bg-[#FF5100] text-white shadow-md shadow-orange-600/25"
-                          : "hover:bg-slate-800 hover:text-white text-slate-400"
-                      } ${isSidebarCollapsed ? "justify-center" : ""}`}
+                      className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer ${ isActive ? "bg-brand text-slate-100 dark:text-white shadow-md shadow-orange-600/25" : "hover:bg-slate-800 hover:text-white text-slate-400" } ${isSidebarCollapsed ? "justify-center" : ""}`}
                     >
                       <Icon size={14} className="shrink-0" />
                       {!isSidebarCollapsed && <span className="truncate">{item.label}</span>}
@@ -296,12 +305,10 @@ const App = () => {
                   navigate("/profile");
                   setIsMobileSidebarOpen(false);
                 }}
-                className={`w-full flex items-center justify-between p-2 rounded-xl bg-slate-955 bg-slate-950 border border-slate-800 hover:bg-slate-800 transition cursor-pointer ${
-                  isSidebarCollapsed ? "justify-center" : ""
-                }`}
+                className={`w-full flex items-center justify-between p-2 rounded-xl bg-slate-950 bg-slate-950 border border-slate-800 hover:bg-slate-800 transition cursor-pointer ${ isSidebarCollapsed ? "justify-center" : "" }`}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="h-8 w-8 rounded-lg bg-[#FF5100] flex items-center justify-center text-white font-black text-xs uppercase shrink-0">
+                  <div className="h-8 w-8 rounded-lg bg-brand flex items-center justify-center text-slate-100 dark:text-white font-black text-xs uppercase shrink-0">
                     {seller?.name ? seller.name[0] : "M"}
                   </div>
                   {!isSidebarCollapsed && (
@@ -320,11 +327,9 @@ const App = () => {
           </aside>
  
           {/* Right Main Panel */}
-          <div className={`flex-1 flex flex-col overflow-hidden bg-slate-50/20 pb-16 sm:pb-0 transition-all duration-300 ${
-            isSidebarCollapsed ? "lg:pl-20" : "lg:pl-64"
-          }`}>
+          <div className={`flex-1 flex flex-col overflow-hidden bg-slate-50/20 pb-16 sm:pb-0 transition-all duration-300 ${ isSidebarCollapsed ? "lg:pl-20" : "lg:pl-64" }`}>
             {/* Top Header */}
-            <header className="h-16 border-b border-slate-200/80 bg-white px-4 md:px-6 flex items-center justify-between shrink-0 shadow-sm sticky top-0 z-20">
+            <header className="h-16 border-b border-slate-200/80 bg-white dark:bg-slate-900 px-4 md:px-6 flex items-center justify-between shrink-0 shadow-sm sticky top-0 z-20">
               
               {/* Left Side: Title & Menu toggle */}
               <div className="flex items-center">
@@ -335,7 +340,7 @@ const App = () => {
                 >
                   <Menu size={18} />
                 </button>
-                <h1 className="text-sm font-black text-slate-900 tracking-tight capitalize hidden sm:block">
+                <h1 className="text-sm font-black text-slate-900 dark:text-slate-100 tracking-tight capitalize hidden sm:block">
                   {activeSubTab.replace("-", " ")} Hub
                 </h1>
               </div>
@@ -346,25 +351,34 @@ const App = () => {
                 <input
                   type="text"
                   placeholder="Search references..."
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-3.5 py-1.5 text-xs font-semibold outline-none focus:border-slate-800 transition"
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-8 pr-3.5 py-1.5 text-xs font-semibold outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                 />
               </div>
 
               {/* Right: Actions */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 font-semibold">
+                {/* Theme Toggle */}
+                <button
+                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                  className="p-2 text-slate-500 hover:text-slate-850 dark:hover:text-white transition cursor-pointer rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800"
+                  title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                >
+                  {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+                </button>
+
                 <button
                   onClick={() => navigate("/notifications")}
                   className="relative p-2 text-slate-500 hover:text-slate-800 transition cursor-pointer rounded-xl hover:bg-slate-50"
                   title="Logs Feed"
                 >
                   <Bell size={16} />
-                  <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-[#FF5100]" />
+                  <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-brand" />
                 </button>
 
                 <div className="relative">
                   <button
                     onClick={() => setShowDropdown(!showDropdown)}
-                    className="flex h-8 w-8 rounded-xl bg-slate-900 border border-slate-850 items-center justify-center text-white font-black text-xs uppercase cursor-pointer hover:bg-slate-800 transition shadow-sm"
+                    className="flex h-8 w-8 rounded-xl bg-slate-900 border border-slate-800 items-center justify-center text-slate-100 dark:text-white font-black text-xs uppercase cursor-pointer hover:bg-slate-800 transition shadow-sm"
                   >
                     {seller?.name ? seller.name[0] : "M"}
                   </button>
@@ -372,7 +386,7 @@ const App = () => {
                   {showDropdown && (
                     <>
                       <div className="fixed inset-0 z-40" onClick={() => setShowDropdown(false)}></div>
-                      <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-lg z-50 text-slate-800 py-1.5 animate-fadeIn">
+                      <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-lg z-50 text-slate-800 dark:text-slate-100 py-1.5 animate-fadeIn">
                         <button
                           onClick={() => {
                             navigate("/profile");
@@ -389,7 +403,7 @@ const App = () => {
                             logout();
                             setShowDropdown(false);
                           }}
-                          className="w-full text-left px-4 py-2 text-xs font-bold text-red-650 hover:bg-red-50/50 transition cursor-pointer flex items-center gap-2"
+                          className="w-full text-left px-4 py-2 text-xs font-bold text-red-600 hover:bg-red-50/50 transition cursor-pointer flex items-center gap-2"
                         >
                           <User size={14} className="text-red-500" />
                           <span>Sign Out</span>
@@ -521,7 +535,7 @@ const App = () => {
           </div>
 
           {/* Sticky Mobile Bottom Navigation Bar */}
-          <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-200 flex justify-around items-center py-2.5 shadow-lg sm:hidden">
+          <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex justify-around items-center py-2.5 shadow-lg sm:hidden">
             {[
               { label: "Dashboard", path: "/", icon: BarChart3, tab: "dashboard" },
               { label: "Products", path: "/products", icon: Layers, tab: "products" },
@@ -534,9 +548,7 @@ const App = () => {
                 <button
                   key={tab.label}
                   onClick={() => navigate(tab.path)}
-                  className={`flex flex-col items-center gap-0.5 text-[9px] font-extrabold uppercase tracking-wider transition ${
-                    isActive ? "text-[#FF5100]" : "text-slate-400 hover:text-slate-600"
-                  }`}
+                  className={`flex flex-col items-center gap-0.5 text-[9px] font-extrabold uppercase tracking-wider transition ${ isActive ? "text-brand" : "text-slate-400 hover:text-slate-600" }`}
                 >
                   <Icon size={16} />
                   <span>{tab.label}</span>

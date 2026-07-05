@@ -146,8 +146,8 @@ const Orders = ({ token }) => {
         <div className="space-y-1">
           <p className="text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">Dispatch & Operations Control</p>
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-slate-950 to-slate-800 dark:from-indigo-650 dark:to-indigo-500 flex items-center justify-center shadow-md">
-              <ShoppingBag size={18} className="text-white" />
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-slate-950 to-slate-800 dark:from-indigo-600 dark:to-indigo-500 flex items-center justify-center shadow-md">
+              <ShoppingBag size={18} className="text-slate-100 dark:text-white" />
             </div>
             <h2 className="text-2xl font-black tracking-tight bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-900 bg-clip-text text-transparent dark:from-white dark:via-slate-200 dark:to-indigo-300">
               Orders Command Center
@@ -157,8 +157,8 @@ const Orders = ({ token }) => {
 
         <div className="flex items-center gap-3">
           {overdueCount > 0 && (
-            <div className="flex items-center gap-2 bg-rose-50 dark:bg-rose-950/20 border border-rose-150 dark:border-rose-900/30 rounded-xl px-4 py-2 shrink-0 shadow-sm animate-pulse">
-              <AlertTriangle size={14} className="text-rose-600 dark:text-rose-455" />
+            <div className="flex items-center gap-2 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/30 rounded-xl px-4 py-2 shrink-0 shadow-sm animate-pulse">
+              <AlertTriangle size={14} className="text-rose-600 dark:text-rose-500" />
               <span className="text-[10px] font-black text-rose-700 dark:text-rose-400 uppercase tracking-widest">
                 {overdueCount} SLA Overdue
               </span>
@@ -168,7 +168,7 @@ const Orders = ({ token }) => {
           <button 
             onClick={fetchAllOrder}
             disabled={isRefreshing}
-            className="p-3 rounded-xl bg-white dark:bg-[#151b26] border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition duration-300 cursor-pointer shadow-sm hover:scale-105 active:scale-95 disabled:opacity-50 flex items-center justify-center"
+            className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition duration-300 cursor-pointer shadow-sm hover:scale-105 active:scale-95 disabled:opacity-50 flex items-center justify-center"
             title="Refresh Orders List"
           >
             <RefreshCw size={14} className={isRefreshing ? "animate-spin text-indigo-500" : ""} />
@@ -193,7 +193,7 @@ const Orders = ({ token }) => {
             val: active.length,
             sub: "In delivery cycle",
             icon: Truck,
-            color: "text-indigo-650 dark:text-indigo-400 bg-indigo-500/10 border-indigo-500/15"
+            color: "text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 border-indigo-500/15"
           },
           {
             key: "delivered",
@@ -201,7 +201,7 @@ const Orders = ({ token }) => {
             val: delivered.length,
             sub: "Delivered to client",
             icon: CheckCircle2,
-            color: "text-emerald-600 dark:text-emerald-450 bg-emerald-500/10 border-emerald-500/15"
+            color: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/15"
           },
           {
             key: "overdue",
@@ -209,7 +209,7 @@ const Orders = ({ token }) => {
             val: overdueCount,
             sub: "Action required",
             icon: AlertOctagon,
-            color: "text-rose-600 dark:text-rose-455 bg-rose-500/10 border-rose-500/15"
+            color: "text-rose-600 dark:text-rose-500 bg-rose-500/10 border-rose-500/15"
           }
         ].map(card => {
           const isSelected = statusFilter === card.key;
@@ -218,26 +218,18 @@ const Orders = ({ token }) => {
             <div
               key={card.key}
               onClick={() => setStatusFilter(card.key)}
-              className={`p-5 rounded-2xl border transition-all duration-300 cursor-pointer flex items-center justify-between group relative overflow-hidden ${
-                isSelected 
-                  ? "bg-slate-950 border-slate-950 text-white dark:bg-indigo-650 dark:border-indigo-500 shadow-md scale-102" 
-                  : "bg-white/80 dark:bg-[#151b26]/70 backdrop-blur-md border-slate-200/60 dark:border-slate-850 hover:border-slate-300 dark:hover:border-slate-700/80 shadow-xs"
-              }`}
+              className={`p-5 rounded-2xl border transition-all duration-300 cursor-pointer flex items-center justify-between group relative overflow-hidden ${ isSelected ? "bg-slate-950 border-slate-950 text-slate-100 dark:text-white dark:bg-indigo-600 dark:border-indigo-500 shadow-md scale-102" : "bg-white/80 dark:bg-slate-900/70 backdrop-blur-md border-slate-200/60 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700/80 shadow-xs" }`}
             >
               {isSelected && (
                 <div className="absolute inset-0 bg-[radial-gradient(circle_120px_at_100%_0%,rgba(99,102,241,0.15),transparent)] pointer-events-none" />
               )}
               <div className="space-y-2 relative z-10 text-left">
-                <span className={`text-[9px] font-black uppercase tracking-widest ${
-                  isSelected ? "text-slate-300 dark:text-indigo-100" : "text-slate-400 dark:text-slate-500"
-                }`}>
+                <span className={`text-[9px] font-black uppercase tracking-widest ${ isSelected ? "text-slate-300 dark:text-indigo-100" : "text-slate-400 dark:text-slate-500" }`}>
                   {card.label}
                 </span>
                 <div className="flex items-baseline gap-2">
                   <span className="text-2xl font-black tracking-tight">{card.val}</span>
-                  <span className={`text-[10px] font-black uppercase tracking-wider ${
-                    isSelected ? "text-slate-350 dark:text-indigo-200" : "text-slate-450 dark:text-slate-500"
-                  }`}>
+                  <span className={`text-[10px] font-black uppercase tracking-wider ${ isSelected ? "text-slate-300 dark:text-indigo-200" : "text-slate-400 dark:text-slate-500" }`}>
                     {card.sub}
                   </span>
                 </div>
@@ -251,7 +243,7 @@ const Orders = ({ token }) => {
       </div>
 
       {/* ── Control Center Filter & Search Bar ── */}
-      <div className="bg-white/80 dark:bg-[#151b26]/70 backdrop-blur-md border border-slate-200/60 dark:border-slate-850 rounded-2xl p-4 flex flex-col xl:flex-row xl:items-center justify-between gap-4 shadow-sm shrink-0">
+      <div className="bg-white/80 dark:bg-slate-900/70 backdrop-blur-md border border-slate-200/60 dark:border-slate-800 rounded-2xl p-4 flex flex-col xl:flex-row xl:items-center justify-between gap-4 shadow-sm shrink-0">
         
         {/* Date presets block */}
         <div className="flex flex-wrap items-center gap-3">
@@ -271,11 +263,7 @@ const Orders = ({ token }) => {
               <button
                 key={p.id}
                 onClick={() => p.id === "custom" ? setDatePreset("custom") : handlePreset(p.id)}
-                className={`px-3.5 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all duration-250 cursor-pointer ${
-                  datePreset === p.id
-                    ? "bg-slate-950 text-white dark:bg-indigo-650 dark:text-white shadow"
-                    : "text-slate-500 dark:text-slate-400 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white"
-                }`}
+                className={`px-3.5 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all duration-250 cursor-pointer ${ datePreset === p.id ? "bg-slate-950 text-slate-100 dark:text-white dark:bg-indigo-600 dark:text-white shadow" : "text-slate-500 dark:text-slate-400 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white" }`}
               >
                 {p.label}
               </button>
@@ -290,7 +278,7 @@ const Orders = ({ token }) => {
                 onChange={e => setStartDate(e.target.value)}
                 className="bg-transparent text-[9px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-200 outline-none cursor-pointer" 
               />
-              <span className="text-slate-450 font-black text-[9px]">→</span>
+              <span className="text-slate-400 font-black text-[9px]">→</span>
               <input 
                 type="date" 
                 value={endDate} 
@@ -319,18 +307,18 @@ const Orders = ({ token }) => {
             placeholder="Search reference ID, client name, phone..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-slate-50 dark:bg-slate-900/50 outline-none transition focus:bg-white dark:focus:bg-[#111827] focus:border-indigo-650 dark:focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 font-semibold text-slate-800 dark:text-white placeholder:text-slate-405"
+            className="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-slate-50 dark:bg-slate-900/50 outline-none transition focus:bg-white dark:focus:bg-gray-900 dark: font-semibold text-slate-800 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
           />
         </div>
       </div>
 
       {/* ── Modern Operations Data Table ── */}
-      <div className="flex-1 min-h-0 bg-white dark:bg-[#151b26] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl flex flex-col overflow-hidden shadow-xs">
+      <div className="flex-1 min-h-0 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl flex flex-col overflow-hidden shadow-xs">
         
         {/* Table Header Section */}
         <div className="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0 bg-slate-50/50 dark:bg-slate-900/10">
           <span className="text-xs font-black uppercase tracking-widest text-slate-400">Logistics Manifest</span>
-          <span className="text-[10px] font-black text-indigo-650 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-2.5 py-1 rounded-lg border border-indigo-100 dark:border-indigo-900/30">
+          <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-2.5 py-1 rounded-lg border border-indigo-100 dark:border-indigo-900/30">
             {filtered.length} Dispatches Found
           </span>
         </div>
@@ -339,12 +327,12 @@ const Orders = ({ token }) => {
         <div className="flex-1 overflow-auto custom-scrollbar">
           {filtered.length === 0 ? (
             <div className="h-64 flex flex-col items-center justify-center gap-2 text-slate-400">
-              <Inbox size={28} className="text-slate-350 dark:text-slate-700" />
-              <span className="text-xs font-black uppercase tracking-widest text-slate-450">No operational dispatches</span>
+              <Inbox size={28} className="text-slate-300 dark:text-slate-700" />
+              <span className="text-xs font-black uppercase tracking-widest text-slate-400">No operational dispatches</span>
             </div>
           ) : (
             <table className="w-full text-left border-collapse text-xs">
-              <thead className="sticky top-0 z-20 bg-white dark:bg-[#151b26] border-b border-slate-200/80 dark:border-slate-800 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(31,41,55,1)]">
+              <thead className="sticky top-0 z-20 bg-white dark:bg-slate-900 border-b border-slate-200/80 dark:border-slate-800 shadow-[0_1px_0_0_rgba(226,232,240,1)] dark:shadow-[0_1px_0_0_rgba(31,41,55,1)]">
                 <tr className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">
                   <th className="py-3 px-4.5">Order ID</th>
                   <th className="py-3 px-4">Customer</th>
@@ -357,7 +345,7 @@ const Orders = ({ token }) => {
                   <th className="py-3 px-4 text-center">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-150 dark:divide-slate-850 font-semibold text-slate-700 dark:text-slate-300">
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800 font-semibold text-slate-700 dark:text-slate-300">
                 {filtered.map((order) => {
                   const shortId = order._id.slice(-6).toUpperCase();
                   const customerName = `${order.address.firstName} ${order.address.lastName || ""}`;
@@ -376,16 +364,14 @@ const Orders = ({ token }) => {
                   return (
                     <tr 
                       key={order._id}
-                      className={`hover:bg-slate-50/70 dark:hover:bg-slate-900/30 transition duration-150 group/row ${
-                        isSlaCritical ? "bg-rose-500/[0.01] dark:bg-rose-500/[0.005]" : ""
-                      }`}
+                      className={`hover:bg-slate-50/70 dark:hover:bg-slate-900/30 transition duration-150 group/row ${ isSlaCritical ? "bg-rose-500/[0.01] dark:bg-rose-500/[0.005]" : "" }`}
                     >
                       {/* Order ID & SLA Warnings */}
                       <td className="py-2.5 px-4.5">
                         <div className="flex items-center gap-2">
                           <span 
                             onClick={() => handleOpenDrawer(order)}
-                            className="font-mono font-black text-[11px] text-slate-900 dark:text-white hover:text-indigo-650 dark:hover:text-indigo-400 cursor-pointer transition"
+                            className="font-mono font-black text-[11px] text-slate-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer transition"
                           >
                             #{shortId}
                           </span>
@@ -403,7 +389,7 @@ const Orders = ({ token }) => {
 
                       {/* Customer Details */}
                       <td className="py-2.5 px-4 truncate max-w-[150px]">
-                        <span className="font-bold text-slate-905 dark:text-slate-200">{customerName}</span>
+                        <span className="font-bold text-slate-900 dark:text-slate-200">{customerName}</span>
                       </td>
 
                       {/* Product details */}
@@ -435,14 +421,10 @@ const Orders = ({ token }) => {
 
                           return (
                             <div className="flex flex-col gap-0.5">
-                              <span className="text-slate-850 dark:text-slate-200 font-bold">
+                              <span className="text-slate-800 dark:text-slate-200 font-bold">
                                 {assignedDriver.name}
                               </span>
-                              <span className={`text-[9px] font-black uppercase tracking-wider ${
-                                isAwaiting
-                                  ? "text-amber-500 animate-pulse"
-                                  : "text-slate-400 dark:text-slate-500"
-                              }`}>
+                              <span className={`text-[9px] font-black uppercase tracking-wider ${ isAwaiting ? "text-amber-500 animate-pulse" : "text-slate-400 dark:text-slate-500" }`}>
                                 {isAwaiting ? "Awaiting Response" : status}
                               </span>
                             </div>
@@ -453,13 +435,13 @@ const Orders = ({ token }) => {
                       {/* Status Badge */}
                       <td className="py-2.5 px-4">
                         {(() => {
-                          let badgeClass = "bg-slate-100 border-slate-200 text-slate-650";
-                          if (order.orderStatus === "Order Placed") badgeClass = "bg-blue-50 dark:bg-blue-950/20 border-blue-100 dark:border-blue-900/30 text-blue-700 dark:text-blue-405";
+                          let badgeClass = "bg-slate-100 border-slate-200 text-slate-600";
+                          if (order.orderStatus === "Order Placed") badgeClass = "bg-blue-50 dark:bg-blue-950/20 border-blue-100 dark:border-blue-900/30 text-blue-700 dark:text-blue-400";
                           else if (order.orderStatus === "Packed") badgeClass = "bg-indigo-50 dark:bg-indigo-950/20 border-indigo-100 dark:border-indigo-900/30 text-indigo-700 dark:text-indigo-400";
                           else if (order.orderStatus === "Shipped") badgeClass = "bg-purple-50 dark:bg-purple-950/20 border-purple-100 dark:border-purple-900/30 text-purple-700 dark:text-purple-400";
-                          else if (order.orderStatus === "Out for Delivery") badgeClass = "bg-amber-50 dark:bg-amber-950/20 border-amber-100 dark:border-amber-900/30 text-amber-700 dark:text-amber-450";
-                          else if (order.orderStatus === "Delivered") badgeClass = "bg-emerald-50 dark:bg-emerald-950/20 border-emerald-100 dark:border-emerald-900/30 text-emerald-700 dark:text-emerald-450";
-                          else if (order.orderStatus === "Cancelled") badgeClass = "bg-rose-50 dark:bg-rose-950/20 border-rose-100 dark:border-rose-900/30 text-rose-700 dark:text-rose-455";
+                          else if (order.orderStatus === "Out for Delivery") badgeClass = "bg-amber-50 dark:bg-amber-950/20 border-amber-100 dark:border-amber-900/30 text-amber-700 dark:text-amber-400";
+                          else if (order.orderStatus === "Delivered") badgeClass = "bg-emerald-50 dark:bg-emerald-950/20 border-emerald-100 dark:border-emerald-900/30 text-emerald-700 dark:text-emerald-400";
+                          else if (order.orderStatus === "Cancelled") badgeClass = "bg-rose-50 dark:bg-rose-950/20 border-rose-100 dark:border-rose-900/30 text-rose-700 dark:text-rose-500";
 
                           return (
                             <span className={`inline-flex items-center px-2 py-0.5 rounded-md border text-[9px] font-black uppercase tracking-widest ${badgeClass}`}>
@@ -474,9 +456,7 @@ const Orders = ({ token }) => {
                         <div className="flex items-center gap-2 w-20">
                           <div className="h-1.5 flex-1 bg-slate-100 dark:bg-slate-900 rounded-full overflow-hidden">
                             <div 
-                              className={`h-full rounded-full transition-all duration-300 ${
-                                order.orderStatus === "Delivered" ? "bg-emerald-500" : "bg-blue-600"
-                              }`}
+                              className={`h-full rounded-full transition-all duration-300 ${ order.orderStatus === "Delivered" ? "bg-emerald-500" : "bg-blue-600" }`}
                               style={{ width: `${progress}%` }} 
                             />
                           </div>

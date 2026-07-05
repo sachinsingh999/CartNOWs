@@ -586,7 +586,7 @@ const Discover = () => {
                   const el = document.getElementById("search-anchor");
                   el?.scrollIntoView({ behavior: "smooth" });
                 }}
-                className="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-650 hover:from-blue-700 hover:to-indigo-700 text-white font-extrabold text-sm uppercase tracking-wider rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all duration-200 border-none cursor-pointer"
+                className="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-slate-100 dark:text-white font-extrabold text-sm uppercase tracking-wider rounded-2xl shadow-lg shadow-blue-500/20 active:scale-95 transition-all duration-200 border-none cursor-pointer"
               >
                 Explore Now
               </button>
@@ -597,7 +597,7 @@ const Discover = () => {
                   const el = document.getElementById("recommended-section");
                   el?.scrollIntoView({ behavior: "smooth" });
                 }}
-                className="px-8 py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-850 font-extrabold text-sm uppercase tracking-wider rounded-2xl shadow-sm active:scale-95 transition-all duration-200 cursor-pointer"
+                className="px-8 py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 font-extrabold text-sm uppercase tracking-wider rounded-2xl shadow-sm active:scale-95 transition-all duration-200 cursor-pointer"
               >
                 Trending Today
               </button>
@@ -607,15 +607,15 @@ const Discover = () => {
             <div className="grid grid-cols-3 gap-6 pt-8 border-t border-slate-200/50 dark:border-slate-800/60">
               <div>
                 <p className="text-3xl font-black text-slate-900 dark:text-white">500K+</p>
-                <p className="text-[10px] uppercase tracking-widest font-black text-slate-450 dark:text-slate-500 mt-1">Products Available</p>
+                <p className="text-[10px] uppercase tracking-widest font-black text-slate-400 dark:text-slate-500 mt-1">Products Available</p>
               </div>
               <div>
                 <p className="text-3xl font-black text-slate-900 dark:text-white">50K+</p>
-                <p className="text-[10px] uppercase tracking-widest font-black text-slate-450 dark:text-slate-500 mt-1">Happy Customers</p>
+                <p className="text-[10px] uppercase tracking-widest font-black text-slate-400 dark:text-slate-500 mt-1">Happy Customers</p>
               </div>
               <div>
                 <p className="text-3xl font-black text-slate-900 dark:text-white">1000+</p>
-                <p className="text-[10px] uppercase tracking-widest font-black text-slate-450 dark:text-slate-500 mt-1">Global Brands</p>
+                <p className="text-[10px] uppercase tracking-widest font-black text-slate-400 dark:text-slate-500 mt-1">Global Brands</p>
               </div>
             </div>
           </div>
@@ -631,7 +631,7 @@ const Discover = () => {
               {/* Blur accent */}
               <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-blue-500/5 to-purple-500/5 pointer-events-none" />
 
-              <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4 border border-slate-100 dark:border-slate-850">
+              <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4 border border-slate-100 dark:border-slate-800">
                 <img
                   src="https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=500&auto=format&fit=crop&q=80"
                   alt="Feature Visual"
@@ -643,7 +643,7 @@ const Discover = () => {
                   <span className="text-[10px] font-black uppercase text-blue-600 tracking-wider">Top AI Pick</span>
                   <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/20 px-2 py-0.5 rounded">98% Match</span>
                 </div>
-                <h3 className="font-extrabold text-[15px] text-slate-850 dark:text-white">AirPods Pro Minimalist</h3>
+                <h3 className="font-extrabold text-[15px] text-slate-800 dark:text-white">AirPods Pro Minimalist</h3>
                 <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 mt-0.5">Rs. 24,900 • Apple Store</p>
               </div>
             </motion.div>
@@ -663,7 +663,7 @@ const Discover = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search products, categories, brands, collections..."
-              className="w-full pl-12 pr-10 py-3.5 bg-slate-100/75 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 rounded-2xl text-xs font-bold text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-600/50 dark:focus:ring-blue-500/50 focus:border-transparent transition-all"
+              className="w-full pl-12 pr-10 py-3.5 bg-slate-100/75 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 rounded-2xl text-xs font-bold text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 dark: transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
             />
             {searchQuery && (
               <button
@@ -683,11 +683,7 @@ const Discover = () => {
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-4.5 py-2.5 rounded-xl text-[10.5px] font-extrabold uppercase tracking-wider transition-all duration-200 border-none cursor-pointer shrink-0 ${
-                    selectedCategory === cat
-                      ? "bg-blue-600 text-white shadow-md shadow-blue-500/10"
-                      : "bg-slate-100 dark:bg-slate-900 text-slate-500 dark:text-slate-450 hover:bg-slate-200/60 dark:hover:bg-slate-850"
-                  }`}
+                  className={`px-4.5 py-2.5 rounded-xl text-[10.5px] font-extrabold uppercase tracking-wider transition-all duration-200 border-none cursor-pointer shrink-0 ${ selectedCategory === cat ? "bg-blue-600 text-slate-100 dark:text-white shadow-md shadow-blue-500/10" : "bg-slate-100 dark:bg-slate-900 text-slate-500 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800" }`}
                 >
                   {cat}
                 </button>
@@ -700,7 +696,7 @@ const Discover = () => {
               <div className="relative">
                 <button
                   onClick={() => setOpenDropdown(openDropdown === "brand" ? null : "brand")}
-                  className="px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-350 bg-white dark:bg-slate-900 text-[10.5px] font-black uppercase tracking-wider flex items-center gap-1.5 cursor-pointer active:scale-98 transition-all"
+                  className="px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900 text-[10.5px] font-black uppercase tracking-wider flex items-center gap-1.5 cursor-pointer active:scale-98 transition-all"
                 >
                   <span>Brand</span>
                   <ChevronDown size={12} className={`transition-transform ${openDropdown === "brand" ? "rotate-180" : ""}`} />
@@ -714,9 +710,7 @@ const Discover = () => {
                           setSelectedBrand(b);
                           setOpenDropdown(null);
                         }}
-                        className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition ${
-                          selectedBrand === b ? "bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 font-extrabold" : ""
-                        }`}
+                        className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition ${ selectedBrand === b ? "bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 font-extrabold" : "" }`}
                       >
                         {b}
                       </button>
@@ -729,7 +723,7 @@ const Discover = () => {
               <div className="relative">
                 <button
                   onClick={() => setOpenDropdown(openDropdown === "price" ? null : "price")}
-                  className="px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-350 bg-white dark:bg-slate-900 text-[10.5px] font-black uppercase tracking-wider flex items-center gap-1.5 cursor-pointer active:scale-98 transition-all"
+                  className="px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900 text-[10.5px] font-black uppercase tracking-wider flex items-center gap-1.5 cursor-pointer active:scale-98 transition-all"
                 >
                   <span>Price</span>
                   <ChevronDown size={12} className={`transition-transform ${openDropdown === "price" ? "rotate-180" : ""}`} />
@@ -749,9 +743,7 @@ const Discover = () => {
                           setSelectedPrice(p.id);
                           setOpenDropdown(null);
                         }}
-                        className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition ${
-                          selectedPrice === p.id ? "bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 font-extrabold" : ""
-                        }`}
+                        className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition ${ selectedPrice === p.id ? "bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 font-extrabold" : "" }`}
                       >
                         {p.label}
                       </button>
@@ -764,7 +756,7 @@ const Discover = () => {
               <div className="relative">
                 <button
                   onClick={() => setOpenDropdown(openDropdown === "rating" ? null : "rating")}
-                  className="px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-350 bg-white dark:bg-slate-900 text-[10.5px] font-black uppercase tracking-wider flex items-center gap-1.5 cursor-pointer active:scale-98 transition-all"
+                  className="px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900 text-[10.5px] font-black uppercase tracking-wider flex items-center gap-1.5 cursor-pointer active:scale-98 transition-all"
                 >
                   <span>Rating</span>
                   <ChevronDown size={12} className={`transition-transform ${openDropdown === "rating" ? "rotate-180" : ""}`} />
@@ -782,9 +774,7 @@ const Discover = () => {
                           setSelectedRating(r.id);
                           setOpenDropdown(null);
                         }}
-                        className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition ${
-                          selectedRating === r.id ? "bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 font-extrabold" : ""
-                        }`}
+                        className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition ${ selectedRating === r.id ? "bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 font-extrabold" : "" }`}
                       >
                         {r.label}
                       </button>
@@ -797,7 +787,7 @@ const Discover = () => {
               <div className="relative">
                 <button
                   onClick={() => setOpenDropdown(openDropdown === "availability" ? null : "availability")}
-                  className="px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-350 bg-white dark:bg-slate-900 text-[10.5px] font-black uppercase tracking-wider flex items-center gap-1.5 cursor-pointer active:scale-98 transition-all"
+                  className="px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900 text-[10.5px] font-black uppercase tracking-wider flex items-center gap-1.5 cursor-pointer active:scale-98 transition-all"
                 >
                   <span>Availability</span>
                   <ChevronDown size={12} className={`transition-transform ${openDropdown === "availability" ? "rotate-180" : ""}`} />
@@ -814,9 +804,7 @@ const Discover = () => {
                           setSelectedAvailability(a.id);
                           setOpenDropdown(null);
                         }}
-                        className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition ${
-                          selectedAvailability === a.id ? "bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 font-extrabold" : ""
-                        }`}
+                        className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition ${ selectedAvailability === a.id ? "bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 font-extrabold" : "" }`}
                       >
                         {a.label}
                       </button>
@@ -830,34 +818,34 @@ const Discover = () => {
           {/* Selected Filter Chips row */}
           {activeFiltersCount > 0 && (
             <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-900">
-              <span className="text-[10px] font-black uppercase text-slate-400 dark:text-slate-550 mr-1">Active Filters:</span>
+              <span className="text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 mr-1">Active Filters:</span>
               
               {selectedCategory !== "All" && (
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-500/10 text-blue-650 dark:text-blue-350 text-[10px] font-black uppercase">
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-300 text-[10px] font-black uppercase">
                   {selectedCategory}
                   <X size={10} className="cursor-pointer" onClick={() => setSelectedCategory("All")} />
                 </span>
               )}
               {selectedBrand !== "All" && (
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-500/10 text-blue-650 dark:text-blue-350 text-[10px] font-black uppercase">
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-300 text-[10px] font-black uppercase">
                   {selectedBrand}
                   <X size={10} className="cursor-pointer" onClick={() => setSelectedBrand("All")} />
                 </span>
               )}
               {selectedPrice !== "All" && (
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-500/10 text-blue-650 dark:text-blue-350 text-[10px] font-black uppercase">
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-300 text-[10px] font-black uppercase">
                   Price Filter
                   <X size={10} className="cursor-pointer" onClick={() => setSelectedPrice("All")} />
                 </span>
               )}
               {selectedRating !== "All" && (
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-500/10 text-blue-650 dark:text-blue-350 text-[10px] font-black uppercase">
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-300 text-[10px] font-black uppercase">
                   {selectedRating === "4plus" ? "4★ & Up" : "4.5★ & Up"}
                   <X size={10} className="cursor-pointer" onClick={() => setSelectedRating("All")} />
                 </span>
               )}
               {selectedAvailability !== "All" && (
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-500/10 text-blue-650 dark:text-blue-350 text-[10px] font-black uppercase">
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-300 text-[10px] font-black uppercase">
                   In Stock
                   <X size={10} className="cursor-pointer" onClick={() => setSelectedAvailability("All")} />
                 </span>
@@ -876,7 +864,7 @@ const Discover = () => {
         <section className="text-left select-none">
           <div className="mb-6">
             <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100">Explore Collections</h2>
-            <p className="text-xs font-bold text-slate-450 mt-1">Handpicked lifestyle and product bundles.</p>
+            <p className="text-xs font-bold text-slate-400 mt-1">Handpicked lifestyle and product bundles.</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -887,7 +875,7 @@ const Discover = () => {
                   navigate(`/product?category=${col.id.toLowerCase()}`);
                   toast.info(`Opening ${col.title}! 📦`);
                 }}
-                className="group relative rounded-[32px] overflow-hidden bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-350 cursor-pointer h-[260px] flex flex-col justify-between p-6"
+                className="group relative rounded-[32px] overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-350 cursor-pointer h-[260px] flex flex-col justify-between p-6"
               >
                 <div className="absolute inset-0 z-0">
                   <img
@@ -899,7 +887,7 @@ const Discover = () => {
                 </div>
 
                 <div className="z-10 flex justify-between items-start">
-                  <span className="px-2.5 py-1 text-[9px] font-black uppercase text-white bg-blue-600 rounded-lg shadow-sm">
+                  <span className="px-2.5 py-1 text-[9px] font-black uppercase text-slate-100 dark:text-white bg-blue-600 rounded-lg shadow-sm">
                     {col.tag}
                   </span>
                   <span className="text-[10px] font-black text-emerald-400 bg-black/40 px-2 py-0.5 rounded">
@@ -907,7 +895,7 @@ const Discover = () => {
                   </span>
                 </div>
 
-                <div className="z-10 text-left text-white space-y-1">
+                <div className="z-10 text-left text-slate-100 dark:text-white space-y-1">
                   <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">{col.count}</span>
                   <h3 className="text-lg font-black">{col.title}</h3>
                   <button className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-blue-400 group-hover:text-blue-300 transition-colors mt-2 bg-transparent border-none cursor-pointer">
@@ -924,7 +912,7 @@ const Discover = () => {
         <section className="text-left select-none">
           <div className="mb-6">
             <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100">Top Categories</h2>
-            <p className="text-xs font-bold text-slate-450 mt-1">Browse and find products by category capsules.</p>
+            <p className="text-xs font-bold text-slate-400 mt-1">Browse and find products by category capsules.</p>
           </div>
 
           <div className="flex gap-4 overflow-x-auto no-scrollbar pb-3">
@@ -935,7 +923,7 @@ const Discover = () => {
                   navigate(`/product?category=${cat.name.toLowerCase()}`);
                   toast.info(`Opening ${cat.name} Category! 🛍️`);
                 }}
-                className="group shrink-0 w-44 bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800 p-4 rounded-[28px] text-center cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-350"
+                className="group shrink-0 w-44 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-[28px] text-center cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-350"
               >
                 <div className="aspect-[5/6] rounded-[20px] overflow-hidden bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-3 relative shadow-inner">
                   <span className="absolute top-2 right-2 text-[9px] font-black px-1.5 py-0.5 rounded bg-white dark:bg-slate-900 shadow-sm text-blue-600 dark:text-blue-400">
@@ -959,7 +947,7 @@ const Discover = () => {
           <div className="mb-6 flex justify-between items-end">
             <div>
               <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100">Shop By Brands</h2>
-              <p className="text-xs font-bold text-slate-455 mt-1">Top global manufacturers and official stores.</p>
+              <p className="text-xs font-bold text-slate-500 mt-1">Top global manufacturers and official stores.</p>
             </div>
           </div>
 
@@ -976,7 +964,7 @@ const Discover = () => {
                 {/* Brand header */}
                 <div className="flex justify-between items-center mb-3 z-10">
                   <span className="font-black text-sm tracking-tight">{brand.logo}</span>
-                  <span className="px-2 py-0.5 text-[8px] font-black uppercase tracking-wider rounded bg-rose-600 text-white">
+                  <span className="px-2 py-0.5 text-[8px] font-black uppercase tracking-wider rounded bg-rose-600 text-slate-100 dark:text-white">
                     {brand.discount}
                   </span>
                 </div>
@@ -1022,7 +1010,7 @@ const Discover = () => {
                 <span>Recommended</span>
                 <span className="text-blue-600 dark:text-blue-400">For You</span>
               </h2>
-              <p className="text-xs font-bold text-slate-450 mt-1">
+              <p className="text-xs font-bold text-slate-400 mt-1">
                 Handpicked options chosen by CartNow AI.
               </p>
             </div>
@@ -1038,11 +1026,7 @@ const Discover = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveRecommendedTab(tab.id)}
-                  className={`px-3.5 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition cursor-pointer border-none ${
-                    activeRecommendedTab === tab.id
-                      ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
-                      : "text-slate-450 hover:text-slate-700 dark:hover:text-slate-300"
-                  }`}
+                  className={`px-3.5 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition cursor-pointer border-none ${ activeRecommendedTab === tab.id ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm" : "text-slate-400 hover:text-slate-700 dark:hover:text-slate-300" }`}
                 >
                   {tab.label}
                 </button>
@@ -1055,24 +1039,24 @@ const Discover = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
               {[1, 2, 3, 4].map(n => (
                 <div key={n} className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[28px] p-4 flex flex-col justify-between animate-pulse h-[360px]">
-                  <div className="w-full aspect-square bg-slate-100 dark:bg-slate-850 rounded-[20px] mb-3" />
-                  <div className="h-4 bg-slate-100 dark:bg-slate-850 rounded w-2/3 mb-2" />
-                  <div className="h-3 bg-slate-100 dark:bg-slate-855 rounded w-1/3 mb-4" />
-                  <div className="h-8 bg-slate-100 dark:bg-slate-850 rounded-[12px] w-full" />
+                  <div className="w-full aspect-square bg-slate-100 dark:bg-slate-800 rounded-[20px] mb-3" />
+                  <div className="h-4 bg-slate-100 dark:bg-slate-800 rounded w-2/3 mb-2" />
+                  <div className="h-3 bg-slate-100 dark:bg-slate-900 rounded w-1/3 mb-4" />
+                  <div className="h-8 bg-slate-100 dark:bg-slate-800 rounded-[12px] w-full" />
                 </div>
               ))}
             </div>
           ) : filteredProducts.length === 0 ? (
             /* Empty state */
-            <div className="flex flex-col items-center justify-center py-16 border border-dashed border-slate-200 dark:border-slate-850 rounded-[32px] bg-white dark:bg-slate-900 text-center p-6 shadow-sm">
-              <AlertCircle size={36} className="text-slate-350 dark:text-slate-650 animate-bounce mb-3" />
+            <div className="flex flex-col items-center justify-center py-16 border border-dashed border-slate-200 dark:border-slate-800 rounded-[32px] bg-white dark:bg-slate-900 text-center p-6 shadow-sm">
+              <AlertCircle size={36} className="text-slate-300 dark:text-slate-600 animate-bounce mb-3" />
               <h3 className="text-base font-black text-slate-800 dark:text-white">No Products Found</h3>
-              <p className="text-xs text-slate-450 dark:text-slate-500 font-bold max-w-[280px] leading-relaxed mt-1">
+              <p className="text-xs text-slate-400 dark:text-slate-500 font-bold max-w-[280px] leading-relaxed mt-1">
                 Your filters or search keywords didn't yield any matches. Try clearing some selections.
               </p>
               <button
                 onClick={resetAllFilters}
-                className="mt-5 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-[10px] uppercase tracking-wider rounded-xl transition cursor-pointer border-none"
+                className="mt-5 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-slate-100 dark:text-white font-extrabold text-[10px] uppercase tracking-wider rounded-xl transition cursor-pointer border-none"
               >
                 Reset Filters
               </button>
@@ -1117,9 +1101,7 @@ const Discover = () => {
                       >
                         <Heart
                           size={13}
-                          className={`transition-colors duration-300 stroke-[2.5] ${
-                            isFav ? "text-rose-500 fill-rose-500" : "text-slate-500 dark:text-slate-400"
-                          }`}
+                          className={`transition-colors duration-300 stroke-[2.5] ${ isFav ? "text-rose-500 fill-rose-500" : "text-slate-500 dark:text-slate-400" }`}
                         />
                       </button>
 
@@ -1142,7 +1124,7 @@ const Discover = () => {
                       <div>
                         {/* Rating Row */}
                         <div className="flex justify-between items-center text-xs font-bold mb-1.5">
-                          <div className="flex items-center gap-1 text-slate-500 dark:text-slate-450">
+                          <div className="flex items-center gap-1 text-slate-500 dark:text-slate-400">
                             <Star size={12} className="fill-amber-500 text-amber-500 stroke-none" />
                             <span className="text-slate-800 dark:text-slate-200 font-extrabold">{typeof product.rating === 'object' && product.rating ? product.rating.average || "4.8" : product.rating || "4.8"}</span>
                             <span className="text-[10px] text-slate-400 font-medium">
@@ -1152,12 +1134,12 @@ const Discover = () => {
                         </div>
 
                         {/* Title */}
-                        <h3 className="font-extrabold text-[14px] text-slate-855 dark:text-slate-100 line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200 mt-1">
+                        <h3 className="font-extrabold text-[14px] text-slate-900 dark:text-slate-100 line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200 mt-1">
                           {product.name}
                         </h3>
 
                         {/* Specifications subtext */}
-                        <p className="text-[10px] font-bold text-slate-450 dark:text-slate-500 leading-none mt-1 mb-3">
+                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 leading-none mt-1 mb-3">
                           {product.specs || "Premium Choice"}
                         </p>
                       </div>
@@ -1184,7 +1166,7 @@ const Discover = () => {
                               e.stopPropagation();
                               onAddToCart(product);
                             }}
-                            className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-[10px] uppercase tracking-wider transition-all duration-200 cursor-pointer shadow-sm active:scale-95 border-none"
+                            className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-slate-100 dark:text-white font-extrabold text-[10px] uppercase tracking-wider transition-all duration-200 cursor-pointer shadow-sm active:scale-95 border-none"
                           >
                             <ShoppingCart size={11} className="stroke-[2.5]" />
                             <span>Add to Cart</span>
@@ -1196,7 +1178,7 @@ const Discover = () => {
                               e.stopPropagation();
                               onQuickView ? onQuickView(product) : navigate(`/product/${product._id}`);
                             }}
-                            className="px-3 py-3 rounded-xl border border-slate-200/60 dark:border-slate-700 text-slate-655 dark:text-slate-300 font-extrabold text-[10px] uppercase tracking-wider hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-center gap-1 transition-all cursor-pointer bg-transparent"
+                            className="px-3 py-3 rounded-xl border border-slate-200/60 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-extrabold text-[10px] uppercase tracking-wider hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-center gap-1 transition-all cursor-pointer bg-transparent"
                           >
                             <Eye size={11} className="stroke-[2.5]" />
                             <span>View</span>

@@ -29,8 +29,8 @@ const Profile = () => {
 
   return (
     <div className="space-y-8 animate-fadeIn">
-      <div className="border-b border-slate-200 pb-4">
-        <h2 className="text-2xl font-black text-slate-900 tracking-tight">System Operator Profile</h2>
+      <div className="border-b border-slate-200 dark:border-slate-800 pb-4">
+        <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">System Operator Profile</h2>
         <p className="text-xs text-slate-500 mt-1">Authorized superuser metadata, access token security details, and system environment stats.</p>
       </div>
 
@@ -38,11 +38,11 @@ const Profile = () => {
         
         {/* Left Column: Admin Metadata Panel */}
         <div className="lg:col-span-1 space-y-6">
-          <div className="bg-[#0F172A] border border-slate-900 rounded-3xl p-6 text-white shadow-lg relative overflow-hidden">
+          <div className="bg-[#0F172A] border border-slate-900 rounded-3xl p-6 text-slate-100 dark:text-white shadow-lg relative overflow-hidden">
             <div className="absolute top-[-20%] right-[-20%] w-40 h-40 rounded-full bg-orange-500/10 blur-2xl pointer-events-none"></div>
             
             <div className="flex flex-col items-center text-center space-y-4 pt-4">
-              <div className="h-16 w-16 rounded-2xl bg-orange-500 flex items-center justify-center text-white text-2xl font-black shadow-lg shadow-orange-600/20">
+              <div className="h-16 w-16 rounded-2xl bg-orange-500 flex items-center justify-center text-slate-100 dark:text-white text-2xl font-black shadow-lg shadow-orange-600/20">
                 A
               </div>
               <div>
@@ -76,13 +76,13 @@ const Profile = () => {
           </div>
 
           {/* Quick System Info */}
-          <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm space-y-4">
-            <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 rounded-3xl p-6 shadow-sm space-y-4">
+            <h4 className="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-wider flex items-center gap-1.5">
               <Activity size={14} className="text-orange-500" />
               <span>Session Log</span>
             </h4>
             <div className="space-y-3 text-xs">
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 font-mono text-[10px] text-slate-500 leading-relaxed">
+              <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-100 font-mono text-[10px] text-slate-500 leading-relaxed">
                 <div className="font-bold text-slate-700 uppercase mb-1">Operator Session Start</div>
                 {adminInfo.lastLogin}
               </div>
@@ -95,9 +95,9 @@ const Profile = () => {
 
         {/* Right Column: Privileges & Security Policies */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white border border-slate-200/80 rounded-3xl p-6 md:p-8 shadow-sm space-y-6">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 rounded-3xl p-6 md:p-8 shadow-sm space-y-6">
             <div>
-              <h3 className="text-base font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+              <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-100 tracking-tight flex items-center gap-2">
                 <Key size={16} className="text-orange-500" />
                 <span>Authorized System Capabilities</span>
               </h3>
@@ -116,11 +116,11 @@ const Profile = () => {
             </div>
 
             <div className="pt-6 border-t border-slate-100 space-y-4">
-              <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+              <h4 className="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-wider flex items-center gap-1.5">
                 <Terminal size={14} className="text-slate-500" />
                 <span>Security Guidelines</span>
               </h4>
-              <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4.5 text-xs text-slate-500 leading-relaxed space-y-2">
+              <div className="bg-slate-50 dark:bg-slate-950 border border-slate-100 rounded-2xl p-4.5 text-xs text-slate-500 leading-relaxed space-y-2">
                 <p>
                   1. Keep authentication tokens private. Never log session payloads to external outputs.
                 </p>

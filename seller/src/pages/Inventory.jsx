@@ -49,7 +49,7 @@ const Inventory = ({ token, products = [], fetchProducts }) => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight">Stock & Inventory</h2>
+          <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">Stock & Inventory</h2>
           <p className="text-xs text-slate-500 font-semibold mt-1">
             Monitor product availability, adjust stock counts, and check replenishment logs.
           </p>
@@ -57,7 +57,7 @@ const Inventory = ({ token, products = [], fetchProducts }) => {
         {fetchProducts && (
           <button
             onClick={fetchProducts}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition active:scale-95 cursor-pointer shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-slate-100 dark:text-white rounded-xl text-xs font-bold transition active:scale-95 cursor-pointer shadow-sm"
           >
             <RefreshCw size={14} />
             <span>Sync Catalog</span>
@@ -66,7 +66,7 @@ const Inventory = ({ token, products = [], fetchProducts }) => {
       </div>
 
       {/* Filters & Search Bar */}
-      <div className="flex flex-col md:flex-row gap-4 bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm">
+      <div className="flex flex-col md:flex-row gap-4 bg-white dark:bg-slate-900 border border-slate-200/80 rounded-2xl p-4 shadow-sm">
         <div className="flex-1 relative">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
           <input
@@ -74,7 +74,7 @@ const Inventory = ({ token, products = [], fetchProducts }) => {
             placeholder="Search items by name..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-xs font-semibold outline-none focus:border-slate-800 transition"
+            className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs font-semibold outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
           />
         </div>
         <div className="flex gap-2 items-center">
@@ -82,7 +82,7 @@ const Inventory = ({ token, products = [], fetchProducts }) => {
           <select
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
-            className="border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-bold bg-white text-slate-700 outline-none cursor-pointer focus:border-slate-800"
+            className="border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-xs font-bold bg-white dark:bg-slate-900 text-slate-700 outline-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
           >
             {categories.map((c) => (
               <option key={c} value={c}>
@@ -94,7 +94,7 @@ const Inventory = ({ token, products = [], fetchProducts }) => {
       </div>
 
       {/* Grid view of inventory status */}
-      <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200/80 rounded-3xl p-6 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -126,7 +126,7 @@ const Inventory = ({ token, products = [], fetchProducts }) => {
                     >
                       {/* Product Detail */}
                       <td className="py-4 px-4 font-bold flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center overflow-hidden shrink-0">
+                        <div className="h-10 w-10 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-100 flex items-center justify-center overflow-hidden shrink-0">
                           {p.images?.[0] ? (
                             <img src={p.images[0]} alt="" className="h-full w-full object-contain" />
                           ) : (
@@ -134,20 +134,20 @@ const Inventory = ({ token, products = [], fetchProducts }) => {
                           )}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-slate-900 font-black truncate max-w-[200px]">{p.name}</p>
+                          <p className="text-slate-900 dark:text-slate-100 font-black truncate max-w-[200px]">{p.name}</p>
                           <p className="text-[9px] text-slate-400 font-mono mt-0.5">#{p._id.slice(-8).toUpperCase()}</p>
                         </div>
                       </td>
 
                       {/* Category */}
                       <td className="py-4 px-4">
-                        <span className="bg-slate-100 text-slate-650 px-2 py-0.5 rounded-md font-bold text-[10px] uppercase">
+                        <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-bold text-[10px] uppercase">
                           {p.category || "Beverages"}
                         </span>
                       </td>
 
                       {/* Unit Price */}
-                      <td className="py-4 px-4 text-center font-black text-slate-900">
+                      <td className="py-4 px-4 text-center font-black text-slate-900 dark:text-slate-100">
                         ₹{p.price?.toFixed(2) || "0.00"}
                       </td>
 
@@ -164,7 +164,7 @@ const Inventory = ({ token, products = [], fetchProducts }) => {
                             <button
                               onClick={() => handleUpdateStock(p._id)}
                               disabled={updating}
-                              className="p-1 rounded bg-emerald-500 text-white hover:bg-emerald-600 transition"
+                              className="p-1 rounded bg-emerald-500 text-slate-100 dark:text-white hover:bg-emerald-600 transition"
                             >
                               <Check size={12} />
                             </button>
@@ -185,11 +185,7 @@ const Inventory = ({ token, products = [], fetchProducts }) => {
                       {/* Status */}
                       <td className="py-4 px-4 text-center">
                         <span
-                          className={`inline-flex px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border ${
-                            isLow
-                              ? "bg-red-50 text-red-600 border-red-100"
-                              : "bg-emerald-50 text-emerald-600 border-emerald-100"
-                          }`}
+                          className={`inline-flex px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border ${ isLow ? "bg-red-50 text-red-600 border-red-100" : "bg-emerald-50 text-emerald-600 border-emerald-100" }`}
                         >
                           {isLow ? "Low Stock" : "Healthy"}
                         </span>
@@ -203,7 +199,7 @@ const Inventory = ({ token, products = [], fetchProducts }) => {
                               setEditingId(p._id);
                               setEditStock(p.stock ?? 15);
                             }}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-[10px] font-bold text-slate-700 transition cursor-pointer"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 hover:bg-slate-100 text-[10px] font-bold text-slate-700 transition cursor-pointer"
                           >
                             <Edit2 size={10} />
                             <span>Quick Edit</span>

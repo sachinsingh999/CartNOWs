@@ -1,0 +1,38 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#4f46e5" />
+      <stop offset="100%" stop-color="#f97316" />
+    </linearGradient>
+    
+    <!-- Inner Glow / Shadow Filter -->
+    <filter id="glow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <!-- Smooth Rounded Square Base -->
+  <rect width="64" height="64" rx="16" fill="url(#bgGrad)" />
+
+  <!-- Buyer/Client Shopping Cart Icon inside -->
+  <g filter="url(#glow)">
+    <!-- Cart Basket -->
+    <path d="M22 24 H48 L44 42 H26 Z" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+    
+    <!-- Cart Handle -->
+    <path d="M22 24 L17 19 H13" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+    
+    <!-- Wheels -->
+    <circle cx="28" cy="48" r="4" fill="#ffffff" />
+    <circle cx="42" cy="48" r="4" fill="#ffffff" />
+    
+    <!-- Sparkle next to the basket to represent the premium "NOW" shopping experience -->
+    <path d="M46 14 L47 17 L50 17 L48 19 L49 22 L46 20 L43 22 L44 19 L42 17 L45 17 Z" fill="#ffffff" />
+    
+    <!-- Fast speed wind lines behind the cart on the left -->
+    <line x1="12" y1="28" x2="18" y2="28" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.7" />
+    <line x1="8" y1="33" x2="15" y2="33" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.7" />
+    <line x1="13" y1="38" x2="19" y2="38" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.7" />
+  </g>
+</svg>

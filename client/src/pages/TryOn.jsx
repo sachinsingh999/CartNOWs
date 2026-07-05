@@ -158,7 +158,7 @@ const TryOnPage = () => {
         <div className="flex items-center justify-between">
           <button
             onClick={() => navigate(-1)}
-            className="group inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-bold text-slate-700 dark:text-slate-300 hover:border-slate-350 transition-all cursor-pointer"
+            className="group inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-bold text-slate-700 dark:text-slate-300 hover:border-slate-300 transition-all cursor-pointer"
           >
             <ArrowLeft size={13} className="transition-transform group-hover:-translate-x-0.5" />
             <span>Back</span>
@@ -179,7 +179,7 @@ const TryOnPage = () => {
             <span className="inline-block px-3 py-1 rounded-full bg-white/10 text-white/80 text-[10px] font-bold uppercase tracking-widest">
               Advanced Generative AI
             </span>
-            <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
+            <h1 className="text-3xl sm:text-5xl font-black text-slate-100 dark:text-white tracking-tight leading-tight">
               AI Virtual Try-On Studio <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-indigo-300">Try Before You Buy</span>
             </h1>
@@ -197,7 +197,7 @@ const TryOnPage = () => {
                     toast.info("Loading garments... Please select an item from the catalog below.");
                   }
                 }}
-                className="px-5 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs shadow-lg shadow-orange-500/20 transition cursor-pointer active:scale-95"
+                className="px-5 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 text-slate-100 dark:text-white font-bold text-xs shadow-lg shadow-orange-500/20 transition cursor-pointer active:scale-95"
               >
                 Upload Your Photo
               </button>
@@ -211,13 +211,13 @@ const TryOnPage = () => {
                     toast.info("Loading garments... Please select an item from the catalog below.");
                   }
                 }}
-                className="px-5 py-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs transition cursor-pointer active:scale-95"
+                className="px-5 py-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-slate-100 dark:text-white font-bold text-xs transition cursor-pointer active:scale-95"
               >
                 Start Virtual Try-On
               </button>
               <button 
                 onClick={() => document.getElementById("catalog-section")?.scrollIntoView({ behavior: "smooth" })}
-                className="px-5 py-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs transition cursor-pointer active:scale-95"
+                className="px-5 py-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-slate-100 dark:text-white font-bold text-xs transition cursor-pointer active:scale-95"
               >
                 Browse Fashion
               </button>
@@ -226,7 +226,7 @@ const TryOnPage = () => {
 
           {/* Floating Previews Graphic */}
           <div className="relative w-full max-w-[340px] aspect-[4/5] bg-white/[0.03] border border-white/[0.08] rounded-3xl p-4 flex flex-col justify-between overflow-hidden shadow-2xl relative">
-            <div className="absolute top-4 right-4 bg-emerald-500 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-md shadow-sm">
+            <div className="absolute top-4 right-4 bg-emerald-500 text-slate-100 dark:text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-md shadow-sm">
               Live Demo
             </div>
             <div className="flex-1 flex items-center justify-center">
@@ -240,13 +240,13 @@ const TryOnPage = () => {
                 <Sparkles className="text-white/20 h-16 w-16" />
               )}
             </div>
-            <div className="bg-white/10 backdrop-blur-md border border-white/10 p-3 rounded-2xl text-[10px] text-white flex items-center gap-3">
+            <div className="bg-white/10 backdrop-blur-md border border-white/10 p-3 rounded-2xl text-[10px] text-slate-100 dark:text-white flex items-center gap-3">
               <div className="h-8 w-8 rounded-lg bg-orange-500 flex items-center justify-center shrink-0">
                 <Zap size={14} />
               </div>
               <div className="text-left leading-normal font-semibold">
-                <p className="font-extrabold text-white">Instant Outfit Generation</p>
-                <p className="text-slate-350 mt-0.5">High-fidelity texture alignment</p>
+                <p className="font-extrabold text-slate-100 dark:text-white">Instant Outfit Generation</p>
+                <p className="text-slate-300 mt-0.5">High-fidelity texture alignment</p>
               </div>
             </div>
           </div>
@@ -298,11 +298,7 @@ const TryOnPage = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveCatalogTab(tab.id)}
-                  className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all duration-200 cursor-pointer ${
-                    activeCatalogTab === tab.id
-                      ? "bg-white dark:bg-slate-950 text-slate-950 dark:text-slate-100 shadow-sm"
-                      : "text-slate-500 hover:text-slate-700"
-                  }`}
+                  className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all duration-200 cursor-pointer ${ activeCatalogTab === tab.id ? "bg-white dark:bg-slate-950 text-slate-950 dark:text-slate-100 shadow-sm" : "text-slate-500 hover:text-slate-700" }`}
                 >
                   {tab.label}
                 </button>
@@ -323,11 +319,7 @@ const TryOnPage = () => {
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategoryFilter(cat.id)}
-                className={`px-4 py-1.5 rounded-xl text-[9.5px] font-black uppercase tracking-wider transition-all duration-200 cursor-pointer border ${
-                  selectedCategoryFilter === cat.id
-                    ? "bg-slate-950 dark:bg-orange-500 border-slate-950 dark:border-orange-500 text-white shadow-sm"
-                    : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-350"
-                }`}
+                className={`px-4 py-1.5 rounded-xl text-[9.5px] font-black uppercase tracking-wider transition-all duration-200 cursor-pointer border ${ selectedCategoryFilter === cat.id ? "bg-slate-950 dark:bg-orange-500 border-slate-950 dark:border-orange-500 text-slate-100 dark:text-white shadow-sm" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300" }`}
               >
                 {cat.label}
               </button>
@@ -336,7 +328,7 @@ const TryOnPage = () => {
 
           {loading ? (
             <div className="flex justify-center py-20">
-              <div className="w-10 h-10 rounded-full border-4 border-slate-200 border-t-orange-500 animate-spin" />
+              <div className="w-10 h-10 rounded-full border-4 border-slate-200 dark:border-slate-800 border-t-orange-500 animate-spin" />
             </div>
           ) : (
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
@@ -366,7 +358,7 @@ const TryOnPage = () => {
                       <span className="text-xs font-black text-slate-950 dark:text-slate-100">₹{item.price}</span>
                       <button
                         onClick={() => handleOpenFittingRoom(item)}
-                        className="px-3.5 py-2 rounded-xl bg-slate-950 dark:bg-indigo-600 hover:bg-slate-900 text-[10px] font-black text-white uppercase tracking-wider transition active:scale-95 cursor-pointer shadow-xs flex items-center gap-1"
+                        className="px-3.5 py-2 rounded-xl bg-slate-950 dark:bg-indigo-600 hover:bg-slate-900 text-[10px] font-black text-slate-100 dark:text-white uppercase tracking-wider transition active:scale-95 cursor-pointer shadow-xs flex items-center gap-1"
                       >
                         <Sparkles size={10} className="animate-pulse" />
                         <span>Try On</span>

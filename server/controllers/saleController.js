@@ -6,7 +6,7 @@ export const createSale = async (req, res) => {
     const {
       title, subtitle, badge, discountPercent, discountLabel,
       bgColor, textColor, buttonText, buttonLink, image,
-      category, validFrom, validTo, priority,
+      category, validFrom, validTo, priority, publicId, folder
     } = req.body;
 
     if (!title || !validTo) {
@@ -19,6 +19,9 @@ export const createSale = async (req, res) => {
       category, validFrom, validTo,
       priority: priority || 0,
       active: true,
+      publicId: publicId || "",
+      folder: folder || "cartnow/ads",
+      expiresAt: new Date(validTo)
     });
 
     await sale.save();
@@ -43,7 +46,16 @@ export const toggleSale = async (req, res) => {
   try {
     const sale = await saleModel.findById(req.params.id);
     if (!sale) return res.json({ success: false, message: "Sale not found" });
-    sale.active = !sale.active;
+    
+    const wasActive = sale.active;
+    sale.active = !wasActive;
+    
+    if (sale.active) {
+      sale.expiresAt = new Date(sale.validTo);
+    } else {
+      sale.expiresAt = null;
+    }
+    
     await sale.save();
     res.json({ success: true, message: `Sale ${sale.active ? "activated" : "deactivated"}`, sale });
   } catch (err) {

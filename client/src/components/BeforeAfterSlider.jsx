@@ -35,7 +35,7 @@ const BeforeAfterSlider = ({ beforeImage, afterImage }) => {
         alt="Original Model" 
         className="absolute inset-0 w-full h-full object-contain pointer-events-none p-4"
       />
-      <div className="absolute top-4 left-4 z-20 bg-slate-900/80 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-black text-white uppercase tracking-wider">
+      <div className="absolute top-4 left-4 z-20 bg-slate-900/80 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-black text-slate-100 dark:text-white uppercase tracking-wider">
         Original
       </div>
 
@@ -50,14 +50,14 @@ const BeforeAfterSlider = ({ beforeImage, afterImage }) => {
           className="absolute inset-0 w-full h-full object-contain pointer-events-none p-4"
           style={{ width: containerRef.current?.getBoundingClientRect().width }}
         />
-        <div className="absolute top-4 right-4 z-20 bg-indigo-600/90 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-black text-white uppercase tracking-wider">
+        <div className="absolute top-4 right-4 z-20 bg-indigo-600/90 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-black text-slate-100 dark:text-white uppercase tracking-wider">
           Try-On Result
         </div>
       </div>
 
       {/* Slide Handle bar */}
       <div 
-        className="absolute top-0 bottom-0 w-0.5 bg-white shadow-xl z-30"
+        className="absolute top-0 bottom-0 w-0.5 bg-white dark:bg-slate-900 shadow-xl z-30"
         style={{ left: `${sliderPos}%` }}
       >
         {/* Handle Button indicator */}

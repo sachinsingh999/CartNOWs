@@ -214,21 +214,13 @@ const TryOnModal = ({ product, token, userId }) => {
             <div className="flex p-0.5 bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-200/50 dark:border-slate-800">
               <button
                 onClick={() => setActiveTab("tryon")}
-                className={`px-3 py-1.5 text-[10px] font-black uppercase rounded-lg transition cursor-pointer ${
-                  activeTab === "tryon"
-                    ? "bg-white dark:bg-slate-950 text-slate-950 dark:text-slate-100 shadow-sm"
-                    : "text-slate-400 dark:text-slate-500 hover:text-slate-700"
-                }`}
+                className={`px-3 py-1.5 text-[10px] font-black uppercase rounded-lg transition cursor-pointer ${ activeTab === "tryon" ? "bg-white dark:bg-slate-950 text-slate-950 dark:text-slate-100 shadow-sm" : "text-slate-400 dark:text-slate-500 hover:text-slate-700" }`}
               >
                 Fitting Studio
               </button>
               <button
                 onClick={() => setActiveTab("history")}
-                className={`px-3 py-1.5 text-[10px] font-black uppercase rounded-lg transition cursor-pointer ${
-                  activeTab === "history"
-                    ? "bg-white dark:bg-slate-950 text-slate-950 dark:text-slate-100 shadow-sm"
-                    : "text-slate-400 dark:text-slate-500 hover:text-slate-700"
-                }`}
+                className={`px-3 py-1.5 text-[10px] font-black uppercase rounded-lg transition cursor-pointer ${ activeTab === "history" ? "bg-white dark:bg-slate-950 text-slate-950 dark:text-slate-100 shadow-sm" : "text-slate-400 dark:text-slate-500 hover:text-slate-700" }`}
               >
                 Try-On History
               </button>
@@ -255,7 +247,7 @@ const TryOnModal = ({ product, token, userId }) => {
               }} />
             </div>
           ) : (
-            <div className="h-full grid grid-cols-1 lg:grid-cols-[280px_1fr_300px] divide-y lg:divide-y-0 lg:divide-x divide-slate-150 dark:divide-slate-800">
+            <div className="h-full grid grid-cols-1 lg:grid-cols-[280px_1fr_300px] divide-y lg:divide-y-0 lg:divide-x divide-slate-200 dark:divide-slate-800">
               
               {/* LEFT PANEL: User Upload & Controls */}
               <div className="p-5 space-y-6 overflow-y-auto text-left">
@@ -269,20 +261,14 @@ const TryOnModal = ({ product, token, userId }) => {
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
-                  className={`relative aspect-[3/4] rounded-2xl border-2 border-dashed flex flex-col items-center justify-center p-4 text-center transition-all ${
-                    isDragging 
-                      ? "border-orange-500 bg-orange-50/20 dark:bg-orange-950/10 scale-102"
-                      : localPreview 
-                        ? "border-slate-200 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/20"
-                        : "border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/10 hover:border-slate-350 dark:hover:border-slate-700"
-                  }`}
+                  className={`relative aspect-[3/4] rounded-2xl border-2 border-dashed flex flex-col items-center justify-center p-4 text-center transition-all ${ isDragging ? "border-orange-500 bg-orange-50/20 dark:bg-orange-950/10 scale-102" : localPreview ? "border-slate-200 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/20" : "border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/10 hover:border-slate-300 dark:hover:border-slate-700" }`}
                 >
                   {localPreview ? (
                     <div className="relative w-full h-full rounded-xl overflow-hidden">
                       <img src={localPreview} className="w-full h-full object-contain p-1" alt="Model Preview" />
                       <button 
                         onClick={() => { setLocalFile(null); setLocalPreview(null); setUploadedImage(null); }}
-                        className="absolute bottom-3 right-3 bg-rose-600 hover:bg-rose-700 text-white rounded-full p-2 shadow hover:scale-105 transition cursor-pointer"
+                        className="absolute bottom-3 right-3 bg-rose-600 hover:bg-rose-700 text-slate-100 dark:text-white rounded-full p-2 shadow hover:scale-105 transition cursor-pointer"
                       >
                         <X size={12} />
                       </button>
@@ -322,7 +308,7 @@ const TryOnModal = ({ product, token, userId }) => {
                       <button 
                         key={ps}
                         onClick={() => setActivePose(ps)}
-                        className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase border transition cursor-pointer ${activePose === ps ? "bg-slate-900 text-white border-slate-900" : "bg-slate-50 border-slate-200 hover:bg-slate-100 text-slate-600"}`}
+                        className={`flex-1 py-1.5 rounded-lg text-[9px] font-black uppercase border transition cursor-pointer ${activePose === ps ? "bg-slate-900 text-slate-100 dark:text-white border-slate-900" : "bg-slate-50 border-slate-200 dark:border-slate-800 hover:bg-slate-100 text-slate-600"}`}
                       >
                         {ps}
                       </button>
@@ -367,13 +353,13 @@ const TryOnModal = ({ product, token, userId }) => {
                     </div>
                     <div className="space-y-2 max-w-[240px]">
                       <h5 className="text-xs font-black uppercase tracking-wider text-rose-600">Generation Failed</h5>
-                      <p className="text-[10px] text-rose-550 dark:text-rose-400/80 font-bold leading-relaxed">
+                      <p className="text-[10px] text-rose-500 dark:text-rose-400/80 font-bold leading-relaxed">
                         {error || "An unexpected error occurred during fitting pipeline."}
                       </p>
                     </div>
                     <button 
                       onClick={() => reset()}
-                      className="inline-flex items-center gap-1.5 px-4 py-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-950 text-[10px] font-black text-slate-700 dark:text-slate-350 transition cursor-pointer"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-950 text-[10px] font-black text-slate-700 dark:text-slate-300 transition cursor-pointer"
                     >
                       <RefreshCw size={11} />
                       <span>Retry Session</span>
@@ -426,11 +412,7 @@ const TryOnModal = ({ product, token, userId }) => {
                         <button
                           key={sz}
                           onClick={() => setSelectedSize(sz)}
-                          className={`h-8 w-12 rounded-lg border text-xs font-black transition-all cursor-pointer ${
-                            isActive
-                              ? "border-slate-950 dark:border-orange-500 bg-slate-950 dark:bg-orange-500 text-white"
-                              : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-350"
-                          }`}
+                          className={`h-8 w-12 rounded-lg border text-xs font-black transition-all cursor-pointer ${ isActive ? "border-slate-950 dark:border-orange-500 bg-slate-950 dark:bg-orange-500 text-white" : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300" }`}
                         >
                           {sz}
                         </button>
@@ -443,24 +425,24 @@ const TryOnModal = ({ product, token, userId }) => {
                 <button
                   onClick={handleStartGeneration}
                   disabled={!localFile || status === "uploading" || status === "processing"}
-                  className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-slate-950 hover:bg-slate-900 dark:bg-orange-500 dark:hover:bg-orange-600 py-3 text-xs font-black uppercase tracking-wider text-white disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed transition cursor-pointer shadow-xs"
+                  className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-slate-950 hover:bg-slate-900 dark:bg-orange-500 dark:hover:bg-orange-600 py-3 text-xs font-black uppercase tracking-wider text-slate-100 dark:text-white disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed transition cursor-pointer shadow-xs"
                 >
                   <Sparkles size={13} className="animate-pulse" />
                   <span>Generate AI Fitting</span>
                 </button>
 
                 {/* ACCESSORIES STYLE SUGGESTIONS */}
-                <div className="space-y-3.5 border-t border-slate-105 dark:border-slate-800 pt-5">
+                <div className="space-y-3.5 border-t border-slate-100 dark:border-slate-800 pt-5">
                   <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Complete The Look</span>
                   <div className="space-y-2.5">
                     {MOCK_ACCESSORIES.map((acc, aIdx) => (
-                      <div key={aIdx} className="flex items-center gap-3 bg-slate-50/50 dark:bg-slate-900/30 p-2 rounded-xl border border-slate-200/50 dark:border-slate-800 hover:border-slate-350 transition duration-150">
+                      <div key={aIdx} className="flex items-center gap-3 bg-slate-50/50 dark:bg-slate-900/30 p-2 rounded-xl border border-slate-200/50 dark:border-slate-800 hover:border-slate-300 transition duration-150">
                         <img src={acc.img} className="h-9 w-9 rounded-lg object-cover bg-slate-100" alt={acc.name} />
                         <div className="min-w-0 flex-1 text-xs">
                           <p className="font-extrabold text-slate-800 dark:text-slate-200 truncate">{acc.name}</p>
                           <p className="text-[10px] text-slate-400 mt-0.5">{acc.price}</p>
                         </div>
-                        <button className="p-1 rounded-lg hover:bg-slate-150 dark:hover:bg-slate-800 text-slate-400 hover:text-rose-500 transition cursor-pointer">
+                        <button className="p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-400 hover:text-rose-500 transition cursor-pointer">
                           <Heart size={12} />
                         </button>
                       </div>

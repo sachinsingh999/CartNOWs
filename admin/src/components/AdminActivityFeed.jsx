@@ -38,7 +38,7 @@ const AdminActivityFeed = ({ logs }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-[#172033] border border-slate-200 dark:border-white/[0.08] rounded-xl p-5 shadow-sm flex flex-col h-full min-h-[380px] lg:min-h-0">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.08] rounded-xl p-5 shadow-sm flex flex-col h-full min-h-[380px] lg:min-h-0">
       <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/[0.06] pb-3.5 mb-4 shrink-0">
         <h3 className="text-sm font-bold text-slate-800 dark:text-white tracking-tight flex items-center gap-1.5">
           <Activity size={14} className="text-blue-500 animate-pulse" />
@@ -59,7 +59,7 @@ const AdminActivityFeed = ({ logs }) => {
               return (
                 <div key={log._id} className="relative group transition-all duration-200">
                   {/* Timeline dot */}
-                  <span className={`absolute -left-[21px] top-1.5 h-2 w-2 rounded-full ring-4 ring-white dark:ring-[#172033] ${styles.dot}`} />
+                  <span className={`absolute -left-[21px] top-1.5 h-2 w-2 rounded-full ring-4 ring-white dark:ring-slate-900 ${styles.dot}`} />
                   
                   {/* Log Content Card */}
                   <div className="text-[11px] font-semibold space-y-1">
@@ -71,7 +71,7 @@ const AdminActivityFeed = ({ logs }) => {
                         {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
-                    <p className="text-slate-755 dark:text-slate-200 font-bold mt-1 text-[11px]">
+                    <p className="text-slate-800 dark:text-slate-200 font-bold mt-1 text-[11px]">
                       {log.target}
                     </p>
                     <p className="text-slate-500 dark:text-slate-400 font-normal leading-relaxed">

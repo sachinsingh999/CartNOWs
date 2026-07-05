@@ -76,19 +76,19 @@ const Finance = ({ token }) => {
 
       {/* Finance Stats Row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 shrink-0">
-        <div className="bg-slate-900 text-white dark:bg-blue-600 border border-slate-800 dark:border-blue-500/50 rounded-2xl p-5 shadow-sm space-y-1">
+        <div className="bg-slate-900 text-slate-100 dark:text-white dark:bg-blue-600 border border-slate-800 dark:border-blue-500/50 rounded-2xl p-5 shadow-sm space-y-1">
           <span className="text-[10px] font-bold text-slate-400 dark:text-blue-200 uppercase tracking-wider block">Estimated Platform Commission</span>
           <h3 className="text-2xl font-black">${platformRevenue.toFixed(2)}</h3>
           <span className="text-[9px] text-emerald-400 dark:text-emerald-300 font-bold block uppercase tracking-wider">Based on {finance.commissionPercentage}% Rate</span>
         </div>
 
-        <div className="bg-white dark:bg-[#151b26] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm space-y-1">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm space-y-1">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Volume Audited</span>
           <h3 className="text-2xl font-black text-slate-900 dark:text-white">${totalTransactionsVolume.toFixed(2)}</h3>
           <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold block uppercase tracking-wider">{totalTransactionsCount} Settlements processed</span>
         </div>
 
-        <div className="bg-white dark:bg-[#151b26] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm space-y-1">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm space-y-1">
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Refunds Issued</span>
           <h3 className="text-2xl font-black text-rose-600 dark:text-rose-400">{refundedPayments.length}</h3>
           <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold block uppercase tracking-wider">Completed adjustments</span>
@@ -97,7 +97,7 @@ const Finance = ({ token }) => {
 
       <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-3 gap-6 pb-6">
         {/* Settings Panel */}
-        <div className="bg-white/90 dark:bg-[#151b26]/90 backdrop-blur-xs border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm space-y-5 shrink-0 h-fit">
+        <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm space-y-5 shrink-0 h-fit">
           <h2 className="text-sm font-black text-slate-800 dark:text-white tracking-tight flex items-center gap-2">
             <Settings size={14} className="text-slate-400" />
             <span>Platform Settings</span>
@@ -114,13 +114,13 @@ const Finance = ({ token }) => {
                 placeholder={`Current: ${finance.commissionPercentage}%`}
                 value={commissionInput}
                 onChange={(e) => setCommissionInput(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#0B1220] text-slate-800 dark:text-white text-xs font-semibold outline-none focus:border-emerald-500 dark:focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-white text-xs font-semibold outline-none dark: transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
               />
             </div>
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-slate-900 dark:bg-slate-800 text-white dark:text-white rounded-xl text-[11px] font-black uppercase tracking-wider transition shadow-sm hover:bg-slate-800 dark:hover:bg-slate-700 active:scale-95 disabled:opacity-50 cursor-pointer"
+              className="w-full py-3 bg-slate-900 dark:bg-slate-800 text-slate-100 dark:text-white dark:text-white rounded-xl text-[11px] font-black uppercase tracking-wider transition shadow-sm hover:bg-slate-800 dark:hover:bg-slate-700 active:scale-95 disabled:opacity-50 cursor-pointer"
             >
               {loading ? "Updating..." : "Save Settings"}
             </button>
@@ -128,7 +128,7 @@ const Finance = ({ token }) => {
         </div>
 
         {/* Transactions ledger */}
-        <div className="lg:col-span-2 bg-white/90 dark:bg-[#151b26]/90 backdrop-blur-xs border border-slate-200/80 dark:border-slate-800/80 rounded-2xl flex flex-col shadow-sm min-h-0">
+        <div className="lg:col-span-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-slate-200/80 dark:border-slate-800/80 rounded-2xl flex flex-col shadow-sm min-h-0">
           <div className="p-5 border-b border-slate-100 dark:border-slate-800/80 shrink-0">
             <h2 className="text-sm font-black text-slate-800 dark:text-white tracking-tight flex items-center gap-2">
               <ListCollapse size={14} className="text-slate-400" />
@@ -145,7 +145,7 @@ const Finance = ({ token }) => {
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse text-xs">
-                  <thead className="sticky top-0 bg-white/95 dark:bg-[#151b26]/95 backdrop-blur z-10 shadow-sm border-b border-slate-200 dark:border-slate-800">
+                  <thead className="sticky top-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur z-10 shadow-sm border-b border-slate-200 dark:border-slate-800">
                     <tr className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
                       <th className="py-3 px-2">Transaction ID</th>
                       <th className="py-3 px-2">Date</th>
@@ -161,13 +161,7 @@ const Finance = ({ token }) => {
                         <td className="py-3.5 px-2 text-slate-500 dark:text-slate-400 font-medium">{new Date(ord.createdAt).toLocaleDateString()}</td>
                         <td className="py-3.5 px-2 uppercase text-slate-600 dark:text-slate-300 font-bold text-[10px] tracking-wider">{ord.paymentMethod}</td>
                         <td className="py-3.5 px-2">
-                          <span className={`px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider border ${
-                            ord.paymentStatus === "success" || ord.paymentStatus === "Paid"
-                              ? "bg-emerald-50 text-emerald-600 border-emerald-200/50 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20"
-                              : ord.paymentStatus === "Refunded"
-                                ? "bg-blue-50 text-blue-600 border-blue-200/50 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20"
-                                : "bg-amber-50 text-amber-600 border-amber-200/50 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20"
-                          }`}>
+                          <span className={`px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider border ${ ord.paymentStatus === "success" || ord.paymentStatus === "Paid" ? "bg-emerald-50 text-emerald-600 border-emerald-200/50 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20" : ord.paymentStatus === "Refunded" ? "bg-blue-50 text-blue-600 border-blue-200/50 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20" : "bg-amber-50 text-amber-600 border-amber-200/50 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20" }`}>
                             {ord.paymentStatus}
                           </span>
                         </td>

@@ -127,7 +127,7 @@ const ProductModeration = ({ token }) => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
         {/* Products List Directory */}
-        <div className="lg:col-span-2 bg-white dark:bg-[#172033] border border-slate-200/80 dark:border-white/[0.08] rounded-xl p-4.5 shadow-xs space-y-4">
+        <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/[0.08] rounded-xl p-4.5 shadow-xs space-y-4">
           <h2 className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">Merchandise Directory</h2>
 
           {loading ? (
@@ -140,9 +140,7 @@ const ProductModeration = ({ token }) => {
                 <div
                   key={prod._id}
                   onClick={() => setSelectedProduct(prod)}
-                  className={`py-3 px-3 -mx-3 rounded-lg flex items-center justify-between gap-4 hover:bg-slate-50 dark:hover:bg-white/[0.02] cursor-pointer transition ${
-                    selectedProduct?._id === prod._id ? "bg-slate-50 dark:bg-white/[0.02] border border-slate-200/50 dark:border-white/[0.04]" : ""
-                  }`}
+                  className={`py-3 px-3 -mx-3 rounded-lg flex items-center justify-between gap-4 hover:bg-slate-50 dark:hover:bg-white/[0.02] cursor-pointer transition ${ selectedProduct?._id === prod._id ? "bg-slate-50 dark:bg-white/[0.02] border border-slate-200/50 dark:border-white/[0.04]" : "" }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     {prod.images && prod.images.length > 0 && (
@@ -156,17 +154,11 @@ const ProductModeration = ({ token }) => {
                             Fake Listing
                           </span>
                         )}
-                        <span className={`px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider rounded border ${
-                          prod.status === "approved"
-                            ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-                            : prod.status === "pending"
-                              ? "bg-amber-500/10 text-amber-500 border-amber-500/20"
-                              : "bg-rose-500/10 text-rose-500 border-rose-500/20"
-                        }`}>
+                        <span className={`px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider rounded border ${ prod.status === "approved" ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : prod.status === "pending" ? "bg-amber-500/10 text-amber-500 border-amber-500/20" : "bg-rose-500/10 text-rose-500 border-rose-500/20" }`}>
                           {prod.status}
                         </span>
                       </div>
-                      <p className="text-[10px] text-slate-450 dark:text-slate-500 truncate">Shop: {prod.sellerId?.shopName || "Platform"} · Stock: {prod.stock}</p>
+                      <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate">Shop: {prod.sellerId?.shopName || "Platform"} · Stock: {prod.stock}</p>
                     </div>
                   </div>
 
@@ -178,7 +170,7 @@ const ProductModeration = ({ token }) => {
         </div>
 
         {/* Action Panel for Selected Product (Sticky on Large viewports) */}
-        <div className="bg-white dark:bg-[#172033] border border-slate-200/80 dark:border-white/[0.08] rounded-xl p-4.5 shadow-xs space-y-4 lg:sticky lg:top-[20px] self-start">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/[0.08] rounded-xl p-4.5 shadow-xs space-y-4 lg:sticky lg:top-[20px] self-start">
           {selectedProduct ? (
             <>
               {/* Product Header details */}
@@ -201,12 +193,12 @@ const ProductModeration = ({ token }) => {
                         <div key={img._id} className="relative group border border-slate-200/60 dark:border-white/[0.08] rounded-lg overflow-hidden p-0.5 bg-slate-50 dark:bg-slate-900">
                           <img src={img.imageUrl} alt="" className="h-12 w-full object-cover rounded" />
                           {img.isCover && (
-                            <span className="absolute top-1 left-1 px-1 py-0.2 text-[7px] bg-blue-600 text-white font-bold rounded">Cover</span>
+                            <span className="absolute top-1 left-1 px-1 py-0.2 text-[7px] bg-blue-600 text-slate-100 dark:text-white font-bold rounded">Cover</span>
                           )}
                           <button
                             type="button"
                             onClick={() => handleImageDelete(img._id)}
-                            className="absolute top-1 right-1 p-0.5 bg-rose-550 text-white rounded hover:bg-rose-600 opacity-0 group-hover:opacity-100 transition cursor-pointer"
+                            className="absolute top-1 right-1 p-0.5 bg-rose-500 text-slate-100 dark:text-white rounded hover:bg-rose-600 opacity-0 group-hover:opacity-100 transition cursor-pointer"
                             title="Delete Image"
                           >
                             <Trash2 size={10} />
@@ -226,13 +218,13 @@ const ProductModeration = ({ token }) => {
                     <>
                       <button
                         onClick={() => handleStatusChange(selectedProduct._id, "approved")}
-                        className="flex-1 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition cursor-pointer"
+                        className="flex-1 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-slate-100 dark:text-white text-xs font-bold transition cursor-pointer"
                       >
                         Approve
                       </button>
                       <button
                         onClick={() => handleStatusChange(selectedProduct._id, "rejected")}
-                        className="flex-1 py-2 rounded-lg bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold transition cursor-pointer"
+                        className="flex-1 py-2 rounded-lg bg-rose-500 hover:bg-rose-600 text-slate-100 dark:text-white text-xs font-bold transition cursor-pointer"
                       >
                         Reject
                       </button>
@@ -241,7 +233,7 @@ const ProductModeration = ({ token }) => {
                   {selectedProduct.status === "approved" && (
                     <button
                       onClick={() => handleStatusChange(selectedProduct._id, "disabled")}
-                      className="w-full py-2 rounded-lg border border-slate-350 dark:border-white/[0.08] hover:bg-slate-100 dark:hover:bg-white/[0.04] text-slate-700 dark:text-slate-300 text-xs font-bold transition cursor-pointer"
+                      className="w-full py-2 rounded-lg border border-slate-300 dark:border-white/[0.08] hover:bg-slate-100 dark:hover:bg-white/[0.04] text-slate-700 dark:text-slate-300 text-xs font-bold transition cursor-pointer"
                     >
                       Disable Listing
                     </button>
@@ -249,7 +241,7 @@ const ProductModeration = ({ token }) => {
                   {selectedProduct.status === "disabled" && (
                     <button
                       onClick={() => handleStatusChange(selectedProduct._id, "approved")}
-                      className="w-full py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold transition cursor-pointer"
+                      className="w-full py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-slate-100 dark:text-white text-xs font-bold transition cursor-pointer"
                     >
                       Enable Listing
                     </button>
@@ -258,15 +250,11 @@ const ProductModeration = ({ token }) => {
               </div>
 
               {/* Flag as fake/prohibited */}
-              <div className="border-t border-slate-150 dark:border-white/[0.06] pt-3 space-y-2">
+              <div className="border-t border-slate-200 dark:border-white/[0.06] pt-3 space-y-2">
                 <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Security Flag</span>
                 <button
                   onClick={() => handleFlagFake(selectedProduct._id, !selectedProduct.isFake)}
-                  className={`w-full py-2 rounded-lg border text-xs font-bold transition cursor-pointer flex items-center justify-center gap-1.5 ${
-                    selectedProduct.isFake
-                      ? "border-emerald-500/20 hover:bg-emerald-500/10 text-emerald-500"
-                      : "border-rose-500/20 hover:bg-rose-500/10 text-rose-500"
-                  }`}
+                  className={`w-full py-2 rounded-lg border text-xs font-bold transition cursor-pointer flex items-center justify-center gap-1.5 ${ selectedProduct.isFake ? "border-emerald-500/20 hover:bg-emerald-500/10 text-emerald-500" : "border-rose-500/20 hover:bg-rose-500/10 text-rose-500" }`}
                 >
                   <ShieldAlert size={14} />
                   <span>{selectedProduct.isFake ? "Clear Fake Flag" : "Flag as Fake"}</span>
@@ -274,7 +262,7 @@ const ProductModeration = ({ token }) => {
               </div>
 
               {/* Reviews moderation */}
-              <div className="border-t border-slate-150 dark:border-white/[0.06] pt-3 space-y-2.5">
+              <div className="border-t border-slate-200 dark:border-white/[0.06] pt-3 space-y-2.5">
                 <div className="flex items-center gap-1 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                   <MessageSquare size={12} />
                   <span>Reviews ({selectedProduct.reviews?.length || 0})</span>

@@ -2,9 +2,11 @@ import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import { backendUrl } from "../config";
 import { toast } from "react-toastify";
+import { AnimatePresence, motion } from "framer-motion";
 
 // Import modular sub-components
 import HomeHero from "../components/Home/HomeHero";
+import PremiumDealBanner from "../components/Home/PremiumDealBanner";
 import FlashDeals from "../components/Home/FlashDeals";
 import TrendingProducts from "../components/Home/TrendingProducts";
 import TopCategories from "../components/Home/TopCategories";
@@ -23,6 +25,9 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [wishlist, setWishlist] = useState([]);
   const [quickViewProduct, setQuickViewProduct] = useState(null);
+  const [activeDeal, setActiveDeal] = useState(null);
+  const [showDeal, setShowDeal] = useState(false);
+  const [isCampaignActive, setIsCampaignActive] = useState(false);
   const [homepageData, setHomepageData] = useState({
     newArrivals: [],
     trending: [],
@@ -60,7 +65,64 @@ const Home = () => {
       const saved = JSON.parse(localStorage.getItem("wishlist")) || [];
       setWishlist(saved);
     } catch (e) { }
+
+    // Fetch active deal of the day
+    axios.get(`${backendUrl}/api/dealofday`)
+      .then(res => {
+        if (res.data.success && res.data.deal) {
+          setActiveDeal(res.data.deal);
+        }
+      })
+      .catch((err) => {
+        console.error("Error loading active Deal of the Day:", err);
+      });
   }, []);
+
+  useEffect(() => {
+    if (!activeDeal || !activeDeal.isActive) {
+      setIsCampaignActive(false);
+      return;
+    }
+
+    let startTimeout = null;
+    let endTimeout = null;
+
+    const checkActivity = () => {
+      const now = Date.now();
+      const startTime = new Date(activeDeal.startDate).getTime();
+      const endTime = new Date(activeDeal.endDate).getTime();
+
+      const isActiveNow = startTime <= now && endTime >= now;
+      setIsCampaignActive(isActiveNow);
+
+      if (isActiveNow) {
+        const timeToExpiry = endTime - now;
+        if (timeToExpiry > 0) {
+          endTimeout = setTimeout(() => {
+            setIsCampaignActive(false);
+            setShowDeal(false); // Hide spotlight banner on expiry
+          }, timeToExpiry);
+        }
+      } else if (startTime > now) {
+        const timeToStart = startTime - now;
+        if (timeToStart > 0) {
+          startTimeout = setTimeout(() => {
+            checkActivity();
+          }, timeToStart);
+        }
+      } else {
+        setIsCampaignActive(false);
+        setShowDeal(false);
+      }
+    };
+
+    checkActivity();
+
+    return () => {
+      if (startTimeout) clearTimeout(startTimeout);
+      if (endTimeout) clearTimeout(endTimeout);
+    };
+  }, [activeDeal]);
 
   const onToggleFavorite = async (id) => {
     const token = localStorage.getItem("token") || "";
@@ -125,6 +187,33 @@ const Home = () => {
     }
   };
 
+  const displayDeal = useMemo(() => {
+    if (isCampaignActive && activeDeal) return activeDeal;
+
+    // Fallback: highest discount product from dealsOfDay
+    const fallbackProduct = homepageData.dealsOfDay?.[0] || homepageData.bestSellers?.[0] || homepageData.newArrivals?.[0];
+    if (!fallbackProduct) return null;
+
+    const originalVal = fallbackProduct.originalPrice || Math.round(fallbackProduct.price * 1.25);
+    const discountPercent = Math.max(5, Math.round(((originalVal - fallbackProduct.price) / originalVal) * 100));
+
+    return {
+      _id: "fallback_deal_of_the_day",
+      productId: fallbackProduct,
+      title: "Deal of the Day",
+      subtitle: "Includes official brand warranty. Free express delivery within 24 hours.",
+      discountLabel: `SAVE ${discountPercent}%`,
+      startDate: new Date(),
+      endDate: null, // Hide timer in fallback mode
+      isActive: true,
+      modelImage: fallbackProduct.images?.[0] || ""
+    };
+  }, [activeDeal, homepageData, isCampaignActive]);
+
+  const handleShowDeal = () => {
+    setShowDeal(true);
+  };
+
   return (
     <div className="bg-[#F8FAFC] dark:bg-slate-950 min-h-screen text-[#0F172A] dark:text-slate-100 font-sans pb-16 antialiased text-left transition-colors duration-200">
 
@@ -149,12 +238,55 @@ const Home = () => {
       `}</style>
 
       {/* SECTION 1: PREMIUM HERO SECTION */}
-      <HomeHero />
+      <HomeHero onShowDealOfDay={handleShowDeal} hasActiveDeal={!!displayDeal} />
 
-      {/* SECTION 2: FLASH DEALS + TRENDING PRODUCTS (FULL WIDTH) */}
+      {/* REVEALED PREMIUM DEAL OF THE DAY SPOTLIGHT OVERLAY */}
+      <AnimatePresence>
+        {showDeal && displayDeal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex justify-center py-12 px-4 sm:px-6 bg-slate-950/70 backdrop-blur-md overflow-y-auto"
+            onClick={() => setShowDeal(false)}
+          >
+            {/* Click-stop container */}
+            <div
+              className="relative w-full max-w-5xl my-auto select-none"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <PremiumDealBanner
+                deal={displayDeal}
+                onAddToCart={onAddToCart}
+                onToggleFavorite={onToggleFavorite}
+                wishlist={wishlist}
+                onClose={() => setShowDeal(false)}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* SECTION 2: TOP CATEGORIES (SHOP POPULAR) */}
+      <section className="w-full px-6 sm:px-12 lg:px-20 py-6 select-none">
+        <TopCategories popularCategories={homepageData.popularCategories} />
+      </section>
+
+
+      {/* SECTION 4: FLASH DEALS + TRENDING PRODUCTS */}
       <section className="w-full px-6 sm:px-12 lg:px-20 py-6">
         <FlashDeals
-          deals={homepageData.dealsOfDay}
+          deals={(() => {
+            const seen = new Set();
+            const combined = [];
+            [...(homepageData.dealsOfDay || []), ...(homepageData.trending || [])].forEach(p => {
+              if (p && p._id && !seen.has(p._id.toString())) {
+                seen.add(p._id.toString());
+                combined.push(p);
+              }
+            });
+            return combined;
+          })()}
           onQuickView={setQuickViewProduct}
           onAddToCart={onAddToCart}
           onToggleFavorite={onToggleFavorite}
@@ -173,26 +305,24 @@ const Home = () => {
         />
       </section>
 
-      {/* SECTION 3: CATEGORIES + BRANDS + RECOMMENDATIONS */}
-      <section className="w-full px-6 sm:px-12 lg:px-20 py-4 select-none">
-        <div className="mb-8">
-          <TopCategories popularCategories={homepageData.popularCategories} />
-        </div>
-
-        <div className="mb-10">
+      {/* SECTION 5: BRANDS + RECOMMENDATIONS */}
+      <section className="w-full px-6 sm:px-12 lg:px-20 py-12 md:py-16 space-y-16 md:space-y-24 select-none">
+        <div>
           <ShopByBrands popularBrands={homepageData.popularBrands} />
         </div>
 
-        <RecommendedProducts
-          recommended={homepageData.recommended}
-          trending={homepageData.trending}
-          topRated={homepageData.topRated}
-          newArrivals={homepageData.newArrivals}
-          onQuickView={setQuickViewProduct}
-          onAddToCart={onAddToCart}
-          onToggleFavorite={onToggleFavorite}
-          wishlist={wishlist}
-        />
+        <div>
+          <RecommendedProducts
+            recommended={homepageData.recommended}
+            trending={homepageData.trending}
+            topRated={homepageData.topRated}
+            newArrivals={homepageData.newArrivals}
+            onQuickView={setQuickViewProduct}
+            onAddToCart={onAddToCart}
+            onToggleFavorite={onToggleFavorite}
+            wishlist={wishlist}
+          />
+        </div>
       </section>
 
       {/* SECTION 4: SHOP BY COLLECTIONS */}
@@ -202,7 +332,11 @@ const Home = () => {
       {/* SECTION 5: DEAL OF THE DAY + SELLER SPOTLIGHT + AI CHAT */}
       <section className="w-full px-6 sm:px-12 lg:px-20 py-5 select-none">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-left">
-          <DealOfTheDay deals={homepageData.dealsOfDay} onAddToCart={onAddToCart} />
+          <DealOfTheDay 
+            deals={homepageData.dealsOfDay} 
+            activeDeal={activeDeal} 
+            onAddToCart={onAddToCart} 
+          />
 
           <SellerSpotlight />
 
@@ -213,7 +347,7 @@ const Home = () => {
       {/* SECTION 6: CUSTOMER TESTIMONIALS */}
       <CustomerTestimonials />
 
-      {/* SECTION 7: BENEFITS STRIP */}
+      {/* SECTION 3: BENEFITS STRIP */}
       <BenefitsStrip />
 
       {/* QUICK VIEW INTERACTIVE MODAL */}

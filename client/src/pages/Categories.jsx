@@ -118,7 +118,7 @@ const Categories = () => {
           <h1 className="text-4xl font-black tracking-tight text-slate-800 dark:text-slate-100">
             Browse All <span className="text-blue-600 dark:text-blue-400">Categories</span>
           </h1>
-          <p className="text-sm font-bold text-slate-450 dark:text-slate-500 mt-2 max-w-[480px]">
+          <p className="text-sm font-bold text-slate-400 dark:text-slate-500 mt-2 max-w-[480px]">
             Explore our curated departments offering high-quality essentials, trending collections, and luxury products.
           </p>
         </div>
@@ -133,7 +133,7 @@ const Categories = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search categories..."
-              className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full text-xs font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+              className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full text-xs font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
             />
           </div>
 
@@ -156,9 +156,9 @@ const Categories = () => {
       {/* Grid of categories */}
       {filteredCategories.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 border border-dashed border-slate-200 dark:border-slate-800 rounded-[32px] bg-white dark:bg-slate-900 text-center">
-          <Layers size={40} className="text-slate-350 dark:text-slate-650 mb-3" />
+          <Layers size={40} className="text-slate-300 dark:text-slate-600 mb-3" />
           <h3 className="text-base font-black text-slate-800 dark:text-white">No Categories Found</h3>
-          <p className="text-xs text-slate-450 dark:text-slate-500 font-bold max-w-[280px] mt-1">
+          <p className="text-xs text-slate-400 dark:text-slate-500 font-bold max-w-[280px] mt-1">
             We couldn't find any category matching "{searchQuery}".
           </p>
         </div>
@@ -172,7 +172,7 @@ const Categories = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.3, delay: i * 0.05 }}
-              className="group bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800 rounded-[32px] p-5 flex flex-col justify-between transition-all duration-350 hover:shadow-xl hover:-translate-y-1.5 cursor-pointer relative overflow-hidden"
+              className="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[32px] p-5 flex flex-col justify-between transition-all duration-350 hover:shadow-xl hover:-translate-y-1.5 cursor-pointer relative overflow-hidden"
             >
               {/* Card visual blob */}
               <div className="absolute -right-10 -bottom-10 w-32 h-32 bg-blue-500/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500" />

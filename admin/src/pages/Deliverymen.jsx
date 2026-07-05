@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import { backendUrl } from "../config";
 import { Users, UserPlus, Mail, Phone, Lock, Eye, EyeOff, Shield, Check, X, Ban, Activity } from "lucide-react";
 
-const inputClass = "w-full rounded-xl border border-slate-200 dark:border-white/[0.08] bg-slate-50/30 dark:bg-slate-900/50 px-4 py-3 text-sm text-slate-900 dark:text-white outline-none transition duration-200 placeholder:text-slate-450 focus:bg-white dark:focus:bg-[#151b26] focus:border-slate-950 dark:focus:border-indigo-500 focus:ring-4 focus:ring-slate-950/5 dark:focus:ring-indigo-500/10";
+const inputClass = "w-full rounded-xl border border-slate-200 dark:border-white/[0.08] bg-slate-50/30 dark:bg-slate-900/50 px-4 py-3 text-sm text-slate-900 dark:text-white outline-none transition duration-200 placeholder:text-slate-400 focus:bg-white dark:focus:bg-slate-900 focus:border-slate-950 dark:focus:border-indigo-500 focus:ring-4 focus:ring-slate-950/5 dark:focus:ring-indigo-500/10";
 const labelClass = "mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400";
 
 const Deliverymen = ({ token }) => {
@@ -143,7 +143,7 @@ const Deliverymen = ({ token }) => {
           <Users size={20} />
         </div>
         <div>
-          <p className="text-[10px] font-black uppercase tracking-widest text-indigo-650 dark:text-indigo-400 mb-0.5">
+          <p className="text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 mb-0.5">
             Staff Directory
           </p>
           <h1 className="text-xl font-extrabold tracking-tight">Delivery Agents</h1>
@@ -154,7 +154,7 @@ const Deliverymen = ({ token }) => {
         {/* Left Column: Form and Complaints stacked vertically */}
         <div className="lg:col-span-2 flex flex-col gap-6 min-h-0">
           {/* Add Delivery Agent */}
-          <div className="bg-white/90 dark:bg-[#151b26]/90 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm space-y-4 shrink-0">
+          <div className="bg-white/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm space-y-4 shrink-0">
             <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800/60 pb-3">
               <UserPlus size={18} className="text-slate-800 dark:text-slate-200" />
               <h3 className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">Add Delivery Agent</h3>
@@ -220,7 +220,7 @@ const Deliverymen = ({ token }) => {
 
               <button
                 type="submit"
-                className="w-full flex items-center justify-center gap-2 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 text-white py-3 text-xs font-bold transition shadow-sm active:scale-98 cursor-pointer pt-3"
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 text-slate-100 dark:text-white py-3 text-xs font-bold transition shadow-sm active:scale-98 cursor-pointer pt-3"
               >
                 <UserPlus size={14} />
                 Register Agent
@@ -229,7 +229,7 @@ const Deliverymen = ({ token }) => {
           </div>
 
           {/* Courier Complaints Desk */}
-          <div className="bg-white/90 dark:bg-[#151b26]/90 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm flex flex-col min-h-0 flex-1">
+          <div className="bg-white/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm flex flex-col min-h-0 flex-1">
             <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800/60 pb-3 shrink-0">
               <Ban size={18} className="text-slate-800 dark:text-slate-200" />
               <h3 className="text-sm font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-1.5">
@@ -250,13 +250,7 @@ const Deliverymen = ({ token }) => {
                   <div key={c._id} className="border border-slate-200 dark:border-slate-800/80 rounded-xl p-4 space-y-3 bg-slate-50/10 dark:bg-slate-900/5 hover:bg-slate-50/30 dark:hover:bg-slate-900/20 transition duration-150">
                     <div className="flex items-center justify-between">
                       <span className="font-extrabold text-xs text-slate-900 dark:text-white">{c.deliverymanName}</span>
-                      <span className={`px-2 py-0.5 rounded text-[9px] font-bold border uppercase tracking-wider ${
-                        c.status === "Resolved"
-                          ? "bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20"
-                          : c.status === "In Progress"
-                          ? "bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20"
-                          : "bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20"
-                      }`}>
+                      <span className={`px-2 py-0.5 rounded text-[9px] font-bold border uppercase tracking-wider ${ c.status === "Resolved" ? "bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20" : c.status === "In Progress" ? "bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20" : "bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20" }`}>
                         {c.status}
                       </span>
                     </div>
@@ -277,12 +271,12 @@ const Deliverymen = ({ token }) => {
                           placeholder="Add resolution remarks..."
                           value={remarksInput[c._id] || ""}
                           onChange={(e) => setRemarksInput(prev => ({ ...prev, [c._id]: e.target.value }))}
-                          className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/50 px-3 py-2 text-xs text-slate-900 dark:text-white outline-none transition focus:bg-white dark:focus:bg-[#151b26] focus:border-slate-950 dark:focus:border-indigo-500"
+                          className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/50 px-3 py-2 text-xs text-slate-900 dark:text-white outline-none transition focus:bg-white dark:focus:bg-slate-900 dark: focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                         />
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => resolveComplaintHandler(c._id, "Resolved")}
-                            className="w-full py-2 bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition shadow-sm cursor-pointer"
+                            className="w-full py-2 bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 text-slate-100 dark:text-white rounded-xl text-xs font-bold transition shadow-sm cursor-pointer"
                           >
                             Resolve & Save
                           </button>
@@ -304,7 +298,7 @@ const Deliverymen = ({ token }) => {
         </div>
 
         {/* Right Column: Drivers List */}
-        <div className="lg:col-span-3 bg-white/90 dark:bg-[#151b26]/90 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm flex flex-col min-h-0">
+        <div className="lg:col-span-3 bg-white/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm flex flex-col min-h-0">
           <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800/60 pb-3 shrink-0">
             <div className="flex items-center gap-2">
               <Shield size={18} className="text-slate-800 dark:text-slate-200" />
@@ -317,7 +311,7 @@ const Deliverymen = ({ token }) => {
 
           <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar space-y-3 mt-4">
             {drivers.length === 0 ? (
-              <div className="h-64 flex flex-col items-center justify-center gap-2 text-center text-slate-550 dark:text-slate-400">
+              <div className="h-64 flex flex-col items-center justify-center gap-2 text-center text-slate-500 dark:text-slate-400">
                 <Users size={32} className="text-slate-300 dark:text-slate-700" />
                 <div>
                   <p className="font-bold text-slate-700 dark:text-slate-300">No delivery agents registered</p>
@@ -356,7 +350,7 @@ const Deliverymen = ({ token }) => {
                   </div>
 
                   {/* Admin Action Buttons */}
-                  <div className="flex items-center gap-1.5 self-end sm:self-center border-t sm:border-t-0 border-slate-200/60 dark:border-slate-805 pt-2.5 sm:pt-0 shrink-0">
+                  <div className="flex items-center gap-1.5 self-end sm:self-center border-t sm:border-t-0 border-slate-200/60 dark:border-slate-800 pt-2.5 sm:pt-0 shrink-0">
                     {driver.status === "pending" && (
                       <>
                         <button
@@ -386,7 +380,7 @@ const Deliverymen = ({ token }) => {
                     {(driver.status === "suspended" || driver.status === "rejected") && (
                       <button
                         onClick={() => updateStatusHandler(driver._id, "active")}
-                        className="flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-900 text-white hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 text-[10px] font-bold transition duration-150 cursor-pointer"
+                        className="flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-900 text-slate-100 dark:text-white hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 text-[10px] font-bold transition duration-150 cursor-pointer"
                       >
                         <Activity size={11} /> Activate
                       </button>

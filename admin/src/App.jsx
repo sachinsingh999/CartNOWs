@@ -25,6 +25,7 @@ import { ToastContainer } from 'react-toastify';
 import SystemSettings from './pages/SystemSettings'
 import HeroSlideshow from './pages/HeroSlideshow'
 import Banners from './pages/Banners'
+import DealOfTheDay from './pages/DealOfTheDay'
 import axios from 'axios'
 import { backendUrl } from './config'
 
@@ -34,7 +35,11 @@ const App = () => {
     localStorage.getItem('sidebar_collapsed') === 'true'
   );
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const [theme, setTheme] = useState(localStorage.getItem('admin_theme') || 'dark');
+  const [theme, setTheme] = useState(() => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) return savedTheme;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  });
   const [maintenanceActive, setMaintenanceActive] = useState(false);
 
   useEffect(() => {
@@ -47,7 +52,7 @@ const App = () => {
     } else {
       document.documentElement.classList.remove('dark');
     }
-    localStorage.setItem('admin_theme', theme);
+    localStorage.setItem('theme', theme);
   }, [theme]);
 
   // Poll or check maintenance status
@@ -87,9 +92,9 @@ const App = () => {
   };
 
   return (
-    <div className="bg-slate-50 dark:bg-[#0B1220] h-screen overflow-hidden flex flex-col antialiased text-slate-800 dark:text-slate-100 selection:bg-blue-500/30">
+    <div className="bg-slate-50 dark:bg-slate-950 h-screen overflow-hidden flex flex-col antialiased text-slate-800 dark:text-slate-100 selection:bg-blue-500/30">
       {maintenanceActive && (
-        <div className="w-full bg-red-600 dark:bg-red-700 text-white py-2 px-4 text-[11px] font-black text-center uppercase tracking-wider flex items-center justify-center gap-1.5 shrink-0 z-50 animate-pulse shadow-md">
+        <div className="w-full bg-red-600 dark:bg-red-700 text-slate-100 dark:text-white py-2 px-4 text-[11px] font-black text-center uppercase tracking-wider flex items-center justify-center gap-1.5 shrink-0 z-50 animate-pulse shadow-md">
           <span>⚠ Maintenance Mode Active: Public users cannot access the platform.</span>
         </div>
       )}
@@ -121,7 +126,7 @@ const App = () => {
             />
 
             {/* MAIN CONTENT */}
-            <main className="flex-1 min-w-0 bg-slate-50 dark:bg-[#0B1220] p-4 md:p-6 overflow-y-scroll overflow-x-hidden custom-scrollbar">
+            <main className="flex-1 min-w-0 bg-slate-50 dark:bg-slate-950 p-4 md:p-6 overflow-y-scroll overflow-x-hidden custom-scrollbar">
               <div className="mx-auto w-full max-w-[1600px] space-y-5">
                 <Routes>
                   <Route path="/" element={<Dashboard token={token} />} />
@@ -145,6 +150,7 @@ const App = () => {
                   <Route path="/settings" element={<SystemSettings token={token} />} />
                   <Route path="/hero-slideshow" element={<HeroSlideshow token={token} />} />
                   <Route path="/banners" element={<Banners token={token} />} />
+                  <Route path="/deal-of-the-day" element={<DealOfTheDay token={token} />} />
                 </Routes>
               </div>
             </main>

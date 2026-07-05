@@ -7,7 +7,7 @@ import { getDeadlineInfo } from "./OrderCard";
 const dlStyle = {
   ok:       "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
   warning:  "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
-  critical: "bg-rose-500/10 text-rose-600 dark:text-rose-450 border-rose-500/20",
+  critical: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20",
   overdue:  "bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/25",
 };
 
@@ -15,7 +15,7 @@ const statusBadgeStyle = (s) => {
   if (s === "Delivered")          return "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20";
   if (s === "Out for Delivery" || s === "Shipped") return "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20";
   if (s === "Packed")             return "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20";
-  return "bg-blue-500/10 text-blue-650 dark:text-blue-400 border-blue-500/20";
+  return "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20";
 };
 
 const fmtDate = (d) =>
@@ -44,20 +44,10 @@ const OrderTimeline = ({ currentStatus }) => {
               key={step} 
               className={`flex items-center gap-3 text-xs font-semibold relative`}
             >
-              <span className={`absolute left-[-22px] h-3 w-3 rounded-full border flex items-center justify-center transition-all ${
-                isCompleted 
-                  ? "bg-blue-600 border-blue-600 text-white shadow-xs" 
-                  : "bg-white dark:bg-[#111827] border-slate-300 dark:border-slate-800"
-              }`}>
-                {isCompleted && <span className="h-1 w-1 rounded-full bg-white" />}
+              <span className={`absolute left-[-22px] h-3 w-3 rounded-full border flex items-center justify-center transition-all ${ isCompleted ? "bg-blue-600 border-blue-600 text-slate-100 dark:text-white shadow-xs" : "bg-white dark:bg-gray-900 border-slate-300 dark:border-slate-800" }`}>
+                {isCompleted && <span className="h-1 w-1 rounded-full bg-white dark:bg-slate-900" />}
               </span>
-              <span className={`transition-colors ${
-                isActive 
-                  ? "text-blue-600 dark:text-blue-400 font-bold" 
-                  : isCompleted 
-                    ? "text-slate-800 dark:text-slate-200" 
-                    : "text-slate-400 dark:text-slate-500 font-medium"
-              }`}>
+              <span className={`transition-colors ${ isActive ? "text-blue-600 dark:text-blue-400 font-bold" : isCompleted ? "text-slate-800 dark:text-slate-200" : "text-slate-400 dark:text-slate-500 font-medium" }`}>
                 {step}
               </span>
             </div>
@@ -108,7 +98,7 @@ const DetailDrawer = ({ order, isOpen, onClose, drivers, onAssign, onStatusUpdat
       />
 
       {/* Drawer Body */}
-      <div className={`absolute top-0 right-0 h-full w-full max-w-md bg-white dark:bg-[#151b26] shadow-2xl flex flex-col justify-between transform transition-transform duration-300 ease-out border-l border-slate-200/80 dark:border-slate-800/85 ${isOpen ? "translate-x-0" : "translate-x-full"}`}>
+      <div className={`absolute top-0 right-0 h-full w-full max-w-md bg-white dark:bg-slate-900 shadow-2xl flex flex-col justify-between transform transition-transform duration-300 ease-out border-l border-slate-200/80 dark:border-slate-800/85 ${isOpen ? "translate-x-0" : "translate-x-full"}`}>
 
         {/* Header */}
         <div className="p-4.5 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
@@ -150,7 +140,7 @@ const DetailDrawer = ({ order, isOpen, onClose, drivers, onAssign, onStatusUpdat
           <OrderTimeline currentStatus={order.orderStatus} />
 
           {/* Deliveryman Assignment Control Panel */}
-          <div className="space-y-3 bg-slate-50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-850 rounded-xl p-4.5">
+          <div className="space-y-3 bg-slate-50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800 rounded-xl p-4.5">
             <div className="flex items-center justify-between">
               <p className="font-bold text-[9px] uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
                 <UserPlus size={11} />
@@ -158,11 +148,7 @@ const DetailDrawer = ({ order, isOpen, onClose, drivers, onAssign, onStatusUpdat
               </p>
               
               {order.deliverymanId && (
-                <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest border ${
-                  order.assignmentStatus === "Assigned"
-                    ? "bg-amber-500/10 text-amber-600 border-amber-500/20 dark:bg-amber-500/5 dark:text-amber-400 dark:border-amber-500/15 animate-pulse"
-                    : "bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:bg-emerald-500/5 dark:text-emerald-400 dark:border-emerald-500/15"
-                }`}>
+                <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest border ${ order.assignmentStatus === "Assigned" ? "bg-amber-500/10 text-amber-600 border-amber-500/20 dark:bg-amber-500/5 dark:text-amber-400 dark:border-amber-500/15 animate-pulse" : "bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:bg-emerald-500/5 dark:text-emerald-400 dark:border-emerald-500/15" }`}>
                   {order.assignmentStatus === "Assigned" ? "Awaiting Response" : order.assignmentStatus}
                 </span>
               )}
@@ -170,7 +156,7 @@ const DetailDrawer = ({ order, isOpen, onClose, drivers, onAssign, onStatusUpdat
 
             {/* Awaiting response notice */}
             {order.deliverymanId && order.assignmentStatus === "Assigned" && (
-              <div className="flex items-start gap-2 bg-amber-500/[0.07] border border-amber-550/20 rounded-lg p-2.5 text-[10px] text-amber-700 dark:text-amber-400">
+              <div className="flex items-start gap-2 bg-amber-500/[0.07] border border-amber-500/20 rounded-lg p-2.5 text-[10px] text-amber-700 dark:text-amber-400">
                 <AlertTriangle size={13} className="text-amber-500 shrink-0 mt-0.5" />
                 <p className="leading-normal font-semibold">
                   Agent has not accepted yet. If they are not responding, you can assign another driver below.
@@ -179,7 +165,7 @@ const DetailDrawer = ({ order, isOpen, onClose, drivers, onAssign, onStatusUpdat
             )}
 
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-slate-400 dark:text-slate-550 uppercase tracking-wider block">
+              <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">
                 {order.deliverymanId ? "Change Assignment" : "Assign Agent"}
               </label>
               
@@ -188,7 +174,7 @@ const DetailDrawer = ({ order, isOpen, onClose, drivers, onAssign, onStatusUpdat
                   value={selectedDriverId}
                   onChange={(e) => setSelectedDriverId(e.target.value)}
                   disabled={assigning}
-                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-350 outline-none focus:ring-2 focus:ring-indigo-500/50 disabled:opacity-50 transition"
+                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 outline-none disabled:opacity-50 transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                 >
                   <option value="">Unassigned</option>
                   {drivers
@@ -205,7 +191,7 @@ const DetailDrawer = ({ order, isOpen, onClose, drivers, onAssign, onStatusUpdat
                   <button
                     onClick={handleAssignDriver}
                     disabled={assigning}
-                    className="w-full py-2 bg-indigo-650 hover:bg-indigo-700 text-white rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-150 active:scale-98 shadow-sm hover:shadow disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-slate-100 dark:text-white rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-150 active:scale-98 shadow-sm hover:shadow disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     {assigning ? (
                       <span>Assigning...</span>
@@ -233,7 +219,7 @@ const DetailDrawer = ({ order, isOpen, onClose, drivers, onAssign, onStatusUpdat
                       <p className="text-[10px] text-slate-400 mt-1">Size: <span className="font-bold text-slate-600 dark:text-slate-300">{item.size}</span></p>
                     )}
                   </div>
-                  <span className="font-bold text-slate-550 dark:text-slate-400 whitespace-nowrap ml-2">Qty {item.qty}</span>
+                  <span className="font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap ml-2">Qty {item.qty}</span>
                 </div>
               ))}
             </div>
@@ -253,14 +239,14 @@ const DetailDrawer = ({ order, isOpen, onClose, drivers, onAssign, onStatusUpdat
                 )}
               </div>
               <div className="flex items-start gap-2 text-slate-600 dark:text-slate-300">
-                <MapPin size={13} className="mt-0.5 shrink-0 text-slate-405" />
+                <MapPin size={13} className="mt-0.5 shrink-0 text-slate-400" />
                 <p className="leading-relaxed font-bold">
                   {order.address.street}, {order.address.city},<br />
                   {order.address.state}, {order.address.country}
                   {order.address.zipcode ? ` - ${order.address.zipcode}` : ""}
                 </p>
               </div>
-              <div className="flex items-center gap-2 text-slate-600 dark:text-slate-350">
+              <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
                 <Phone size={13} className="text-slate-400 shrink-0" />
                 <span className="font-bold text-slate-800 dark:text-slate-200">{order.address.phone}</span>
               </div>
@@ -280,11 +266,7 @@ const DetailDrawer = ({ order, isOpen, onClose, drivers, onAssign, onStatusUpdat
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-slate-500">Status:</span>
-                <span className={`px-2 py-0.5 rounded-md font-bold text-[9px] border uppercase ${
-                  String(order.paymentStatus).toLowerCase() === "paid" || order.paymentStatus === true
-                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-450 border-emerald-500/20"
-                    : "bg-amber-500/10 text-amber-600 dark:text-amber-450 border-amber-500/20"
-                }`}>
+                <span className={`px-2 py-0.5 rounded-md font-bold text-[9px] border uppercase ${ String(order.paymentStatus).toLowerCase() === "paid" || order.paymentStatus === true ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20" }`}>
                   {String(order.paymentStatus).toLowerCase() === "paid" || order.paymentStatus === true ? "Paid" : "Pending"}
                 </span>
               </div>

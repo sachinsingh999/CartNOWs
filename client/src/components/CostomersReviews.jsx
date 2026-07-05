@@ -86,11 +86,7 @@ const ReviewCard = ({ review, getAvatarStyle }) => {
           <Star
             key={star}
             size={11}
-            className={`${
-              star <= rating
-                ? "fill-amber-400 stroke-amber-400"
-                : "stroke-slate-200 dark:stroke-slate-700 fill-slate-100 dark:fill-slate-800"
-            }`}
+            className={`${ star <= rating ? "fill-amber-400 stroke-amber-400" : "stroke-slate-200 dark:stroke-slate-700 fill-slate-100 dark:fill-slate-800" }`}
           />
         ))}
       </div>
@@ -109,7 +105,7 @@ const ReviewCard = ({ review, getAvatarStyle }) => {
   const mediaUrl = hasMedia ? mockPhotos[(review.name || "C").charCodeAt(0) % mockPhotos.length] : null;
 
   return (
-    <div className="rounded-2xl border border-slate-150 dark:border-slate-800 bg-white dark:bg-slate-900/40 p-3.5 shadow-xs transition-all duration-200 hover:shadow-sm text-left space-y-3">
+    <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 p-3.5 shadow-xs transition-all duration-200 hover:shadow-sm text-left space-y-3">
       {/* Top row: Profile & Stars */}
       <div className="flex justify-between items-start gap-4">
         <div className="flex items-center gap-2.5">
@@ -120,7 +116,7 @@ const ReviewCard = ({ review, getAvatarStyle }) => {
             <div className="flex items-center gap-1.5 flex-wrap">
               <p className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-slate-100 leading-none">{displayName}</p>
               {!isAnonymous && (
-                <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/20 px-1.5 py-0.5 text-[8px] font-black uppercase text-emerald-600 dark:text-emerald-450 border border-emerald-100 dark:border-emerald-900/35">
+                <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/20 px-1.5 py-0.5 text-[8px] font-black uppercase text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/35">
                   <ShieldCheck size={9} />
                   <span>Verified Buyer</span>
                 </span>
@@ -143,7 +139,7 @@ const ReviewCard = ({ review, getAvatarStyle }) => {
 
       {/* Product Variant purchased */}
       <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 leading-none">
-        Variant: <span className="text-slate-600 dark:text-slate-350">{variantText}</span>
+        Variant: <span className="text-slate-600 dark:text-slate-300">{variantText}</span>
       </p>
 
       {/* Review content */}
@@ -174,7 +170,7 @@ const ReviewCard = ({ review, getAvatarStyle }) => {
       {/* Media Thumbnails if any */}
       {mediaUrl && (
         <div className="flex gap-2 pt-0.5">
-          <div className="relative group/thumb w-14 h-14 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-50 cursor-zoom-in">
+          <div className="relative group/thumb w-14 h-14 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 cursor-zoom-in">
             <img src={mediaUrl} alt="review media" className="w-full h-full object-cover transition-transform duration-300 group-hover/thumb:scale-110" />
             <div className="absolute inset-0 bg-black/10 opacity-0 group-hover/thumb:opacity-100 transition-opacity" />
           </div>
@@ -186,9 +182,7 @@ const ReviewCard = ({ review, getAvatarStyle }) => {
         <div className="flex items-center gap-3">
           <button
             onClick={handleHelpfulClick}
-            className={`flex items-center gap-1 hover:text-slate-700 dark:hover:text-slate-300 transition-colors cursor-pointer ${
-              hasVotedHelpful ? "text-indigo-600 dark:text-indigo-400" : ""
-            }`}
+            className={`flex items-center gap-1 hover:text-slate-700 dark:hover:text-slate-300 transition-colors cursor-pointer ${ hasVotedHelpful ? "text-indigo-600 dark:text-indigo-400" : "" }`}
           >
             <ThumbsUp size={11} className={hasVotedHelpful ? "fill-indigo-600/10" : ""} />
             <span>Helpful ({helpfulCount})</span>
@@ -196,9 +190,7 @@ const ReviewCard = ({ review, getAvatarStyle }) => {
           
           <button
             onClick={handleLikeClick}
-            className={`flex items-center gap-1 hover:text-rose-500 dark:hover:text-rose-400 transition-colors cursor-pointer ${
-              isLiked ? "text-rose-500 dark:text-rose-450" : ""
-            }`}
+            className={`flex items-center gap-1 hover:text-rose-500 dark:hover:text-rose-400 transition-colors cursor-pointer ${ isLiked ? "text-rose-500 dark:text-rose-400" : "" }`}
           >
             <Heart size={11} className={isLiked ? "fill-rose-500 stroke-rose-500" : ""} />
             <span>{isLiked ? "Liked" : "Like"}</span>
@@ -216,9 +208,7 @@ const ReviewCard = ({ review, getAvatarStyle }) => {
         <button
           onClick={handleReportClick}
           disabled={isReported}
-          className={`flex items-center gap-1 hover:text-rose-600 dark:hover:text-rose-400 transition-colors cursor-pointer ${
-            isReported ? "text-rose-600 dark:text-rose-500 font-bold" : ""
-          }`}
+          className={`flex items-center gap-1 hover:text-rose-600 dark:hover:text-rose-400 transition-colors cursor-pointer ${ isReported ? "text-rose-600 dark:text-rose-500 font-bold" : "" }`}
         >
           <Flag size={10} />
           <span>{isReported ? "Reported" : "Report"}</span>
@@ -253,7 +243,7 @@ const ReviewCard = ({ review, getAvatarStyle }) => {
                 </span>
                 <span className="text-[8.5px] font-bold text-slate-400">Verified Employee</span>
               </div>
-              <p className="text-xs text-slate-600 dark:text-slate-350 leading-relaxed pl-2.5 border-l-2 border-indigo-200 dark:border-indigo-850">
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed pl-2.5 border-l-2 border-indigo-200 dark:border-indigo-800">
                 {rep}
               </p>
             </div>

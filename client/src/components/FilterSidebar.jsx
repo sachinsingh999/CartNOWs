@@ -96,7 +96,7 @@ const FilterSidebar = ({
       {/* 3. Categories Section */}
       <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800 space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-[11px] font-black uppercase tracking-wider text-[#282c3f] dark:text-slate-350">
+          <span className="text-[11px] font-black uppercase tracking-wider text-[#282c3f] dark:text-slate-300">
             Categories
           </span>
           <span className="text-[11px] text-slate-400">🔍</span>
@@ -127,7 +127,7 @@ const FilterSidebar = ({
                       }}
                     >
                       {isChecked && (
-                        <svg className="w-2.5 h-2.5 text-white stroke-[4px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-2.5 h-2.5 text-slate-100 dark:text-white stroke-[4px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4.5" d="M5 13l4 4L19 7" />
                         </svg>
                       )}
@@ -155,7 +155,7 @@ const FilterSidebar = ({
       {brands.length > 0 && (
         <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800 space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-black uppercase tracking-wider text-[#282c3f] dark:text-slate-350">
+            <span className="text-[11px] font-black uppercase tracking-wider text-[#282c3f] dark:text-slate-300">
               Brand
             </span>
             <span className="text-[11px] text-slate-400">🔍</span>
@@ -186,7 +186,7 @@ const FilterSidebar = ({
                         }}
                       >
                         {isChecked && (
-                          <svg className="w-2.5 h-2.5 text-white stroke-[4px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-2.5 h-2.5 text-slate-100 dark:text-white stroke-[4px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4.5" d="M5 13l4 4L19 7" />
                           </svg>
                         )}
@@ -213,7 +213,7 @@ const FilterSidebar = ({
 
       {/* 5. Price Section */}
       <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800 space-y-4">
-        <span className="text-[11px] font-black uppercase tracking-wider text-[#282c3f] dark:text-slate-350 block">
+        <span className="text-[11px] font-black uppercase tracking-wider text-[#282c3f] dark:text-slate-300 block">
           Price
         </span>
         <div className="space-y-3">
@@ -236,7 +236,7 @@ const FilterSidebar = ({
 
       {/* 6. Discount Range Section */}
       <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800 space-y-3">
-        <span className="text-[11px] font-black uppercase tracking-wider text-[#282c3f] dark:text-slate-350 block">
+        <span className="text-[11px] font-black uppercase tracking-wider text-[#282c3f] dark:text-slate-300 block">
           Discount Range
         </span>
         <div className="space-y-2.5">
@@ -276,7 +276,7 @@ const FilterSidebar = ({
 
       {/* 7. Extra details (Locations & Availability) */}
       <div className="px-5 py-4 space-y-3">
-        <span className="text-[11px] font-black uppercase tracking-wider text-[#282c3f] dark:text-slate-350 block">
+        <span className="text-[11px] font-black uppercase tracking-wider text-[#282c3f] dark:text-slate-300 block">
           Availability
         </span>
         <label className="flex items-center gap-3 cursor-pointer select-none group text-xs text-slate-700 dark:text-slate-300">
@@ -294,7 +294,7 @@ const FilterSidebar = ({
             }}
           >
             {inStockOnly && (
-              <svg className="w-2.5 h-2.5 text-white stroke-[4px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-2.5 h-2.5 text-slate-100 dark:text-white stroke-[4px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="4.5" d="M5 13l4 4L19 7" />
               </svg>
             )}
@@ -309,7 +309,7 @@ const FilterSidebar = ({
         <div className="p-4 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800">
           <button
             onClick={onCloseMobileFilters}
-            className="w-full bg-[#ff3f6c] text-white py-2 rounded text-xs font-black uppercase tracking-wider cursor-pointer"
+            className="w-full bg-[#ff3f6c] text-slate-100 dark:text-white py-2 rounded text-xs font-black uppercase tracking-wider cursor-pointer"
           >
             Apply Filters ({totalResultsCount})
           </button>

@@ -1,4 +1,5 @@
 import productModel from "../models/productModel.js";
+import { v2 as cloudinary } from "cloudinary";
 
 
 
@@ -564,4 +565,109 @@ Respond strictly in JSON format:
     res.status(500).json({ success: false, message: "AI field improvement failed: " + error.message });
   }
 };
+
+export const generateProductImage = async (req, res) => {
+  try {
+    const { name, description } = req.body;
+    if (!name || !name.trim()) {
+      return res.status(400).json({ success: false, message: "Product name is required for image generation." });
+    }
+
+    const geminiApiKey = process.env.GEMINI_API_KEY;
+    if (!geminiApiKey) {
+      throw new Error("GEMINI_API_KEY is not configured in server .env");
+    }
+
+    const prompt = `Professional studio product photography of a ${name}. ${description || ""}. Clean background, high-end commercial packaging, soft cinematic lighting, 8k resolution, photorealistic.`;
+    
+    console.log("Starting Gemini Imagen 4.0 Image Generation with prompt:", prompt);
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${geminiApiKey}`;
+    
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        instances: [
+          {
+            prompt
+          }
+        ],
+        parameters: {
+          sampleCount: 1,
+          aspectRatio: "1:1",
+          outputMimeType: "image/png"
+        }
+      })
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data?.error?.message || `Gemini API returned status ${response.status}`);
+    }
+
+    const prediction = data?.predictions?.[0];
+    if (!prediction || !prediction.bytesBase64Encoded) {
+      throw new Error("No image prediction bytes returned from Gemini");
+    }
+
+    console.log("Gemini generation successful. Uploading base64 image to Cloudinary...");
+    const uploadResult = await cloudinary.uploader.upload(`data:image/png;base64,${prediction.bytesBase64Encoded}`, {
+      folder: "products",
+      resource_type: "image"
+    });
+
+    console.log("Cloudinary upload successful:", uploadResult.secure_url);
+    res.json({
+      success: true,
+      imageUrl: uploadResult.secure_url,
+      demo: false,
+      message: "AI product image generated successfully."
+    });
+  } catch (error) {
+    console.error("Gemini AI image generation failed. Falling back to mock/demo image. Error:", error.message);
+    
+    // Pick a mock image as fallback
+    const mockImages = [
+      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800", // Nike Shoes
+      "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800", // Watch
+      "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800", // Headphones
+      "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=800", // Sunglasses
+      "https://images.unsplash.com/photo-1560343090-f0409e92791a?w=800"  // Boot/shoes
+    ];
+    let index = 0;
+    const name = req.body.name || "";
+    if (name) {
+      let hash = 0;
+      for (let i = 0; i < name.length; i++) {
+        hash = name.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      index = Math.abs(hash) % mockImages.length;
+    }
+    const mockImageUrl = mockImages[index];
+
+    // Upload fallback to Cloudinary
+    let cloudinaryUrl = mockImageUrl;
+    try {
+      console.log("Uploading fallback image to Cloudinary...");
+      const uploadResult = await cloudinary.uploader.upload(mockImageUrl, {
+        folder: "products",
+        resource_type: "image"
+      });
+      cloudinaryUrl = uploadResult.secure_url;
+      console.log("Cloudinary fallback upload successful:", cloudinaryUrl);
+    } catch (uploadErr) {
+      console.error("Cloudinary upload of fallback image failed:", uploadErr.message);
+    }
+
+    res.json({
+      success: true,
+      imageUrl: cloudinaryUrl,
+      demo: true,
+      message: `Gemini failed (${error.message}). Fell back to demo mode.`
+    });
+  }
+};
+
 

@@ -433,7 +433,7 @@ const getAllAppReviews = async (req, res) => {
   try {
     const usersWithReviews = await userModel.find(
       { "appReview.rating": { $gt: 0 } },
-      "name appReview"
+      "name profilePhoto appReview"
     );
 
     const reviews = usersWithReviews.map(user => {
@@ -449,7 +449,8 @@ const getAllAppReviews = async (req, res) => {
         date: user.appReview.createdAt 
           ? new Date(user.appReview.createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" })
           : "Recently",
-        initials: initials || "U"
+        initials: initials || "U",
+        profilePhoto: user.profilePhoto || ""
       };
     });
 

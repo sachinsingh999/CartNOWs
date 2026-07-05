@@ -12,11 +12,8 @@ section, [id] {
   scroll-margin-top: var(--navbar-height, 80px);
 }
 
-/* Smooth transition for theme switching */
-*, *::before, *::after {
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, box-shadow, opacity;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 200ms;
+* {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 /* Exclude Leaflet elements from universal transitions to prevent map rendering bugs */
@@ -86,7 +83,7 @@ section, [id] {
 
 body {
   font-family: var(--font-primary);
-  background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+  background: linear-gradient(135deg, var(--color-slate-950), var(--color-indigo-950), var(--color-slate-900));
   background-attachment: fixed;
   color: #e0e0e0;
 }

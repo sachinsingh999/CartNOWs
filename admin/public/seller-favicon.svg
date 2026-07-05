@@ -1,0 +1,12 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Lightning Gradient matching tab screenshot (purple to blue) -->
+    <linearGradient id="lightningGrad" x1="18" y1="12" x2="44" y2="52" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#c084fc" /> <!-- Soft violet -->
+      <stop offset="35%" stop-color="#a855f7" /> <!-- Purple -->
+      <stop offset="100%" stop-color="#2563eb" /> <!-- Blue -->
+    </linearGradient>
+  </defs>
+  <!-- Stylized Lightning Bolt path matching the screenshot -->
+  <path d="M22 14 H44 L32 30 H44 L20 54 L28 36 H18 Z" fill="url(#lightningGrad)" />
+</svg>

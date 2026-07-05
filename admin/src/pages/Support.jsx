@@ -143,12 +143,12 @@ const Support = ({ token }) => {
       {/* Header and Stats */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-slate-450">
+          <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
             Customer Care Desk
           </p>
           <div className="flex items-center gap-2.5 mt-1">
-            <MessageSquare size={22} className="text-slate-900" />
-            <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">Help Requests</h2>
+            <MessageSquare size={22} className="text-slate-900 dark:text-slate-100" />
+            <h2 className="text-xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Help Requests</h2>
           </div>
         </div>
         <p className="text-xs text-slate-500 font-medium">
@@ -157,10 +157,10 @@ const Support = ({ token }) => {
       </div>
 
       {/* Date Filter Bar */}
-      <div className="bg-white border border-slate-200/80 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200/80 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm">
         <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-          <span className="text-xs font-bold text-slate-450 uppercase tracking-wider mr-2 flex items-center gap-1.5">
-            <Calendar size={14} className="text-slate-450" /> Filter Date:
+          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mr-2 flex items-center gap-1.5">
+            <Calendar size={14} className="text-slate-400" /> Filter Date:
           </span>
           {[
             { id: "all", label: "All Time" },
@@ -179,11 +179,7 @@ const Support = ({ token }) => {
                   handlePresetChange(preset.id);
                 }
               }}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition duration-150 cursor-pointer ${
-                datePreset === preset.id
-                  ? "bg-slate-900 text-white shadow-sm"
-                  : "text-slate-500 hover:bg-slate-50 border border-slate-100 hover:text-slate-900"
-              }`}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition duration-150 cursor-pointer ${ datePreset === preset.id ? "bg-slate-900 text-slate-100 dark:text-white shadow-sm" : "text-slate-500 hover:bg-slate-50 border border-slate-100 hover:text-slate-900" }`}
             >
               {preset.label}
             </button>
@@ -197,14 +193,14 @@ const Support = ({ token }) => {
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs font-bold text-slate-800 outline-none transition focus:bg-white focus:border-slate-900 focus:ring-4 focus:ring-slate-950/5"
+              className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 px-3 py-2 text-xs font-bold text-slate-800 dark:text-slate-100 outline-none transition focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
             />
             <span className="text-xs text-slate-400 font-bold">to</span>
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="rounded-xl border border-slate-200 bg-slate-50/50 px-3 py-2 text-xs font-bold text-slate-800 outline-none transition focus:bg-white focus:border-slate-900 focus:ring-4 focus:ring-slate-950/5"
+              className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 px-3 py-2 text-xs font-bold text-slate-800 dark:text-slate-100 outline-none transition focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
             />
             {(startDate || endDate) && (
               <button
@@ -222,42 +218,42 @@ const Support = ({ token }) => {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Total Tickets */}
-        <div className="bg-white border border-slate-200/80 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-50 text-slate-700">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-700">
             <Inbox size={20} />
           </div>
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Tickets</p>
-            <p className="text-lg font-bold text-slate-900 mt-0.5">{totalTickets}</p>
+            <p className="text-lg font-bold text-slate-900 dark:text-slate-100 mt-0.5">{totalTickets}</p>
           </div>
         </div>
 
         {/* Open Tickets */}
-        <div className="bg-white border border-slate-200/80 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
           <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${openTickets > 0 ? "bg-rose-50 text-rose-600 animate-pulse" : "bg-slate-50 text-slate-700"}`}>
             <AlertCircle size={20} />
           </div>
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Open Tickets</p>
-            <p className="text-lg font-bold text-slate-900 mt-0.5">{openTickets}</p>
+            <p className="text-lg font-bold text-slate-900 dark:text-slate-100 mt-0.5">{openTickets}</p>
           </div>
         </div>
 
         {/* Resolved Tickets */}
-        <div className="bg-white border border-slate-200/80 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
             <CheckCircle size={20} />
           </div>
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Resolved</p>
-            <p className="text-lg font-bold text-slate-900 mt-0.5">{resolvedTickets}</p>
+            <p className="text-lg font-bold text-slate-900 dark:text-slate-100 mt-0.5">{resolvedTickets}</p>
           </div>
         </div>
       </div>
 
       {/* Tickets List */}
       {filteredRequests.length === 0 ? (
-        <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-white py-16 text-center text-sm text-slate-500 shadow-sm flex flex-col items-center justify-center gap-2">
+        <div className="rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-16 text-center text-sm text-slate-500 shadow-sm flex flex-col items-center justify-center gap-2">
           <MessageSquare size={32} className="text-slate-300" />
           <div>
             <p className="font-semibold text-slate-700">No support tickets found</p>
@@ -269,7 +265,7 @@ const Support = ({ token }) => {
           {filteredRequests.map((request) => (
             <article
               key={request._id}
-              className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm hover:shadow-md transition duration-200"
+              className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 p-6 shadow-sm hover:shadow-md transition duration-200"
             >
               <div className="grid gap-6 xl:grid-cols-[1fr_300px]">
                 {/* Inquiry Details Column */}
@@ -279,7 +275,7 @@ const Support = ({ token }) => {
                       <span className="rounded-lg bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600 uppercase tracking-wider">
                         {request.category}
                       </span>
-                      <h3 className="mt-2.5 text-base font-extrabold text-slate-900 tracking-tight">
+                      <h3 className="mt-2.5 text-base font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
                         {request.subject}
                       </h3>
                       
@@ -290,7 +286,7 @@ const Support = ({ token }) => {
                           {request.name}
                         </span>
                         <span className="flex items-center gap-1">
-                          <Mail size={13} className="text-slate-450" />
+                          <Mail size={13} className="text-slate-400" />
                           <a href={`mailto:${request.email}`} className="hover:text-slate-900 transition underline decoration-slate-200 decoration-1">
                             {request.email}
                           </a>
@@ -305,8 +301,8 @@ const Support = ({ token }) => {
 
                   {/* Customer Message Bubble */}
                   <div className="relative rounded-2xl border border-slate-100 bg-slate-50/50 p-4 text-xs">
-                    <p className="font-bold text-slate-450 uppercase tracking-wider text-[9px] mb-1.5 block">Customer Message</p>
-                    <p className="text-slate-800 font-medium leading-relaxed whitespace-pre-line">{request.message}</p>
+                    <p className="font-bold text-slate-400 uppercase tracking-wider text-[9px] mb-1.5 block">Customer Message</p>
+                    <p className="text-slate-800 dark:text-slate-100 font-medium leading-relaxed whitespace-pre-line">{request.message}</p>
                   </div>
 
                   {/* Submission date info */}
@@ -329,7 +325,7 @@ const Support = ({ token }) => {
                     <select
                       value={request.status}
                       onChange={(event) => handleUpdate(request._id, event.target.value)}
-                      className={`w-full border rounded-xl px-3 py-2.5 text-xs font-bold bg-white text-slate-800 outline-none transition focus:ring-4 focus:ring-slate-900/5 focus:border-slate-900 ${getStatusBadgeStyle(request.status)}`}
+                      className={`w-full border rounded-xl px-3 py-2.5 text-xs font-bold bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none transition ${getStatusBadgeStyle(request.status)} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900`}
                     >
                       <option value="Open">Open</option>
                       <option value="In Progress">In Progress</option>
@@ -349,13 +345,13 @@ const Support = ({ token }) => {
                         }))
                       }
                       placeholder="Type a response to update the customer..."
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50/20 px-3.5 py-2.5 text-xs outline-none transition focus:bg-white focus:ring-4 focus:ring-slate-950/5 focus:border-slate-900 placeholder:text-slate-400 resize-none"
+                      className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/20 px-3.5 py-2.5 text-xs outline-none transition focus:bg-white placeholder:text-slate-400 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     />
                   </div>
 
                   <button
                     onClick={() => handleUpdate(request._id, request.status)}
-                    className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 text-xs font-bold transition shadow-sm active:scale-98 cursor-pointer mt-1"
+                    className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-100 dark:text-white px-4 py-2.5 text-xs font-bold transition shadow-sm active:scale-98 cursor-pointer mt-1"
                   >
                     <CornerDownRight size={13} />
                     Save Reply

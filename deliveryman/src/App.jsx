@@ -22,9 +22,11 @@ const App = () => {
     JSON.parse(localStorage.getItem("deliveryman_info")) || null
   );
 
-  const [theme, setTheme] = useState(
-    localStorage.getItem("deliveryman_theme") || "dark"
-  );
+  const [theme, setTheme] = useState(() => {
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme) return savedTheme;
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  });
 
   useEffect(() => {
     if (theme === "dark") {
@@ -32,7 +34,7 @@ const App = () => {
     } else {
       document.documentElement.classList.remove("dark");
     }
-    localStorage.setItem("deliveryman_theme", theme);
+    localStorage.setItem("theme", theme);
   }, [theme]);
 
   const [orders, setOrders] = useState([]);
@@ -183,7 +185,7 @@ const App = () => {
   }
 
   return (
-    <div className="bg-[#F9FAFB] dark:bg-[#070A13] min-h-screen flex flex-col antialiased text-slate-900 dark:text-slate-100 pb-16 lg:pb-0 transition-colors duration-200">
+    <div className="bg-slate-50 dark:bg-slate-950 min-h-screen flex flex-col antialiased text-slate-900 dark:text-slate-100 pb-16 lg:pb-0 transition-colors duration-200">
       <ToastContainer position="top-right" autoClose={3000} theme={theme} />
       {token === "" ? (
         <div className="relative">
@@ -194,7 +196,7 @@ const App = () => {
                 <div className="absolute top-4 right-4 z-50">
                   <button
                     onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                    className="p-2.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-900 dark:bg-[#0F1321]/60 dark:border-slate-800 dark:text-slate-300 dark:hover:text-white transition shadow-sm cursor-pointer"
+                    className="p-2.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-900 dark:bg-slate-900/60 dark:border-slate-800 dark:text-slate-300 dark:hover:text-white transition shadow-sm cursor-pointer"
                     title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
                   >
                     {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
@@ -208,7 +210,7 @@ const App = () => {
                 <div className="absolute top-4 right-4 z-50">
                   <button
                     onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                    className="p-2.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-900 dark:bg-[#0F1321]/60 dark:border-slate-800 dark:text-slate-300 dark:hover:text-white transition shadow-sm cursor-pointer"
+                    className="p-2.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-900 dark:bg-slate-900/60 dark:border-slate-800 dark:text-slate-300 dark:hover:text-white transition shadow-sm cursor-pointer"
                     title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
                   >
                     {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
@@ -241,7 +243,7 @@ const App = () => {
           />
 
           {/* Main Content */}
-          <main className="flex-1 bg-slate-50 dark:bg-[#0A0D18]/40 p-4 md:p-8 transition-colors">
+          <main className="flex-1 bg-slate-50 dark:bg-slate-950/40 p-4 md:p-8 transition-colors">
             <div className="mx-auto max-w-7xl">
               <Routes>
                 <Route path="/" element={<Dashboard {...dashboardProps} />} />
@@ -255,7 +257,7 @@ const App = () => {
           </main>
 
           {/* Sticky Mobile/Tablet Bottom Navigation Bar */}
-          <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-slate-955 dark:bg-slate-950/95 border-t border-slate-200 dark:border-slate-900 backdrop-blur-lg flex justify-around py-2.5 shadow-2xl lg:hidden transition-colors">
+          <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-slate-950 dark:bg-slate-950/95 border-t border-slate-200 dark:border-slate-900 backdrop-blur-lg flex justify-around py-2.5 shadow-2xl lg:hidden transition-colors">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -263,21 +265,19 @@ const App = () => {
                 <button
                   key={tab.id}
                   onClick={() => handleTabClick(tab.clickId)}
-                  className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition duration-150 relative cursor-pointer ${
-                    isActive ? "text-blue-600 dark:text-indigo-400 font-extrabold" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                  }`}
+                  className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition duration-150 relative cursor-pointer ${ isActive ? "text-blue-600 dark:text-indigo-400 font-extrabold" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white" }`}
                 >
                   <div className="relative">
                     <Icon size={15} className="stroke-[2.2]" />
                     {tab.count > 0 && (
-                      <span className="absolute -top-1.5 -right-2 px-1 py-0.2 bg-blue-600 dark:bg-indigo-600 text-white rounded-full text-[8px] font-extrabold min-w-[12px] text-center border border-white dark:border-slate-955">
+                      <span className="absolute -top-1.5 -right-2 px-1 py-0.2 bg-blue-600 dark:bg-indigo-600 text-slate-100 dark:text-white rounded-full text-[8px] font-extrabold min-w-[12px] text-center border border-white/10 dark:border-slate-800 dark:border-slate-950">
                         {tab.count}
                       </span>
                     )}
                   </div>
                   <span className="text-[9px] mt-1 uppercase font-black tracking-wider text-[8px]">{tab.label}</span>
                   {isActive && (
-                    <span className="absolute bottom-0 h-0.5 w-6 bg-blue-600 dark:bg-indigo-550 dark:bg-indigo-500 rounded-full" />
+                    <span className="absolute bottom-0 h-0.5 w-6 bg-blue-600 dark:bg-indigo-500 dark:bg-indigo-500 rounded-full" />
                   )}
                 </button>
               );

@@ -1,0 +1,27 @@
+{
+  "name": "Nike Air Max Pulse",
+  "category": "Footwear",
+  "subCategory": "Sneakers",
+  "price": 12999,
+  "images": [
+    "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&auto=format&fit=crop&q=80"
+  ],
+  "brand": "Nike",
+  "stock": 120,
+  "sku": "NK-AMP-001",
+  "audience": "Unisex",
+  "description": "The Nike Air Max Pulse pulls inspiration from the London music scene, bringing an underground touch to the iconic Air Max line. Its textile-wrapped midsole and point-loaded cushioning deliver a clean, durable look and reliable comfort.",
+  "shortDescription": "Stylishly comfortable sneakers featuring advanced Air Max cushioning and a modern design.",
+  "tags": ["shoes", "sneakers", "nike", "running", "casual"],
+  "keywords": ["nike air max", "sneakers for men", "unisex shoes", "running footwear"],
+  "collections": ["Trending Now", "Summer Essentials"],
+  "specifications": [
+    { "key": "Sole Material", "value": "Rubber" },
+    { "key": "Upper Material", "value": "Mesh & Leather" },
+    { "key": "Closure", "value": "Lace-Up" }
+  ],
+  "attributes": {
+    "Color": ["Red", "White", "Black"],
+    "Material": ["Breathable Mesh", "Synthetic Leather"]
+  }
+}

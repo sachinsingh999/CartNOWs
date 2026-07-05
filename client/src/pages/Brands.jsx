@@ -20,12 +20,12 @@ const Brands = () => {
     const hash = name.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
     const styles = [
       { colorClass: "bg-slate-900 border-slate-800 text-white", badgeColor: "bg-[#EF4444]", textColor: "text-slate-400" },
-      { colorClass: "bg-[#1E3A8A] border-[#1E40AF]/30 text-white", badgeColor: "bg-[#3B82F6]", textColor: "text-blue-205" },
+      { colorClass: "bg-[#1E3A8A] border-[#1E40AF]/30 text-white", badgeColor: "bg-[#3B82F6]", textColor: "text-blue-200" },
       { colorClass: "bg-[#1E293B] border-slate-800 text-white", badgeColor: "bg-[#10B981]", textColor: "text-slate-400" },
       { colorClass: "bg-slate-950 border-slate-800 text-white", badgeColor: "bg-[#F97316]", textColor: "text-slate-400" },
-      { colorClass: "bg-[#991B1B] border-[#B91C1C]/30 text-white", badgeColor: "bg-[#A855F7]", textColor: "text-red-205" },
+      { colorClass: "bg-[#991B1B] border-[#B91C1C]/30 text-white", badgeColor: "bg-[#A855F7]", textColor: "text-red-200" },
       { colorClass: "bg-[#D97706] border-[#EA580C]/30 text-white", badgeColor: "bg-[#06B6D4]", textColor: "text-amber-100" },
-      { colorClass: "bg-[#7F1D1D] border-red-950 text-white", badgeColor: "bg-[#EC4899]", textColor: "text-red-250" },
+      { colorClass: "bg-[#7F1D1D] border-red-950 text-white", badgeColor: "bg-[#EC4899]", textColor: "text-red-200" },
       { colorClass: "bg-[#0F172A] border-slate-800 text-white", badgeColor: "bg-[#3B82F6]", textColor: "text-slate-400" }
     ];
     return styles[hash % styles.length];
@@ -71,14 +71,14 @@ const Brands = () => {
 
       {/* Header section */}
       <div className="mb-12">
-        <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-blue-650 bg-blue-50 dark:text-blue-300 dark:bg-blue-950/40 px-3 py-1.5 rounded-lg mb-3">
+        <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-blue-600 bg-blue-50 dark:text-blue-300 dark:bg-blue-950/40 px-3 py-1.5 rounded-lg mb-3">
           <ShieldCheck size={11} className="stroke-[2.5]" />
           Authorized Brand Stores
         </span>
         <h1 className="text-4xl font-black tracking-tight text-slate-800 dark:text-slate-100">
-          Official Partners & <span className="text-blue-650 dark:text-blue-400">Brands</span>
+          Official Partners & <span className="text-blue-600 dark:text-blue-400">Brands</span>
         </h1>
-        <p className="text-sm font-bold text-slate-455 dark:text-slate-500 mt-2 max-w-[480px]">
+        <p className="text-sm font-bold text-slate-500 dark:text-slate-500 mt-2 max-w-[480px]">
           Shop directly from authentic global brands with official warranty, premium support, and exclusive offers.
         </p>
       </div>
@@ -87,7 +87,7 @@ const Brands = () => {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[1, 2, 3, 4].map(n => (
-            <div key={n} className="bg-slate-900 border border-slate-800 text-white rounded-[32px] p-6 h-[390px] animate-pulse flex flex-col justify-between">
+            <div key={n} className="bg-slate-900 border border-slate-800 text-slate-100 dark:text-white rounded-[32px] p-6 h-[390px] animate-pulse flex flex-col justify-between">
               <div>
                 <div className="flex justify-between items-start mb-4">
                   <div className="space-y-2">
@@ -112,9 +112,9 @@ const Brands = () => {
         </div>
       ) : brands.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 border border-dashed border-slate-200 dark:border-slate-800 rounded-[32px] bg-white dark:bg-slate-900 text-center w-full col-span-full">
-          <ShieldCheck size={40} className="text-slate-350 dark:text-slate-650 mb-3" />
+          <ShieldCheck size={40} className="text-slate-300 dark:text-slate-600 mb-3" />
           <h3 className="text-base font-black text-slate-800 dark:text-white">No Brands Found</h3>
-          <p className="text-xs text-slate-450 dark:text-slate-500 font-bold max-w-[280px] mt-1">
+          <p className="text-xs text-slate-400 dark:text-slate-500 font-bold max-w-[280px] mt-1">
             Official brand stores will be available soon.
           </p>
         </div>
@@ -169,7 +169,7 @@ const Brands = () => {
 
                 {/* Action Button inside card */}
                 <div className="flex justify-between items-center w-full py-2.5 px-4 rounded-full bg-white/10 group-hover:bg-white/20 transition-colors">
-                  <span className="text-[10px] font-black tracking-wider uppercase text-white">Visit Store</span>
+                  <span className="text-[10px] font-black tracking-wider uppercase text-slate-100 dark:text-white">Visit Store</span>
                   <ChevronRight size={12} className="stroke-[3] group-hover:translate-x-0.5 transition-transform" />
                 </div>
               </div>

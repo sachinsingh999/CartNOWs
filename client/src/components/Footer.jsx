@@ -5,6 +5,18 @@ import Logo from "./Logo";
 
 const Footer = () => {
   const [email, setEmail] = useState("");
+  const [openSections, setOpenSections] = useState({
+    support: false,
+    sellers: false,
+    company: false
+  });
+
+  const toggleSection = (section) => {
+    setOpenSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
 
   const handleSubscribe = (e) => {
     e.preventDefault();
@@ -23,61 +35,61 @@ const Footer = () => {
       <div className="absolute left-1/2 top-0 -translate-x-1/2 w-full max-w-7xl h-[1px] bg-gradient-to-r from-transparent via-orange-500/25 to-transparent" />
       
       {/* ── Value Props Section ── */}
-      <div className="border-b border-slate-900 bg-slate-950/20 py-5">
-        <div className="mx-auto max-w-7xl px-6 grid grid-cols-1 sm:grid-cols-3 gap-6">
+      <div className="border-b border-slate-900 bg-slate-950/20 py-4 sm:py-5">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 grid grid-cols-3 sm:grid-cols-3 gap-3 sm:gap-6 text-center sm:text-left">
           {/* Prop 1 */}
-          <div className="flex items-center gap-3 transition-all duration-300 hover:translate-y-[-1px]">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-500/10 text-orange-400">
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+          <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-3 transition-all duration-300 hover:translate-y-[-1px]">
+            <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg bg-orange-500/10 text-orange-400">
+              <svg className="h-4.5 w-4.5 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
               </svg>
             </div>
             <div>
-              <h4 className="font-semibold text-white text-xs tracking-wider uppercase">Free Shipping</h4>
-              <p className="text-[11px] text-gray-400 mt-0.5">On all orders over ₹999</p>
+              <h4 className="font-semibold text-slate-100 dark:text-white text-[10px] sm:text-xs tracking-wider uppercase">Free Shipping</h4>
+              <p className="hidden sm:block text-[11px] text-gray-400 mt-0.5">On all orders over ₹999</p>
             </div>
           </div>
           {/* Prop 2 */}
-          <div className="flex items-center gap-3 transition-all duration-300 hover:translate-y-[-1px]">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-500/10 text-orange-400">
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+          <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-3 transition-all duration-300 hover:translate-y-[-1px]">
+            <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg bg-orange-500/10 text-orange-400">
+              <svg className="h-4.5 w-4.5 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
             </div>
             <div>
-              <h4 className="font-semibold text-white text-xs tracking-wider uppercase">Secure Checkout</h4>
-              <p className="text-[11px] text-gray-400 mt-0.5">Stripe and Razorpay integrated</p>
+              <h4 className="font-semibold text-slate-100 dark:text-white text-[10px] sm:text-xs tracking-wider uppercase">Secure Pay</h4>
+              <p className="hidden sm:block text-[11px] text-gray-400 mt-0.5">Stripe and Razorpay integrated</p>
             </div>
           </div>
           {/* Prop 3 */}
-          <div className="flex items-center gap-3 transition-all duration-300 hover:translate-y-[-1px]">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-500/10 text-orange-400">
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+          <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-3 transition-all duration-300 hover:translate-y-[-1px]">
+            <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg bg-orange-500/10 text-orange-400">
+              <svg className="h-4.5 w-4.5 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.5" />
               </svg>
             </div>
             <div>
-              <h4 className="font-semibold text-white text-xs tracking-wider uppercase">Hassle-Free Returns</h4>
-              <p className="text-[11px] text-gray-400 mt-0.5">Easy 30-day self-service pickups</p>
+              <h4 className="font-semibold text-slate-100 dark:text-white text-[10px] sm:text-xs tracking-wider uppercase">Easy Returns</h4>
+              <p className="hidden sm:block text-[11px] text-gray-400 mt-0.5">Easy 30-day self-service pickups</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* ── Main Links & Newsletter ── */}
-      <div className="mx-auto max-w-7xl px-6 py-10">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-3 lg:grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr_1.2fr]">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 sm:py-10">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-3 lg:grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr_1.2fr] md:gap-8">
           {/* Identity */}
           <div className="space-y-4">
             <Link to="/" className="group flex items-center gap-2 select-none">
               <div className="relative overflow-hidden rounded-lg border border-slate-800 bg-slate-950/40 w-10 h-10 transition-all duration-300 group-hover:scale-105 group-hover:shadow-[0_0_12px_rgba(249,115,22,0.15)]">
                 <Logo
                   variant="icon"
-                  className="h-full w-full p-1 text-white transition-transform duration-300 group-hover:scale-105"
+                  className="h-full w-full p-1 text-slate-100 dark:text-white transition-transform duration-300 group-hover:scale-105"
                 />
               </div>
               <span className="flex flex-col">
-                <span className="text-xl font-bold tracking-tight text-white">
+                <span className="text-xl font-bold tracking-tight text-slate-100 dark:text-white">
                   Cart<span className="text-orange-500 group-hover:text-orange-400 transition-colors duration-300">NOW</span>
                 </span>
                 <span className="text-[8px] font-semibold uppercase tracking-[0.2em] text-orange-400 group-hover:text-orange-300 transition-colors duration-300">
@@ -112,9 +124,18 @@ const Footer = () => {
           </div>
 
           {/* Customer Support */}
-          <div>
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-white">SUPPORT</h3>
-            <ul className="mt-4 space-y-2.5 text-xs font-medium">
+          <div className="border-b border-slate-900/60 md:border-b-0 pb-3 md:pb-0">
+            <button
+              type="button"
+              onClick={() => toggleSection("support")}
+              className="w-full md:cursor-default flex justify-between items-center md:block text-left outline-none cursor-pointer group"
+            >
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-100 dark:text-white">SUPPORT</h3>
+              <span className="md:hidden text-gray-400 group-hover:text-white transition font-mono font-bold text-xs pr-1">
+                {openSections.support ? "−" : "+"}
+              </span>
+            </button>
+            <ul className={`mt-3 md:mt-4 space-y-2.5 text-xs font-medium transition-all duration-300 md:block ${openSections.support ? "block" : "hidden"}`}>
               <li>
                 <Link to="/help" className="hover:text-orange-400 hover:translate-x-1 transition-all duration-200 inline-block">
                   Help Center & FAQ
@@ -144,9 +165,18 @@ const Footer = () => {
           </div>
 
           {/* Seller Program */}
-          <div>
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-white">SELLERS</h3>
-            <ul className="mt-4 space-y-2.5 text-xs font-medium">
+          <div className="border-b border-slate-900/60 md:border-b-0 pb-3 md:pb-0">
+            <button
+              type="button"
+              onClick={() => toggleSection("sellers")}
+              className="w-full md:cursor-default flex justify-between items-center md:block text-left outline-none cursor-pointer group"
+            >
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-100 dark:text-white">SELLERS</h3>
+              <span className="md:hidden text-gray-400 group-hover:text-white transition font-mono font-bold text-xs pr-1">
+                {openSections.sellers ? "−" : "+"}
+              </span>
+            </button>
+            <ul className={`mt-3 md:mt-4 space-y-2.5 text-xs font-medium transition-all duration-300 md:block ${openSections.sellers ? "block" : "hidden"}`}>
               <li>
                 <a href="/seller/login" className="hover:text-orange-400 hover:translate-x-1 transition-all duration-200 inline-block">
                   Seller Dashboard
@@ -171,9 +201,18 @@ const Footer = () => {
           </div>
 
           {/* Company & Legal */}
-          <div>
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-white">COMPANY</h3>
-            <ul className="mt-4 space-y-2.5 text-xs font-medium">
+          <div className="border-b border-slate-900/60 md:border-b-0 pb-3 md:pb-0">
+            <button
+              type="button"
+              onClick={() => toggleSection("company")}
+              className="w-full md:cursor-default flex justify-between items-center md:block text-left outline-none cursor-pointer group"
+            >
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-100 dark:text-white">COMPANY</h3>
+              <span className="md:hidden text-gray-400 group-hover:text-white transition font-mono font-bold text-xs pr-1">
+                {openSections.company ? "−" : "+"}
+              </span>
+            </button>
+            <ul className={`mt-3 md:mt-4 space-y-2.5 text-xs font-medium transition-all duration-300 md:block ${openSections.company ? "block" : "hidden"}`}>
               <li>
                 <Link to="/about" className="hover:text-orange-400 hover:translate-x-1 transition-all duration-200 inline-block">
                   Careers
@@ -198,8 +237,8 @@ const Footer = () => {
           </div>
 
           {/* Newsletter Subscription */}
-          <div className="space-y-4">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-white">SUBSCRIBE & SAVE</h3>
+          <div className="space-y-4 pt-2 md:pt-0">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-100 dark:text-white">SUBSCRIBE & SAVE</h3>
             <p className="text-xs text-gray-400 leading-relaxed">
               Subscribe to receive styling updates and <strong>10% off</strong> your first checkout.
             </p>
@@ -210,11 +249,11 @@ const Footer = () => {
                 placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-full border border-slate-700/60 bg-slate-900/40 pl-4 pr-24 py-2 text-xs text-white outline-none placeholder:text-gray-500 focus:border-orange-500 focus:ring-1 focus:ring-orange-500/50 transition-all duration-300"
+                className="w-full rounded-full border border-slate-700/60 bg-slate-900/40 pl-4 pr-24 py-2 text-xs text-slate-100 dark:text-white outline-none placeholder:text-gray-500 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
               />
               <button
                 type="submit"
-                className="absolute right-1 top-1 bottom-1 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 px-4 text-xs font-semibold text-white hover:brightness-105 hover:shadow-lg hover:shadow-orange-500/20 active:scale-95 transition-all duration-200"
+                className="absolute right-1 top-1 bottom-1 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 px-4 text-xs font-semibold text-slate-100 dark:text-white hover:brightness-105 hover:shadow-lg hover:shadow-orange-500/20 active:scale-95 transition-all duration-200"
               >
                 Subscribe
               </button>

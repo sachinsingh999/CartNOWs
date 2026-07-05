@@ -171,3 +171,52 @@ export const validateFile = (fileSize, fileType, rules = {}) => {
   }
   return { isValid: true };
 };
+
+/**
+ * Validates dynamic attributes to support the new structured format or legacy key-value format.
+ */
+export const validateDynamicAttributes = (attributes) => {
+  if (!attributes) {
+    return { isValid: true };
+  }
+
+  // 1. Array-based: New Dynamic Attribute format
+  if (Array.isArray(attributes)) {
+    const validDisplayTypes = ["variant", "specification", "feature", "badge", "hidden"];
+    
+    for (let i = 0; i < attributes.length; i++) {
+      const attr = attributes[i];
+      if (!attr || typeof attr !== "object" || Array.isArray(attr)) {
+        return { isValid: false, message: `Attribute at index ${i} must be a valid object` };
+      }
+      
+      if (typeof attr.name !== "string" || attr.name.trim() === "") {
+        return { isValid: false, message: `Attribute at index ${i} must have a non-empty name string` };
+      }
+      
+      if (!validDisplayTypes.includes(attr.displayType)) {
+        return { 
+          isValid: false, 
+          message: `Attribute at index ${i} has invalid displayType "${attr.displayType}". Supported values: ${validDisplayTypes.join(", ")}` 
+        };
+      }
+      
+      if (typeof attr.inputType !== "string" || attr.inputType.trim() === "") {
+        return { isValid: false, message: `Attribute at index ${i} must have a non-empty inputType string` };
+      }
+
+      if (attr.values !== undefined && !Array.isArray(attr.values)) {
+        return { isValid: false, message: `Attribute at index ${i} "values" field must be an array` };
+      }
+    }
+    return { isValid: true };
+  }
+
+  // 2. Object-based: Legacy Format
+  if (typeof attributes === "object") {
+    return { isValid: true };
+  }
+
+  return { isValid: false, message: "Attributes must be either a structured array of dynamic attributes or a key-value object" };
+};
+

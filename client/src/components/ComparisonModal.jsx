@@ -120,7 +120,7 @@ const ComparisonModal = ({ onClose }) => {
                         <X size={11} />
                       </button>
                       <div className="flex flex-col gap-3">
-                        <div className="h-24 w-full flex items-center justify-center bg-slate-50 dark:bg-slate-950 rounded-xl p-2 border border-slate-150/80 dark:border-slate-800 overflow-hidden">
+                        <div className="h-24 w-full flex items-center justify-center bg-slate-50 dark:bg-slate-950 rounded-xl p-2 border border-slate-200/80 dark:border-slate-800 overflow-hidden">
                           <img src={imgUrl} alt={product.name} className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105" />
                         </div>
                         <h4 className="font-extrabold text-xs text-slate-800 dark:text-white line-clamp-2 leading-tight">
@@ -147,11 +147,7 @@ const ComparisonModal = ({ onClose }) => {
                       <button
                         onClick={() => handleAddToCart(product)}
                         disabled={isOOS || addingCart[product._id]}
-                        className={`flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-200 cursor-pointer ${
-                          isOOS
-                            ? "bg-slate-105 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed border border-slate-200/50 dark:border-slate-700"
-                            : "bg-indigo-600 hover:bg-indigo-700 text-white shadow shadow-indigo-100 dark:shadow-slate-950 active:scale-95"
-                        }`}
+                        className={`flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-200 cursor-pointer ${ isOOS ? "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed border border-slate-200/50 dark:border-slate-700" : "bg-indigo-600 hover:bg-indigo-700 text-slate-100 dark:text-white shadow shadow-indigo-100 dark:shadow-slate-950 active:scale-95" }`}
                       >
                         <ShoppingCart size={13} />
                         <span>{addingCart[product._id] ? "Adding..." : "Add to Cart"}</span>
@@ -207,7 +203,7 @@ const ComparisonModal = ({ onClose }) => {
                   const product = compareList[idx];
                   const rating = product ? getAverageRating(product) : 0;
                   return (
-                    <td key={`rate-${idx}`} className="p-4 text-xs font-bold text-slate-700 dark:text-slate-350">
+                    <td key={`rate-${idx}`} className="p-4 text-xs font-bold text-slate-700 dark:text-slate-300">
                       {product ? (
                         rating > 0 ? (
                           <span className="flex items-center gap-1">

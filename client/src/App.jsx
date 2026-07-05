@@ -6,10 +6,8 @@ import Home from "./pages/Home";
 import About from "./pages/About";
 import Product from "./pages/Product";
 import Navbar from "./components/Navbar";
-import Men from "./pages/Men";
-import Women from "./pages/Women";
-import Kid from "./pages/Kid";
-import Category from "./pages/Category";
+import AudienceCatalog from "./pages/AudienceCatalog";
+import CatalogDetail from "./pages/CatalogDetail";
 import Footer from "./components/Footer";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -26,20 +24,17 @@ import TryOn from "./pages/TryOn";
 import Verify from "./pages/Verify";
 import OrderConfirmed from "./pages/OrderConfirmed";
 import Wishlist from "./pages/Wishlist";
-import AiAssistant from "./components/AiAssistant";
 import ScrollToTop from "./components/ScrollToTop";
 import ComparisonTray from "./components/ComparisonTray";
 import Maintenance from "./pages/Maintenance";
 import NotFound from "./pages/NotFound";
 import Discover from "./pages/Discover";
 import Categories from "./pages/Categories";
-import CategoryDetail from "./pages/CategoryDetail";
 import Collections from "./pages/Collections";
-import CollectionDetail from "./pages/CollectionDetail";
 import Brands from "./pages/Brands";
-import BrandDetail from "./pages/BrandDetail";
 import { AnimatePresence } from "framer-motion";
 import SplashLoader from "./components/SplashLoader";
+import MobileShowcase from "./pages/MobileShowcase";
 
 const App = () => {
   const location = useLocation();
@@ -119,8 +114,7 @@ const App = () => {
         <Maintenance settings={maintenanceSettings} />
       ) : (
         !loadingMaintenance && (
-          <div className={`flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-opacity duration-700 ease-out ${showSplash ? "opacity-0 pointer-events-none select-none overflow-hidden h-screen" : "opacity-100"
-            }`}>
+          <div className={`flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-opacity duration-700 ease-out ${showSplash ? "opacity-0 pointer-events-none select-none overflow-hidden h-screen" : "opacity-100" }`}>
             <ScrollToTop />
             <ToastContainer
               position="bottom-right"
@@ -157,9 +151,9 @@ const App = () => {
                 <Route path="/about" element={<About />} />
                 <Route path="/product" element={<Product />} />
                 <Route path="/products" element={<Product />} />
-                <Route path="/product/men" element={<Men />} />
-                <Route path="/product/women" element={<Women />} />
-                <Route path="/product/kid" element={<Kid />} />
+                <Route path="/product/men" element={<AudienceCatalog audience="men" />} />
+                <Route path="/product/women" element={<AudienceCatalog audience="women" />} />
+                <Route path="/product/kid" element={<AudienceCatalog audience="kids" />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/product/:id" element={<ProductDetail />} />
@@ -173,20 +167,20 @@ const App = () => {
                 <Route path="/verify" element={<Verify />} />
                 <Route path="/order-confirmed/:orderId" element={<OrderConfirmed />} />
                 <Route path="/wishlist" element={<Wishlist />} />
-                <Route path="/category/:slug" element={<Category />} />
+                <Route path="/category/:slug" element={<CatalogDetail type="category" />} />
                 <Route path="/discover" element={<Discover />} />
                 <Route path="/categories" element={<Categories />} />
-                <Route path="/categories/:slug" element={<CategoryDetail />} />
+                <Route path="/categories/:slug" element={<CatalogDetail type="category" />} />
                 <Route path="/collections" element={<Collections />} />
-                <Route path="/collections/:slug" element={<CollectionDetail />} />
+                <Route path="/collections/:slug" element={<CatalogDetail type="collection" />} />
                 <Route path="/brands" element={<Brands />} />
-                <Route path="/brands/:slug" element={<BrandDetail />} />
+                <Route path="/brands/:slug" element={<CatalogDetail type="brand" />} />
+                <Route path="/mobile" element={<MobileShowcase />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>
 
             <Footer />
-            {location.pathname !== "/" && <AiAssistant />}
             <ComparisonTray />
 
           </div>

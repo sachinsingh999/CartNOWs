@@ -280,7 +280,7 @@ const Dashboard = ({ token }) => {
         
         <button
           onClick={fetchDashboardData}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-[#172033] hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-white/[0.08] text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-lg text-xs font-bold transition cursor-pointer shadow-xs"
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-white/[0.08] text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-lg text-xs font-bold transition cursor-pointer shadow-xs"
         >
           <RefreshCcw size={12} />
           <span>Refresh Console</span>
@@ -324,7 +324,7 @@ const Dashboard = ({ token }) => {
       </div>
 
       {/* ── LIVE OPERATIONS BOARD (Active Dispatches Table) ── */}
-      <div className="bg-white dark:bg-[#172033] border border-slate-200 dark:border-white/[0.08] rounded-xl p-5 shadow-sm space-y-4">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.08] rounded-xl p-5 shadow-sm space-y-4">
         <div className="flex justify-between items-center border-b border-slate-100 dark:border-white/[0.06] pb-3.5">
           <div className="flex items-center gap-2">
             <Layers3 size={15} className="text-blue-500" />
@@ -371,9 +371,7 @@ const Dashboard = ({ token }) => {
                         {order.address.firstName} {order.address.lastName || ""}
                       </td>
                       <td className="py-3 px-3">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                          driverName === "Unassigned" ? "bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20" : "bg-slate-100 dark:bg-white/[0.04] text-slate-700 dark:text-slate-300"
-                        }`}>
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${ driverName === "Unassigned" ? "bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20" : "bg-slate-100 dark:bg-white/[0.04] text-slate-700 dark:text-slate-300" }`}>
                           {driverName}
                         </span>
                       </td>

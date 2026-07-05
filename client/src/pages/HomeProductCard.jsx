@@ -165,7 +165,7 @@ const HomeProductCard = ({ product, onQuickView }) => {
       className="group relative flex flex-col bg-white dark:bg-slate-900 rounded-[24px] border border-slate-100 dark:border-slate-800/80 overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.02)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.06)] transition-all duration-300 ease-out cursor-pointer text-left w-full h-full"
     >
       {/* 300px centered white image container */}
-      <div className="relative w-full h-[280px] bg-white flex items-center justify-center p-6 border-b border-slate-50 select-none">
+      <div className="relative w-full h-[280px] bg-white dark:bg-slate-900 flex items-center justify-center p-6 border-b border-slate-50 select-none">
         
         {/* Wishlist Button */}
         <button
@@ -175,9 +175,7 @@ const HomeProductCard = ({ product, onQuickView }) => {
         >
           <Heart
             size={16}
-            className={`transition-colors duration-300 ${
-              isFavorite ? "text-rose-500 fill-rose-500" : "text-slate-555 dark:text-slate-400 hover:text-rose-500"
-            }`}
+            className={`transition-colors duration-300 ${ isFavorite ? "text-rose-500 fill-rose-500" : "text-slate-600 dark:text-slate-400 hover:text-rose-500" }`}
           />
         </button>
 
@@ -192,25 +190,22 @@ const HomeProductCard = ({ product, onQuickView }) => {
               addToCompare(product);
             }
           }}
-          className={`absolute top-15 right-4 h-9 w-9 backdrop-blur-md rounded-full flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.08)] z-30 cursor-pointer transition-all duration-200 active:scale-90 ${isComparing
-              ? "bg-indigo-650 border-none text-white"
-              : "bg-white/95 dark:bg-slate-900/95 border-none text-slate-500 dark:text-slate-400 hover:text-indigo-655 hover:bg-indigo-50 dark:hover:bg-indigo-950/20"
-            }`}
+          className={`absolute top-15 right-4 h-9 w-9 backdrop-blur-md rounded-full flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.08)] z-30 cursor-pointer transition-all duration-200 active:scale-90 ${isComparing ? "bg-indigo-600 border-none text-white" : "bg-white/95 dark:bg-slate-900/95 border-none text-slate-500 dark:text-slate-400 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/20" }`}
           title="Compare product"
         >
           <BarChart2 size={14} className={isComparing ? "stroke-[2.5px]" : ""} />
         </button>
 
         {/* Discount Badge */}
-        <span className="absolute top-4 left-4 px-2.5 py-1 text-[10px] font-black text-white bg-[#ff3b30] rounded-md z-30 uppercase tracking-wide">
+        <span className="absolute top-4 left-4 px-2.5 py-1 text-[10px] font-black text-slate-100 dark:text-white bg-[#ff3b30] rounded-md z-30 uppercase tracking-wide">
           -{discountPercent}% OFF
         </span>
 
         {/* Product Image - Contain aspect ratio, no crop, no zoom */}
         {!hasImage || imgError ? (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50 text-slate-400 p-4 rounded-xl">
-            <Sparkles size={24} className="text-slate-355 animate-pulse mb-1" />
-            <span className="text-[8px] uppercase tracking-widest font-black text-slate-455">No Image</span>
+          <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 text-slate-400 p-4 rounded-xl">
+            <Sparkles size={24} className="text-slate-400 animate-pulse mb-1" />
+            <span className="text-[8px] uppercase tracking-widest font-black text-slate-500">No Image</span>
           </div>
         ) : (
           <img
@@ -234,10 +229,10 @@ const HomeProductCard = ({ product, onQuickView }) => {
       {/* Content */}
       <div className="flex flex-col flex-1 p-5 gap-2.5 bg-white dark:bg-slate-900">
         <div className="flex flex-col gap-0.5">
-          <span className="text-[10px] font-black tracking-wider uppercase text-slate-400 dark:text-slate-550">
+          <span className="text-[10px] font-black tracking-wider uppercase text-slate-400 dark:text-slate-500">
             {product.brand || "CartNOW"}
           </span>
-          <h3 className="font-bold text-[14.5px] text-slate-900 dark:text-slate-555 line-clamp-2 min-h-[38px] leading-snug group-hover:text-blue-600 transition-colors duration-200 mt-0.5">
+          <h3 className="font-bold text-[14.5px] text-slate-900 dark:text-slate-600 line-clamp-2 min-h-[38px] leading-snug group-hover:text-blue-600 transition-colors duration-200 mt-0.5">
             {product.name}
           </h3>
         </div>
@@ -247,22 +242,22 @@ const HomeProductCard = ({ product, onQuickView }) => {
           <Star size={13} className="fill-amber-500 text-amber-500 stroke-none" />
           <span className="font-extrabold text-slate-800 dark:text-slate-200">{averageRating.toFixed(1)}</span>
           <span className="text-slate-200 dark:text-slate-800">|</span>
-          <span className="text-slate-455 dark:text-slate-500 font-medium">
+          <span className="text-slate-500 dark:text-slate-500 font-medium">
             ({reviewCount || 0} reviews)
           </span>
           <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-extrabold ml-auto">
-            <CheckCircle2 size={13} className="fill-emerald-600 text-white dark:fill-emerald-400 dark:text-slate-900 shrink-0 stroke-[2.5]" />
+            <CheckCircle2 size={13} className="fill-emerald-600 text-slate-100 dark:text-white dark:fill-emerald-400 dark:text-slate-900 shrink-0 stroke-[2.5]" />
             <span className="text-[11px]">Verified</span>
           </div>
         </div>
 
         {/* Price Row: main price, original line-through and discount label */}
         <div className="flex flex-col gap-0.5 mt-1">
-          <span className="text-xl font-black text-slate-900 dark:text-slate-550 tracking-tight">
+          <span className="text-xl font-black text-slate-900 dark:text-slate-500 tracking-tight">
             ₹{Number(product.price).toLocaleString("en-IN")}
           </span>
           <div className="flex items-center gap-2 text-xs">
-            <span className="text-slate-400 dark:text-slate-550 line-through font-medium">
+            <span className="text-slate-400 dark:text-slate-500 line-through font-medium">
               ₹{originalVal.toLocaleString("en-IN")}
             </span>
             <span className="text-emerald-500 dark:text-emerald-400 font-extrabold">
@@ -283,10 +278,7 @@ const HomeProductCard = ({ product, onQuickView }) => {
             type="button"
             disabled={isOOS}
             onClick={handleAddToCart}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-[11px] font-extrabold uppercase tracking-wider transition-all duration-200 active:scale-95 cursor-pointer border-none ${isOOS
-                ? "bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-650 cursor-not-allowed"
-                : "bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
-              }`}
+            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-[11px] font-extrabold uppercase tracking-wider transition-all duration-200 active:scale-95 cursor-pointer border-none ${isOOS ? "bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-600 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700 text-slate-100 dark:text-white shadow-sm" }`}
           >
             <ShoppingCart size={13} />
             <span>{isOOS ? "Sold Out" : "Add to Cart"}</span>
@@ -301,7 +293,7 @@ const HomeProductCard = ({ product, onQuickView }) => {
             className="h-11 w-11 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.06)] hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200 cursor-pointer shrink-0 active:scale-95 border border-slate-100 dark:border-slate-800"
             title="Quick View"
           >
-            <Eye size={16} className="text-slate-600 dark:text-slate-350" />
+            <Eye size={16} className="text-slate-600 dark:text-slate-300" />
           </button>
         </div>
       </div>

@@ -1,10 +1,47 @@
+# Dependencies
 node_modules/
+
+# Python
 venv/
 .venv/
 server/ai-service/venv/
 
+# Environment
 .env
+.env.local
+.env.production
+
+# OS
 .DS_Store
+
+# Build
 dist/
 build/
+
+# Logs
 *.log
+
+# Uploads
+server/uploads/
+
+# Generated invoices
+server/public/invoices/
+server/uploads/
+
+# Temporary folders
+server/scratch/
+
+# Coverage
+coverage/
+
+# Cache
+.cache/
+.vite/
+
+# IDE
+.vscode/
+.idea/
+
+# Mac
+.AppleDouble
+.LSOverride

@@ -167,6 +167,13 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
       {/* Image Section */}
       <div className="relative w-full h-[290px] bg-slate-50 dark:bg-slate-950 flex items-center justify-center select-none overflow-hidden">
         
+        {/* Discount Tag on Top Left (Matches screenshot: -30%) */}
+        {originalVal > product.price && (
+          <div className="absolute top-3 left-3 bg-[#F43F5E] text-slate-100 dark:text-white px-2 py-0.5 rounded-[4px] text-[10px] font-black tracking-tighter z-30 shadow-xs">
+            -{discountPercent}%
+          </div>
+        )}
+
         {/* Wishlist Button */}
         <button
           type="button"
@@ -175,9 +182,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
         >
           <Heart
             size={14}
-            className={`transition-colors duration-300 ${
-              isFavorite ? "text-rose-500 fill-rose-500 stroke-none" : "text-slate-500 dark:text-slate-400 hover:text-rose-500"
-            }`}
+            className={`transition-colors duration-300 ${ isFavorite ? "text-rose-500 fill-rose-500 stroke-none" : "text-slate-500 dark:text-slate-400 hover:text-rose-500" }`}
           />
         </button>
 
@@ -185,7 +190,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
         {averageRating > 0 && (
           <div className="absolute bottom-2.5 left-2.5 bg-white/90 dark:bg-slate-900/90 px-1.5 py-0.5 rounded-[2px] text-[10px] font-black text-slate-800 dark:text-slate-200 flex items-center gap-1 z-25 shadow-xs border border-slate-200/20">
             <span>{averageRating.toFixed(1)}</span>
-            <span className="text-[9px] text-teal-650 dark:text-teal-400">★</span>
+            <span className="text-[9px] text-teal-600 dark:text-teal-400">★</span>
             <span className="text-slate-300 dark:text-slate-700">|</span>
             <span className="text-slate-500 dark:text-slate-400 font-bold">
               {reviewCount > 999 ? `${(reviewCount / 1000).toFixed(1)}k` : reviewCount || "0"}
@@ -199,18 +204,14 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
             src={getSrc(0)}
             alt={product.name}
             loading="lazy"
-            className={`max-h-full max-w-full object-cover w-full h-full transition-all duration-500 ease-out ${
-              images[1] && imgIdx === 1 ? "opacity-0" : "opacity-100"
-            }`}
+            className={`max-h-full max-w-full object-cover w-full h-full transition-all duration-500 ease-out ${ images[1] && imgIdx === 1 ? "opacity-0" : "opacity-100" }`}
           />
           {images[1] && (
             <img
               src={getSrc(1)}
               alt={`${product.name}-alt`}
               loading="lazy"
-              className={`absolute max-h-full max-w-full object-cover w-full h-full transition-all duration-500 ease-out ${
-                imgIdx === 1 ? "opacity-100" : "opacity-0"
-              }`}
+              className={`absolute max-h-full max-w-full object-cover w-full h-full transition-all duration-500 ease-out ${ imgIdx === 1 ? "opacity-100" : "opacity-0" }`}
             />
           )}
         </div>
@@ -221,11 +222,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
             type="button"
             disabled={isOOS}
             onClick={handleAddToCart}
-            className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded text-[9px] font-black uppercase tracking-wider transition-all duration-200 active:scale-95 cursor-pointer border-none ${
-              isOOS
-                ? "bg-slate-800 text-slate-500 cursor-not-allowed"
-                : "bg-gradient-to-r from-indigo-600 to-violet-600 hover:brightness-110 text-white shadow-sm"
-            }`}
+            className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded text-[9px] font-black uppercase tracking-wider transition-all duration-200 active:scale-95 cursor-pointer border-none ${ isOOS ? "bg-slate-800 text-slate-500 cursor-not-allowed" : "bg-gradient-to-r from-indigo-600 to-violet-600 hover:brightness-110 text-slate-100 dark:text-white shadow-sm" }`}
           >
             <ShoppingCart size={10} className="stroke-[2.5]" />
             <span>{isOOS ? "Sold Out" : "Add to Cart"}</span>
@@ -237,7 +234,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
               e.stopPropagation();
               if (onQuickView) onQuickView(product);
             }}
-            className="h-7 w-7 bg-white/95 dark:bg-slate-900/95 text-slate-700 dark:text-slate-200 backdrop-blur-md rounded flex items-center justify-center shadow-sm hover:bg-indigo-650 hover:text-white transition-all duration-200 cursor-pointer active:scale-90 border border-slate-200/20"
+            className="h-7 w-7 bg-white/95 dark:bg-slate-900/95 text-slate-700 dark:text-slate-200 backdrop-blur-md rounded flex items-center justify-center shadow-sm hover:bg-indigo-600 hover:text-white transition-all duration-200 cursor-pointer active:scale-90 border border-slate-200/20"
             title="Quick View"
           >
             <Eye size={11} className="stroke-[2.5]" />
@@ -253,11 +250,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
                 addToCompare(product);
               }
             }}
-            className={`h-7 w-7 backdrop-blur-md rounded flex items-center justify-center shadow-sm cursor-pointer transition-all duration-200 active:scale-90 border border-slate-200/20 ${
-              isComparing
-                ? "bg-indigo-600 border-none text-white"
-                : "bg-white/95 dark:bg-slate-900/95 text-slate-700 dark:text-slate-200 hover:bg-indigo-650 hover:text-white"
-            }`}
+            className={`h-7 w-7 backdrop-blur-md rounded flex items-center justify-center shadow-sm cursor-pointer transition-all duration-200 active:scale-90 border border-slate-200/20 ${ isComparing ? "bg-indigo-600 border-none text-white" : "bg-white/95 dark:bg-slate-900/95 text-slate-700 dark:text-slate-200 hover:bg-indigo-600 hover:text-white" }`}
             title="Compare product"
           >
             <BarChart2 size={11} className={isComparing ? "stroke-[2.5]" : ""} />
@@ -266,7 +259,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
       </div>
 
       {/* Content Area */}
-      <div className="flex flex-col flex-1 p-3 gap-1 bg-white dark:bg-slate-900">
+      <div className="flex flex-col flex-1 p-3 gap-1 bg-white dark:bg-slate-900 justify-between">
         <div>
           {/* Brand Name */}
           <h4 className="font-extrabold text-[13px] text-slate-900 dark:text-slate-100 truncate uppercase tracking-tight">
@@ -276,31 +269,42 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
           <p className="text-[11.5px] text-slate-500 dark:text-slate-400 truncate leading-tight mt-0.5">
             {product.name}
           </p>
-        </div>
+          
+          {/* Pricing Layout: Rs. price formatting replaced with Rupee symbol */}
+          <div className="flex items-baseline gap-1.5 flex-wrap pt-0.5">
+            <span className="text-[12.5px] font-black text-slate-900 dark:text-slate-50">
+              ₹{Number(product.price).toLocaleString("en-IN")}
+            </span>
+            {originalVal > product.price && (
+              <>
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 line-through font-medium">
+                  ₹{originalVal.toLocaleString("en-IN")}
+                </span>
+                <span className="hidden sm:inline text-[9.5px] font-black text-rose-500 dark:text-rose-400 uppercase tracking-tight">
+                  ({discountPercent}% OFF)
+                </span>
+              </>
+            )}
+          </div>
 
-        {/* Pricing Layout: Rs. price formatting */}
-        <div className="flex items-baseline gap-1.5 flex-wrap pt-0.5">
-          <span className="text-[12.5px] font-black text-slate-900 dark:text-slate-50">
-            Rs. {Number(product.price).toLocaleString("en-IN")}
-          </span>
-          {originalVal > product.price && (
-            <>
-              <span className="text-[10px] text-slate-400 dark:text-slate-500 line-through font-medium">
-                Rs. {originalVal.toLocaleString("en-IN")}
-              </span>
-              <span className="text-[9.5px] font-black text-rose-500 dark:text-rose-400 uppercase tracking-tight">
-                ({discountPercent}% OFF)
-              </span>
-            </>
+          {/* Low Stock Warning or Status info */}
+          {(isLowStock || isOOS) && (
+            <div className="text-[9.5px] font-extrabold text-rose-500 mt-0.5">
+              {isOOS ? "Only Out of Stock!" : "Only Few Left!"}
+            </div>
           )}
         </div>
 
-        {/* Low Stock Warning or Status info */}
-        {(isLowStock || isOOS) && (
-          <div className="text-[9.5px] font-extrabold text-rose-500 mt-0.5">
-            {isOOS ? "Only Out of Stock!" : "Only Few Left!"}
-          </div>
-        )}
+        {/* Mobile-only Add to Cart Button (Always Visible at bottom of card) */}
+        <button
+          type="button"
+          disabled={isOOS}
+          onClick={handleAddToCart}
+          className={`sm:hidden mt-2 w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all duration-200 active:scale-95 cursor-pointer border-none select-none z-20 ${ isOOS ? "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed" : "bg-[#F43F5E] text-slate-100 dark:text-white shadow-sm shadow-[#F43F5E]/10" }`}
+        >
+          <ShoppingCart size={11} className="stroke-[2.5]" />
+          <span>{isOOS ? "Sold Out" : "Add to Cart"}</span>
+        </button>
       </div>
     </div>
   );

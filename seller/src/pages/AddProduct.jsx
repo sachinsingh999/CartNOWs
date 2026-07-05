@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { 
-  Plus, 
-  Trash2, 
-  Upload, 
-  ArrowLeft, 
+import {
+  Plus,
+  Trash2,
+  Upload,
+  ArrowLeft,
   ArrowRight,
   ArrowUp,
   ArrowDown,
@@ -31,6 +31,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
   // Modes: "form", "ai", "json"
   const [activeMode, setActiveMode] = useState("form");
   const [generateLoading, setGenerateLoading] = useState(false);
+  const [showJsonGuide, setShowJsonGuide] = useState(false);
 
   const [newProduct, setNewProduct] = useState({
     name: "",
@@ -49,7 +50,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
 
   const [categories, setCategories] = useState([]);
   const [customAttributes, setCustomAttributes] = useState([]);
-  const [uploadedFiles, setUploadedFiles] = useState([]); 
+  const [uploadedFiles, setUploadedFiles] = useState([]);
   const [dragActive, setDragActive] = useState(false);
   const [selectedCollections, setSelectedCollections] = useState([]);
 
@@ -59,7 +60,12 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
 
   // Auto-Variant Generator logic
   useEffect(() => {
-    const activeAttrs = productAttributes.filter(attr => attr.name.trim() && attr.values.trim());
+    const activeAttrs = productAttributes.filter(
+      attr => attr.name.trim() &&
+        attr.displayType === "variant" &&
+        attr.values &&
+        attr.values.trim()
+    );
     if (activeAttrs.length === 0) {
       setProductVariants([]);
       return;
@@ -107,12 +113,28 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
         sku: existing?.sku || `${baseSku}-${comboSuffix}-${idx}`,
         price: existing?.price !== undefined ? existing.price : basePrice,
         stock: existing?.stock !== undefined ? existing.stock : baseStock,
+        images: existing?.images || [],
+        barcode: existing?.barcode || "",
+        availability: existing?.availability !== undefined ? existing.availability : true,
         attributes: comb
       };
     });
 
     setProductVariants(newVariants);
   }, [productAttributes, newProduct.price, newProduct.stock, newProduct.sku, newProduct.name]);
+
+  const toggleVariantImage = (variantIdx, imgIdx) => {
+    setProductVariants(prev => {
+      const updated = [...prev];
+      const currentImages = updated[variantIdx].images || [];
+      if (currentImages.includes(imgIdx)) {
+        updated[variantIdx].images = currentImages.filter(i => i !== imgIdx);
+      } else {
+        updated[variantIdx].images = [...currentImages, imgIdx];
+      }
+      return updated;
+    });
+  };
 
   // Custom Category & Subcategory text overrides
   const [isCustomCategory, setIsCustomCategory] = useState(false);
@@ -134,7 +156,8 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
     collections: false,
     seo: false,
     parseText: false,
-    enrichJson: false
+    enrichJson: false,
+    generateImage: false
   });
 
   const allowedFormats = ["jpg", "jpeg", "png", "webp"];
@@ -277,7 +300,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
   const moveUploadedFile = (index, direction) => {
     const nextIndex = index + direction;
     if (nextIndex < 0 || nextIndex >= uploadedFiles.length) return;
-    
+
     setUploadedFiles(prev => {
       const next = [...prev];
       const temp = next[index];
@@ -303,7 +326,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
       const response = await axios.post(`${backendUrl}/api/ai/parse-text-product`, { text: aiText });
       if (response.data.success) {
         const data = response.data;
-        
+
         // Auto check custom categories/subcategories if they aren't in DB
         const matchCat = categories.find(c => c.name.toLowerCase() === (data.category || "").toLowerCase());
         if (!matchCat && data.category) {
@@ -423,21 +446,35 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
           setCustomAttributes(product.specifications);
         }
 
-        if (product.attributes && typeof product.attributes === "object") {
-          const standardFields = [
-            'name', 'slug', 'category', 'subCategory', 'price', 'discountPrice', 'images',
-            'brand', 'stock', 'sku', 'description', 'shortDescription', 'tags', 'keywords',
-            'searchKeywords', 'specifications', 'collections', 'rating', 'ratings', 'highlights',
-            'careInstructions', 'variants', 'shipping', 'seller', 'seo', 'isFeatured',
-            'isTrending', 'isActive', 'createdAt', 'preview', 'audience', 'attributes'
-          ];
-          const formattedAttrs = Object.entries(product.attributes)
-            .filter(([name]) => !standardFields.includes(name))
-            .map(([name, vals]) => ({
-              name,
-              values: Array.isArray(vals) ? vals.join(", ") : String(vals)
+        if (product.attributes) {
+          if (Array.isArray(product.attributes)) {
+            const formattedAttrs = product.attributes.map(attr => ({
+              name: attr.name || "",
+              displayType: attr.displayType || "variant",
+              inputType: attr.inputType || "Text",
+              value: attr.value || "",
+              values: Array.isArray(attr.values) ? attr.values.join(", ") : (attr.values || "")
             }));
-          setProductAttributes(formattedAttrs);
+            setProductAttributes(formattedAttrs);
+          } else if (typeof product.attributes === "object") {
+            const standardFields = [
+              'name', 'slug', 'category', 'subCategory', 'price', 'discountPrice', 'images',
+              'brand', 'stock', 'sku', 'description', 'shortDescription', 'tags', 'keywords',
+              'searchKeywords', 'specifications', 'collections', 'rating', 'ratings', 'highlights',
+              'careInstructions', 'variants', 'shipping', 'seller', 'seo', 'isFeatured',
+              'isTrending', 'isActive', 'createdAt', 'preview', 'audience', 'attributes'
+            ];
+            const formattedAttrs = Object.entries(product.attributes)
+              .filter(([name]) => !standardFields.includes(name))
+              .map(([name, vals]) => ({
+                name,
+                displayType: "variant",
+                inputType: "Text",
+                value: "",
+                values: Array.isArray(vals) ? vals.join(", ") : String(vals)
+              }));
+            setProductAttributes(formattedAttrs);
+          }
         }
 
         if (product.images) {
@@ -464,6 +501,43 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
       toast.error("Failed to generate product: " + (err.response?.data?.message || err.message));
     } finally {
       setLoader("enrichJson", false);
+    }
+  };
+
+  const handleAIGenerateImage = async () => {
+    if (!newProduct.name || !newProduct.name.trim()) {
+      toast.warning("Please enter a Product Name first so AI knows what to generate.");
+      return;
+    }
+
+    setLoader("generateImage", true);
+    try {
+      const response = await axios.post(`${backendUrl}/api/ai/generate-image`, {
+        name: newProduct.name,
+        description: newProduct.description
+      });
+
+      if (response.data.success) {
+        const generatedUrl = response.data.imageUrl;
+        setUploadedFiles(prev => {
+          const isFirst = prev.length === 0;
+          return [
+            ...prev,
+            {
+              file: null, // remote hosted image on Cloudinary
+              preview: generatedUrl,
+              isCover: isFirst
+            }
+          ];
+        });
+        toast.success("AI product image generated and added to gallery!");
+      } else {
+        toast.error(response.data.message || "Failed to generate image.");
+      }
+    } catch (err) {
+      toast.error("AI image generation failed: " + (err.response?.data?.message || err.message));
+    } finally {
+      setLoader("generateImage", false);
     }
   };
 
@@ -512,10 +586,10 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
           setNewProduct(prev => ({ ...prev, description: data.description || prev.description }));
           toast.success("Description optimized!");
         } else if (field === "seo") {
-          setNewProduct(prev => ({ 
-            ...prev, 
+          setNewProduct(prev => ({
+            ...prev,
             seoDescription: data.seoDescription || prev.seoDescription,
-            keywords: data.keywords ? data.keywords.join(", ") : prev.keywords 
+            keywords: data.keywords ? data.keywords.join(", ") : prev.keywords
           }));
           toast.success("SEO meta description and keywords generated!");
         } else if (field === "tags") {
@@ -542,7 +616,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
 
   // Helper collection checkboxes
   const handleCollectionCheckbox = (col) => {
-    setSelectedCollections(prev => 
+    setSelectedCollections(prev =>
       prev.includes(col) ? prev.filter(c => c !== col) : [...prev, col]
     );
   };
@@ -550,7 +624,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
   // Final Form Submission
   const handleCreateProduct = async (e) => {
     e.preventDefault();
-    
+
     // Quick validation safeguards
     if (!newProduct.name.trim()) {
       toast.error("Product name is required.");
@@ -578,21 +652,34 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
     const finalAttributes = customAttributes.filter(a => a.key.trim() !== "");
 
     // Build attributes map or array
-    const hasDynamicAttrs = productAttributes.some(attr => attr.name.trim() && attr.values.trim());
+    const hasDynamicAttrs = productAttributes.some(attr => attr.name.trim() !== "");
     let attributesPayload = "";
     let variantsPayload = "";
 
     if (hasDynamicAttrs) {
-      const dynamicAttrsMap = {};
-      productAttributes.forEach(attr => {
-        if (attr.name.trim() && attr.values.trim()) {
-          dynamicAttrsMap[attr.name.trim()] = attr.values
-            .split(",")
-            .map(v => v.trim())
-            .filter(Boolean);
-        }
-      });
-      attributesPayload = JSON.stringify(dynamicAttrsMap);
+      const dynamicAttrsArray = productAttributes
+        .filter(attr => attr.name.trim() !== "")
+        .map(attr => {
+          const displayType = attr.displayType || "variant";
+          let value = "";
+          let values = [];
+
+          if (displayType === "variant") {
+            values = attr.values ? attr.values.split(",").map(v => v.trim()).filter(Boolean) : [];
+            value = values[0] || "";
+          } else {
+            value = String(attr.value || "");
+          }
+
+          return {
+            name: attr.name.trim(),
+            displayType,
+            inputType: attr.inputType || "Text",
+            value,
+            values
+          };
+        });
+      attributesPayload = JSON.stringify(dynamicAttrsArray);
       variantsPayload = JSON.stringify(productVariants);
     } else {
       attributesPayload = JSON.stringify(finalAttributes);
@@ -640,7 +727,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
   const validationWarnings = [];
   const nameTrimmed = newProduct.name.trim().toLowerCase();
   const isDuplicate = products.some(p => p.name.trim().toLowerCase() === nameTrimmed && !p.isDeleted);
-  
+
   if (isDuplicate) {
     validationWarnings.push({ type: "error", message: "Duplicate Title: A product with this name already exists in your store." });
   }
@@ -661,7 +748,31 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
   };
 
   const pasteExampleJson = () => {
-    setJsonText(`{\n  "name": "OPPO Reno 14 5G",\n  "brand": "OPPO",\n  "price": 32999,\n  "stock": 50,\n  "ram": "12GB",\n  "storage": "256GB"\n}`);
+    setJsonText(JSON.stringify({
+      name: "Nike Air Max Pulse",
+      category: "Footwear",
+      subCategory: "Sneakers",
+      price: 12999,
+      images: [
+        "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&auto=format&fit=crop&q=80"
+      ],
+      brand: "Nike",
+      stock: 120,
+      sku: "NK-AMP-001",
+      audience: "Unisex",
+      description: "The Nike Air Max Pulse pulls inspiration from the London music scene, bringing an underground touch to the iconic Air Max line.",
+      shortDescription: "Stylishly comfortable sneakers featuring advanced Air Max cushioning.",
+      tags: ["shoes", "sneakers", "nike", "running", "casual"],
+      keywords: ["nike air max", "sneakers for men", "unisex shoes", "running footwear"],
+      collections: ["Trending Now"],
+      specifications: [
+        { key: "Sole Material", value: "Rubber" },
+        { key: "Upper Material", value: "Mesh & Leather" }
+      ],
+      attributes: {
+        Color: ["Red", "White", "Black"]
+      }
+    }, null, 2));
     toast.info("Example JSON loaded! Click Enrich below.");
   };
 
@@ -683,33 +794,21 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
       <div className="flex bg-slate-100 dark:bg-slate-900 p-1.5 rounded-2xl w-full max-w-md">
         <button
           onClick={() => setActiveMode("form")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition cursor-pointer ${
-            activeMode === "form" 
-              ? "bg-white dark:bg-[#172033] text-slate-800 dark:text-white shadow-sm border border-slate-200/50 dark:border-white/[0.04]" 
-              : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-350"
-          }`}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition cursor-pointer ${activeMode === "form" ? "bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-sm border border-slate-200/50 dark:border-white/[0.04]" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300" }`}
         >
           <FileText size={14} />
           <span>Form Mode</span>
         </button>
         <button
           onClick={() => setActiveMode("ai")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition cursor-pointer ${
-            activeMode === "ai" 
-              ? "bg-white dark:bg-[#172033] text-slate-800 dark:text-white shadow-sm border border-slate-200/50 dark:border-white/[0.04]" 
-              : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-350"
-          }`}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition cursor-pointer ${activeMode === "ai" ? "bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-sm border border-slate-200/50 dark:border-white/[0.04]" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300" }`}
         >
           <Sparkles size={14} />
           <span>Smart AI Mode</span>
         </button>
         <button
           onClick={() => setActiveMode("json")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition cursor-pointer ${
-            activeMode === "json" 
-              ? "bg-white dark:bg-[#172033] text-slate-800 dark:text-white shadow-sm border border-slate-200/50 dark:border-white/[0.04]" 
-              : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-350"
-          }`}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition cursor-pointer ${activeMode === "json" ? "bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-sm border border-slate-200/50 dark:border-white/[0.04]" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300" }`}
         >
           <Code size={14} />
           <span>JSON Mode</span>
@@ -722,7 +821,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
         <div className="lg:col-span-7 space-y-6">
           {/* Smart AI Mode Textarea Block */}
           {activeMode === "ai" && (
-            <div className="bg-white dark:bg-[#172033] border border-slate-200 dark:border-white/[0.08] rounded-2xl p-5 shadow-sm space-y-4">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.08] rounded-2xl p-5 shadow-sm space-y-4">
               <div className="flex justify-between items-center border-b border-slate-100 dark:border-white/[0.06] pb-3">
                 <div className="flex items-center gap-2 text-violet-600 dark:text-violet-400 font-extrabold uppercase text-xs tracking-wider">
                   <Sparkles size={14} className="animate-pulse" />
@@ -743,7 +842,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                   value={aiText}
                   onChange={(e) => setAiText(e.target.value)}
                   placeholder="Paste product details here (e.g. descriptions, tags, specifications copied from other websites, brochures, or raw notes)..."
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:border-orange-500 transition resize-y font-sans leading-relaxed"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition resize-y font-sans leading-relaxed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                 />
               </div>
 
@@ -751,7 +850,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                 type="button"
                 onClick={handleAIParseText}
                 disabled={loaders.parseText}
-                className="w-full py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl text-xs font-black uppercase tracking-wider transition hover:shadow-lg hover:shadow-violet-650/20 active:scale-98 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="w-full py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-slate-100 dark:text-white rounded-xl text-xs font-black uppercase tracking-wider transition hover:shadow-lg hover:shadow-violet-600/20 active:scale-98 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 <Sparkles size={14} className={loaders.parseText ? "animate-spin" : ""} />
                 <span>{loaders.parseText ? "Extracting Structured Product Catalog..." : "AI Parse & Populate"}</span>
@@ -761,29 +860,76 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
 
           {/* JSON Mode Editor Block */}
           {activeMode === "json" && (
-            <div className="bg-white dark:bg-[#172033] border border-slate-200 dark:border-white/[0.08] rounded-2xl p-5 shadow-sm space-y-4">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.08] rounded-2xl p-5 shadow-sm space-y-4">
               <div className="flex justify-between items-center border-b border-slate-100 dark:border-white/[0.06] pb-3">
                 <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-extrabold uppercase text-xs tracking-wider">
                   <Code size={14} />
                   <span>JSON Editor & Validator</span>
                 </div>
-                <button
-                  onClick={pasteExampleJson}
-                  className="text-[10px] font-black text-indigo-600 bg-indigo-50 dark:text-indigo-400 dark:bg-slate-950 px-2 py-1 rounded transition hover:bg-indigo-100/50 cursor-pointer"
-                >
-                  Load Example JSON
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setShowJsonGuide(!showJsonGuide)}
+                    className="text-[10px] font-black text-slate-600 bg-slate-100 hover:bg-slate-200/60 dark:text-slate-300 dark:bg-slate-900/60 dark:hover:bg-slate-800/80 px-2.5 py-1 rounded transition flex items-center gap-1 cursor-pointer"
+                  >
+                    <HelpCircle size={11} />
+                    <span>{showJsonGuide ? "Hide Guidelines" : "JSON Guidelines"}</span>
+                  </button>
+                  <button
+                    onClick={pasteExampleJson}
+                    className="text-[10px] font-black text-indigo-600 bg-indigo-50 dark:text-indigo-400 dark:bg-slate-950 px-2 py-1 rounded transition hover:bg-indigo-100/50 cursor-pointer"
+                  >
+                    Load Example JSON
+                  </button>
+                </div>
               </div>
+
+              {showJsonGuide && (
+                <div className="bg-slate-50 dark:bg-slate-950/40 border border-slate-200/60 dark:border-slate-800 rounded-xl p-4 text-[11px] text-slate-600 dark:text-slate-400 space-y-3 leading-relaxed text-left">
+                  <h4 className="font-extrabold text-slate-800 dark:text-white uppercase tracking-wider text-[10px] flex items-center gap-1">
+                    <HelpCircle size={12} className="text-indigo-500" />
+                    <span>JSON Schema Rules & Format</span>
+                  </h4>
+
+                  <div>
+                    <span className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Required Fields:</span>
+                    <ul className="list-disc pl-4 space-y-0.5 text-[10px]">
+                      <li><code className="text-pink-600 dark:text-pink-400 font-bold">name</code> (string): Product title.</li>
+                      <li><code className="text-pink-600 dark:text-pink-400 font-bold">price</code> (number): Positive price number.</li>
+                      <li><code className="text-pink-600 dark:text-pink-400 font-bold">category</code> (string): Parent department (e.g. Footwear).</li>
+                      <li><code className="text-pink-600 dark:text-pink-400 font-bold">subCategory</code> (string): Division (e.g. Sneakers).</li>
+                      <li><code className="text-pink-600 dark:text-pink-400 font-bold">images</code> (array of strings): Image URLs.</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <span className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Dynamic Attributes (Selectable Options):</span>
+                    <p className="mb-1">Options the customer selects before adding to cart go in <code className="text-indigo-600 dark:text-indigo-400 font-bold">"attributes"</code>:</p>
+                    <pre className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 p-2 rounded text-[10px] font-mono">
+                      {`"attributes": {
+  "Color": ["Black", "Blue"],
+  "Size": ["S", "M", "L"]
+}`}
+                    </pre>
+                  </div>
+
+                  <div>
+                    <span className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Static Specifications (Information Only):</span>
+                    <p className="mb-1">Specifications (details that don't need configuration) go in <code className="text-indigo-600 dark:text-indigo-400 font-bold">"specifications"</code>:</p>
+                    <pre className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 p-2 rounded text-[10px] font-mono">
+                      {`"specifications": [
+  { "key": "Material", "value": "304 Stainless Steel" },
+  { "key": "Capacity", "value": "750ml" }
+]`}
+                    </pre>
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-1">
                 <div className="flex justify-between items-center">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Paste Product JSON Schema</label>
                   {jsonText.trim() && (
-                    <span className={`text-[9px] font-bold px-2 py-0.5 rounded flex items-center gap-1 ${
-                      jsonError 
-                        ? "bg-red-50 text-red-500 dark:bg-red-950/20" 
-                        : "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/20"
-                    }`}>
+                    <span className={`text-[9px] font-bold px-2 py-0.5 rounded flex items-center gap-1 ${jsonError ? "bg-red-50 text-red-500 dark:bg-red-950/20" : "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/20" }`}>
                       {jsonError ? <AlertTriangle size={10} /> : <Check size={10} />}
                       {jsonError ? "Syntax Error" : "Syntax Valid"}
                     </span>
@@ -795,11 +941,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                   value={jsonText}
                   onChange={(e) => setJsonText(e.target.value)}
                   placeholder={`{\n  "name": "OPPO Reno 14 5G",\n  "price": 32999\n}`}
-                  className={`w-full px-4 py-3 rounded-xl border dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition font-mono ${
-                    jsonError 
-                      ? "border-red-400 focus:border-red-500" 
-                      : "border-slate-200 dark:border-white/[0.08] focus:border-orange-500"
-                  }`}
+                  className={`w-full px-4 py-3 rounded-xl border dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition font-mono ${jsonError ? "border-red-400" : "border-slate-200 dark:border-white/[0.08]"} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900`}
                 />
                 {jsonError && (
                   <p className="text-[10px] text-red-500 font-bold mt-1 pl-1">Error: {jsonError}</p>
@@ -810,7 +952,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                 type="button"
                 onClick={handleGenerateProduct}
                 disabled={loaders.enrichJson || !!jsonError}
-                className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl text-xs font-black uppercase tracking-wider transition hover:shadow-lg hover:shadow-indigo-650/20 active:scale-98 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-slate-100 dark:text-white rounded-xl text-xs font-black uppercase tracking-wider transition hover:shadow-lg hover:shadow-indigo-600/20 active:scale-98 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 <Package size={14} className={loaders.enrichJson ? "animate-spin" : ""} />
                 <span>{loaders.enrichJson ? "Generating Product..." : "Generate Product"}</span>
@@ -819,7 +961,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
           )}
 
           {/* Form Mode Inputs (Available always or showing filled fields) */}
-          <form onSubmit={handleCreateProduct} className="space-y-5 bg-white dark:bg-[#172033] border border-slate-200 dark:border-white/[0.08] rounded-2xl p-5 shadow-sm">
+          <form onSubmit={handleCreateProduct} className="space-y-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.08] rounded-2xl p-5 shadow-sm">
             <div className="flex justify-between items-center border-b border-slate-100 dark:border-white/[0.06] pb-3">
               <h3 className="text-sm font-black text-slate-800 dark:text-white tracking-tight">Product Specifications Form</h3>
               {activeMode !== "form" && (
@@ -840,7 +982,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                     placeholder="Samsung Galaxy S25 Ultra"
                     value={newProduct.name}
                     onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:border-orange-500 transition"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     required
                   />
                 </div>
@@ -852,7 +994,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                     placeholder="Samsung, Apple, Nike"
                     value={newProduct.brand}
                     onChange={(e) => setNewProduct({ ...newProduct, brand: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:border-orange-500 transition"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                   />
                 </div>
               </div>
@@ -862,7 +1004,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                 <div className="space-y-1">
                   <div className="flex justify-between items-center">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Category *</label>
-                    <button 
+                    <button
                       type="button"
                       onClick={() => setIsCustomCategory(!isCustomCategory)}
                       className="text-[9px] font-extrabold text-orange-500 cursor-pointer"
@@ -876,14 +1018,14 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                       placeholder="e.g. Smart Electronics"
                       value={newProduct.category}
                       onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:border-orange-500 transition"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                       required
                     />
                   ) : (
                     <select
                       value={newProduct.category}
                       onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value, subCategory: "" })}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:border-orange-500 transition cursor-pointer"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                       required
                     >
                       <option value="">Choose Category</option>
@@ -897,7 +1039,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                 <div className="space-y-1">
                   <div className="flex justify-between items-center">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Subcategory</label>
-                    <button 
+                    <button
                       type="button"
                       onClick={() => setIsCustomSubCategory(!isCustomSubCategory)}
                       className="text-[9px] font-extrabold text-orange-500 cursor-pointer"
@@ -911,13 +1053,13 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                       placeholder="e.g. Mobile Phones"
                       value={newProduct.subCategory}
                       onChange={(e) => setNewProduct({ ...newProduct, subCategory: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:border-orange-500 transition"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     />
                   ) : (
                     <select
                       value={newProduct.subCategory}
                       onChange={(e) => setNewProduct({ ...newProduct, subCategory: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:border-orange-500 transition cursor-pointer"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     >
                       <option value="">Choose Subcategory</option>
                       {subCategoriesList.map((sub, idx) => (
@@ -938,7 +1080,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                     placeholder="29999.00"
                     value={newProduct.price}
                     onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:border-orange-500 transition"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     required
                   />
                 </div>
@@ -950,7 +1092,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                     placeholder="10"
                     value={newProduct.stock}
                     onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:border-orange-500 transition"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     required
                   />
                 </div>
@@ -960,7 +1102,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                   <select
                     value={newProduct.audience}
                     onChange={(e) => setNewProduct({ ...newProduct, audience: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:border-orange-500 transition cursor-pointer"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                   >
                     <option value="Unisex">Unisex</option>
                     <option value="Men">Men</option>
@@ -979,7 +1121,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                     placeholder="e.g. SAM-S25-ULTRA"
                     value={newProduct.sku}
                     onChange={(e) => setNewProduct({ ...newProduct, sku: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:border-orange-500 transition"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                   />
                 </div>
 
@@ -1001,7 +1143,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                     placeholder="android, galaxy, smartphone"
                     value={newProduct.tags}
                     onChange={(e) => setNewProduct({ ...newProduct, tags: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:border-orange-500 transition"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                   />
                 </div>
               </div>
@@ -1025,7 +1167,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                   placeholder="Enter details about this product. Mention specifications, key highlights, build details..."
                   value={newProduct.description}
                   onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:border-orange-500 transition resize-y"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition resize-y focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                   required
                 />
               </div>
@@ -1039,7 +1181,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                       type="button"
                       onClick={() => handleAIImproveField("specifications")}
                       disabled={loaders.specifications}
-                      className="flex items-center gap-1 px-2.5 py-1 bg-violet-50 hover:bg-violet-100 dark:bg-slate-950 dark:hover:bg-slate-900 text-violet-750 dark:text-violet-400 rounded-lg text-[9px] font-black uppercase tracking-wider transition cursor-pointer disabled:opacity-50"
+                      className="flex items-center gap-1 px-2.5 py-1 bg-violet-50 hover:bg-violet-100 dark:bg-slate-950 dark:hover:bg-slate-900 text-violet-700 dark:text-violet-400 rounded-lg text-[9px] font-black uppercase tracking-wider transition cursor-pointer disabled:opacity-50"
                     >
                       {loaders.specifications ? <RefreshCw size={8} className="animate-spin" /> : <Sparkles size={8} />}
                       <span>✨ Complete Specs</span>
@@ -1070,7 +1212,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                             return updated;
                           });
                         }}
-                        className="flex-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:border-orange-500"
+                        className="flex-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                       />
                       <input
                         type="text"
@@ -1084,7 +1226,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                             return updated;
                           });
                         }}
-                        className="flex-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:border-orange-500"
+                        className="flex-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                       />
                       <button
                         type="button"
@@ -1106,11 +1248,11 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Dynamic Product Attributes</span>
-                    <p className="text-[10px] text-slate-400 mt-0.5">Define attributes (e.g. Size, Color) with comma-separated values to automatically build variations.</p>
+                    <p className="text-[10px] text-slate-400 mt-0.5">Define attributes (e.g. Size, Color) and behavior rules to structure product variants, specifications, features, and badges.</p>
                   </div>
                   <button
                     type="button"
-                    onClick={() => setProductAttributes(prev => [...prev, { name: "", values: "" }])}
+                    onClick={() => setProductAttributes(prev => [...prev, { name: "", displayType: "variant", inputType: "Dropdown", value: "", values: "" }])}
                     className="flex items-center gap-1 px-2.5 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-white rounded-lg text-[9px] font-black uppercase tracking-wider transition cursor-pointer shrink-0"
                   >
                     <Plus size={10} />
@@ -1119,61 +1261,285 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                 </div>
 
                 <div className="space-y-3">
-                  {productAttributes.map((attr, idx) => (
-                    <div key={idx} className="flex items-start gap-2 bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-100 dark:border-white/[0.04]">
-                      <div className="flex-1 space-y-2">
-                        <input
-                          type="text"
-                          placeholder="Attribute Name (e.g. Color)"
-                          value={attr.name}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            setProductAttributes(prev => {
-                              const updated = [...prev];
-                              updated[idx].name = val;
-                              return updated;
-                            });
-                          }}
-                          className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:border-orange-500"
-                        />
-                        <input
-                          type="text"
-                          placeholder="Values (comma-separated, e.g. Black, White, Red)"
-                          value={attr.values}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            setProductAttributes(prev => {
-                              const updated = [...prev];
-                              updated[idx].values = val;
-                              return updated;
-                            });
-                          }}
-                          className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:border-orange-500"
-                        />
+                  {productAttributes.map((attr, idx) => {
+                    const displayType = attr.displayType || "variant";
+                    return (
+                      <div key={idx} className="flex items-start gap-2 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-white/[0.04]">
+                        <div className="flex-1 space-y-3">
+                          {/* First row: Name and DisplayType Selector */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                              <label className="text-[9px] font-black uppercase text-slate-400 pl-1 tracking-wider block mb-1">Attribute Name</label>
+                              <input
+                                type="text"
+                                placeholder="e.g. Color, Storage, Waterproof"
+                                value={attr.name}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setProductAttributes(prev => {
+                                    const updated = [...prev];
+                                    updated[idx].name = val;
+                                    return updated;
+                                  });
+                                }}
+                                className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[9px] font-black uppercase text-slate-400 pl-1 tracking-wider block mb-1">Display Type</label>
+                              <select
+                                value={displayType}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setProductAttributes(prev => {
+                                    const updated = [...prev];
+                                    updated[idx].displayType = val;
+                                    // Reset default values based on type
+                                    if (val === "variant") {
+                                      updated[idx].inputType = "Dropdown";
+                                      updated[idx].values = "";
+                                      updated[idx].value = "";
+                                    } else if (val === "feature") {
+                                      updated[idx].inputType = "Boolean";
+                                      updated[idx].value = "false";
+                                      updated[idx].values = "";
+                                    } else {
+                                      updated[idx].inputType = "Text";
+                                      updated[idx].value = "";
+                                      updated[idx].values = "";
+                                    }
+                                    return updated;
+                                  });
+                                }}
+                                className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                              >
+                                <option value="variant">Variant (Multiple Values)</option>
+                                <option value="specification">Specification (Single Value)</option>
+                                <option value="feature">Feature (Boolean or Text)</option>
+                                <option value="badge">Badge (Label/Tag)</option>
+                                <option value="hidden">Hidden (Internal Metadata)</option>
+                              </select>
+                            </div>
+                          </div>
+
+                          {/* Second row: Dynamically rendered inputs based on Display Type */}
+                          <div className="bg-white dark:bg-slate-950 p-3 rounded-lg border border-slate-100 dark:border-white/[0.02]">
+                            {displayType === "variant" && (
+                              <div className="space-y-3">
+                                <div>
+                                  <label className="text-[9px] font-black uppercase text-slate-400 pl-1 tracking-wider block mb-1">Variant Options (Comma-separated)</label>
+                                  <input
+                                    type="text"
+                                    placeholder="e.g. Red, Blue, Green or S, M, L, XL"
+                                    value={attr.values || ""}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      setProductAttributes(prev => {
+                                        const updated = [...prev];
+                                        updated[idx].values = val;
+                                        return updated;
+                                      });
+                                    }}
+                                    className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                                  />
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                  <div>
+                                    <label className="text-[9px] font-black uppercase text-slate-400 pl-1 tracking-wider block mb-1">Input Field Style</label>
+                                    <select
+                                      value={attr.inputType || "Dropdown"}
+                                      onChange={(e) => {
+                                        const val = e.target.value;
+                                        setProductAttributes(prev => {
+                                          const updated = [...prev];
+                                          updated[idx].inputType = val;
+                                          return updated;
+                                        });
+                                      }}
+                                      className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                                    >
+                                      <option value="Dropdown">Dropdown Menu</option>
+                                      <option value="Radio Button">Radio Buttons</option>
+                                      <option value="Color Picker">Color Picker Circle</option>
+                                      <option value="Multi Select">Multi Select Box</option>
+                                    </select>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {displayType === "specification" && (
+                              <div>
+                                <label className="text-[9px] font-black uppercase text-slate-400 pl-1 tracking-wider block mb-1">Specification Value</label>
+                                <input
+                                  type="text"
+                                  placeholder="e.g. 128GB, 4K HDR, Core i7, 100% Cotton"
+                                  value={attr.value || ""}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    setProductAttributes(prev => {
+                                      const updated = [...prev];
+                                      updated[idx].value = val;
+                                      return updated;
+                                    });
+                                  }}
+                                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                                />
+                              </div>
+                            )}
+
+                            {displayType === "feature" && (
+                              <div className="space-y-3">
+                                <div className="flex items-center gap-4">
+                                  <label className="text-[9px] font-black uppercase text-slate-400 pl-1 tracking-wider">Feature Type:</label>
+                                  <div className="flex items-center gap-3">
+                                    <label className="inline-flex items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
+                                      <input
+                                        type="radio"
+                                        name={`feature-type-${idx}`}
+                                        value="Boolean"
+                                        checked={attr.inputType === "Boolean"}
+                                        onChange={() => {
+                                          setProductAttributes(prev => {
+                                            const updated = [...prev];
+                                            updated[idx].inputType = "Boolean";
+                                            updated[idx].value = "false";
+                                            return updated;
+                                          });
+                                        }}
+                                        className="cursor-pointer text-orange-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                                      />
+                                      <span>Yes/No (Boolean)</span>
+                                    </label>
+                                    <label className="inline-flex items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
+                                      <input
+                                        type="radio"
+                                        name={`feature-type-${idx}`}
+                                        value="Text"
+                                        checked={attr.inputType === "Text"}
+                                        onChange={() => {
+                                          setProductAttributes(prev => {
+                                            const updated = [...prev];
+                                            updated[idx].inputType = "Text";
+                                            updated[idx].value = "";
+                                            return updated;
+                                          });
+                                        }}
+                                        className="cursor-pointer text-orange-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                                      />
+                                      <span>Feature Details (Text)</span>
+                                    </label>
+                                  </div>
+                                </div>
+
+                                {attr.inputType === "Boolean" ? (
+                                  <div className="flex items-center gap-2 mt-1 pl-1">
+                                    <input
+                                      type="checkbox"
+                                      id={`feature-checkbox-${idx}`}
+                                      checked={attr.value === "true"}
+                                      onChange={(e) => {
+                                        const checked = e.target.checked;
+                                        setProductAttributes(prev => {
+                                          const updated = [...prev];
+                                          updated[idx].value = checked ? "true" : "false";
+                                          return updated;
+                                        });
+                                      }}
+                                      className="h-4 w-4 rounded border-slate-300 text-orange-600 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                                    />
+                                    <label htmlFor={`feature-checkbox-${idx}`} className="text-xs font-bold text-slate-700 dark:text-slate-300 cursor-pointer">
+                                      Enable Feature (Yes / True)
+                                    </label>
+                                  </div>
+                                ) : (
+                                  <input
+                                    type="text"
+                                    placeholder="e.g. Ultra-quiet motor, Water-resistant IP68"
+                                    value={attr.value || ""}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      setProductAttributes(prev => {
+                                        const updated = [...prev];
+                                        updated[idx].value = val;
+                                        return updated;
+                                      });
+                                    }}
+                                    className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                                  />
+                                )}
+                              </div>
+                            )}
+
+                            {displayType === "badge" && (
+                              <div>
+                                <label className="text-[9px] font-black uppercase text-slate-400 pl-1 tracking-wider block mb-1">Badge label</label>
+                                <input
+                                  type="text"
+                                  placeholder="e.g. Limited Edition, Eco-Friendly, Best Seller"
+                                  value={attr.value || ""}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    setProductAttributes(prev => {
+                                      const updated = [...prev];
+                                      updated[idx].value = val;
+                                      return updated;
+                                    });
+                                  }}
+                                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                                />
+                              </div>
+                            )}
+
+                            {displayType === "hidden" && (
+                              <div>
+                                <label className="text-[9px] font-black uppercase text-slate-400 pl-1 tracking-wider block mb-1">Internal Value</label>
+                                <input
+                                  type="text"
+                                  placeholder="e.g. supplier_code_xyz123"
+                                  value={attr.value || ""}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    setProductAttributes(prev => {
+                                      const updated = [...prev];
+                                      updated[idx].value = val;
+                                      return updated;
+                                    });
+                                  }}
+                                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => setProductAttributes(prev => prev.filter((_, i) => i !== idx))}
+                          className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition cursor-pointer self-start mt-4"
+                        >
+                          <Trash2 size={14} />
+                        </button>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => setProductAttributes(prev => prev.filter((_, i) => i !== idx))}
-                        className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition cursor-pointer self-center"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {/* Variants Grid Table */}
                 {productVariants.length > 0 && (
                   <div className="space-y-2 mt-4 pt-4 border-t border-slate-100 dark:border-white/[0.04]">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Generated Variants ({productVariants.length})</span>
-                    <div className="overflow-x-auto rounded-xl border border-slate-250 dark:border-white/[0.08]">
+                    <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-white/[0.08]">
                       <table className="w-full text-left border-collapse">
                         <thead>
-                          <tr className="bg-slate-50 dark:bg-slate-900 border-b border-slate-250 dark:border-white/[0.08]">
+                          <tr className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-white/[0.08]">
                             <th className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Combination</th>
-                            <th className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-1/3">SKU</th>
+                            <th className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-1/4">SKU</th>
                             <th className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-20">Price (₹)</th>
                             <th className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-16">Stock</th>
+                            <th className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-36">Images</th>
+                            <th className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-24">Barcode</th>
+                            <th className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-12 text-center">Avail.</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-white/[0.04]">
@@ -1182,7 +1548,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                               <td className="px-3 py-2 text-xs font-medium text-slate-800 dark:text-slate-200">
                                 <div className="flex flex-wrap gap-1">
                                   {Object.entries(variant.attributes).map(([k, v]) => (
-                                    <span key={k} className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-850 rounded text-[10px] font-bold text-slate-500 dark:text-slate-400">
+                                    <span key={k} className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-[10px] font-bold text-slate-500 dark:text-slate-400">
                                       {k}: {v}
                                     </span>
                                   ))}
@@ -1200,7 +1566,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                                       return updated;
                                     });
                                   }}
-                                  className="w-full px-2 py-1 bg-transparent border border-slate-200 dark:border-white/[0.08] rounded text-xs text-slate-800 dark:text-white outline-none focus:border-orange-500"
+                                  className="w-full px-2 py-1 bg-transparent border border-slate-200 dark:border-white/[0.08] rounded text-xs text-slate-800 dark:text-white outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                                 />
                               </td>
                               <td className="px-3 py-2">
@@ -1215,7 +1581,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                                       return updated;
                                     });
                                   }}
-                                  className="w-full px-2 py-1 bg-transparent border border-slate-200 dark:border-white/[0.08] rounded text-xs text-slate-800 dark:text-white outline-none focus:border-orange-500"
+                                  className="w-full px-2 py-1 bg-transparent border border-slate-200 dark:border-white/[0.08] rounded text-xs text-slate-800 dark:text-white outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                                 />
                               </td>
                               <td className="px-3 py-2">
@@ -1230,7 +1596,63 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                                       return updated;
                                     });
                                   }}
-                                  className="w-full px-2 py-1 bg-transparent border border-slate-200 dark:border-white/[0.08] rounded text-xs text-slate-800 dark:text-white outline-none focus:border-orange-500"
+                                  className="w-full px-2 py-1 bg-transparent border border-slate-200 dark:border-white/[0.08] rounded text-xs text-slate-800 dark:text-white outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                                />
+                              </td>
+                              <td className="px-3 py-2">
+                                <div className="flex gap-1 overflow-x-auto py-0.5 max-w-[150px]">
+                                  {uploadedFiles.map((fileObj, fIdx) => {
+                                    const isSelected = (variant.images || []).includes(fIdx);
+                                    return (
+                                      <button
+                                        key={fIdx}
+                                        type="button"
+                                        onClick={() => toggleVariantImage(idx, fIdx)}
+                                        className={`relative w-6 h-6 rounded overflow-hidden border-2 transition-all flex-shrink-0 ${isSelected ? "border-orange-500 scale-105 shadow-sm" : "border-slate-200 dark:border-white/[0.08] opacity-50 hover:opacity-100" }`}
+                                      >
+                                        <img src={fileObj.preview} alt="" className="w-full h-full object-contain bg-slate-50 dark:bg-slate-950" />
+                                        {isSelected && (
+                                          <div className="absolute inset-0 bg-orange-500/20 flex items-center justify-center">
+                                            <Check size={10} className="text-slate-100 dark:text-white stroke-[3]" />
+                                          </div>
+                                        )}
+                                      </button>
+                                    );
+                                  })}
+                                  {uploadedFiles.length === 0 && (
+                                    <span className="text-[10px] text-slate-400 italic">No images uploaded</span>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="px-3 py-2">
+                                <input
+                                  type="text"
+                                  value={variant.barcode || ""}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    setProductVariants(prev => {
+                                      const updated = [...prev];
+                                      updated[idx].barcode = val;
+                                      return updated;
+                                    });
+                                  }}
+                                  placeholder="Barcode"
+                                  className="w-full px-2 py-1 bg-transparent border border-slate-200 dark:border-white/[0.08] rounded text-xs text-slate-800 dark:text-white outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                                />
+                              </td>
+                              <td className="px-3 py-2 text-center">
+                                <input
+                                  type="checkbox"
+                                  checked={variant.availability !== false}
+                                  onChange={(e) => {
+                                    const val = e.target.checked;
+                                    setProductVariants(prev => {
+                                      const updated = [...prev];
+                                      updated[idx].availability = val;
+                                      return updated;
+                                    });
+                                  }}
+                                  className="w-4 h-4 text-orange-500 border-slate-200 dark:border-white/[0.08] rounded cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                                 />
                               </td>
                             </tr>
@@ -1263,11 +1685,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                       <div
                         key={col}
                         onClick={() => handleCollectionCheckbox(col)}
-                        className={`p-2 rounded-xl border flex items-center gap-2 cursor-pointer transition ${
-                          isSelected
-                            ? "bg-orange-50 border-orange-200 dark:bg-orange-950/20 dark:border-orange-900 text-orange-700 dark:text-orange-300 font-extrabold"
-                            : "border-slate-100 dark:border-white/[0.04] bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 hover:bg-slate-50"
-                        }`}
+                        className={`p-2 rounded-xl border flex items-center gap-2 cursor-pointer transition ${isSelected ? "bg-orange-50 border-orange-200 dark:bg-orange-950/20 dark:border-orange-900 text-orange-700 dark:text-orange-300 font-extrabold" : "border-slate-100 dark:border-white/[0.04] bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 hover:bg-slate-50" }`}
                       >
                         <BookmarkCheck size={12} className={isSelected ? "opacity-100 text-orange-500" : "opacity-35"} />
                         <span className="text-[10px] truncate">{col}</span>
@@ -1300,7 +1718,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                       placeholder="e.g. fast charging, 5g phone, oppo reno"
                       value={newProduct.keywords}
                       onChange={(e) => setNewProduct({ ...newProduct, keywords: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:border-orange-500 transition"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     />
                   </div>
 
@@ -1311,7 +1729,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                       placeholder="SEO meta description snippet..."
                       value={newProduct.seoDescription}
                       onChange={(e) => setNewProduct({ ...newProduct, seoDescription: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:border-orange-500 transition"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     />
                   </div>
                 </div>
@@ -1319,15 +1737,25 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
 
               {/* Image Upload section */}
               <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-white/[0.04]">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Product Images *</label>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Product Images *</label>
+                  <button
+                    type="button"
+                    onClick={handleAIGenerateImage}
+                    disabled={loaders.generateImage || !newProduct.name?.trim()}
+                    className="flex items-center gap-1.5 px-3.5 py-2 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-500/50 text-white rounded-xl text-[9px] font-black uppercase tracking-wider transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-sm shadow-orange-500/10"
+                    title={!newProduct.name?.trim() ? "Enter a product name to enable image generation" : "Generate image using AI"}
+                  >
+                    <Sparkles size={11} className={loaders.generateImage ? "animate-spin" : ""} />
+                    <span>{loaders.generateImage ? "Generating..." : "Generate AI Image"}</span>
+                  </button>
+                </div>
                 <div
                   onDragEnter={handleDrag}
                   onDragOver={handleDrag}
                   onDragLeave={handleDrag}
                   onDrop={handleDrop}
-                  className={`w-full py-8 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-1 cursor-pointer transition ${
-                    dragActive ? "border-orange-500 bg-orange-500/5" : "border-slate-200 hover:border-slate-350 dark:border-white/[0.08]"
-                  }`}
+                  className={`w-full py-8 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-1 cursor-pointer transition ${dragActive ? "border-orange-500 bg-orange-500/5" : "border-slate-200 hover:border-slate-300 dark:border-white/[0.08]" }`}
                   onClick={() => document.getElementById("file-upload-input").click()}
                 >
                   <Upload size={20} className="text-slate-400 mb-1" />
@@ -1350,19 +1778,17 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                         <img
                           src={fileObj.preview}
                           alt=""
-                          className="w-full h-16 object-cover rounded-lg"
+                          className="w-full h-16 object-contain bg-white dark:bg-slate-950 rounded-lg"
                         />
                         <div className="flex justify-between items-center text-[8px] gap-1 px-1">
                           <button
                             type="button"
                             onClick={() => setCoverFile(idx)}
-                            className={`px-1.5 py-0.5 rounded font-black transition cursor-pointer ${
-                              fileObj.isCover ? "bg-orange-500 text-white" : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
-                            }`}
+                            className={`px-1.5 py-0.5 rounded font-black transition cursor-pointer ${fileObj.isCover ? "bg-orange-500 text-white" : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300" }`}
                           >
                             {fileObj.isCover ? "Cover" : "Set Cover"}
                           </button>
-                          
+
                           <div className="flex gap-0.5">
                             <button
                               type="button"
@@ -1402,7 +1828,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
             <div className="pt-4 border-t border-slate-100 dark:border-white/[0.04]">
               <button
                 type="submit"
-                className="w-full py-3.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs font-black uppercase tracking-wider transition active:scale-95 shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+                className="w-full py-3.5 bg-orange-500 hover:bg-orange-600 text-slate-100 dark:text-white rounded-xl text-xs font-black uppercase tracking-wider transition active:scale-95 shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <CheckCircle size={14} />
                 <span>Publish Listing (Requires Admin Verification)</span>
@@ -1413,7 +1839,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
 
         {/* Right Side: Live Previews & Warnings */}
         <div className="lg:col-span-5 space-y-6">
-          
+
           {/* Validation Warnings Summary Panel */}
           {validationWarnings.length > 0 && (
             <div className="bg-amber-50 dark:bg-amber-950/10 border border-amber-200 dark:border-amber-900/30 rounded-2xl p-4 space-y-2">
@@ -1433,7 +1859,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
           )}
 
           {/* Preview panel switcher */}
-          <div className="bg-white dark:bg-[#172033] border border-slate-200 dark:border-white/[0.08] rounded-2xl p-5 shadow-sm space-y-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.08] rounded-2xl p-5 shadow-sm space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/[0.06] pb-3">
               <div className="flex items-center gap-2 text-slate-800 dark:text-white font-extrabold uppercase text-xs tracking-wider">
                 <Eye size={14} />
@@ -1443,31 +1869,19 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
               <div className="flex bg-slate-100 dark:bg-slate-900 p-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider">
                 <button
                   onClick={() => setActivePreviewTab("card")}
-                  className={`px-2 py-1.5 rounded-md transition cursor-pointer ${
-                    activePreviewTab === "card" 
-                      ? "bg-white dark:bg-[#172033] text-slate-800 dark:text-white shadow-sm" 
-                      : "text-slate-500"
-                  }`}
+                  className={`px-2 py-1.5 rounded-md transition cursor-pointer ${activePreviewTab === "card" ? "bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-sm" : "text-slate-500" }`}
                 >
                   Card
                 </button>
                 <button
                   onClick={() => setActivePreviewTab("page")}
-                  className={`px-2 py-1.5 rounded-md transition cursor-pointer ${
-                    activePreviewTab === "page" 
-                      ? "bg-white dark:bg-[#172033] text-slate-800 dark:text-white shadow-sm" 
-                      : "text-slate-500"
-                  }`}
+                  className={`px-2 py-1.5 rounded-md transition cursor-pointer ${activePreviewTab === "page" ? "bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-sm" : "text-slate-500" }`}
                 >
                   Page
                 </button>
                 <button
                   onClick={() => setActivePreviewTab("seo")}
-                  className={`px-2 py-1.5 rounded-md transition cursor-pointer ${
-                    activePreviewTab === "seo" 
-                      ? "bg-white dark:bg-[#172033] text-slate-800 dark:text-white shadow-sm" 
-                      : "text-slate-500"
-                  }`}
+                  className={`px-2 py-1.5 rounded-md transition cursor-pointer ${activePreviewTab === "seo" ? "bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-sm" : "text-slate-500" }`}
                 >
                   SEO
                 </button>
@@ -1476,7 +1890,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
 
             {/* PREVIEW CONTAINER */}
             <div className="overflow-hidden min-h-[300px] flex items-center justify-center bg-slate-50/50 dark:bg-slate-900/30 rounded-xl p-4 border border-dashed border-slate-200 dark:border-white/[0.04]">
-              
+
               {/* Card Preview */}
               {activePreviewTab === "card" && (
                 <div className="w-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.08] rounded-2xl overflow-hidden shadow-md flex flex-col transition hover:shadow-lg">
@@ -1485,15 +1899,15 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                       <img
                         src={uploadedFiles.find(f => f.isCover)?.preview || uploadedFiles[0].preview}
                         alt="Product"
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                       />
                     ) : (
-                      <Package size={36} className="text-slate-350 dark:text-slate-700 animate-pulse" />
+                      <Package size={36} className="text-slate-300 dark:text-slate-700 animate-pulse" />
                     )}
 
                     <div className="absolute top-2.5 right-2.5 flex flex-col gap-1">
                       {newProduct.category && (
-                        <span className="bg-orange-500 text-white text-[7px] font-black uppercase tracking-wider px-2 py-0.5 rounded shadow-sm">
+                        <span className="bg-orange-500 text-slate-100 dark:text-white text-[7px] font-black uppercase tracking-wider px-2 py-0.5 rounded shadow-sm">
                           {newProduct.category}
                         </span>
                       )}
@@ -1507,7 +1921,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                           {newProduct.brand}
                         </span>
                       )}
-                      <h4 className="text-xs font-black text-slate-850 dark:text-white line-clamp-1 mt-0.5">
+                      <h4 className="text-xs font-black text-slate-800 dark:text-white line-clamp-1 mt-0.5">
                         {newProduct.name || "Untitled Product"}
                       </h4>
                       <p className="text-[10px] text-slate-400 dark:text-slate-500 line-clamp-2 mt-1 leading-normal font-sans">
@@ -1519,11 +1933,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                       <span className="text-xs font-black text-slate-900 dark:text-white">
                         ₹ {parseFloat(newProduct.price) ? parseFloat(newProduct.price).toLocaleString("en-IN") : "0"}
                       </span>
-                      <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded ${
-                        parseInt(newProduct.stock) > 0 
-                          ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/20" 
-                          : "bg-red-50 text-red-500 dark:bg-red-950/20"
-                      }`}>
+                      <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded ${parseInt(newProduct.stock) > 0 ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/20" : "bg-red-50 text-red-500 dark:bg-red-950/20" }`}>
                         {parseInt(newProduct.stock) > 0 ? `In Stock (${newProduct.stock})` : "Out of Stock"}
                       </span>
                     </div>
@@ -1540,7 +1950,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                         <img
                           src={uploadedFiles.find(f => f.isCover)?.preview || uploadedFiles[0].preview}
                           alt="Cover"
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-contain"
                         />
                       ) : (
                         <Package size={20} className="text-slate-300 dark:text-slate-700" />
@@ -1574,7 +1984,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                       <div className="grid grid-cols-2 gap-1.5 text-[9px] pt-1">
                         {customAttributes.map((attr, idx) => (
                           <div key={idx} className="flex justify-between border-b border-slate-50 dark:border-white/[0.02] pb-0.5">
-                            <span className="font-bold text-slate-450 uppercase">{attr.key || "Specs"}:</span>
+                            <span className="font-bold text-slate-400 uppercase">{attr.key || "Specs"}:</span>
                             <span className="text-slate-700 dark:text-slate-300 font-medium truncate max-w-[90px]">{attr.value || "Details"}</span>
                           </div>
                         ))}
@@ -1585,7 +1995,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                   {newProduct.tags && (
                     <div className="flex flex-wrap gap-1 pt-1.5">
                       {newProduct.tags.split(",").map((tag, idx) => (
-                        <span key={idx} className="text-[8px] bg-slate-100 dark:bg-slate-950 text-slate-650 dark:text-slate-400 px-2 py-0.5 rounded font-medium">
+                        <span key={idx} className="text-[8px] bg-slate-100 dark:bg-slate-950 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded font-medium">
                           #{tag.trim()}
                         </span>
                       ))}
@@ -1596,7 +2006,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
 
               {/* SEO Google Search Result Preview */}
               {activePreviewTab === "seo" && (
-                <div className="w-full bg-white border border-slate-200 rounded-2xl p-4 space-y-1.5 text-left shadow-md max-w-sm">
+                <div className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 space-y-1.5 text-left shadow-md max-w-sm">
                   <div className="flex items-center gap-1.5 text-[10px] text-slate-500 font-sans">
                     <Globe size={10} className="text-slate-400" />
                     <span>https://cartnow.com</span>
@@ -1606,8 +2016,8 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                     </span>
                   </div>
 
-                  <a 
-                    href="#seo-preview" 
+                  <a
+                    href="#seo-preview"
                     className="text-indigo-700 hover:underline text-sm font-medium font-sans block leading-snug truncate cursor-pointer"
                   >
                     {newProduct.name ? `${newProduct.name} | Buy ${newProduct.brand || "Online"}` : "Untitled Product Listing | CartNow"}

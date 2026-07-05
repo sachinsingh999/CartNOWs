@@ -78,7 +78,7 @@ const Sales = ({ token }) => {
       {/* Page Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between shrink-0">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 bg-indigo-500/10 text-indigo-550 dark:text-indigo-400 rounded-xl flex items-center justify-center border border-indigo-500/20 shadow-sm shrink-0">
+          <div className="h-10 w-10 bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 rounded-xl flex items-center justify-center border border-indigo-500/20 shadow-sm shrink-0">
             <Megaphone size={20} />
           </div>
           <div>
@@ -88,11 +88,7 @@ const Sales = ({ token }) => {
         </div>
         <button
           onClick={() => setShowForm(f => !f)}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition active:scale-95 cursor-pointer shadow-sm ${
-            showForm
-              ? "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
-              : "bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white shadow-md shadow-indigo-500/25"
-          }`}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition active:scale-95 cursor-pointer shadow-sm ${ showForm ? "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700" : "bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-slate-100 dark:text-white shadow-md shadow-indigo-500/25" }`}
         >
           <Plus size={16} />
           <span>{showForm ? "Cancel" : "New Sale Banner"}</span>
@@ -101,8 +97,8 @@ const Sales = ({ token }) => {
 
       {/* Create Sale Banner Form */}
       {showForm && (
-        <div className="bg-white dark:bg-[#151b26] border border-slate-200 dark:border-slate-800/80 rounded-2xl p-6 shadow-sm space-y-4 animate-scaleUp">
-          <h2 className="text-sm font-black text-slate-850 dark:text-white tracking-tight">Create Sale Banner</h2>
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-6 shadow-sm space-y-4 animate-scaleUp">
+          <h2 className="text-sm font-black text-slate-800 dark:text-white tracking-tight">Create Sale Banner</h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -149,7 +145,7 @@ const Sales = ({ token }) => {
                     }}
                   />
                 ))}
-                <div className="flex items-center gap-2 border border-slate-200 dark:border-slate-800 rounded-xl px-2.5 py-1.5 bg-slate-50/50 dark:bg-[#111827]">
+                <div className="flex items-center gap-2 border border-slate-200 dark:border-slate-800 rounded-xl px-2.5 py-1.5 bg-slate-50/50 dark:bg-gray-900">
                   <input 
                     type="color" 
                     name="bgColor" 
@@ -157,7 +153,7 @@ const Sales = ({ token }) => {
                     onChange={handleChange}
                     className="w-7 h-7 rounded border border-slate-200 dark:border-slate-800 cursor-pointer p-0 bg-transparent" 
                   />
-                  <span className="text-[10px] font-bold text-slate-450 uppercase">Custom</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase">Custom</span>
                 </div>
               </div>
             </div>
@@ -171,7 +167,7 @@ const Sales = ({ token }) => {
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white font-bold text-xs uppercase tracking-wider transition active:scale-[0.98] disabled:opacity-50 cursor-pointer shadow-md hover:shadow-indigo-500/25"
+              className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-slate-100 dark:text-white font-bold text-xs uppercase tracking-wider transition active:scale-[0.98] disabled:opacity-50 cursor-pointer shadow-md hover:shadow-indigo-500/25"
             >
               {loading ? "Creating…" : "Create Sale Banner"}
             </button>
@@ -181,7 +177,7 @@ const Sales = ({ token }) => {
 
       {/* Banners List */}
       {sales.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-[#151b26] py-16 text-center text-xs text-slate-500 dark:text-slate-400 shadow-sm flex flex-col items-center justify-center gap-3">
+        <div className="rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-16 text-center text-xs text-slate-500 dark:text-slate-400 shadow-sm flex flex-col items-center justify-center gap-3">
           <Megaphone size={40} className="text-indigo-200 dark:text-slate-700" />
           <div>
             <p className="font-bold text-slate-800 dark:text-slate-200">No sale banners yet</p>
@@ -195,13 +191,7 @@ const Sales = ({ token }) => {
             return (
               <div 
                 key={sale._id} 
-                className={`bg-white dark:bg-[#151b26] rounded-2xl border p-4.5 flex flex-col sm:flex-row items-center justify-between gap-4 transition duration-200 shadow-xs hover:shadow-md ${
-                  expired 
-                    ? "border-amber-255 dark:border-amber-500/20 bg-amber-50/10 dark:bg-amber-500/5" 
-                    : sale.active 
-                      ? "border-indigo-200 dark:border-indigo-500/20" 
-                      : "border-slate-200 dark:border-slate-800"
-                } ${(!sale.active || expired) ? "opacity-70" : ""}`}
+                className={`bg-white dark:bg-slate-900 rounded-2xl border p-4.5 flex flex-col sm:flex-row items-center justify-between gap-4 transition duration-200 shadow-xs hover:shadow-md ${ expired ? "border-amber-300 dark:border-amber-500/20 bg-amber-50/10 dark:bg-amber-500/5" : sale.active ? "border-indigo-200 dark:border-indigo-500/20" : "border-slate-200 dark:border-slate-800" } ${(!sale.active || expired) ? "opacity-70" : ""}`}
               >
                 <div className="flex items-center gap-4 min-w-0 w-full sm:w-auto">
                   {/* Swatch */}
@@ -215,13 +205,7 @@ const Sales = ({ token }) => {
                   <div className="min-w-0 flex-1 sm:flex-initial">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-extrabold text-sm text-slate-900 dark:text-white tracking-tight">{sale.title}</span>
-                      <span className={`text-[8px] font-black px-2 py-0.5 rounded-full border uppercase tracking-wider leading-none ${
-                        expired 
-                          ? "bg-amber-500/15 text-amber-605 dark:text-amber-405 border-amber-500/30" 
-                          : sale.active 
-                            ? "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border-indigo-500/30" 
-                            : "bg-slate-500/15 text-slate-600 dark:text-slate-400 border-slate-500/30"
-                      }`}>
+                      <span className={`text-[8px] font-black px-2 py-0.5 rounded-full border uppercase tracking-wider leading-none ${ expired ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30" : sale.active ? "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border-indigo-500/30" : "bg-slate-500/15 text-slate-600 dark:text-slate-400 border-slate-500/30" }`}>
                         {expired ? "Expired" : sale.active ? "Active" : "Paused"}
                       </span>
                       {sale.discountPercent > 0 && (
@@ -229,7 +213,7 @@ const Sales = ({ token }) => {
                       )}
                     </div>
                     {sale.subtitle && <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium leading-relaxed">{sale.subtitle}</p>}
-                    <div className="flex items-center gap-3 mt-1.5 flex-wrap text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wide">
+                    <div className="flex items-center gap-3 mt-1.5 flex-wrap text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">
                       <span className="flex items-center gap-1.5">
                         <Calendar size={11} className="text-slate-400" />
                         <span>{fmt(sale.validFrom)} → {fmt(sale.validTo)}</span>
@@ -248,7 +232,7 @@ const Sales = ({ token }) => {
                   <button
                     onClick={() => handleToggle(sale._id)}
                     title={sale.active ? "Pause" : "Activate"}
-                    className={`p-1 rounded-lg transition cursor-pointer ${sale.active ? "text-indigo-500 hover:text-indigo-600" : "text-slate-400 hover:text-slate-605 dark:text-slate-500"}`}
+                    className={`p-1 rounded-lg transition cursor-pointer ${sale.active ? "text-indigo-500 hover:text-indigo-600" : "text-slate-400 hover:text-slate-600 dark:text-slate-500"}`}
                   >
                     {sale.active ? <ToggleRight size={26} /> : <ToggleLeft size={26} />}
                   </button>
@@ -280,7 +264,7 @@ const Field = ({ label, name, value, onChange, type = "text", placeholder, min, 
       placeholder={placeholder}
       min={min}
       max={max}
-      className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#111827] px-4 py-2.5 text-xs font-semibold text-slate-900 dark:text-slate-100 outline-none transition focus:bg-white dark:focus:bg-[#151b26] focus:border-indigo-500 dark:focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 placeholder:text-slate-450 dark:placeholder:text-slate-600"
+      className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-gray-900 px-4 py-2.5 text-xs font-semibold text-slate-900 dark:text-slate-100 outline-none transition focus:bg-white dark:focus:bg-slate-900 dark: placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
     />
   </div>
 );

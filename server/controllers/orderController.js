@@ -425,8 +425,30 @@ const updateStatus = async (req, res) => {
       return res.json({ success: false, message: "Order not found" });
     }
 
-    order.orderStatus = status;
-    await order.save();
+    let hasSentNoti = false;
+    if (status === "Out for Delivery") {
+      if (!order.verificationCode) {
+        const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+        let code = "";
+        for (let i = 0; i < 6; i++) {
+          code += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        order.verificationCode = code;
+      }
+      order.orderStatus = status;
+      await order.save();
+
+      await createNotification(
+        order.userId,
+        order._id,
+        "Delivery Verification Code",
+        `Your order #${order._id.toString().slice(-6).toUpperCase()} is Out for Delivery! Please provide code ${order.verificationCode} to the delivery agent to confirm delivery.`
+      );
+      hasSentNoti = true;
+    } else {
+      order.orderStatus = status;
+      await order.save();
+    }
 
     // Sync status with DeliveryAssignment if deliveryman is assigned
     if (order.deliverymanId) {
@@ -439,13 +461,15 @@ const updateStatus = async (req, res) => {
     // Try generating invoice if conditions are met
     await checkAndGenerateInvoice(orderId);
 
-    // Trigger notification to customer
-    await createNotification(
-      order.userId,
-      order._id,
-      "Order Status Updated",
-      `Your order #${order._id.toString().slice(-6).toUpperCase()} status has been updated to "${status}".`
-    );
+    if (!hasSentNoti) {
+      // Trigger notification to customer
+      await createNotification(
+        order.userId,
+        order._id,
+        "Order Status Updated",
+        `Your order #${order._id.toString().slice(-6).toUpperCase()} status has been updated to "${status}".`
+      );
+    }
 
     res.json({ success: true, message: "Status Updated" });
   } catch (error) {

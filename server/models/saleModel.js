@@ -15,6 +15,9 @@ const saleSchema = new mongoose.Schema({
   validFrom: { type: Date, default: Date.now },
   validTo: { type: Date, required: true },
   active: { type: Boolean, default: true },
+  publicId: { type: String, default: "" },
+  folder: { type: String, default: "cartnow/ads" },
+  expiresAt: { type: Date, default: null },
   priority: { type: Number, default: 0 },             // higher = shows first
 }, { timestamps: true });
 

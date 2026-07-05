@@ -120,7 +120,7 @@ const OrderConfirmed = () => {
         <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 mt-4">Order receipt not found.</p>
         <button
           onClick={() => navigate("/product")}
-          className="mt-4 rounded-xl bg-slate-900 dark:bg-orange-600 px-5 py-2.5 text-xs font-bold text-white transition hover:bg-slate-800 dark:hover:bg-orange-500 cursor-pointer"
+          className="mt-4 rounded-xl bg-slate-900 dark:bg-orange-600 px-5 py-2.5 text-xs font-bold text-slate-100 dark:text-white transition hover:bg-slate-800 dark:hover:bg-orange-500 cursor-pointer"
         >
           Browse Store
         </button>
@@ -148,7 +148,7 @@ const OrderConfirmed = () => {
       <div className="mx-auto max-w-5xl space-y-8">
         
         {/* SUCCESS HERO BANNER CARD */}
-        <div className="relative overflow-hidden rounded-3xl bg-slate-950 dark:bg-slate-900/40 p-8 text-center text-white shadow-xl sm:p-10 border border-transparent dark:border-slate-800/80">
+        <div className="relative overflow-hidden rounded-3xl bg-slate-950 dark:bg-slate-900/40 p-8 text-center text-slate-100 dark:text-white shadow-xl sm:p-10 border border-transparent dark:border-slate-800/80">
           {/* Subtle abstract lights */}
           <div className="absolute right-0 top-0 h-64 w-64 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none animate-pulse" />
           <div className="absolute left-10 bottom-0 h-40 w-40 rounded-full bg-teal-500/5 blur-3xl pointer-events-none" />
@@ -157,7 +157,7 @@ const OrderConfirmed = () => {
             {/* Pulsing circular checkmark */}
             <div className="relative flex h-20 w-20 items-center justify-center">
               <span className="absolute h-full w-full rounded-full bg-emerald-500/20 animate-ping opacity-75" />
-              <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 text-white shadow-md">
+              <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-100 dark:text-white shadow-md">
                 <CheckCircle2 size={32} />
               </div>
             </div>
@@ -176,7 +176,7 @@ const OrderConfirmed = () => {
             {/* Reference ID copy pill */}
             <div className="flex items-center gap-2 rounded-full border border-slate-800 dark:border-slate-700 bg-slate-900/60 dark:bg-slate-950/60 px-4 py-2 text-xs font-semibold text-slate-300">
               <span>Order ID:</span>
-              <span className="font-mono text-slate-105 font-bold">{orderId}</span>
+              <span className="font-mono text-slate-100 font-bold">{orderId}</span>
               <button
                 onClick={handleCopyId}
                 className="text-slate-400 hover:text-slate-200 transition ml-1 cursor-pointer"
@@ -239,7 +239,7 @@ const OrderConfirmed = () => {
                             },
                           })
                         }
-                        className="group/btn inline-flex items-center gap-1 rounded-xl bg-slate-950 dark:bg-orange-600 hover:bg-slate-800 dark:hover:bg-orange-500 text-white px-4 py-2.5 text-xs font-bold transition shadow-sm cursor-pointer"
+                        className="group/btn inline-flex items-center gap-1 rounded-xl bg-slate-950 dark:bg-orange-600 hover:bg-slate-800 dark:hover:bg-orange-500 text-slate-100 dark:text-white px-4 py-2.5 text-xs font-bold transition shadow-sm cursor-pointer"
                       >
                         <span>Track</span>
                         <ArrowRight size={12} className="transition-transform group-hover/btn:translate-x-0.5" />
@@ -254,14 +254,14 @@ const OrderConfirmed = () => {
             <div className="flex flex-col gap-3 sm:flex-row">
               <button
                 onClick={() => navigate("/orderdetail")}
-                className="flex-1 rounded-2xl bg-slate-950 dark:bg-orange-605 py-4 text-sm font-bold text-white transition hover:bg-slate-800 dark:hover:bg-orange-500 active:scale-98 shadow cursor-pointer"
+                className="flex-1 rounded-2xl bg-slate-950 dark:bg-orange-600 py-4 text-sm font-bold text-slate-100 dark:text-white transition hover:bg-slate-800 dark:hover:bg-orange-500 active:scale-98 shadow cursor-pointer"
               >
                 Go to Order History
               </button>
               
               <button
                 onClick={() => navigate("/product")}
-                className="flex-1 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-4 text-sm font-bold text-slate-700 dark:text-slate-300 transition hover:border-slate-350 dark:hover:border-slate-700 active:scale-98 shadow-sm cursor-pointer"
+                className="flex-1 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-4 text-sm font-bold text-slate-700 dark:text-slate-300 transition hover:border-slate-300 dark:hover:border-slate-700 active:scale-98 shadow-sm cursor-pointer"
               >
                 Continue Shopping
               </button>
@@ -274,7 +274,7 @@ const OrderConfirmed = () => {
             
             {/* PRICING BREAKDOWN */}
             <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 p-6 shadow-sm dark:shadow-slate-950/20 space-y-4">
-              <h3 className="text-xs uppercase tracking-wider text-slate-405 dark:text-slate-500 font-black border-b border-slate-100 dark:border-slate-800 pb-3">
+              <h3 className="text-xs uppercase tracking-wider text-slate-400 dark:text-slate-500 font-black border-b border-slate-100 dark:border-slate-800 pb-3">
                 Receipt Summary
               </h3>
               <div className="space-y-3 text-xs font-semibold text-slate-600 dark:text-slate-400">
@@ -315,7 +315,7 @@ const OrderConfirmed = () => {
                 </div>
               </div>
 
-              <div className="border-t border-slate-100 dark:border-slate-805 pt-5 space-y-3.5">
+              <div className="border-t border-slate-100 dark:border-slate-800 pt-5 space-y-3.5">
                 {/* Payment Method */}
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-slate-400 dark:text-slate-500">
@@ -324,11 +324,7 @@ const OrderConfirmed = () => {
                   </div>
                   <div className="flex items-center justify-between text-xs font-semibold">
                     <span className="text-slate-800 dark:text-slate-200 capitalize">{order.paymentMethod === "cod" ? "Cash on Delivery" : order.paymentMethod}</span>
-                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wide border ${
-                      order.paymentStatus === "paid" 
-                        ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-100 dark:border-emerald-900/50 text-emerald-700 dark:text-emerald-400" 
-                        : "bg-amber-50 dark:bg-amber-950/30 border-amber-100 dark:border-amber-900/50 text-amber-700 dark:text-amber-400"
-                    }`}>
+                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wide border ${ order.paymentStatus === "paid" ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-100 dark:border-emerald-900/50 text-emerald-700 dark:text-emerald-400" : "bg-amber-50 dark:bg-amber-950/30 border-amber-100 dark:border-amber-900/50 text-amber-700 dark:text-amber-400" }`}>
                       {order.paymentStatus === "paid" ? "Paid" : "Pending"}
                     </span>
                   </div>
@@ -384,7 +380,7 @@ const OrderConfirmed = () => {
 
             {/* TRUST CERTIFICATIONS */}
             <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 p-6 shadow-sm dark:shadow-slate-950/20 space-y-4">
-              <div className="flex items-center gap-3 text-slate-705 dark:text-slate-300">
+              <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300">
                 <ShieldCheck size={18} className="text-slate-900 dark:text-slate-100" />
                 <span className="text-xs font-extrabold text-slate-900 dark:text-slate-100">Guaranteed Purchase</span>
               </div>

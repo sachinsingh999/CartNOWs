@@ -139,7 +139,7 @@ const AiAssistant = () => {
           title="AI Shopping Assistant"
           style={{
             width: 56, height: 56, borderRadius: "50%",
-            background: open ? "linear-gradient(135deg,#374151,#111827)" : "linear-gradient(135deg,#6366f1,#8b5cf6)",
+            background: open ? "linear-gradient(135deg,#374151,var(--color-gray-900))" : "linear-gradient(135deg,#6366f1,#8b5cf6)",
             border: "none", cursor: "pointer",
             boxShadow: "0 4px 20px rgba(99,102,241,.45)",
             display: "flex", alignItems: "center", justifyContent: "center",

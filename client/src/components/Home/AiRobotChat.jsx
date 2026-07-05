@@ -37,7 +37,7 @@ const AiRobotChat = () => {
   return (
     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-[32px] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.015)] flex flex-col min-h-[500px]">
       <div className="flex items-center gap-2 mb-3">
-        <div className="w-7 h-7 rounded-lg overflow-hidden bg-indigo-50 dark:bg-indigo-950 border border-indigo-150 dark:border-indigo-900/60 flex items-center justify-center">
+        <div className="w-7 h-7 rounded-lg overflow-hidden bg-indigo-50 dark:bg-indigo-950 border border-indigo-200 dark:border-indigo-900/60 flex items-center justify-center">
           <img
             src="https://images.unsplash.com/photo-1589254065878-42c9da997008?w=80&auto=format&fit=crop&q=80"
             alt="Robot"
@@ -54,11 +54,7 @@ const AiRobotChat = () => {
         {aiChat.map((chat, idx) => (
           <div
             key={idx}
-            className={`max-w-[85%] rounded-2xl p-3 text-xs leading-normal font-bold ${
-              chat.role === "bot"
-                ? "bg-indigo-50 border border-indigo-100 dark:bg-indigo-950/30 dark:border-indigo-900/30 text-indigo-950 dark:text-indigo-200 text-left self-start"
-                : "bg-blue-600 text-white text-right self-end"
-            }`}
+            className={`max-w-[85%] rounded-2xl p-3 text-xs leading-normal font-bold ${ chat.role === "bot" ? "bg-indigo-50 border border-indigo-100 dark:bg-indigo-950/30 dark:border-indigo-900/30 text-indigo-950 dark:text-indigo-200 text-left self-start" : "bg-blue-600 text-slate-100 dark:text-white text-right self-end" }`}
           >
             {chat.msg}
           </div>
@@ -82,7 +78,7 @@ const AiRobotChat = () => {
           <button
             key={i}
             onClick={() => handleAISend(chip.value)}
-            className="px-2.5 py-1 text-[9px] bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 border border-indigo-100 dark:border-indigo-900/30 text-indigo-650 dark:text-indigo-300 font-black rounded-lg cursor-pointer transition active:scale-95"
+            className="px-2.5 py-1 text-[9px] bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 border border-indigo-100 dark:border-indigo-900/30 text-indigo-600 dark:text-indigo-300 font-black rounded-lg cursor-pointer transition active:scale-95"
           >
             {chip.text}
           </button>
@@ -97,12 +93,12 @@ const AiRobotChat = () => {
           onChange={(e) => setAiVal(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleAISend()}
           placeholder="Search or ask AI robot..."
-          className="w-full border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs outline-none bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-250 focus:border-blue-500 font-bold"
+          className="w-full border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs outline-none bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
         />
         <button
           type="button"
           onClick={() => handleAISend()}
-          className="h-9 w-9 bg-blue-600 hover:bg-blue-700 text-white rounded-xl flex items-center justify-center cursor-pointer transition active:scale-95 shrink-0 border-none"
+          className="h-9 w-9 bg-blue-600 hover:bg-blue-700 text-slate-100 dark:text-white rounded-xl flex items-center justify-center cursor-pointer transition active:scale-95 shrink-0 border-none"
         >
           <Send size={14} />
         </button>

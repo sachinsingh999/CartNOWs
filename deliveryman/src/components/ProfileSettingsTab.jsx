@@ -117,7 +117,7 @@ const ProfileSettingsTab = ({
       {/* Left Column: Driver Agent Profile Summary */}
       <div className="space-y-6">
         {/* Profile Card */}
-        <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800/80 rounded-2xl p-6 shadow-sm relative overflow-hidden group transition-all duration-300">
+        <div className="bg-white dark:bg-gray-900 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-6 shadow-sm relative overflow-hidden group transition-all duration-300">
           <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 to-indigo-600" />
           
           <div className="flex flex-col items-center text-center space-y-4 pt-3 pb-5 border-b border-slate-100 dark:border-slate-800/85">
@@ -133,7 +133,7 @@ const ProfileSettingsTab = ({
                   <User size={40} className="stroke-[1.5]" />
                 </div>
               )}
-              <span className="absolute bottom-1 right-1 h-4 w-4 rounded-full bg-emerald-500 border-2 border-white dark:border-[#111827] shadow" title="Active Account" />
+              <span className="absolute bottom-1 right-1 h-4 w-4 rounded-full bg-emerald-500 border-2 border-white/10 dark:border-slate-800 dark:border-gray-900 shadow" title="Active Account" />
             </div>
             <div>
               <h4 className="text-base font-black text-slate-900 dark:text-white tracking-tight">{driver?.name}</h4>
@@ -148,21 +148,21 @@ const ProfileSettingsTab = ({
                 <Truck size={13} className="text-slate-400" />
                 <span>Vehicle Type</span>
               </span>
-              <span className="font-black text-slate-905 dark:text-slate-200 capitalize">{driver?.vehicleType || "Bike"}</span>
+              <span className="font-black text-slate-900 dark:text-slate-200 capitalize">{driver?.vehicleType || "Bike"}</span>
             </div>
             <div className="flex items-center justify-between p-3.5 bg-slate-50/50 dark:bg-slate-900/40 rounded-xl border border-slate-100 dark:border-slate-800/60 text-xs">
               <span className="text-slate-500 dark:text-slate-400 font-bold flex items-center gap-2">
                 <Mail size={13} className="text-slate-400" />
                 <span>Email Address</span>
               </span>
-              <span className="font-black text-slate-905 dark:text-slate-200 truncate pl-4 max-w-[200px]">{driver?.email}</span>
+              <span className="font-black text-slate-900 dark:text-slate-200 truncate pl-4 max-w-[200px]">{driver?.email}</span>
             </div>
             <div className="flex items-center justify-between p-3.5 bg-slate-50/50 dark:bg-slate-900/40 rounded-xl border border-slate-100 dark:border-slate-800/60 text-xs">
               <span className="text-slate-500 dark:text-slate-400 font-bold flex items-center gap-2">
                 <Phone size={13} className="text-slate-400" />
                 <span>Phone Contact</span>
               </span>
-              <span className="font-black text-slate-905 dark:text-slate-200">{driver?.phone}</span>
+              <span className="font-black text-slate-900 dark:text-slate-200">{driver?.phone}</span>
             </div>
             <div className="flex items-center justify-between p-3.5 bg-slate-50/50 dark:bg-slate-900/40 rounded-xl border border-slate-100 dark:border-slate-800/60 text-xs">
               <span className="text-slate-500 dark:text-slate-400 font-bold flex items-center gap-2">
@@ -177,7 +177,7 @@ const ProfileSettingsTab = ({
         </div>
 
         {/* Deactivation Card */}
-        <div className="bg-rose-500/5 dark:bg-[#1C1115]/30 border border-rose-500/10 dark:border-rose-950 rounded-2xl p-5 shadow-sm space-y-4">
+        <div className="bg-rose-500/5 dark:bg-rose-950/30 border border-rose-500/10 dark:border-rose-950 rounded-2xl p-5 shadow-sm space-y-4">
           <div className="flex items-start gap-3 text-rose-600 dark:text-rose-400">
             <ShieldAlert size={18} className="shrink-0 mt-0.5" />
             <div>
@@ -187,7 +187,7 @@ const ProfileSettingsTab = ({
           </div>
           <button
             onClick={() => setShowResignModal(true)}
-            className="w-full bg-rose-550 dark:bg-rose-500/10 hover:bg-rose-600 dark:hover:bg-rose-500/20 border border-rose-500/20 text-white dark:text-rose-400 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition duration-150 active:scale-98 cursor-pointer text-center"
+            className="w-full bg-rose-500 dark:bg-rose-500/10 hover:bg-rose-600 dark:hover:bg-rose-500/20 border border-rose-500/20 text-slate-100 dark:text-white dark:text-rose-400 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition duration-150 active:scale-98 cursor-pointer text-center"
           >
             Resign Partner Account
           </button>
@@ -195,10 +195,10 @@ const ProfileSettingsTab = ({
       </div>
 
       {/* Right Column: Interactive Sector Map Settings */}
-      <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-5 hover:shadow-md transition-all duration-300">
+      <div className="bg-white dark:bg-gray-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-5 hover:shadow-md transition-all duration-300">
         <div className="border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-xl bg-blue-500/10 dark:bg-blue-500/20 text-blue-550 dark:text-blue-400 flex items-center justify-center shrink-0">
+            <div className="h-8 w-8 rounded-xl bg-blue-500/10 dark:bg-blue-500/20 text-blue-500 dark:text-blue-400 flex items-center justify-center shrink-0">
               <MapPin size={15} />
             </div>
             <div>
@@ -206,7 +206,7 @@ const ProfileSettingsTab = ({
               <p className="text-[10px] text-slate-500 mt-0.5">Click/drag marker to pin your center hub coordinates</p>
             </div>
           </div>
-          <div className="flex items-center gap-1 text-slate-400 dark:text-slate-555 cursor-help" title="Radius settings determine which orders appear in your Available Pool.">
+          <div className="flex items-center gap-1 text-slate-400 dark:text-slate-600 cursor-help" title="Radius settings determine which orders appear in your Available Pool.">
             <HelpCircle size={14} />
           </div>
         </div>
@@ -251,7 +251,7 @@ const ProfileSettingsTab = ({
             <button
               onClick={handleSaveMapArea}
               disabled={mapSaving}
-              className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 text-xs font-black uppercase tracking-wider transition-all duration-200 shadow-md shadow-blue-500/10 active:scale-98 cursor-pointer disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-slate-100 dark:text-white py-3 text-xs font-black uppercase tracking-wider transition-all duration-200 shadow-md shadow-blue-500/10 active:scale-98 cursor-pointer disabled:opacity-50"
             >
               {mapSaving ? "Saving..." : "Save Sector limits"}
             </button>
