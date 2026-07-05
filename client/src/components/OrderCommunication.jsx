@@ -428,7 +428,7 @@ const OrderCommunication = ({ orderId }) => {
     return () => {
       socket.disconnect();
     };
-  }, [orderId]);
+  }, [orderId, token]);
 
   // Load initial messages on expand
   useEffect(() => {
