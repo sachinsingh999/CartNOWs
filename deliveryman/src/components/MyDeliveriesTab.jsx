@@ -307,6 +307,15 @@ const MyDeliveriesTab = ({
     // WebRTC Signaling listeners
     socket.on("incoming_call", (callInfo) => {
       console.log(`[Socket Call] incoming_call received from: ${callInfo.from}`);
+      if (!callInfo.offer) {
+        console.log("[Socket Call] Ignoring call event without WebRTC offer");
+        return;
+      }
+      const callerId = callInfo.from || callInfo.callerId;
+      if (String(callerId) === String(myId)) {
+        console.log("[Socket Call] Ignoring self-relayed incoming call event");
+        return;
+      }
       if (callStateRef.current !== "idle" || incomingCallRef.current) {
         console.log("[Socket Call] Line busy, rejecting call");
         socket.emit("call_busy", { to: callInfo.from, orderId });
