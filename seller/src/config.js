@@ -1,1 +1,1 @@
-export const backendUrl = "https://cartnows.onrender.com";
+export const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";

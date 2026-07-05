@@ -34,6 +34,11 @@ import communicationRouter from "./routers/communicationRouter.js";
 import chatRoomModel from "./models/chatRoomModel.js";
 import chatMessageModel from "./models/chatMessageModel.js";
 
+// Validate critical environment variables
+if (!process.env.JWT_SECRET) {
+  throw new Error("CRITICAL ERROR: JWT_SECRET environment variable is missing or empty in .env");
+}
+
 const app = express();
 const port = process.env.PORT || 4000;
 connectDb();
