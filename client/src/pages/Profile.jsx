@@ -38,6 +38,7 @@ import {
 import { backendUrl } from "../config";
 import { useLanguage } from "../context/LanguageContext";
 import { toast } from "react-toastify";
+import { ProfileSkeleton } from "../components/SkeletonLoader";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Luxury Preset Avatars for SaaS Dashboard
@@ -399,13 +400,8 @@ const Profile = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center transition-colors duration-200">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-          className="h-10 w-10 rounded-full border-4 border-orange-500 border-t-transparent"
-        />
-        <p className="text-sm font-black text-slate-500 dark:text-slate-400 mt-4 uppercase tracking-widest">Initialising Secure Workspace...</p>
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-200">
+        <ProfileSkeleton />
       </div>
     );
   }

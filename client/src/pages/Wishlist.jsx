@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import { Heart, ShoppingBag, Trash2, ArrowRight } from "lucide-react";
 import { backendUrl } from "../config";
 import Loader from "../components/Loader";
+import { WishlistSkeleton } from "../components/SkeletonLoader";
 
 const Wishlist = () => {
   const [wishlist, setWishlist] = useState([]);
@@ -116,8 +117,8 @@ const Wishlist = () => {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <Loader message="Loading your favorites..." size="lg" color="rose" />
+      <div className="max-w-6xl mx-auto px-4 py-8 md:py-12">
+        <WishlistSkeleton />
       </div>
     );
   }

@@ -28,6 +28,7 @@ import {
   FileText,
   ShoppingBag,
   Search,
+  ShieldCheck,
 } from "lucide-react";
 import { backendUrl } from "../config";
 import { useLanguage } from "../context/LanguageContext";
@@ -795,6 +796,14 @@ const Orderdetail = () => {
                       )}
 
                       <button
+                        onClick={() => navigate(`/order/${item.orderId}`)}
+                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 px-5 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all active:scale-95 cursor-pointer"
+                      >
+                        <ShieldCheck className="h-4 w-4 text-indigo-500" />
+                        <span>View Details & Chat</span>
+                      </button>
+
+                      <button
                         onClick={() => navigate("/help")}
                         className="inline-flex items-center justify-center gap-2 rounded-xl border border-indigo-200 dark:border-indigo-900/50 bg-indigo-50/20 dark:bg-indigo-950/10 px-5 py-3 text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-all active:scale-95 cursor-pointer"
                       >
@@ -972,6 +981,19 @@ const Orderdetail = () => {
                                 <span>Cancel Order</span>
                               </button>
                             )}
+
+                            {/* View details & chat */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setOpenActionMenuIndex(null);
+                                navigate(`/order/${item.orderId}`);
+                              }}
+                              className="w-full flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-left cursor-pointer"
+                            >
+                              <ShieldCheck size={13} className="text-indigo-500" />
+                              <span>View Details & Chat</span>
+                            </button>
 
                             {/* Get support */}
                             <button

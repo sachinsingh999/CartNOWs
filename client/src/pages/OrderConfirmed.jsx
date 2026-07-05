@@ -253,10 +253,10 @@ const OrderConfirmed = () => {
             {/* CTAS QUICK ACTIONS */}
             <div className="flex flex-col gap-3 sm:flex-row">
               <button
-                onClick={() => navigate("/orderdetail")}
+                onClick={() => navigate(`/order/${orderId}`)}
                 className="flex-1 rounded-2xl bg-slate-950 dark:bg-orange-600 py-4 text-sm font-bold text-slate-100 dark:text-white transition hover:bg-slate-800 dark:hover:bg-orange-500 active:scale-98 shadow cursor-pointer"
               >
-                Go to Order History
+                View Order Details & Chat
               </button>
               
               <button

@@ -5,6 +5,7 @@ import { backendUrl } from "../config";
 import ProductCard from "../pages/ProductCard";
 import { toast } from "react-toastify";
 import { ArrowLeft, Layers, Award, ShieldCheck, SlidersHorizontal } from "lucide-react";
+import { ProductGridSkeleton } from "../components/SkeletonLoader";
 
 const CatalogDetail = ({ type }) => {
   const { slug } = useParams();
@@ -129,16 +130,7 @@ const CatalogDetail = ({ type }) => {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {[1, 2, 3, 4].map(n => (
-            <div key={n} className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[28px] p-4 flex flex-col justify-between animate-pulse h-[360px]">
-              <div className="w-full aspect-square bg-slate-100 dark:bg-slate-800 rounded-[20px] mb-3" />
-              <div className="h-4 bg-slate-100 dark:bg-slate-800 rounded w-2/3 mb-2" />
-              <div className="h-3 bg-slate-100 dark:bg-slate-900 rounded w-1/3 mb-4" />
-              <div className="h-8 bg-slate-100 dark:bg-slate-800 rounded-[12px] w-full" />
-            </div>
-          ))}
-        </div>
+        <ProductGridSkeleton count={8} />
       ) : products.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 border border-dashed border-slate-200 dark:border-slate-800 rounded-[32px] bg-white dark:bg-slate-900 text-center animate-fade-in">
           <SlidersHorizontal size={36} className="text-slate-300 dark:text-slate-600 mb-3 animate-bounce" />

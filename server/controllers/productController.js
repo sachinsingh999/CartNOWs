@@ -1086,47 +1086,49 @@ const getHomepageData = async (req, res) => {
   try {
     const userId = req.user?._id;
 
-    // Helper to enrich dynamic media
+    // Helper to enrich dynamic media in bulk (resolving N+1 query problem)
     const enrichProductList = async (productsList) => {
+      if (!productsList || productsList.length === 0) return [];
       const listingMediaModel = (await import("../models/listingMediaModel.js")).default;
-      const enriched = [];
-      for (const item of productsList) {
+      
+      const productIds = productsList.map(p => p._id);
+      const allMedia = await listingMediaModel.find({ listingId: { $in: productIds } }).sort({ displayOrder: 1 });
+      
+      // Group media by listingId
+      const mediaMap = {};
+      allMedia.forEach(m => {
+        const lid = m.listingId.toString();
+        if (!mediaMap[lid]) mediaMap[lid] = [];
+        mediaMap[lid].push(m);
+      });
+      
+      const enriched = productsList.map(item => {
         const p = item.toObject ? item.toObject() : item;
-        const media = await listingMediaModel.find({ listingId: p._id }).sort({ displayOrder: 1 });
+        const media = mediaMap[p._id.toString()] || [];
         p.media = media;
-        if (media && media.length > 0) {
+        if (media.length > 0) {
           const coverItem = media.find(m => m.isCover);
           p.images = media.map(m => m.url);
           if (coverItem) {
             p.images = [coverItem.url, ...media.filter(m => !m.isCover).map(m => m.url)];
           }
         }
-        enriched.push(formatProductResponse(p));
-      }
+        return formatProductResponse(p);
+      });
       return enriched;
     };
 
-    // 1. New Arrivals: Approved products, sorted by createdAt DESC or date DESC.
-    // Filter to last 60 days if possible, or fall back to overall newest.
+    // Parallelize all independent initial database queries
     const thresholdDate = new Date();
     thresholdDate.setDate(thresholdDate.getDate() - 60);
 
-    let newArrivalsList = await productModel.find({
+    const newArrivalsPromise = productModel.find({
       status: "approved",
       isDeleted: { $ne: true },
       createdAt: { $gte: thresholdDate }
     }).sort({ createdAt: -1 }).limit(10);
 
-    if (newArrivalsList.length < 4) {
-      newArrivalsList = await productModel.find({
-        status: "approved",
-        isDeleted: { $ne: true }
-      }).sort({ createdAt: -1 }).limit(10);
-    }
-    const newArrivals = await enrichProductList(newArrivalsList);
-
-    // 2. Trending: Highest engagement score: views * 1 + wishlist * 3 + cart * 5 + purchases * 10
-    const trendingList = await productModel.aggregate([
+    const trendingPromise = productModel.aggregate([
       { $match: { status: "approved", isDeleted: { $ne: true } } },
       {
         $addFields: {
@@ -1143,36 +1145,140 @@ const getHomepageData = async (req, res) => {
       { $sort: { trendingScore: -1, createdAt: -1 } },
       { $limit: 10 }
     ]);
-    const trending = await enrichProductList(trendingList);
 
-    // 3. Best Sellers: Highest sales
-    const bestSellersList = await productModel.find({
+    const bestSellersPromise = productModel.find({
       status: "approved",
       isDeleted: { $ne: true }
     }).sort({ totalSold: -1, createdAt: -1 }).limit(10);
-    const bestSellers = await enrichProductList(bestSellersList);
 
-    // 4. Most Viewed: Highest views
-    const mostViewedList = await productModel.find({
+    const mostViewedPromise = productModel.find({
       status: "approved",
       isDeleted: { $ne: true }
     }).sort({ viewCount: -1, createdAt: -1 }).limit(10);
-    const mostViewed = await enrichProductList(mostViewedList);
 
-    // 5. Most Wishlisted: Highest wishlist count
-    const mostWishlistedList = await productModel.find({
+    const mostWishlistedPromise = productModel.find({
       status: "approved",
       isDeleted: { $ne: true }
     }).sort({ wishlistCount: -1, createdAt: -1 }).limit(10);
-    const mostWishlisted = await enrichProductList(mostWishlistedList);
 
-    // 6. Top Rated: Average rating DESC (minimum 20 reviews, fallback backfill)
-    let topRatedList = await productModel.find({
+    // Minimum reviews query
+    const topRatedPromise = productModel.find({
       status: "approved",
       isDeleted: { $ne: true },
       totalReviews: { $gte: 20 }
     }).sort({ averageRating: -1, totalReviews: -1 }).limit(10);
 
+    // Banners, collections, categories, suggestions
+    const brandModel = (await import("../models/brandModel.js")).default;
+    const popularBrandsPromise = brandModel.aggregate([
+      { $match: { status: "active" } },
+      {
+        $addFields: {
+          brandScore: {
+            $add: [
+              { $ifNull: ["$totalViews", 0] },
+              { $multiply: [{ $ifNull: ["$totalSales", 0] }, 5] }
+            ]
+          }
+        }
+      },
+      { $sort: { brandScore: -1, name: 1 } },
+      { $limit: 10 }
+    ]);
+
+    const collectionModel = (await import("../models/collectionModel.js")).default;
+    const trendingCollectionsPromise = collectionModel.aggregate([
+      { $match: { status: "active" } },
+      {
+        $addFields: {
+          collectionScore: {
+            $add: [
+              { $ifNull: ["$totalViews", 0] },
+              { $ifNull: ["$totalClicks", 0] },
+              { $multiply: [{ $ifNull: ["$totalSales", 0] }, 5] }
+            ]
+          }
+        }
+      },
+      { $sort: { collectionScore: -1, name: 1 } },
+      { $limit: 10 }
+    ]);
+
+    const categoryModel = (await import("../models/categoryModel.js")).default;
+    const popularCategoriesPromise = categoryModel.aggregate([
+      { $match: { status: "active" } },
+      {
+        $addFields: {
+          categoryScore: {
+            $add: [
+              { $ifNull: ["$totalViews", 0] },
+              { $ifNull: ["$totalSearches", 0] },
+              { $multiply: [{ $ifNull: ["$totalSales", 0] }, 5] }
+            ]
+          }
+        }
+      },
+      { $sort: { categoryScore: -1, name: 1 } },
+      { $limit: 10 }
+    ]);
+
+    const searchQueryModel = (await import("../models/searchQueryModel.js")).default;
+    const searchLogsPromise = searchQueryModel.find({})
+      .sort({ count: -1, lastSearched: -1 })
+      .limit(10);
+
+    const dealsPromise = productModel.aggregate([
+      {
+        $match: {
+          status: "approved",
+          isDeleted: { $ne: true },
+          originalPrice: { $gt: 0 },
+          price: { $lt: "$originalPrice" }
+        }
+      },
+      {
+        $addFields: {
+          discountPercent: {
+            $multiply: [
+              { $divide: [{ $subtract: ["$originalPrice", "$price"] }, "$originalPrice"] },
+              100
+            ]
+          }
+        }
+      },
+      { $sort: { discountPercent: -1 } },
+      { $limit: 10 }
+    ]);
+
+    // Resolve all promises concurrently
+    const [
+      newArrivalsRaw,
+      trendingRaw,
+      bestSellersRaw,
+      mostViewedRaw,
+      mostWishlistedRaw,
+      topRatedRaw,
+      popularBrands,
+      trendingCollections,
+      popularCategories,
+      searchLogs,
+      dealsRaw
+    ] = await Promise.all([
+      newArrivalsPromise,
+      trendingPromise,
+      bestSellersPromise,
+      mostViewedPromise,
+      mostWishlistedPromise,
+      topRatedPromise,
+      popularBrandsPromise,
+      trendingCollectionsPromise,
+      popularCategoriesPromise,
+      searchLogsPromise,
+      dealsPromise
+    ]);
+
+    // Backfill top rated if not enough items
+    let topRatedList = topRatedRaw;
     if (topRatedList.length < 4) {
       const existingIds = topRatedList.map(p => p._id);
       const additionalRated = await productModel.find({
@@ -1182,9 +1288,36 @@ const getHomepageData = async (req, res) => {
       }).sort({ averageRating: -1, totalReviews: -1 }).limit(10 - topRatedList.length);
       topRatedList = [...topRatedList, ...additionalRated];
     }
-    const topRated = await enrichProductList(topRatedList);
 
-    // 7. Recently Viewed (User-specific)
+    // Backfill new arrivals if not enough items
+    let newArrivalsList = newArrivalsRaw;
+    if (newArrivalsList.length < 4) {
+      newArrivalsList = await productModel.find({
+        status: "approved",
+        isDeleted: { $ne: true }
+      }).sort({ createdAt: -1 }).limit(10);
+    }
+
+    // Enrich all product lists concurrently in parallel using the optimized bulk-media utility
+    const [
+      newArrivals,
+      trending,
+      bestSellers,
+      mostViewed,
+      mostWishlisted,
+      topRated,
+      dealsOfDay
+    ] = await Promise.all([
+      enrichProductList(newArrivalsList),
+      enrichProductList(trendingRaw),
+      enrichProductList(bestSellersRaw),
+      enrichProductList(mostViewedRaw),
+      enrichProductList(mostWishlistedRaw),
+      enrichProductList(topRatedList),
+      enrichProductList(dealsRaw)
+    ]);
+
+    // Recently Viewed (User-specific)
     let recentlyViewed = [];
     if (userId) {
       const recentlyViewedModel = (await import("../models/recentlyViewedModel.js")).default;
@@ -1199,7 +1332,7 @@ const getHomepageData = async (req, res) => {
       recentlyViewed = await enrichProductList(rvProducts);
     }
 
-    // 8. Recommended For You: Categories, brands, products viewed/wishlisted/purchased
+    // Recommended For You (User-specific recommendation engine)
     let recommended = [];
     if (userId) {
       const user = await userModel.findById(userId);
@@ -1286,92 +1419,6 @@ const getHomepageData = async (req, res) => {
       recommended = [...recommended, ...additional].slice(0, 10);
     }
 
-    // 9. Deals of the Day: Highest discount percentage
-    const dealsList = await productModel.aggregate([
-      {
-        $match: {
-          status: "approved",
-          isDeleted: { $ne: true },
-          originalPrice: { $gt: 0 },
-          price: { $lt: "$originalPrice" }
-        }
-      },
-      {
-        $addFields: {
-          discountPercent: {
-            $multiply: [
-              { $divide: [{ $subtract: ["$originalPrice", "$price"] }, "$originalPrice"] },
-              100
-            ]
-          }
-        }
-      },
-      { $sort: { discountPercent: -1 } },
-      { $limit: 10 }
-    ]);
-    const dealsOfDay = await enrichProductList(dealsList);
-
-    // 10. Popular Brands: Rank by totalViews + totalSales
-    const brandModel = (await import("../models/brandModel.js")).default;
-    const popularBrands = await brandModel.aggregate([
-      { $match: { status: "active" } },
-      {
-        $addFields: {
-          brandScore: {
-            $add: [
-              { $ifNull: ["$totalViews", 0] },
-              { $multiply: [{ $ifNull: ["$totalSales", 0] }, 5] }
-            ]
-          }
-        }
-      },
-      { $sort: { brandScore: -1, name: 1 } },
-      { $limit: 10 }
-    ]);
-
-    // 11. Trending Collections: Rank by totalViews + totalClicks + totalSales
-    const collectionModel = (await import("../models/collectionModel.js")).default;
-    const trendingCollections = await collectionModel.aggregate([
-      { $match: { status: "active" } },
-      {
-        $addFields: {
-          collectionScore: {
-            $add: [
-              { $ifNull: ["$totalViews", 0] },
-              { $ifNull: ["$totalClicks", 0] },
-              { $multiply: [{ $ifNull: ["$totalSales", 0] }, 5] }
-            ]
-          }
-        }
-      },
-      { $sort: { collectionScore: -1, name: 1 } },
-      { $limit: 10 }
-    ]);
-
-    // 12. Popular Categories: Rank by totalViews + totalSales + totalSearches
-    const categoryModel = (await import("../models/categoryModel.js")).default;
-    const popularCategories = await categoryModel.aggregate([
-      { $match: { status: "active" } },
-      {
-        $addFields: {
-          categoryScore: {
-            $add: [
-              { $ifNull: ["$totalViews", 0] },
-              { $ifNull: ["$totalSearches", 0] },
-              { $multiply: [{ $ifNull: ["$totalSales", 0] }, 5] }
-            ]
-          }
-        }
-      },
-      { $sort: { categoryScore: -1, name: 1 } },
-      { $limit: 10 }
-    ]);
-
-    // 13. Search Suggestions: Real most searched terms
-    const searchQueryModel = (await import("../models/searchQueryModel.js")).default;
-    const searchLogs = await searchQueryModel.find({})
-      .sort({ count: -1, lastSearched: -1 })
-      .limit(10);
     const searchSuggestions = searchLogs.map(log => log.query);
 
     res.json({

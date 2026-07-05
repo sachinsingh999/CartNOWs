@@ -154,7 +154,22 @@ const Categories = () => {
       </div>
 
       {/* Grid of categories */}
-      {filteredCategories.length === 0 ? (
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {[1, 2, 3, 4, 5, 6, 7, 8].map(n => (
+            <div key={n} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[32px] p-5 h-[180px] animate-pulse flex flex-col justify-between">
+              <div className="flex justify-between items-center mb-4">
+                <div className="w-10 h-10 bg-slate-200 dark:bg-slate-800 rounded-[16px]" />
+                <div className="w-16 h-6 bg-slate-200 dark:bg-slate-800 rounded-full" />
+              </div>
+              <div className="space-y-2">
+                <div className="h-5 bg-slate-200 dark:bg-slate-800 rounded w-2/3" />
+                <div className="h-3 bg-slate-200 dark:bg-slate-800 rounded w-full" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : filteredCategories.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 border border-dashed border-slate-200 dark:border-slate-800 rounded-[32px] bg-white dark:bg-slate-900 text-center">
           <Layers size={40} className="text-slate-300 dark:text-slate-600 mb-3" />
           <h3 className="text-base font-black text-slate-800 dark:text-white">No Categories Found</h3>

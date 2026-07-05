@@ -8,6 +8,7 @@ import { backendUrl } from "../config";
 import { getAverageRating } from "../utils/productRatings";
 import { Star, X, ShoppingCart, Eye, AlertTriangle, ArrowRight, Filter, ChevronLeft, ChevronRight, SlidersHorizontal, Search, Heart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { ProductCardSkeleton } from "../components/SkeletonLoader";
 
 
 const Product = () => {
@@ -1489,21 +1490,5 @@ const AutocompleteSuggestions = ({
     </motion.div>
   );
 };
-
-const ProductCardSkeleton = () => (
-  <div className="bg-white/40 dark:bg-slate-900/40 rounded-[28px] border border-slate-200/50 dark:border-slate-800/80 overflow-hidden p-4 space-y-4 shadow-sm select-none relative animate-pulse">
-    {/* Image spotlight area skeleton */}
-    <div className="aspect-[4/3] w-full bg-slate-200/60 dark:bg-slate-800 rounded-2xl animate-pulse" />
-    <div className="space-y-2.5">
-      <div className="h-3 w-1/4 bg-slate-200/60 dark:bg-slate-800 rounded-md" />
-      <div className="h-4.5 w-5/6 bg-slate-200/60 dark:bg-slate-800 rounded-md" />
-      <div className="h-3.5 w-1/3 bg-slate-200/60 dark:bg-slate-800 rounded-md mt-4" />
-      <div className="flex gap-2 mt-4 pt-3 border-t border-slate-200/20">
-        <div className="h-10 flex-1 bg-slate-200/60 dark:bg-slate-800 rounded-xl" />
-        <div className="h-10 w-10 bg-slate-200/60 dark:bg-slate-800 rounded-full" />
-      </div>
-    </div>
-  </div>
-);
 
 export default Product;

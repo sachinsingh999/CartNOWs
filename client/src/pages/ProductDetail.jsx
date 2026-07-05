@@ -11,6 +11,7 @@ import { getAverageRating, getReviewCount } from "../utils/productRatings";
 import { trackView } from "../utils/engagement";
 import { toast } from "react-toastify";
 import Loader from "../components/Loader";
+import { ProductDetailSkeleton } from "../components/SkeletonLoader";
 import { useLanguage } from "../context/LanguageContext";
 import { 
   Sparkles, 
@@ -555,8 +556,8 @@ const ProductDetail = () => {
 
   if (product === null) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center transition-colors duration-300">
-        <Loader message="Loading product experience..." size="xl" color="blue" />
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
+        <ProductDetailSkeleton />
       </div>
     );
   }

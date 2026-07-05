@@ -1,15 +1,36 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { 
   Calendar, Search, ChevronLeft, ChevronRight, Phone, MapPin, 
   CheckCircle, Clock, Navigation, Inbox, CalendarDays, DollarSign, 
   Wallet, Truck, Sparkles, Activity, Star, LogOut, ToggleLeft, ToggleRight,
-  MessageSquare, AlertOctagon, ShieldAlert, LifeBuoy, QrCode, Key,
+  MessageSquare, AlertOctagon, ShieldAlert, ShieldCheck, LifeBuoy, QrCode, Key,
   RefreshCw, TrendingUp, BarChart2, Check, X, AlertTriangle, Eye, EyeOff,
   User, CheckCircle2, Navigation2, Crosshair, ArrowRight, CornerDownRight,
-  ChevronDown, ChevronUp, Bell, Zap
+  ChevronDown, ChevronUp, Bell, Zap, PhoneCall, PhoneOff, Video, VideoOff, Mic, MicOff, Lock, Paperclip, Send
 } from "lucide-react";
+import io from "socket.io-client";
+import axios from "axios";
+import { toast } from "react-toastify";
+import { backendUrl } from "../config";
+
+const getUserIdFromToken = (token) => {
+  if (!token) return null;
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+    const decoded = JSON.parse(jsonPayload);
+    return decoded.id || decoded._id;
+  } catch (e) {
+    return null;
+  }
+};
 
 const MyDeliveriesTab = ({
+  token,
   driver,
   stats,
   orders,
@@ -40,14 +61,102 @@ const MyDeliveriesTab = ({
   paginatedTableOrders,
   totalTablePages
 }) => {
+  // WebRTC Symmetrical Call States & Refs & FSM
+  const [callState, setCallState] = useState("idle");
+  const [callActive, setCallActive] = useState(false);
+  const [callStatus, setCallStatus] = useState("connecting");
+  const [callTime, setCallTime] = useState(0);
+  const [incomingCall, setIncomingCall] = useState(false);
+  const [incomingCallData, setIncomingCallData] = useState(null);
+  const [localStream, setLocalStream] = useState(null);
+  const [remoteStream, setRemoteStream] = useState(null);
+  const [isVideoMuted, setIsVideoMuted] = useState(false);
+  const [isMicMuted, setIsMicMuted] = useState(false);
+  const [callType, setCallType] = useState("audio"); // "audio" | "video"
+  const [currentCallId, setCurrentCallId] = useState(null);
+
+  // Camera & Audio Outputs
+  const [videoDevices, setVideoDevices] = useState([]);
+  const [currentVideoDeviceId, setCurrentVideoDeviceId] = useState(null);
+  const [isSpeakerOn, setIsSpeakerOn] = useState(true);
+  const [callDropdownOpen, setCallDropdownOpen] = useState(false);
+
+  // References
+  const peerConnectionRef = useRef(null);
+  const localVideoRef = useRef(null);
+  const remoteVideoRef = useRef(null);
+  const ringingTimeoutRef = useRef(null);
+  const callTimerIntervalRef = useRef(null);
+  const localStreamRef = useRef(null);
+  
+  const callStateRef = useRef("idle");
+  const incomingCallRef = useRef(false);
+  const currentCallIdRef = useRef(null);
+  const iceCandidatesQueueRef = useRef([]);
+
+  useEffect(() => {
+    callStateRef.current = callState;
+  }, [callState]);
+
+  useEffect(() => {
+    incomingCallRef.current = incomingCall;
+  }, [incomingCall]);
+
+  useEffect(() => {
+    currentCallIdRef.current = currentCallId;
+  }, [currentCallId]);
+
+  const incomingCallDataRef = useRef(null);
+  useEffect(() => {
+    incomingCallDataRef.current = incomingCallData;
+  }, [incomingCallData]);
+
+  const transitionTo = (newState) => {
+    console.log(`[FSM Transition] ${callStateRef.current} -> ${newState}`);
+    
+    // Enforce basic FSM constraints
+    if (newState === "ringing" && callStateRef.current !== "calling" && callStateRef.current !== "connecting") {
+      console.warn(`[FSM] Invalid state skip to ringing`);
+      return;
+    }
+    if (newState === "connected" && callStateRef.current !== "connecting" && callStateRef.current !== "ringing" && callStateRef.current !== "calling") {
+      console.warn(`[FSM] Invalid state skip to connected`);
+      return;
+    }
+
+    setCallState(newState);
+
+    if (["idle", "ended", "rejected", "failed", "missed", "busy"].includes(newState)) {
+      setCallActive(false);
+      setCallStatus("connecting");
+      setIncomingCall(false);
+      setIncomingCallData(null);
+      if (newState !== "idle") {
+        setCallState("idle");
+      }
+    } else if (newState === "calling") {
+      setCallActive(true);
+      setCallStatus("connecting");
+    } else if (newState === "ringing") {
+      setCallActive(true);
+      setCallStatus("ringing");
+    } else if (newState === "connecting") {
+      setCallActive(true);
+      setCallStatus("connecting");
+    } else if (newState === "connected") {
+      setCallActive(true);
+      setCallStatus("connected");
+    }
+  };
+
   // Modal states for simulation
   const [activeActionsOpen, setActiveActionsOpen] = useState(false);
   const [chatModalOpen, setChatModalOpen] = useState(false);
-  const [chatMessages, setChatMessages] = useState([
-    { sender: "customer", text: "Please bring it to the 4th floor.", time: "12:10 PM" },
-    { sender: "driver", text: "Sure, on my way!", time: "12:12 PM" }
-  ]);
+  const [chatMessages, setChatMessages] = useState([]);
   const [newChatMessage, setNewChatMessage] = useState("");
+  const [partnerOnline, setPartnerOnline] = useState(false);
+  const [partnerTyping, setPartnerTyping] = useState(false);
+  const [typingTimeout, setTypingTimeout] = useState(null);
   
   const [reportModalOpen, setReportModalOpen] = useState(false);
   const [reportIssueType, setReportIssueType] = useState("Traffic Delay");
@@ -80,14 +189,789 @@ const MyDeliveriesTab = ({
     }
   };
 
-  const handleSendMessage = (e) => {
+  const socketRef = useRef(null);
+  const messagesEndRef = useRef(null);
+  const chatModalOpenRef = useRef(chatModalOpen);
+
+  useEffect(() => {
+    chatModalOpenRef.current = chatModalOpen;
+  }, [chatModalOpen]);
+
+  // Persistent Socket Connection for background notifications
+  useEffect(() => {
+    if (!nextOrder || !token) return;
+
+    const orderId = nextOrder._id;
+    const myId = getUserIdFromToken(token);
+
+    // Connect to socket.io
+    const socketUrl = backendUrl.startsWith("http") ? backendUrl : window.location.origin;
+    const socket = io(socketUrl, {
+      auth: { token },
+      reconnection: true,
+      reconnectionAttempts: Infinity,
+      reconnectionDelay: 1000
+    });
+    socketRef.current = socket;
+
+    // Join room when connected/reconnected
+    const handleJoinRoom = () => {
+      socket.emit("join_order_room", { orderId });
+    };
+
+    if (socket.connected) {
+      handleJoinRoom();
+    }
+    socket.on("connect", handleJoinRoom);
+
+    socket.on("room_joined", () => {
+      console.log(`Successfully joined secure communication room for order: ${orderId}`);
+      socket.emit("mark_seen", { orderId });
+    });
+
+    socket.on("receive_message", (msg) => {
+      setChatMessages((prev) => {
+        if (prev.some((m) => m._id === msg._id)) return prev;
+        return [...prev, msg];
+      });
+      setTimeout(() => {
+        if (messagesEndRef.current) {
+          messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 50);
+
+      const isMe = myId && String(msg.senderId) === String(myId);
+
+      // Alert/notification if from another user
+      if (!isMe) {
+        // Sound alert
+        try {
+          const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2357/2357-84.wav");
+          audio.volume = 0.35;
+          audio.play().catch(() => {});
+        } catch (e) {}
+
+        // Emit mark_seen if chat modal is open
+        if (chatModalOpenRef.current) {
+          socket.emit("mark_seen", { orderId });
+        } else {
+          // Toast notification if chat modal is not open
+          toast.info(`Message from Customer: ${msg.message}`, {
+            position: "bottom-right",
+            autoClose: 5000,
+            onClick: () => setChatModalOpen(true)
+          });
+        }
+      }
+    });
+
+    // Real-Time Typing Indicator
+    socket.on("typing_status", ({ userId, isTyping }) => {
+      if (String(userId) !== String(myId)) {
+        setPartnerTyping(isTyping);
+      }
+    });
+
+    // Real-Time User Presence Status
+    socket.on("user_online", ({ userId }) => {
+      if (String(userId) !== String(myId)) {
+        setPartnerOnline(true);
+      }
+    });
+
+    socket.on("user_offline", ({ userId }) => {
+      if (String(userId) !== String(myId)) {
+        setPartnerOnline(false);
+      }
+    });
+
+    socket.on("partner_presence", ({ online }) => {
+      setPartnerOnline(online);
+    });
+
+    // Real-Time Seen Receipts
+    socket.on("messages_seen", ({ seenBy }) => {
+      if (String(seenBy) !== String(myId)) {
+        setChatMessages((prev) =>
+          prev.map((m) => {
+            const isMeMsg = m.senderId === myId || m.senderRole === "deliveryman";
+            if (isMeMsg) {
+              return { ...m, status: "seen" };
+            }
+            return m;
+          })
+        );
+      }
+    });
+
+    // WebRTC Signaling listeners
+    socket.on("incoming_call", (callInfo) => {
+      console.log(`[Socket Call] incoming_call received from: ${callInfo.from}`);
+      if (callStateRef.current !== "idle" || incomingCallRef.current) {
+        console.log("[Socket Call] Line busy, rejecting call");
+        socket.emit("call_busy", { to: callInfo.from, orderId });
+        return;
+      }
+      setIncomingCall(true);
+      setIncomingCallData(callInfo);
+      socket.emit("ringing", { to: callInfo.from, orderId });
+    });
+
+    socket.on("ringing", () => {
+      console.log("[Socket Call] ringing received");
+      if (callStateRef.current === "calling") {
+        transitionTo("ringing");
+      }
+    });
+
+    socket.on("call_accepted", async ({ answer }) => {
+      console.log("[Socket Call] call_accepted received");
+      if (callStateRef.current === "calling" || callStateRef.current === "ringing" || callStateRef.current === "connecting") {
+        transitionTo("connecting");
+        if (peerConnectionRef.current) {
+          try {
+            await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(answer));
+            
+            // Process any queued ICE candidates
+            if (iceCandidatesQueueRef.current.length > 0) {
+              console.log(`[WebRTC] Processing ${iceCandidatesQueueRef.current.length} queued ICE candidates`);
+              for (const cand of iceCandidatesQueueRef.current) {
+                await peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(cand)).catch(err => {
+                  console.error("Error adding queued ICE candidate:", err);
+                });
+              }
+              iceCandidatesQueueRef.current = [];
+            }
+          } catch (err) {
+            console.error("Error setting remote description on call_accepted:", err);
+            transitionTo("failed");
+            cleanupMediaAndPeerConnection();
+          }
+        }
+      }
+    });
+
+    socket.on("ice_candidate", async ({ candidate }) => {
+      if (peerConnectionRef.current && peerConnectionRef.current.remoteDescription) {
+        try {
+          await peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+        } catch (e) {
+          console.error("Error adding ICE candidate:", e);
+        }
+      } else {
+        console.log("[WebRTC] Remote description not set yet, queuing ICE candidate");
+        iceCandidatesQueueRef.current.push(candidate);
+      }
+    });
+
+    socket.on("end_call", () => {
+      console.log("[Socket Call] end_call received");
+      toast.info("Call ended.");
+      transitionTo("ended");
+      cleanupMediaAndPeerConnection();
+    });
+
+    socket.on("call_rejected", () => {
+      console.log("[Socket Call] call_rejected received");
+      toast.warning("Call declined.");
+      transitionTo("rejected");
+      cleanupMediaAndPeerConnection();
+    });
+
+    socket.on("call_busy", () => {
+      console.log("[Socket Call] call_busy received");
+      toast.warning("Customer is currently on another call.");
+      transitionTo("busy");
+      cleanupMediaAndPeerConnection();
+    });
+
+    socket.on("call_timeout", () => {
+      console.log("[Socket Call] call_timeout received");
+      toast.info("Call unanswered.");
+      transitionTo("missed");
+      cleanupMediaAndPeerConnection();
+    });
+
+    socket.on("call_failed", () => {
+      console.log("[Socket Call] call_failed received");
+      toast.error("Call connection failed.");
+      transitionTo("failed");
+      cleanupMediaAndPeerConnection();
+    });
+
+    socket.on("call_status_updated", () => {
+      if (chatModalOpen) {
+        // Fetch new chat history (to show system missed call bubbles)
+        const fetchHistory = async () => {
+          try {
+            const response = await axios.get(
+              `${backendUrl}/api/order-communication/${orderId}/messages`,
+              { headers: { token } }
+            );
+            if (response.data.success) {
+              setChatMessages(response.data.messages || []);
+            }
+          } catch (e) {}
+        };
+        fetchHistory();
+      }
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [nextOrder, token]);
+
+  // Load chat history when modal opens
+  useEffect(() => {
+    if (!chatModalOpen || !nextOrder || !token) return;
+
+    const orderId = nextOrder._id;
+
+    if (socketRef.current) {
+      socketRef.current.emit("mark_seen", { orderId });
+    }
+
+    const fetchChatHistory = async () => {
+      try {
+        const response = await axios.get(
+          `${backendUrl}/api/order-communication/${orderId}/messages`,
+          { headers: { token } }
+        );
+        if (response.data.success) {
+          setChatMessages(response.data.messages || []);
+          setTimeout(() => {
+            if (messagesEndRef.current) {
+              messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+            }
+          }, 100);
+        }
+      } catch (error) {
+        console.error("Error loading chat history:", error);
+      }
+    };
+
+    fetchChatHistory();
+  }, [chatModalOpen, nextOrder, token]);
+
+  // Cleanup WebRTC resources on unmount
+  useEffect(() => {
+    return () => {
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach((track) => track.stop());
+      }
+      if (peerConnectionRef.current) {
+        peerConnectionRef.current.close();
+      }
+      if (ringingTimeoutRef.current) {
+        clearTimeout(ringingTimeoutRef.current);
+      }
+      if (callTimerIntervalRef.current) {
+        clearInterval(callTimerIntervalRef.current);
+      }
+    };
+  }, []);
+
+  // Set up local video stream rendering
+  useEffect(() => {
+    if (localVideoRef.current && localStream) {
+      localVideoRef.current.srcObject = localStream;
+    }
+  }, [localStream, callActive]);
+
+  // Set up remote video stream rendering
+  useEffect(() => {
+    if (remoteVideoRef.current && remoteStream) {
+      remoteVideoRef.current.srcObject = remoteStream;
+    }
+  }, [remoteStream, callActive]);
+
+  const toggleVideo = () => {
+    if (localStream) {
+      const videoTrack = localStream.getVideoTracks()[0];
+      if (videoTrack) {
+        videoTrack.enabled = !videoTrack.enabled;
+        setIsVideoMuted(!videoTrack.enabled);
+      }
+    }
+  };
+
+  const toggleMic = () => {
+    if (localStream) {
+      const audioTrack = localStream.getAudioTracks()[0];
+      if (audioTrack) {
+        audioTrack.enabled = !audioTrack.enabled;
+        setIsMicMuted(!audioTrack.enabled);
+      }
+    }
+  };
+
+  // Enumerate devices on mount / camera access
+  const enumerateDevices = async () => {
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoIns = devices.filter((d) => d.kind === "videoinput");
+      setVideoDevices(videoIns);
+      if (videoIns.length > 0 && !currentVideoDeviceId) {
+        setCurrentVideoDeviceId(videoIns[0].deviceId);
+      }
+    } catch (e) {
+      console.error("Error enumerating devices:", e);
+    }
+  };
+
+  const switchCamera = async () => {
+    if (videoDevices.length < 2 || !localStream || !currentVideoDeviceId) {
+      toast.info("No alternative cameras found.");
+      return;
+    }
+    try {
+      const currentIndex = videoDevices.findIndex((d) => d.deviceId === currentVideoDeviceId);
+      const nextIndex = (currentIndex + 1) % videoDevices.length;
+      const nextDevice = videoDevices[nextIndex];
+      
+      const newStream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: { deviceId: { exact: nextDevice.deviceId } }
+      });
+
+      const newVideoTrack = newStream.getVideoTracks()[0];
+      const localVideoTrack = localStream.getVideoTracks()[0];
+      
+      if (localVideoTrack) {
+        localStream.removeTrack(localVideoTrack);
+        localVideoTrack.stop();
+      }
+      
+      localStream.addTrack(newVideoTrack);
+      setCurrentVideoDeviceId(nextDevice.deviceId);
+
+      // Update track on peer connection
+      if (peerConnectionRef.current) {
+        const senders = peerConnectionRef.current.getSenders();
+        const videoSender = senders.find((s) => s.track && s.track.kind === "video");
+        if (videoSender) {
+          await videoSender.replaceTrack(newVideoTrack);
+        }
+      }
+      toast.success("Switched camera.");
+    } catch (err) {
+      console.error("Error switching camera:", err);
+      toast.error("Failed to switch camera.");
+    }
+  };
+
+  const toggleSpeaker = async () => {
+    if (remoteVideoRef.current && typeof remoteVideoRef.current.setSinkId === "function") {
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const audioOutputs = devices.filter((d) => d.kind === "audiooutput");
+        if (audioOutputs.length > 0) {
+          const nextSpeaker = isSpeakerOn ? audioOutputs[audioOutputs.length - 1] : audioOutputs[0];
+          await remoteVideoRef.current.setSinkId(nextSpeaker.deviceId);
+          setIsSpeakerOn(!isSpeakerOn);
+          toast.success(`Audio output changed to ${nextSpeaker.label || "device"}`);
+        } else {
+          toast.info("No alternative speaker output detected.");
+        }
+      } catch (err) {
+        console.error("Error setting audio output sink:", err);
+      }
+    } else {
+      toast.info("Audio output routing is managed by your system settings.");
+    }
+  };
+
+  const cleanupMediaAndPeerConnection = () => {
+    // If cleaning up while calling/active, notify the remote peer
+    if (socketRef.current) {
+      if (callStateRef.current !== "idle" && nextOrder) {
+        const partnerId = nextOrder.userId;
+        if (partnerId) {
+          socketRef.current.emit("end_call", {
+            to: partnerId,
+            orderId: nextOrder._id,
+          });
+        }
+      }
+      if (incomingCallRef.current && incomingCallDataRef.current && nextOrder) {
+        socketRef.current.emit("call_rejected", {
+          to: incomingCallDataRef.current.from,
+          orderId: nextOrder._id,
+        });
+      }
+    }
+
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach((track) => track.stop());
+      localStreamRef.current = null;
+    }
+    setLocalStream(null);
+    setRemoteStream(null);
+
+    if (peerConnectionRef.current) {
+      peerConnectionRef.current.onicecandidate = null;
+      peerConnectionRef.current.ontrack = null;
+      peerConnectionRef.current.onconnectionstatechange = null;
+      peerConnectionRef.current.close();
+      peerConnectionRef.current = null;
+    }
+    iceCandidatesQueueRef.current = [];
+
+    if (ringingTimeoutRef.current) {
+      clearTimeout(ringingTimeoutRef.current);
+      ringingTimeoutRef.current = null;
+    }
+    if (callTimerIntervalRef.current) {
+      clearInterval(callTimerIntervalRef.current);
+      callTimerIntervalRef.current = null;
+    }
+  };
+
+  // Ringing timeout handler
+  const startRingingTimeout = (cId, partnerId) => {
+    if (ringingTimeoutRef.current) clearTimeout(ringingTimeoutRef.current);
+    ringingTimeoutRef.current = setTimeout(() => {
+      toast.warning("Call not answered.");
+      handleEndCallLocally("no-answer", cId, partnerId);
+    }, 30000);
+  };
+
+  const createPeerConnection = (stream, partnerId, type, cId) => {
+    if (peerConnectionRef.current) {
+      peerConnectionRef.current.close();
+    }
+
+    const pc = new RTCPeerConnection({
+      iceServers: [
+        {
+          urls: [
+            "stun:stun.l.google.com:19302",
+            "stun:stun1.l.google.com:19302",
+          ],
+        },
+        {
+          urls: "turn:openrelay.metered.ca:80",
+          username: "openrelayproject",
+          credential: "openrelayproject",
+        },
+        {
+          urls: "turn:openrelay.metered.ca:443",
+          username: "openrelayproject",
+          credential: "openrelayproject",
+        },
+        {
+          urls: "turn:openrelay.metered.ca:443?transport=tcp",
+          username: "openrelayproject",
+          credential: "openrelayproject",
+        }
+      ],
+      iceCandidatePoolSize: 10
+    });
+
+    stream.getTracks().forEach((track) => {
+      pc.addTrack(track, stream);
+    });
+
+    pc.ontrack = (event) => {
+      console.log("[WebRTC] Received remote stream track");
+      if (event.streams && event.streams[0]) {
+        setRemoteStream(event.streams[0]);
+      }
+    };
+
+    pc.onicecandidate = (event) => {
+      if (event.candidate && socketRef.current && nextOrder) {
+        socketRef.current.emit("ice_candidate", {
+          candidate: event.candidate,
+          to: partnerId,
+          orderId: nextOrder._id,
+        });
+      }
+    };
+
+    pc.onconnectionstatechange = () => {
+      console.log(`[WebRTC] Connection state changed: ${pc.connectionState}`);
+      if (pc.connectionState === "connected" && nextOrder) {
+        transitionTo("connected");
+        if (ringingTimeoutRef.current) clearTimeout(ringingTimeoutRef.current);
+        
+        setCallTime(0);
+        if (callTimerIntervalRef.current) clearInterval(callTimerIntervalRef.current);
+        callTimerIntervalRef.current = setInterval(() => {
+          setCallTime((prev) => prev + 1);
+        }, 1000);
+
+        axios.patch(
+          `${backendUrl}/api/order-communication/${nextOrder._id}/call/${cId}/status`,
+          { status: "connected" },
+          { headers: { token } }
+        ).catch((err) => console.error("Error updating call status:", err));
+      } else if (pc.connectionState === "failed") {
+        console.error("[WebRTC] Connection state failed. Clearing call.");
+        toast.error("Call connection failed.");
+        transitionTo("failed");
+        handleEndCallLocally("failed", cId, partnerId);
+      } else if (
+        pc.connectionState === "disconnected" ||
+        pc.connectionState === "closed"
+      ) {
+        transitionTo("ended");
+        handleEndCallLocally("completed", cId, partnerId);
+      }
+    };
+
+    peerConnectionRef.current = pc;
+    return pc;
+  };
+
+  const handleInitiateCall = async (type = "audio") => {
+    if (!nextOrder) return;
+    
+    // Only call when orderStatus is out for delivery
+    const status = (nextOrder.orderStatus || "").toLowerCase();
+    if (status !== "out for delivery") {
+      return toast.error("Calling is only allowed when order is Out For Delivery!");
+    }
+
+    try {
+      transitionTo("calling");
+      setCallTime(0);
+      setCallType(type);
+      enumerateDevices();
+
+      const receiverRole = "customer";
+
+      const response = await axios.post(
+        `${backendUrl}/api/order-communication/${nextOrder._id}/call`,
+        { receiverRole, type },
+        { headers: { token } }
+      );
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Failed to start call");
+      }
+
+      const { callId } = response.data;
+      setCurrentCallId(callId);
+
+      const constraints = {
+        audio: true,
+        video: type === "video" ? { facingMode: "user" } : false,
+      };
+      
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      setLocalStream(stream);
+      localStreamRef.current = stream;
+
+      const partnerId = nextOrder.userId;
+      const pc = createPeerConnection(stream, partnerId, type, callId);
+
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+
+      socketRef.current.emit("call_user", {
+        offer,
+        to: partnerId,
+        orderId: nextOrder._id,
+        type,
+        callId,
+        callerName: "Delivery Partner"
+      });
+
+      startRingingTimeout(callId, partnerId);
+    } catch (error) {
+      console.error("[WebRTC Call Error]", error);
+      toast.error("Could not access camera/microphone.");
+      transitionTo("failed");
+      cleanupMediaAndPeerConnection();
+    }
+  };
+
+  const handleAcceptCall = async () => {
+    if (!incomingCallData || !nextOrder) return;
+    try {
+      setIncomingCall(false);
+      transitionTo("connecting");
+      setCallTime(0);
+      setCallType(incomingCallData.type);
+      setCurrentCallId(incomingCallData.callId);
+      enumerateDevices();
+
+      const constraints = {
+        audio: true,
+        video: incomingCallData.type === "video" ? { facingMode: "user" } : false,
+      };
+
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      setLocalStream(stream);
+      localStreamRef.current = stream;
+
+      const pc = createPeerConnection(stream, incomingCallData.from, incomingCallData.type, incomingCallData.callId);
+      await pc.setRemoteDescription(new RTCSessionDescription(incomingCallData.offer));
+
+      // Process any queued ICE candidates
+      if (iceCandidatesQueueRef.current.length > 0) {
+        console.log(`[WebRTC] Processing ${iceCandidatesQueueRef.current.length} queued ICE candidates`);
+        for (const cand of iceCandidatesQueueRef.current) {
+          await pc.addIceCandidate(new RTCIceCandidate(cand)).catch(err => {
+            console.error("Error adding queued ICE candidate:", err);
+          });
+        }
+        iceCandidatesQueueRef.current = [];
+      }
+
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+
+      socketRef.current.emit("call_accepted", {
+        answer,
+        to: incomingCallData.from,
+        orderId: nextOrder._id,
+      });
+
+      await axios.patch(
+        `${backendUrl}/api/order-communication/${nextOrder._id}/call/${incomingCallData.callId}/status`,
+        { status: "connected" },
+        { headers: { token } }
+      );
+    } catch (error) {
+      console.error("[WebRTC Accept Call Error]", error);
+      toast.error("Could not accept call: camera/microphone access denied.");
+      handleRejectCall();
+    }
+  };
+
+  const handleRejectCall = async () => {
+    if (!incomingCallData || !nextOrder) return;
+    try {
+      setIncomingCall(false);
+      socketRef.current.emit("call_rejected", {
+        to: incomingCallData.from,
+        orderId: nextOrder._id,
+      });
+
+      await axios.patch(
+        `${backendUrl}/api/order-communication/${nextOrder._id}/call/${incomingCallData.callId}/status`,
+        { status: "rejected" },
+        { headers: { token } }
+      );
+    } catch (error) {
+      console.error("[WebRTC Reject Call Error]", error);
+    } finally {
+      setIncomingCallData(null);
+    }
+  };
+
+  const handleEndCall = () => {
+    const partnerId = nextOrder?.userId;
+    handleEndCallLocally("completed", currentCallId, partnerId);
+  };
+
+  const handleEndCallLocally = async (finalStatus = "completed", cId, partnerId) => {
+    if (socketRef.current && partnerId && nextOrder) {
+      socketRef.current.emit("end_call", {
+        to: partnerId,
+        orderId: nextOrder._id,
+      });
+    }
+
+    if (localStreamRef.current) {
+      localStreamRef.current.getTracks().forEach((track) => track.stop());
+      localStreamRef.current = null;
+    }
+    setLocalStream(null);
+    setRemoteStream(null);
+
+    if (peerConnectionRef.current) {
+      peerConnectionRef.current.close();
+      peerConnectionRef.current = null;
+    }
+
+    if (ringingTimeoutRef.current) {
+      clearTimeout(ringingTimeoutRef.current);
+      ringingTimeoutRef.current = null;
+    }
+    if (callTimerIntervalRef.current) {
+      clearInterval(callTimerIntervalRef.current);
+      callTimerIntervalRef.current = null;
+    }
+
+    const fsmStateMap = {
+      completed: "ended",
+      "no-answer": "missed",
+      rejected: "rejected",
+      busy: "busy",
+      failed: "failed"
+    };
+    const nextFsmState = fsmStateMap[finalStatus] || "ended";
+    transitionTo(nextFsmState);
+
+    const activeCId = cId || currentCallId;
+    if (activeCId && nextOrder) {
+      try {
+        await axios.patch(
+          `${backendUrl}/api/order-communication/${nextOrder._id}/call/${activeCId}/status`,
+          { status: finalStatus, duration: callTime },
+          { headers: { token } }
+        );
+      } catch (err) {
+        console.error("Error logging call end:", err);
+      }
+    }
+    
+    setCallTime(0);
+    setCurrentCallId(null);
+  };
+
+  const formatTime = (secs) => {
+    const m = Math.floor(secs / 60).toString().padStart(2, "0");
+    const s = (secs % 60).toString().padStart(2, "0");
+    return `${m}:${s}`;
+  };
+
+  const handleInputChange = (e) => {
+    setNewChatMessage(e.target.value);
+    
+    if (socketRef.current && nextOrder) {
+      socketRef.current.emit("typing", { orderId: nextOrder._id, isTyping: true });
+      
+      if (typingTimeout) clearTimeout(typingTimeout);
+      
+      const timeout = setTimeout(() => {
+        socketRef.current.emit("typing", { orderId: nextOrder._id, isTyping: false });
+      }, 1500);
+      
+      setTypingTimeout(timeout);
+    }
+  };
+
+  const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!newChatMessage.trim()) return;
-    setChatMessages([
-      ...chatMessages,
-      { sender: "driver", text: newChatMessage, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
-    ]);
+    if (!newChatMessage.trim() || !nextOrder || !token) return;
+
+    if (socketRef.current && nextOrder) {
+      socketRef.current.emit("typing", { orderId: nextOrder._id, isTyping: false });
+      if (typingTimeout) clearTimeout(typingTimeout);
+    }
+
+    const orderId = nextOrder._id;
+    const messageContent = newChatMessage;
     setNewChatMessage("");
+
+    try {
+      await axios.post(
+        `${backendUrl}/api/order-communication/${orderId}/message`,
+        {
+          receiverRole: "customer",
+          message: messageContent
+        },
+        { headers: { token } }
+      );
+    } catch (error) {
+      console.error("Error sending message:", error);
+      toast.error(error.response?.data?.message || "Failed to send message.");
+    }
   };
 
   const handleReportSubmit = (e) => {
@@ -469,13 +1353,23 @@ const MyDeliveriesTab = ({
                     <span>Navigate</span>
                   </a>
                   
-                  <a
-                    href={`tel:${nextOrder.address.phone}`}
-                    className="flex-1 flex items-center justify-center gap-1.5 bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-150 cursor-pointer shadow-sm"
+                  <button
+                    onClick={() => handleInitiateCall("audio")}
+                    disabled={nextOrder.orderStatus !== "Out For Delivery"}
+                    className={`flex-1 flex items-center justify-center gap-1.5 bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-150 cursor-pointer shadow-sm ${nextOrder.orderStatus !== "Out For Delivery" ? "opacity-50 cursor-not-allowed" : ""}`}
                   >
                     <Phone size={12} className="text-emerald-500" />
-                    <span>Call</span>
-                  </a>
+                    <span>Voice</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleInitiateCall("video")}
+                    disabled={nextOrder.orderStatus !== "Out For Delivery"}
+                    className={`flex-1 flex items-center justify-center gap-1.5 bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-150 cursor-pointer shadow-sm ${nextOrder.orderStatus !== "Out For Delivery" ? "opacity-50 cursor-not-allowed" : ""}`}
+                  >
+                    <Video size={12} className="text-indigo-500" />
+                    <span>Video</span>
+                  </button>
 
                   <button
                     onClick={() => setChatModalOpen(true)}
@@ -992,12 +1886,21 @@ const MyDeliveriesTab = ({
                       </div>
 
                       <div className="flex gap-2">
-                        <a
-                          href={`tel:${order.address?.phone}`}
-                          className="flex-1 text-center bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 py-2 rounded-xl text-[9px] font-black uppercase tracking-wider cursor-pointer"
-                        >
-                          Call Customer
-                        </a>
+                        {order.orderStatus === "Out For Delivery" ? (
+                          <button
+                            onClick={() => handleInitiateCall("audio")}
+                            className="flex-1 text-center bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 py-2 rounded-xl text-[9px] font-black uppercase tracking-wider cursor-pointer border-none"
+                          >
+                            Call Customer
+                          </button>
+                        ) : (
+                          <a
+                            href={`tel:${order.address?.phone}`}
+                            className="flex-1 text-center bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 py-2 rounded-xl text-[9px] font-black uppercase tracking-wider cursor-pointer"
+                          >
+                            Call (Native)
+                          </a>
+                        )}
                         <a
                           href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(formatAddress(order.address))}`}
                           target="_blank"
@@ -1204,44 +2107,177 @@ const MyDeliveriesTab = ({
       {/* ✅ CHAT CUSTOMER MODAL */}
       {chatModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-100/50 dark:bg-slate-950/70 backdrop-blur-xs">
-          <div className="relative w-full max-w-sm rounded-3xl bg-white border border-slate-200 dark:bg-slate-950 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col h-[400px]">
+          <div className="relative w-full max-w-sm rounded-3xl bg-white border border-slate-200 dark:bg-slate-950 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col h-[480px]">
             {/* Header */}
             <div className="bg-slate-900 px-5 py-4 text-slate-100 dark:text-white flex justify-between items-center shrink-0">
-              <div className="flex items-center gap-2.5">
-                <div className="h-8 w-8 rounded-full bg-slate-800 flex items-center justify-center text-xs font-black">C</div>
-                <div>
-                  <h4 className="text-xs font-bold leading-none">
-                    {nextOrder ? `${nextOrder.address?.firstName} ${nextOrder.address?.lastName}` : "Customer"}
+              <div className="flex items-center gap-2">
+                <ShieldCheck size={18} className="text-emerald-400 animate-pulse" />
+                <div className="text-left">
+                  <h4 className="text-[11px] font-extrabold uppercase tracking-wider leading-none">
+                    Secure Chat Channel
                   </h4>
-                  <span className="text-[8px] text-emerald-400 font-bold uppercase tracking-wider">Online</span>
+                  <p className="text-[9px] text-slate-400 font-medium mt-0.5">
+                    Encrypted & secure
+                  </p>
                 </div>
               </div>
-              <button onClick={() => setChatModalOpen(false)} className="text-slate-400 hover:text-white cursor-pointer"><X size={16} /></button>
+              <div className="flex items-center gap-2">
+                {nextOrder && (nextOrder.orderStatus || "").toLowerCase() === "out for delivery" && (
+                  <div className="relative">
+                    <button
+                      onClick={() => setCallDropdownOpen(!callDropdownOpen)}
+                      className="px-3.5 py-1.5 bg-[#4f46e5] hover:bg-[#4338ca] text-white text-[11px] font-bold rounded-lg flex items-center gap-1 cursor-pointer border-none shadow-sm transition active:scale-95 shrink-0"
+                    >
+                      <Phone size={11} />
+                      <span>CALL</span>
+                    </button>
+                    
+                    {callDropdownOpen && (
+                      <div className="absolute right-0 mt-1.5 w-32 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 overflow-hidden py-1">
+                        <button
+                          onClick={() => {
+                            setCallDropdownOpen(false);
+                            handleInitiateCall("audio");
+                          }}
+                          className="w-full px-3 py-2 text-left text-[11px] font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 cursor-pointer border-none bg-transparent"
+                        >
+                          <Phone size={11} className="text-indigo-600 dark:text-indigo-400" />
+                          <span>Voice Call</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            setCallDropdownOpen(false);
+                            handleInitiateCall("video");
+                          }}
+                          className="w-full px-3 py-2 text-left text-[11px] font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 cursor-pointer border-none bg-transparent"
+                        >
+                          <Video size={11} className="text-indigo-600 dark:text-indigo-400" />
+                          <span>Video Call</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+                <button 
+                  onClick={() => setChatModalOpen(false)} 
+                  className="text-slate-400 hover:text-white cursor-pointer border-none bg-transparent flex items-center justify-center p-1"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+
+            {/* Profile Status card */}
+            <div className="flex items-center gap-3 px-4 py-3 bg-white dark:bg-slate-950 border-b border-slate-100 dark:border-slate-900 shrink-0">
+              {/* Circular Avatar */}
+              <div className="relative">
+                <div className="h-10 w-10 rounded-full bg-indigo-50 dark:bg-indigo-950/30 flex items-center justify-center text-[#4f46e5] dark:text-indigo-400 font-black text-sm uppercase border border-indigo-100 dark:border-indigo-900/50">
+                  {nextOrder ? nextOrder.address?.firstName?.charAt(0) : "C"}
+                </div>
+                {/* Online indicator dot */}
+                <span className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white dark:border-slate-950 ${partnerOnline ? "bg-emerald-500 animate-pulse" : "bg-slate-300 dark:bg-slate-700"}`} />
+              </div>
+
+              {/* Partner Details */}
+              <div className="flex-1 text-left min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <span className={`h-1.5 w-1.5 rounded-full ${partnerOnline ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`} />
+                  <span className={`text-[10px] font-bold ${partnerOnline ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400"} uppercase tracking-wide`}>
+                    Customer is {partnerOnline ? "online" : "offline"}
+                  </span>
+                </div>
+                <h5 className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5 truncate uppercase tracking-wide">
+                  {nextOrder ? `${nextOrder.address?.firstName} ${nextOrder.address?.lastName || ""}`.trim() : "Customer"}
+                  <span className="text-[10px] text-slate-400 font-bold ml-1.5 tracking-normal uppercase">
+                    • Customer
+                  </span>
+                </h5>
+              </div>
+
+              {/* Typing status */}
+              {partnerTyping && (
+                <span className="text-[#4f46e5] dark:text-indigo-400 text-[10px] font-extrabold animate-pulse lowercase select-none">typing...</span>
+              )}
             </div>
             
             {/* Message Pane */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50 dark:bg-slate-900/40">
-              {chatMessages.map((msg, i) => (
-                <div key={i} className={`flex flex-col ${msg.sender === "driver" ? "items-end" : "items-start"}`}>
-                  <div className={`p-2.5 rounded-2xl max-w-[80%] text-xs font-medium ${ msg.sender === "driver" ? "bg-blue-600 text-slate-100 dark:text-white rounded-tr-none" : "bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-tl-none" }`}>
-                    {msg.text}
+              {chatMessages.map((msg, i) => {
+                const myId = getUserIdFromToken(token);
+                const isMe = myId && String(msg.senderId) === String(myId);
+                const timeStr = msg.createdAt 
+                  ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+                  : (msg.time || "");
+                return (
+                  <div key={msg._id || i} className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}>
+                    <div className={`p-2.5 rounded-2xl max-w-[80%] text-xs font-semibold leading-normal ${ isMe ? "bg-[#4f46e5] text-slate-100 dark:text-white rounded-tr-none shadow-xs" : "bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-tl-none shadow-xs" }`}>
+                      {msg.message || msg.text}
+                    </div>
+                    <div className="flex items-center gap-1 mt-1">
+                      <span className="text-[8px] text-slate-400 font-bold">{timeStr}</span>
+                      {isMe && (
+                        <span className="text-[9px] leading-none">
+                          {msg.status === "seen" ? (
+                            <span className="text-blue-500 font-black">✓✓</span>
+                          ) : msg.status === "delivered" ? (
+                            <span className="text-slate-400 font-black">✓✓</span>
+                          ) : (
+                            <span className="text-slate-400">✓</span>
+                          )}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <span className="text-[8px] text-slate-400 mt-1 font-bold">{msg.time}</span>
-                </div>
-              ))}
+                );
+              })}
+              <div ref={messagesEndRef} />
             </div>
 
-            {/* Input Form */}
-            <form onSubmit={handleSendMessage} className="p-3 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 flex gap-2 shrink-0">
-              <input
-                type="text"
-                placeholder="Type your message..."
-                value={newChatMessage}
-                onChange={(e) => setNewChatMessage(e.target.value)}
-                className="flex-1 px-4 py-2 border border-slate-200 dark:border-slate-800 rounded-xl text-xs outline-none bg-slate-50 dark:bg-slate-900"
-              />
-              <button type="submit" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-slate-100 dark:text-white font-bold text-xs rounded-xl cursor-pointer">Send</button>
-            </form>
+            {/* Input Form & Lock Footer */}
+            {nextOrder && ["delivered", "cancelled", "returned", "refunded"].includes((nextOrder.orderStatus || "").toLowerCase()) ? (
+              <div className="p-4 bg-slate-100 dark:bg-slate-900/60 text-center text-[10px] font-extrabold uppercase text-slate-400 dark:text-slate-500 border-t border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center gap-1.5 shrink-0">
+                <Lock size={12} />
+                <span>This communication channel is archived.</span>
+              </div>
+            ) : (
+              <div className="px-4 py-3 bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-900 shrink-0">
+                <form onSubmit={handleSendMessage} className="flex items-center gap-2">
+                  {/* Attachment Button */}
+                  <button
+                    type="button"
+                    className="h-8 w-8 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800 flex items-center justify-center text-slate-400 cursor-pointer border-none shrink-0"
+                  >
+                    <Paperclip size={14} />
+                  </button>
+
+                  {/* Text Input */}
+                  <input
+                    type="text"
+                    placeholder="Type your message securely..."
+                    value={newChatMessage}
+                    onChange={handleInputChange}
+                    className="flex-1 px-3 py-2 text-xs border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 rounded-xl outline-none text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] transition"
+                  />
+
+                  {/* Send Button */}
+                  <button
+                    type="submit"
+                    disabled={!newChatMessage.trim()}
+                    className="h-8 w-8 rounded-xl bg-[#4f46e5] text-white flex items-center justify-center hover:bg-[#4338ca] active:scale-95 disabled:bg-slate-100 disabled:dark:bg-slate-900 disabled:text-slate-400 transition cursor-pointer border-none shrink-0 shadow-sm"
+                  >
+                    <Send size={12} className="fill-current text-white" />
+                  </button>
+                </form>
+
+                {/* Centered Lock Footer */}
+                <div className="mt-2 flex items-center justify-center gap-1.5 text-[9px] text-slate-400 font-bold uppercase tracking-wider">
+                  <Lock size={10} className="text-slate-400" />
+                  <span>
+                    Only you and the customer can see these messages.
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -1444,6 +2480,138 @@ const MyDeliveriesTab = ({
             </div>
           </div>
         </div>
+      )}
+
+      {/* 6. WebRTC Portaled Calling Overlays */}
+      {createPortal(
+        <>
+          {/* Incoming Call Screen */}
+          {incomingCall && incomingCallData && (
+            <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[9999] flex items-center justify-center p-4">
+              <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 w-full max-w-[320px] text-center space-y-6 animate-fade-in shadow-2xl">
+                <div className="flex flex-col items-center space-y-3 pt-4">
+                  <div className="h-16 w-16 rounded-full bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 animate-pulse">
+                    {incomingCallData.type === "video" ? <Video size={30} /> : <PhoneCall size={30} />}
+                  </div>
+                  <h3 className="text-sm font-black text-white uppercase tracking-wider">
+                    {incomingCallData.callerName}
+                  </h3>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    Incoming {incomingCallData.type} call...
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-center gap-6 pb-2">
+                  <button
+                    onClick={handleRejectCall}
+                    className="h-12 w-12 rounded-full bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center transition border-none cursor-pointer shadow-lg shadow-rose-600/30 hover:scale-105 active:scale-95"
+                  >
+                    <PhoneOff size={18} />
+                  </button>
+
+                  <button
+                    onClick={handleAcceptCall}
+                    className="h-12 w-12 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center transition border-none cursor-pointer shadow-lg shadow-emerald-600/30 hover:scale-105 active:scale-95 animate-bounce"
+                  >
+                    <Phone size={18} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Active Call screen */}
+          {callActive && (
+            <div className="fixed inset-0 bg-slate-950/95 z-[9999] flex flex-col items-center justify-center p-4 select-none">
+              <div className="relative w-full max-w-lg aspect-video sm:aspect-square bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col">
+                
+                {/* Stream render elements */}
+                {callType === "video" ? (
+                  <div className="absolute inset-0 w-full h-full">
+                    {/* Remote Stream Track */}
+                    {remoteStream ? (
+                      <video
+                        ref={remoteVideoRef}
+                        autoPlay
+                        playsInline
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-slate-950 flex flex-col items-center justify-center text-slate-500 gap-3">
+                        <div className="w-6 h-6 border-2 border-slate-700 border-t-slate-300 rounded-full animate-spin" />
+                        <span className="text-[10px] font-bold uppercase tracking-widest animate-pulse">Waiting for remote stream...</span>
+                      </div>
+                    )}
+
+                    {/* Local Picture-in-Picture Track */}
+                    {localStream && (
+                      <video
+                        ref={localVideoRef}
+                        autoPlay
+                        playsInline
+                        muted
+                        className="w-24 h-32 rounded-xl bg-slate-950 border border-slate-750/85 shadow-md object-cover absolute bottom-4 right-4 z-10 hover:scale-105 transition"
+                      />
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex-1 flex flex-col items-center justify-center space-y-4">
+                    <div className="h-20 w-20 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 animate-pulse">
+                      <PhoneCall size={36} />
+                    </div>
+                    <h3 className="text-md font-black text-white uppercase tracking-wider">
+                      Customer
+                    </h3>
+                    <p className="text-[10px] font-bold text-indigo-400 tracking-wider">
+                      {callStatus === "connecting" ? "CONNECTING SECURE SESSION..." : "CONNECTED SECURELY"}
+                    </p>
+                    {remoteStream && (
+                      <audio ref={remoteVideoRef} autoPlay />
+                    )}
+                  </div>
+                )}
+
+                {/* Header calling stats overlay */}
+                <div className="absolute top-4 left-4 z-10 flex items-center gap-2 bg-slate-900/80 backdrop-blur-sm border border-slate-800 px-3 py-1.5 rounded-full text-white text-[10px] font-black tracking-wider uppercase">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>{callStatus === "connected" ? formatTime(callTime) : "Ringing..."}</span>
+                </div>
+
+                {/* Calling control panel */}
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-4 bg-slate-900/90 backdrop-blur-sm border border-slate-800 px-4 py-2.5 rounded-full shadow-2xl">
+                  <button
+                    onClick={toggleMic}
+                    className={`h-10 w-10 rounded-full flex items-center justify-center transition border-none cursor-pointer ${
+                      isMicMuted ? "bg-rose-600 text-white" : "bg-slate-800 text-slate-300 hover:text-white"
+                    }`}
+                  >
+                    {isMicMuted ? <MicOff size={16} /> : <Mic size={16} />}
+                  </button>
+
+                  {callType === "video" && (
+                    <button
+                      onClick={toggleVideo}
+                      className={`h-10 w-10 rounded-full flex items-center justify-center transition border-none cursor-pointer ${
+                        isVideoMuted ? "bg-rose-600 text-white" : "bg-slate-800 text-slate-300 hover:text-white"
+                      }`}
+                    >
+                      {isVideoMuted ? <VideoOff size={16} /> : <Video size={16} />}
+                    </button>
+                  )}
+
+                  <button
+                    onClick={handleEndCall}
+                    className="h-10 w-10 rounded-full bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center transition border-none cursor-pointer shadow-lg shadow-rose-600/30 hover:scale-105 active:scale-95"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+
+              </div>
+            </div>
+          )}
+        </>,
+        document.body
       )}
 
     </div>

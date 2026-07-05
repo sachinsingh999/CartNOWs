@@ -1,8 +1,8 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import electronicsImg from "../../assets/electronics_collection_composite.png";
-import fashionImg from "../../assets/fashion_collection_composite.png";
-import homeImg from "../../assets/home_collection_composite.png";
+import electronicsImg from "../../assets/electronics_collection_composite.webp";
+import fashionImg from "../../assets/fashion_collection_composite.webp";
+import homeImg from "../../assets/home_collection_composite.webp";
 import {
   ChevronLeft,
   ChevronRight,

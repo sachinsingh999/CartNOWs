@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import axios from "axios";
 import { backendUrl } from "../config";
+import { cachedGet } from "../utils/apiCache";
+import { CollectionsSkeleton } from "../components/SkeletonLoader";
 import {
   Sparkles,
   ArrowRight,
@@ -15,9 +17,9 @@ import {
   ShoppingBag,
   Award
 } from "lucide-react";
-import electronicsImg from "../assets/electronics_collection_composite.png";
-import fashionImg from "../assets/fashion_collection_composite.png";
-import homeImg from "../assets/home_collection_composite.png";
+import electronicsImg from "../assets/electronics_collection_composite.webp";
+import fashionImg from "../assets/fashion_collection_composite.webp";
+import homeImg from "../assets/home_collection_composite.webp";
 
 const Collections = () => {
   const navigate = useNavigate();
@@ -76,7 +78,7 @@ const Collections = () => {
   useEffect(() => {
     const fetchCollections = async () => {
       try {
-        const { data } = await axios.get(`${backendUrl}/api/product/collections`);
+        const { data } = await cachedGet(`${backendUrl}/api/product/collections`);
         if (data.success) {
           const enriched = data.collections.map(col => {
             const styles = getCollectionStyles(col.name);
@@ -128,19 +130,7 @@ const Collections = () => {
 
       {/* Grid of collections */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {[1, 2, 3].map(n => (
-            <div key={n} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[32px] p-5 h-[340px] animate-pulse flex flex-col justify-between">
-              <div>
-                <div className="h-6 bg-slate-200 dark:bg-slate-800 rounded-full w-24 mb-4" />
-                <div className="h-8 bg-slate-200 dark:bg-slate-800 rounded-full w-48 mb-2" />
-                <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-full w-64 mb-6" />
-                <div className="h-28 bg-slate-100 dark:bg-slate-950/20 rounded-[20px] w-full" />
-              </div>
-              <div className="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-full" />
-            </div>
-          ))}
-        </div>
+        <CollectionsSkeleton />
       ) : collections.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 border border-dashed border-slate-200 dark:border-slate-800 rounded-[32px] bg-white dark:bg-slate-900 text-center">
           <ShoppingBag size={40} className="text-slate-300 dark:text-slate-600 mb-3" />

@@ -1,40 +1,48 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import axios from "axios";
 import { backendUrl } from "./config";
-import Home from "./pages/Home";
-import About from "./pages/About";
-import Product from "./pages/Product";
+
+// Modular components (eager loaded)
 import Navbar from "./components/Navbar";
-import AudienceCatalog from "./pages/AudienceCatalog";
-import CatalogDetail from "./pages/CatalogDetail";
 import Footer from "./components/Footer";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import ProductDetail from "./pages/ProductDetail";
-import Cart from "./pages/Cart";
-import PlaceOrder from "./pages/PlaceOrder";
-import Orderdetail from "./pages/Orderdetail";
-import Track from "./pages/Track";
-import { ToastContainer, Slide } from 'react-toastify';
-import Profile from "./pages/Profile";
-import { useLocation } from "react-router-dom";
-import Help from "./pages/Help";
-import TryOn from "./pages/TryOn";
-import Verify from "./pages/Verify";
-import OrderConfirmed from "./pages/OrderConfirmed";
-import Wishlist from "./pages/Wishlist";
 import ScrollToTop from "./components/ScrollToTop";
 import ComparisonTray from "./components/ComparisonTray";
-import Maintenance from "./pages/Maintenance";
-import NotFound from "./pages/NotFound";
-import Discover from "./pages/Discover";
-import Categories from "./pages/Categories";
-import Collections from "./pages/Collections";
-import Brands from "./pages/Brands";
-import { AnimatePresence } from "framer-motion";
 import SplashLoader from "./components/SplashLoader";
-import MobileShowcase from "./pages/MobileShowcase";
+import Maintenance from "./pages/Maintenance";
+
+// Toastify components (eager loaded)
+import { ToastContainer, Slide } from 'react-toastify';
+import { useLocation } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
+
+// Lazy loaded page components
+const Home = React.lazy(() => import("./pages/Home"));
+const About = React.lazy(() => import("./pages/About"));
+const Product = React.lazy(() => import("./pages/Product"));
+const AudienceCatalog = React.lazy(() => import("./pages/AudienceCatalog"));
+const CatalogDetail = React.lazy(() => import("./pages/CatalogDetail"));
+const Login = React.lazy(() => import("./pages/Login"));
+const Signup = React.lazy(() => import("./pages/Signup"));
+const ProductDetail = React.lazy(() => import("./pages/ProductDetail"));
+const Cart = React.lazy(() => import("./pages/Cart"));
+const PlaceOrder = React.lazy(() => import("./pages/PlaceOrder"));
+const Orderdetail = React.lazy(() => import("./pages/Orderdetail"));
+const SingleOrderDetail = React.lazy(() => import("./pages/SingleOrderDetail"));
+const Track = React.lazy(() => import("./pages/Track"));
+const Profile = React.lazy(() => import("./pages/Profile"));
+const Help = React.lazy(() => import("./pages/Help"));
+const TryOn = React.lazy(() => import("./pages/TryOn"));
+const Verify = React.lazy(() => import("./pages/Verify"));
+const OrderConfirmed = React.lazy(() => import("./pages/OrderConfirmed"));
+const Wishlist = React.lazy(() => import("./pages/Wishlist"));
+const NotFound = React.lazy(() => import("./pages/NotFound"));
+const Discover = React.lazy(() => import("./pages/Discover"));
+const Categories = React.lazy(() => import("./pages/Categories"));
+const Collections = React.lazy(() => import("./pages/Collections"));
+const Brands = React.lazy(() => import("./pages/Brands"));
+const MobileShowcase = React.lazy(() => import("./pages/MobileShowcase"));
+
 
 const App = () => {
   const location = useLocation();
@@ -146,38 +154,46 @@ const App = () => {
 
             {/* MAIN must grow */}
             <main className="flex-1">
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/product" element={<Product />} />
-                <Route path="/products" element={<Product />} />
-                <Route path="/product/men" element={<AudienceCatalog audience="men" />} />
-                <Route path="/product/women" element={<AudienceCatalog audience="women" />} />
-                <Route path="/product/kid" element={<AudienceCatalog audience="kids" />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<Signup />} />
-                <Route path="/product/:id" element={<ProductDetail />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/placeorder" element={<PlaceOrder />} />
-                <Route path="/orderdetail" element={<Orderdetail />} />
-                <Route path="/track/:id" element={<Track />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/help" element={<Help />} />
-                <Route path="/tryon" element={<TryOn />} />
-                <Route path="/verify" element={<Verify />} />
-                <Route path="/order-confirmed/:orderId" element={<OrderConfirmed />} />
-                <Route path="/wishlist" element={<Wishlist />} />
-                <Route path="/category/:slug" element={<CatalogDetail type="category" />} />
-                <Route path="/discover" element={<Discover />} />
-                <Route path="/categories" element={<Categories />} />
-                <Route path="/categories/:slug" element={<CatalogDetail type="category" />} />
-                <Route path="/collections" element={<Collections />} />
-                <Route path="/collections/:slug" element={<CatalogDetail type="collection" />} />
-                <Route path="/brands" element={<Brands />} />
-                <Route path="/brands/:slug" element={<CatalogDetail type="brand" />} />
-                <Route path="/mobile" element={<MobileShowcase />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+              <Suspense fallback={
+                <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3 bg-slate-50 dark:bg-slate-950 text-slate-500 font-mono text-xs uppercase tracking-widest">
+                  <div className="w-8 h-8 rounded-full border-2 border-slate-300 border-t-slate-800 dark:border-slate-800 dark:border-t-slate-300 animate-spin" />
+                  <span>Loading Page...</span>
+                </div>
+              }>
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/product" element={<Product />} />
+                  <Route path="/products" element={<Product />} />
+                  <Route path="/product/men" element={<AudienceCatalog audience="men" />} />
+                  <Route path="/product/women" element={<AudienceCatalog audience="women" />} />
+                  <Route path="/product/kid" element={<AudienceCatalog audience="kids" />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/signup" element={<Signup />} />
+                  <Route path="/product/:id" element={<ProductDetail />} />
+                  <Route path="/cart" element={<Cart />} />
+                  <Route path="/placeorder" element={<PlaceOrder />} />
+                  <Route path="/orderdetail" element={<Orderdetail />} />
+                  <Route path="/order/:orderId" element={<SingleOrderDetail />} />
+                  <Route path="/track/:id" element={<Track />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/help" element={<Help />} />
+                  <Route path="/tryon" element={<TryOn />} />
+                  <Route path="/verify" element={<Verify />} />
+                  <Route path="/order-confirmed/:orderId" element={<OrderConfirmed />} />
+                  <Route path="/wishlist" element={<Wishlist />} />
+                  <Route path="/category/:slug" element={<CatalogDetail type="category" />} />
+                  <Route path="/discover" element={<Discover />} />
+                  <Route path="/categories" element={<Categories />} />
+                  <Route path="/categories/:slug" element={<CatalogDetail type="category" />} />
+                  <Route path="/collections" element={<Collections />} />
+                  <Route path="/collections/:slug" element={<CatalogDetail type="collection" />} />
+                  <Route path="/brands" element={<Brands />} />
+                  <Route path="/brands/:slug" element={<CatalogDetail type="brand" />} />
+                  <Route path="/mobile" element={<MobileShowcase />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
             </main>
 
             <Footer />

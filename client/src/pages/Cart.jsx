@@ -27,11 +27,13 @@ import { backendUrl } from "../config";
 import { toast } from "react-toastify";
 import { useLanguage } from "../context/LanguageContext";
 import { getAverageRating } from "../utils/productRatings";
+import { CartSkeleton } from "../components/SkeletonLoader";
 
 const Cart = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const [cartItems, setCartItems] = useState([]);
+  const [pageLoading, setPageLoading] = useState(true);
   const [savedItems, setSavedItems] = useState([]);
   const token = localStorage.getItem("token");
 
@@ -51,6 +53,7 @@ const Cart = () => {
 
   const fetchCart = async () => {
     try {
+      setPageLoading(true);
       let cartData = {};
       if (token) {
         const cartRes = await axios.post(
@@ -123,6 +126,8 @@ const Cart = () => {
       setCartItems(items);
     } catch (error) {
       console.log("CART FETCH ERROR:", error);
+    } finally {
+      setPageLoading(false);
     }
   };
 
@@ -575,7 +580,11 @@ const Cart = () => {
 
 
         {/* Layout Grid */}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 items-start">
+        {pageLoading ? (
+          <CartSkeleton />
+        ) : (
+          <>
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 items-start">
           
           {/* Left Side: Cart items & Saved items (8 Columns) */}
           <div className="lg:col-span-8 space-y-4">
@@ -1258,11 +1267,14 @@ const Cart = () => {
             </div>
           </div>
         )}
+          </>
+        )}
 
       </div>
 
       {/* Mobile Sticky Bottom Checkout Bar */}
-      <div className="lg:hidden fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] left-0 right-0 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200/60 dark:border-slate-800/80 p-4 shadow-[0_-6px_20px_rgba(0,0,0,0.04)] dark:shadow-[0_-6px_20px_rgba(0,0,0,0.3)] flex items-center justify-between select-none">
+      {!pageLoading && cartItems.length > 0 && (
+        <div className="lg:hidden fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] left-0 right-0 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200/60 dark:border-slate-800/80 p-4 shadow-[0_-6px_20px_rgba(0,0,0,0.04)] dark:shadow-[0_-6px_20px_rgba(0,0,0,0.3)] flex items-center justify-between select-none">
         <div className="text-left">
           <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider leading-none">Total Amount</p>
           <div className="flex items-baseline gap-1.5 mt-1">
@@ -1283,6 +1295,7 @@ const Cart = () => {
           <span>Checkout ({itemCount})</span>
         </button>
       </div>
+      )}
 
     </div>
   );

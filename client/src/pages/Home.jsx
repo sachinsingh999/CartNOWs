@@ -1,25 +1,39 @@
-import React, { useEffect, useState, useMemo } from "react";
-import axios from "axios";
-import { backendUrl } from "../config";
+import React, { useEffect, useState, useMemo, Suspense } from "react";
 import { toast } from "react-toastify";
 import { AnimatePresence, motion } from "framer-motion";
+import { backendUrl } from "../config";
+import { cachedGet } from "../utils/apiCache";
 
-// Import modular sub-components
+// Import helper component for viewport-based lazy loading
+import LazySection from "../components/LazySection";
+
+// Eagerly loaded modular components (critical above-the-fold content)
 import HomeHero from "../components/Home/HomeHero";
-import PremiumDealBanner from "../components/Home/PremiumDealBanner";
-import FlashDeals from "../components/Home/FlashDeals";
-import TrendingProducts from "../components/Home/TrendingProducts";
 import TopCategories from "../components/Home/TopCategories";
-import RecommendedProducts from "../components/Home/RecommendedProducts";
-import DealOfTheDay from "../components/Home/DealOfTheDay";
-import SellerSpotlight from "../components/Home/SellerSpotlight";
-import AiRobotChat from "../components/Home/AiRobotChat";
-import CustomerTestimonials from "../components/Home/CustomerTestimonials";
 import QuickViewModal from "../components/Home/QuickViewModal";
-import ShopByCollections from "../components/Home/ShopByCollections";
-import ShopByBrands from "../components/Home/ShopByBrands";
-import NewsletterCTA from "../components/Home/NewsletterCTA";
-import BenefitsStrip from "../components/Home/BenefitsStrip";
+import PremiumDealBanner from "../components/Home/PremiumDealBanner";
+
+// Lazy loaded modular components (below-the-fold content)
+const FlashDeals = React.lazy(() => import("../components/Home/FlashDeals"));
+const TrendingProducts = React.lazy(() => import("../components/Home/TrendingProducts"));
+const ShopByBrands = React.lazy(() => import("../components/Home/ShopByBrands"));
+const RecommendedProducts = React.lazy(() => import("../components/Home/RecommendedProducts"));
+const ShopByCollections = React.lazy(() => import("../components/Home/ShopByCollections"));
+const DealOfTheDay = React.lazy(() => import("../components/Home/DealOfTheDay"));
+const SellerSpotlight = React.lazy(() => import("../components/Home/SellerSpotlight"));
+const AiRobotChat = React.lazy(() => import("../components/Home/AiRobotChat"));
+const CustomerTestimonials = React.lazy(() => import("../components/Home/CustomerTestimonials"));
+const BenefitsStrip = React.lazy(() => import("../components/Home/BenefitsStrip"));
+
+// Import shared skeletons from SkeletonLoader library
+import {
+  ProductGridSkeleton,
+  BrandsSkeleton,
+  CollectionsSkeleton,
+  DealRowSkeleton,
+  TestimonialSkeleton,
+  BenefitsSkeleton
+} from "../components/SkeletonLoader";
 
 const Home = () => {
   const [loading, setLoading] = useState(true);
@@ -49,7 +63,7 @@ const Home = () => {
     const token = localStorage.getItem("token") || "";
     const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-    axios.get(`${backendUrl}/api/product/homepage`, { headers })
+    cachedGet(`${backendUrl}/api/product/homepage`, { headers })
       .then(res => {
         if (res.data.success) {
           setHomepageData(res.data);
@@ -67,7 +81,7 @@ const Home = () => {
     } catch (e) { }
 
     // Fetch active deal of the day
-    axios.get(`${backendUrl}/api/dealofday`)
+    cachedGet(`${backendUrl}/api/dealofday`)
       .then(res => {
         if (res.data.success && res.data.deal) {
           setActiveDeal(res.data.deal);
@@ -267,88 +281,112 @@ const Home = () => {
         )}
       </AnimatePresence>
 
-      {/* SECTION 2: TOP CATEGORIES (SHOP POPULAR) */}
+      {/* SECTION 2: TOP CATEGORIES (SHOP POPULAR) - Eager Loaded */}
       <section className="w-full px-6 sm:px-12 lg:px-20 py-6 select-none">
         <TopCategories popularCategories={homepageData.popularCategories} />
       </section>
 
 
-      {/* SECTION 4: FLASH DEALS + TRENDING PRODUCTS */}
-      <section className="w-full px-6 sm:px-12 lg:px-20 py-6">
-        <FlashDeals
-          deals={(() => {
-            const seen = new Set();
-            const combined = [];
-            [...(homepageData.dealsOfDay || []), ...(homepageData.trending || [])].forEach(p => {
-              if (p && p._id && !seen.has(p._id.toString())) {
-                seen.add(p._id.toString());
-                combined.push(p);
-              }
-            });
-            return combined;
-          })()}
-          onQuickView={setQuickViewProduct}
-          onAddToCart={onAddToCart}
-          onToggleFavorite={onToggleFavorite}
-          wishlist={wishlist}
-        />
+      {/* SECTION 4: FLASH DEALS + TRENDING PRODUCTS - Lazy Loaded */}
+      <Suspense fallback={<ProductGridSkeleton count={4} />}>
+        <LazySection placeholderHeight="600px">
+          <section className="w-full px-6 sm:px-12 lg:px-20 py-6">
+            <FlashDeals
+              deals={(() => {
+                const seen = new Set();
+                const combined = [];
+                [...(homepageData.dealsOfDay || []), ...(homepageData.trending || [])].forEach(p => {
+                  if (p && p._id && !seen.has(p._id.toString())) {
+                    seen.add(p._id.toString());
+                    combined.push(p);
+                  }
+                });
+                return combined;
+              })()}
+              onQuickView={setQuickViewProduct}
+              onAddToCart={onAddToCart}
+              onToggleFavorite={onToggleFavorite}
+              wishlist={wishlist}
+            />
 
-        <TrendingProducts
-          bestSellers={homepageData.bestSellers}
-          newArrivals={homepageData.newArrivals}
-          mostViewed={homepageData.mostViewed}
-          loading={loading}
-          onQuickView={setQuickViewProduct}
-          onAddToCart={onAddToCart}
-          onToggleFavorite={onToggleFavorite}
-          wishlist={wishlist}
-        />
-      </section>
+            <TrendingProducts
+              bestSellers={homepageData.bestSellers}
+              newArrivals={homepageData.newArrivals}
+              mostViewed={homepageData.mostViewed}
+              loading={loading}
+              onQuickView={setQuickViewProduct}
+              onAddToCart={onAddToCart}
+              onToggleFavorite={onToggleFavorite}
+              wishlist={wishlist}
+            />
+          </section>
+        </LazySection>
+      </Suspense>
 
-      {/* SECTION 5: BRANDS + RECOMMENDATIONS */}
-      <section className="w-full px-6 sm:px-12 lg:px-20 py-12 md:py-16 space-y-16 md:space-y-24 select-none">
-        <div>
-          <ShopByBrands popularBrands={homepageData.popularBrands} />
-        </div>
+      {/* SECTION 5: BRANDS + RECOMMENDATIONS - Lazy Loaded */}
+      <Suspense fallback={<BrandsSkeleton />}>
+        <LazySection placeholderHeight="500px">
+          <section className="w-full px-6 sm:px-12 lg:px-20 py-12 md:py-16 space-y-16 md:space-y-24 select-none">
+            <div>
+              <ShopByBrands popularBrands={homepageData.popularBrands} />
+            </div>
 
-        <div>
-          <RecommendedProducts
-            recommended={homepageData.recommended}
-            trending={homepageData.trending}
-            topRated={homepageData.topRated}
-            newArrivals={homepageData.newArrivals}
-            onQuickView={setQuickViewProduct}
-            onAddToCart={onAddToCart}
-            onToggleFavorite={onToggleFavorite}
-            wishlist={wishlist}
-          />
-        </div>
-      </section>
+            <div>
+              <RecommendedProducts
+                recommended={homepageData.recommended}
+                trending={homepageData.trending}
+                topRated={homepageData.topRated}
+                newArrivals={homepageData.newArrivals}
+                onQuickView={setQuickViewProduct}
+                onAddToCart={onAddToCart}
+                onToggleFavorite={onToggleFavorite}
+                wishlist={wishlist}
+              />
+            </div>
+          </section>
+        </LazySection>
+      </Suspense>
 
-      {/* SECTION 4: SHOP BY COLLECTIONS */}
-      <ShopByCollections trendingCollections={homepageData.trendingCollections} />
+      {/* SECTION 4: SHOP BY COLLECTIONS - Lazy Loaded */}
+      <Suspense fallback={<CollectionsSkeleton />}>
+        <LazySection placeholderHeight="400px">
+          <ShopByCollections trendingCollections={homepageData.trendingCollections} />
+        </LazySection>
+      </Suspense>
 
 
-      {/* SECTION 5: DEAL OF THE DAY + SELLER SPOTLIGHT + AI CHAT */}
-      <section className="w-full px-6 sm:px-12 lg:px-20 py-5 select-none">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-left">
-          <DealOfTheDay 
-            deals={homepageData.dealsOfDay} 
-            activeDeal={activeDeal} 
-            onAddToCart={onAddToCart} 
-          />
+      {/* SECTION 5: DEAL OF THE DAY + SELLER SPOTLIGHT + AI CHAT - Lazy Loaded */}
+      <Suspense fallback={<DealRowSkeleton />}>
+        <LazySection placeholderHeight="350px">
+          <section className="w-full px-6 sm:px-12 lg:px-20 py-5 select-none">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-left">
+              <DealOfTheDay 
+                deals={homepageData.dealsOfDay} 
+                activeDeal={activeDeal} 
+                onAddToCart={onAddToCart} 
+              />
 
-          <SellerSpotlight />
+              <SellerSpotlight />
 
-          <AiRobotChat />
-        </div>
-      </section>
+              <AiRobotChat />
+            </div>
+          </section>
+        </LazySection>
+      </Suspense>
 
-      {/* SECTION 6: CUSTOMER TESTIMONIALS */}
-      <CustomerTestimonials />
+      {/* SECTION 6: CUSTOMER TESTIMONIALS - Lazy Loaded */}
+      <Suspense fallback={<TestimonialSkeleton />}>
+        <LazySection placeholderHeight="220px">
+          <CustomerTestimonials />
+        </LazySection>
+      </Suspense>
 
-      {/* SECTION 3: BENEFITS STRIP */}
-      <BenefitsStrip />
+      {/* SECTION 3: BENEFITS STRIP - Lazy Loaded */}
+      <Suspense fallback={<BenefitsSkeleton />}>
+        <LazySection placeholderHeight="100px">
+          <BenefitsStrip />
+        </LazySection>
+      </Suspense>
 
       {/* QUICK VIEW INTERACTIVE MODAL */}
       <QuickViewModal

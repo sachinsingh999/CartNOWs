@@ -39,6 +39,7 @@ import {
   AlertCircle
 } from "lucide-react";
 import { backendUrl } from "../config";
+import { ProductGridSkeleton } from "../components/SkeletonLoader";
 
 const Discover = () => {
   const navigate = useNavigate();
@@ -1035,17 +1036,7 @@ const Discover = () => {
           </div>
 
           {loading ? (
-            /* Skeleton grid */
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-              {[1, 2, 3, 4].map(n => (
-                <div key={n} className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[28px] p-4 flex flex-col justify-between animate-pulse h-[360px]">
-                  <div className="w-full aspect-square bg-slate-100 dark:bg-slate-800 rounded-[20px] mb-3" />
-                  <div className="h-4 bg-slate-100 dark:bg-slate-800 rounded w-2/3 mb-2" />
-                  <div className="h-3 bg-slate-100 dark:bg-slate-900 rounded w-1/3 mb-4" />
-                  <div className="h-8 bg-slate-100 dark:bg-slate-800 rounded-[12px] w-full" />
-                </div>
-              ))}
-            </div>
+            <ProductGridSkeleton count={8} />
           ) : filteredProducts.length === 0 ? (
             /* Empty state */
             <div className="flex flex-col items-center justify-center py-16 border border-dashed border-slate-200 dark:border-slate-800 rounded-[32px] bg-white dark:bg-slate-900 text-center p-6 shadow-sm">

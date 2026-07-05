@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { backendUrl } from "../config";
+import { cachedGet } from "../utils/apiCache";
 import { useLanguage } from "../context/LanguageContext";
 import { toast } from "react-toastify";
 import Logo from "./Logo";
@@ -73,7 +74,7 @@ const Navbar = () => {
   const [cartBump, setCartBump] = useState(false);
   
   useEffect(() => {
-    axios.get(`${backendUrl}/api/product/categories`)
+    cachedGet(`${backendUrl}/api/product/categories`)
       .then(res => {
         if (res.data.success) {
           const topCats = (res.data.categories || [])
@@ -236,7 +237,7 @@ const Navbar = () => {
   const fetchAllProducts = useCallback(async () => {
     if (allProducts.length > 0) return;
     try {
-      const res = await axios.get(`${backendUrl}/api/product/list`);
+      const res = await cachedGet(`${backendUrl}/api/product/list`);
       if (res.data.success) setAllProducts(res.data.products || []);
     } catch { }
   }, [allProducts.length]);
@@ -244,7 +245,7 @@ const Navbar = () => {
   /* ── Fetch trending searches from analytics ── */
   const fetchTrendingSearches = useCallback(async () => {
     try {
-      const res = await axios.get(`${backendUrl}/api/product/search-suggestions`);
+      const res = await cachedGet(`${backendUrl}/api/product/search-suggestions`);
       if (res.data.success && res.data.suggestions && res.data.suggestions.length > 0) {
         setTrendingSearches(res.data.suggestions);
       }
@@ -253,9 +254,13 @@ const Navbar = () => {
     }
   }, []);
 
+  // Fetch search suggestions and list only when focused (or mobile overlay open) and user typed >= 2 characters
   useEffect(() => {
-    fetchTrendingSearches();
-  }, [fetchTrendingSearches]);
+    if ((searchFocused || mobileSearchOpen) && searchValue.trim().length >= 2) {
+      fetchAllProducts();
+      fetchTrendingSearches();
+    }
+  }, [searchValue, searchFocused, mobileSearchOpen, fetchAllProducts, fetchTrendingSearches]);
 
   const suggestions = useMemo(() => {
     const q = searchValue.trim().toLowerCase();
@@ -506,8 +511,6 @@ const Navbar = () => {
                     onFocus={() => {
                       setSearchFocused(true);
                       setShowSuggestions(true);
-                      fetchAllProducts();
-                      fetchTrendingSearches();
                     }}
                     placeholder="Search for products, brands and more"
                     className="h-9 w-full bg-transparent px-3 text-[11.5px] text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none font-medium"
@@ -689,7 +692,7 @@ const Navbar = () => {
 
                 {/* Mobile search trigger */}
                 <button
-                  onClick={() => { setMobileSearchOpen(true); setTimeout(() => mobileSearchInputRef.current?.focus(), 50); fetchAllProducts(); }}
+                  onClick={() => { setMobileSearchOpen(true); setTimeout(() => mobileSearchInputRef.current?.focus(), 50); }}
                   className="lg:hidden flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 hover:scale-105 active:scale-95 transition cursor-pointer"
                   title="Search"
                 >
@@ -846,7 +849,7 @@ const Navbar = () => {
                                   key={n._id}
                                   onClick={() => {
                                     if (n.orderId) {
-                                      navigate(`/orderdetail?orderId=${n.orderId}`);
+                                      navigate(`/order/${n.orderId}`);
                                     } else {
                                       navigate("/product");
                                     }

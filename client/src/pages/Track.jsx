@@ -18,6 +18,7 @@ import {
   XCircle
 } from "lucide-react";
 import { toast } from "react-toastify";
+import { OrderListSkeleton } from "../components/SkeletonLoader";
 
 const defaultSteps = [
   {
@@ -173,9 +174,8 @@ const Track = () => {
 
   if (loading && !item) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 transition-colors duration-200">
-        <div className="h-10 w-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-sm font-semibold text-slate-600 dark:text-slate-400 mt-4">Loading shipment tracking...</p>
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-200 max-w-6xl mx-auto px-4 py-12">
+        <OrderListSkeleton />
       </div>
     );
   }

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { backendUrl } from "../../config";
+import { cachedGet } from "../../utils/apiCache";
 import {
   ArrowRight,
   ShieldCheck,
@@ -165,7 +166,7 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
       try {
         // Fetch public categories
         try {
-          const catRes = await axios.get(`${backendUrl}/api/product/categories`);
+          const catRes = await cachedGet(`${backendUrl}/api/product/categories`);
           if (catRes.data?.success) {
             setCategories(catRes.data.categories || []);
           }
@@ -176,7 +177,7 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
         // Fetch banners
         let activeBanners = [];
         try {
-          const bannerRes = await axios.get(`${backendUrl}/api/banners`);
+          const bannerRes = await cachedGet(`${backendUrl}/api/banners`);
           if (bannerRes.data?.success && bannerRes.data?.banners?.length > 0) {
             activeBanners = bannerRes.data.banners;
             setCustomBanners(activeBanners);
@@ -187,7 +188,7 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
 
         // Fetch cutout assets unconditionally to support transition from banner to models slideshow
         try {
-          const response = await axios.get(`${backendUrl}/api/system/hero-assets`);
+          const response = await cachedGet(`${backendUrl}/api/system/hero-assets`);
           if (response.data?.success && response.data?.assets?.length > 0) {
             const mapped = response.data.assets.map(asset => {
               let scaleClass = "scale-[1.0] sm:scale-[1.05] lg:scale-[1.12]";
@@ -288,19 +289,7 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
     return () => clearInterval(timer);
   }, [showBanners, customBanners.length, activeSlides.length]);
 
-  // Preload all slide images for ultra-smooth lag-free transitions
-  useEffect(() => {
-    const listToPreload = customBanners.length > 0 ? customBanners : activeSlides;
-    if (!listToPreload || listToPreload.length === 0) return;
-    
-    listToPreload.forEach((slide) => {
-      const src = slide.image || slide.imageUrl;
-      if (src) {
-        const img = new Image();
-        img.src = src;
-      }
-    });
-  }, [customBanners, activeSlides]);
+
 
   const currentSlide = activeSlides[slideIdx] || fallbackSlides[0];
 
@@ -578,6 +567,8 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
                 <img
                   src={currentBanner.modelImage ? (currentBanner.modelImage.startsWith("http") ? currentBanner.modelImage : `${backendUrl}${currentBanner.modelImage}`) : (currentBanner.image ? (currentBanner.image.startsWith("http") ? currentBanner.image : `${backendUrl}${currentBanner.image}`) : "")}
                   alt={currentBanner.title}
+                  fetchpriority="high"
+                  decoding="sync"
                   style={{
                     WebkitMaskImage: "linear-gradient(to top, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 8%)",
                   }}
@@ -615,6 +606,8 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
                 <img
                   src={currentBanner.modelImage ? (currentBanner.modelImage.startsWith("http") ? currentBanner.modelImage : `${backendUrl}${currentBanner.modelImage}`) : (currentBanner.image ? (currentBanner.image.startsWith("http") ? currentBanner.image : `${backendUrl}${currentBanner.image}`) : "")}
                   alt=""
+                  loading="lazy"
+                  fetchpriority="low"
                   className="w-full h-full object-cover object-center"
                 />
               </div>
@@ -884,6 +877,8 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
                       <img
                         src={currentSlide.imageUrl}
                         alt={currentSlide.name}
+                        fetchpriority="high"
+                        decoding="sync"
                         style={{
                           WebkitMaskImage: "linear-gradient(to top, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 12%)",
                           WebkitMaskComposite: "source-in",

@@ -19,15 +19,16 @@ import {
   Apple
 } from "lucide-react";
 import { backendUrl } from "../../config";
+import { cachedGet } from "../../utils/apiCache";
 
 // Import premium background-free assets
-import electronicsFallback from "../../assets/brand_asset_electronics_new.png";
-import mensFashionFallback from "../../assets/brand_asset_mens_fashion_new.png";
-import womensFashionFallback from "../../assets/brand_asset_womens_fashion_new.png";
-import groceriesFallback from "../../assets/brand_asset_groceries.png";
-import kidsFallback from "../../assets/brand_asset_kids.png";
-import booksFallback from "../../assets/brand_asset_books.png";
-import fashionFallback from "../../assets/brand_asset_fashion_new.png";
+import electronicsFallback from "../../assets/brand_asset_electronics_new.webp";
+import mensFashionFallback from "../../assets/brand_asset_mens_fashion_new.webp";
+import womensFashionFallback from "../../assets/brand_asset_womens_fashion_new.webp";
+import groceriesFallback from "../../assets/brand_asset_groceries.webp";
+import kidsFallback from "../../assets/brand_asset_kids.webp";
+import booksFallback from "../../assets/brand_asset_books.webp";
+import fashionFallback from "../../assets/brand_asset_fashion_new.webp";
 import beautyFallback from "../../assets/brand_asset_beauty.webp";
 import accessoriesFallback from "../../assets/brand_asset_accessories.webp";
 import sportswearFallback from "../../assets/brand_asset_sportswear.webp";
@@ -67,7 +68,7 @@ const TopCategories = ({ popularCategories = [] }) => {
   const [countsMap, setCountsMap] = useState({});
 
   useEffect(() => {
-    axios.get(`${backendUrl}/api/product/categories`)
+    cachedGet(`${backendUrl}/api/product/categories`)
       .then(res => {
         if (res.data.success) {
           const map = {};
@@ -259,6 +260,8 @@ const TopCategories = ({ popularCategories = [] }) => {
               <img
                 src={cat.img}
                 alt={cat.name}
+                loading="lazy"
+                decoding="async"
                 className="max-h-full max-w-full sm:w-full sm:h-full object-contain sm:object-cover rounded-t-2xl sm:rounded-[28px]"
               />
             </div>

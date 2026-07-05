@@ -1,5 +1,6 @@
 import orderModel from "../models/orderModel.js";
 import userModel from "../models/userModel.js";
+import chatRoomModel from "../models/chatRoomModel.js";
 import { autoAssignDeliveryAgent } from "../utils/assignmentHelper.js";
 import Stripe from "stripe";
 import Razorpay from "razorpay";
@@ -59,6 +60,38 @@ const cleanUserCart = async (userId, items) => {
   }
 };
 
+// Auto-create chat room on order placement
+const createChatRoomForOrder = async (order) => {
+  try {
+    const existing = await chatRoomModel.findOne({ orderId: order._id });
+    if (existing) return existing;
+
+    const sellerIds = [];
+    if (order.items && Array.isArray(order.items)) {
+      order.items.forEach(item => {
+        const sId = item.product?.sellerId || item.sellerId;
+        if (sId) {
+          const sIdStr = sId.toString();
+          if (!sellerIds.includes(sIdStr)) {
+            sellerIds.push(sIdStr);
+          }
+        }
+      });
+    }
+
+    const room = await chatRoomModel.create({
+      orderId: order._id,
+      customerId: order.userId,
+      deliverymanId: order.deliverymanId || null,
+      sellerIds
+    });
+    console.log(`Auto-created chat room for order: ${order._id}`);
+    return room;
+  } catch (err) {
+    console.error("Error auto-creating chat room:", err.message);
+  }
+};
+
 /* ================= PLACE ORDER (COD) ================= */
 const placeOrder = async (req, res) => {
   try {
@@ -98,6 +131,9 @@ const placeOrder = async (req, res) => {
 
     // Auto-assign delivery agent
     await autoAssignDeliveryAgent(order._id);
+
+    // Auto-create chat room
+    await createChatRoomForOrder(order);
 
     res.json({
       success: true,
@@ -231,6 +267,10 @@ const verifyStripe = async (req, res) => {
       }
       // Auto-assign delivery agent
       await autoAssignDeliveryAgent(orderId);
+      // Auto-create chat room
+      if (order) {
+        await createChatRoomForOrder(order);
+      }
       // Try generating invoice if conditions are met
       await checkAndGenerateInvoice(orderId);
       res.json({ success: true, message: "Payment Verified Successfully" });
@@ -337,6 +377,10 @@ const verifyRazorpay = async (req, res) => {
       }
       // Auto-assign delivery agent
       await autoAssignDeliveryAgent(orderId);
+      // Auto-create chat room
+      if (order) {
+        await createChatRoomForOrder(order);
+      }
       // Try generating invoice if conditions are met
       await checkAndGenerateInvoice(orderId);
       return res.json({ success: true, message: "Payment Verified Successfully" });
@@ -356,6 +400,10 @@ const verifyRazorpay = async (req, res) => {
       }
       // Auto-assign delivery agent
       await autoAssignDeliveryAgent(orderId);
+      // Auto-create chat room
+      if (order) {
+        await createChatRoomForOrder(order);
+      }
       // Try generating invoice if conditions are met
       await checkAndGenerateInvoice(orderId);
       res.json({ success: true, message: "Payment Verified Successfully" });
@@ -524,6 +572,25 @@ const cancelOrder = async (req, res) => {
   }
 };
 
+/* ================= USER: GET ORDER BY ID ================= */
+const getOrderById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const order = await orderModel.findById(id);
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
+
+    if (order.userId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: "Unauthorized access to order details" });
+    }
+
+    res.json({ success: true, order });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 export {
   placeOrder,
   placeOrderStripe,
@@ -534,4 +601,5 @@ export {
   verifyStripe,
   verifyRazorpay,
   cancelOrder,
+  getOrderById,
 };
