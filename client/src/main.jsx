@@ -1,9 +1,11 @@
+import { backendUrl } from "./config";
+
 window.onerror = function (message, source, lineno, colno, error) {
   const errInfo = {
     message: `${message} at ${source}:${lineno}:${colno}`,
     stack: error ? error.stack : ""
   };
-  fetch("http://localhost:4000/api/log", {
+  fetch(`${backendUrl}/api/log`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(errInfo)
@@ -15,7 +17,7 @@ window.onunhandledrejection = function (event) {
     message: `Unhandled rejection: ${event.reason}`,
     stack: event.reason && event.reason.stack ? event.reason.stack : ""
   };
-  fetch("http://localhost:4000/api/log", {
+  fetch(`${backendUrl}/api/log`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(errInfo)

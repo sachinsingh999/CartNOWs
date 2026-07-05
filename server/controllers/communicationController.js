@@ -208,10 +208,12 @@ export const sendMessage = async (req, res) => {
       message: sanitizedMessage,
       status
     });
+    console.log(`[REST Message] Message successfully saved to database. MessageID: ${msg._id}, Sender: ${senderName} (Role: ${senderRole}), Room: ${room._id} [Message Sent]`);
 
     // Broadcast message via socket.io
     const io = req.app.get("socketio");
     if (io) {
+      console.log(`[Socket Broadcast] Emitting receive_message event to room: order_${order._id} [Message Received]`);
       io.to(`order_${order._id}`).emit("receive_message", msg);
 
       // Notification broadcast
@@ -272,10 +274,12 @@ export const initiateCall = async (req, res) => {
       status: "initiated",
       duration: 0
     });
+    console.log(`[REST Call] Call successfully initiated in database. CallID: ${call._id}, OrderID: ${order._id}, Caller: ${req.userId} (${callerRole}) calling Receiver: ${receiverId} (${receiverRole}) [Call Started]`);
 
     // Broadcast calling notification to socket room
     const io = req.app.get("socketio");
     if (io) {
+      console.log(`[Socket Broadcast] Emitting REST incoming_call notification log to room: order_${order._id}`);
       io.to(`order_${order._id}`).emit("incoming_call", {
         orderId: order._id,
         callId: call._id,

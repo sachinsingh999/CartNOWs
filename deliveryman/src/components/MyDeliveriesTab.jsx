@@ -191,7 +191,17 @@ const MyDeliveriesTab = ({
 
   const socketRef = useRef(null);
   const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
   const chatModalOpenRef = useRef(chatModalOpen);
+
+  const scrollToBottom = () => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior: "smooth"
+      });
+    }
+  };
 
   useEffect(() => {
     chatModalOpenRef.current = chatModalOpen;
@@ -208,6 +218,7 @@ const MyDeliveriesTab = ({
     const socketUrl = backendUrl.startsWith("http") ? backendUrl : window.location.origin;
     const socket = io(socketUrl, {
       auth: { token },
+      transports: ["websocket", "polling"],
       reconnection: true,
       reconnectionAttempts: Infinity,
       reconnectionDelay: 1000
@@ -222,11 +233,28 @@ const MyDeliveriesTab = ({
     if (socket.connected) {
       handleJoinRoom();
     }
-    socket.on("connect", handleJoinRoom);
+    socket.on("connect", () => {
+      console.log(`[Socket Connected] Socket ID: ${socket.id} (User: ${myId})`);
+      console.log(`[ROOM JOIN REQUEST] Requesting to join room for order: ${orderId}`);
+      handleJoinRoom();
+    });
+
+    socket.on("disconnect", (reason) => {
+      console.log(`[Socket Disconnected] Reason: ${reason}`);
+    });
+
+    socket.on("connect_error", (error) => {
+      console.error(`[Socket Connection Error] Message: ${error.message}`);
+    });
 
     socket.on("room_joined", () => {
-      console.log(`Successfully joined secure communication room for order: ${orderId}`);
+      console.log(`[ROOM JOIN SUCCESS] Successfully joined secure communication room for order: ${orderId}`);
       socket.emit("mark_seen", { orderId });
+    });
+
+    socket.on("room_error", (err) => {
+      console.error(`[ROOM JOIN FAILURE] Socket room connection error: ${err.message}`);
+      toast.error(err.message || "Failed to join communication channel.");
     });
 
     socket.on("receive_message", (msg) => {
@@ -234,11 +262,7 @@ const MyDeliveriesTab = ({
         if (prev.some((m) => m._id === msg._id)) return prev;
         return [...prev, msg];
       });
-      setTimeout(() => {
-        if (messagesEndRef.current) {
-          messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-        }
-      }, 50);
+      setTimeout(scrollToBottom, 50);
 
       const isMe = myId && String(msg.senderId) === String(myId);
 
@@ -429,7 +453,7 @@ const MyDeliveriesTab = ({
     return () => {
       socket.disconnect();
     };
-  }, [nextOrder, token]);
+  }, [nextOrder?._id, token]);
 
   // Load chat history when modal opens
   useEffect(() => {
@@ -449,11 +473,7 @@ const MyDeliveriesTab = ({
         );
         if (response.data.success) {
           setChatMessages(response.data.messages || []);
-          setTimeout(() => {
-            if (messagesEndRef.current) {
-              messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-            }
-          }, 100);
+          setTimeout(scrollToBottom, 100);
         }
       } catch (error) {
         console.error("Error loading chat history:", error);
@@ -2210,7 +2230,7 @@ const MyDeliveriesTab = ({
             </div>
             
             {/* Message Pane */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50 dark:bg-slate-900/40">
+            <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50 dark:bg-slate-900/40">
               {chatMessages.map((msg, i) => {
                 const myId = getUserIdFromToken(token);
                 const isMe = myId && String(msg.senderId) === String(myId);

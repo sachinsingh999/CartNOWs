@@ -105,7 +105,7 @@ const SingleOrderDetail = () => {
   });
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 text-left select-none">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-left select-none">
       
       {/* Back button */}
       <button
@@ -240,6 +240,9 @@ const SingleOrderDetail = () => {
               })}
             </div>
           </div>
+
+          {/* Secure Chat & Calling Widget */}
+          <OrderCommunication orderId={orderId} />
         </div>
 
         <div 
@@ -306,9 +309,6 @@ const SingleOrderDetail = () => {
               </div>
             </div>
           </div>
-
-          {/* Secure Chat Widget console panel */}
-          <OrderCommunication orderId={orderId} />
 
         </div>
       </div>

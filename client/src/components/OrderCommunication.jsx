@@ -136,6 +136,7 @@ const OrderCommunication = ({ orderId }) => {
 
   const socketRef = useRef(null);
   const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
   const token = localStorage.getItem("token") || "";
 
   // 1. Fetch communication permissions status
@@ -195,6 +196,7 @@ const OrderCommunication = ({ orderId }) => {
     const socketUrl = backendUrl.startsWith("http") ? backendUrl : window.location.origin;
     const socket = io(socketUrl, {
       auth: { token },
+      transports: ["websocket", "polling"],
       reconnection: true,
       reconnectionAttempts: Infinity,
       reconnectionDelay: 1000
@@ -209,16 +211,28 @@ const OrderCommunication = ({ orderId }) => {
     if (socket.connected) {
       handleJoinRoom();
     }
-    socket.on("connect", handleJoinRoom);
+    socket.on("connect", () => {
+      console.log(`[Socket Connected] Socket ID: ${socket.id} (User: ${myId})`);
+      console.log(`[ROOM JOIN REQUEST] Requesting to join room for order: ${orderId}`);
+      handleJoinRoom();
+    });
+
+    socket.on("disconnect", (reason) => {
+      console.log(`[Socket Disconnected] Reason: ${reason}`);
+    });
+
+    socket.on("connect_error", (error) => {
+      console.error(`[Socket Connection Error] Message: ${error.message}`);
+    });
 
     socket.on("room_joined", () => {
-      console.log(`Successfully joined secure communication room for order: ${orderId}`);
+      console.log(`[ROOM JOIN SUCCESS] Successfully joined secure communication room for order: ${orderId}`);
       // Mark messages as seen since we just joined/rejoined
       socket.emit("mark_seen", { orderId });
     });
 
     socket.on("room_error", (err) => {
-      console.error("Socket room connection error:", err.message);
+      console.error(`[ROOM JOIN FAILURE] Socket room connection error: ${err.message}`);
       toast.error(err.message || "Failed to join communication channel.");
     });
 
@@ -430,7 +444,12 @@ const OrderCommunication = ({ orderId }) => {
   // Symmetrical call timer is now managed in connection callback
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior: "smooth"
+      });
+    }
   };
 
   const handleInputChange = (e) => {
@@ -970,17 +989,17 @@ const OrderCommunication = ({ orderId }) => {
   }
 
   return (
-    <div className="border border-slate-200/80 dark:border-slate-800/80 rounded-2xl bg-white dark:bg-slate-950 overflow-hidden flex flex-col h-[480px] shadow-sm select-none shrink-0 transition-all duration-300">
+    <div className="border border-slate-200/50 dark:border-slate-850 rounded-2xl bg-white dark:bg-slate-950 overflow-hidden flex flex-col h-[490px] shadow-lg shadow-slate-100 dark:shadow-none select-none shrink-0 transition-all duration-300">
       
       {/* 1. Header with details & call stub */}
-      <div className="bg-slate-900 text-white px-4 py-3 flex justify-between items-center shrink-0">
+      <div className="bg-linear-to-r from-indigo-600 via-indigo-700 to-indigo-800 text-white px-4.5 py-3.5 flex justify-between items-center shrink-0 shadow-md shadow-indigo-900/5">
         <div className="flex items-center gap-2">
           <ShieldCheck size={18} className={status.locked ? "text-slate-400" : "text-emerald-400 animate-pulse"} />
           <div className="text-left">
             <h4 className="text-[11px] font-extrabold uppercase tracking-wider leading-none">
               {status.locked ? "Chat Channel Closed" : "Secure Chat Channel"}
             </h4>
-            <p className="text-[9px] text-slate-400 font-medium mt-0.5">
+            <p className="text-[9px] text-indigo-200/70 font-medium mt-0.5">
               {status.locked ? "Archived (Read Only)" : "Encrypted & secure"}
             </p>
           </div>
@@ -1025,65 +1044,33 @@ const OrderCommunication = ({ orderId }) => {
         )}
       </div>
 
-      {/* 2. Redesigned Segments Select tabs */}
-      {status.role === "customer" && !status.locked && (
-        <div className="flex border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 shrink-0">
-          <button
-            onClick={() => {
-              setActiveTab("delivery");
-              fetchMessages(1, false);
-            }}
-            disabled={!status.canChatDeliveryman}
-            className={`flex-1 py-3 text-center text-[10px] font-black uppercase tracking-wider transition-all border-b-2 cursor-pointer ${
-              activeTab === "delivery"
-                ? "text-[#4f46e5] dark:text-indigo-400 border-[#4f46e5]"
-                : "text-slate-400 dark:text-slate-500 hover:text-slate-600 border-transparent bg-transparent"
-            }`}
-          >
-            DELIVERY PARTNER
-          </button>
-          <button
-            onClick={() => {
-              setActiveTab("support");
-              fetchMessages(1, false);
-            }}
-            className={`flex-1 py-3 text-center text-[10px] font-black uppercase tracking-wider transition-all border-b-2 cursor-pointer ${
-              activeTab === "support"
-                ? "text-[#4f46e5] dark:text-indigo-400 border-[#4f46e5]"
-                : "text-slate-400 dark:text-slate-500 hover:text-slate-600 border-transparent bg-transparent"
-            }`}
-          >
-            SELLER SUPPORT
-          </button>
-        </div>
-      )}
 
       {/* 3. Delivery Partner / Support Executive Status Card */}
       {!status.locked && (
-        <div className="flex items-center gap-3 px-4 py-3 bg-white dark:bg-slate-950 border-b border-slate-100 dark:border-slate-900 shrink-0">
+        <div className="flex items-center gap-3 px-4.5 py-2.5 bg-slate-50/50 dark:bg-slate-950/40 border-b border-slate-100 dark:border-slate-900 shrink-0">
           {/* Circular Avatar */}
           <div className="relative">
-            <div className="h-10 w-10 rounded-full bg-indigo-50 dark:bg-indigo-950/30 flex items-center justify-center text-[#4f46e5] dark:text-indigo-400 font-black text-sm uppercase border border-indigo-100 dark:border-indigo-900/50">
+            <div className="h-9 w-9 rounded-full bg-indigo-50 dark:bg-indigo-950/20 flex items-center justify-center text-[#4f46e5] dark:text-indigo-400 font-black text-xs uppercase border border-indigo-100/50 dark:border-indigo-900/30">
               {(activeTab === "delivery" ? status.deliverymanName : status.sellerName)?.charAt(0) || "P"}
             </div>
             {/* Online indicator dot */}
-            <span className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white dark:border-slate-950 ${partnerOnline ? "bg-emerald-500 animate-pulse" : "bg-slate-300 dark:bg-slate-700"}`} />
+            <span className={`absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white dark:border-slate-950 ${partnerOnline ? "bg-emerald-500 animate-pulse" : "bg-slate-300 dark:bg-slate-700"}`} />
           </div>
 
           {/* Partner Details */}
           <div className="flex-1 text-left min-w-0">
-            <div className="flex items-center gap-1.5">
-              <span className={`h-1.5 w-1.5 rounded-full ${partnerOnline ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`} />
-              <span className={`text-[10px] font-bold ${partnerOnline ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400"} uppercase tracking-wide`}>
-                {activeTab === "delivery" ? status.deliverymanName : status.sellerName} is {partnerOnline ? "online" : "offline"}
-              </span>
-            </div>
-            <h5 className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5 truncate uppercase tracking-wide">
-              {activeTab === "delivery" ? status.deliverymanName : status.sellerName}
-              <span className="text-[10px] text-slate-400 font-bold ml-1.5 tracking-normal uppercase">
-                • {activeTab === "delivery" ? "Delivery Executive" : "Seller Support"}
+            <h5 className="text-xs font-extrabold text-slate-800 dark:text-slate-200 truncate uppercase tracking-wide flex items-center gap-1.5">
+              <span>{activeTab === "delivery" ? status.deliverymanName : status.sellerName}</span>
+              <span className="text-[8px] bg-slate-100 dark:bg-slate-900 text-slate-450 dark:text-slate-500 font-bold px-1.5 py-0.5 rounded-md tracking-wider uppercase border border-slate-205 dark:border-slate-800/40">
+                {activeTab === "delivery" ? "Delivery Executive" : "Support"}
               </span>
             </h5>
+            <div className="flex items-center gap-1 mt-0.5">
+              <span className={`h-1.5 w-1.5 rounded-full ${partnerOnline ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`} />
+              <span className="text-[8.5px] font-bold text-slate-400 uppercase tracking-wider">
+                {partnerOnline ? "Active now" : "Offline"}
+              </span>
+            </div>
           </div>
 
           {/* Typing status */}
@@ -1094,7 +1081,7 @@ const OrderCommunication = ({ orderId }) => {
       )}
 
       {/* 4. Messages scroll container */}
-      <div className="flex-1 p-3.5 overflow-y-auto space-y-3.5 bg-slate-50/30 dark:bg-slate-950/20">
+      <div ref={messagesContainerRef} className="flex-1 p-3.5 overflow-y-auto space-y-3.5 bg-slate-50/30 dark:bg-slate-950/20">
         {hasMore && (
           <button
             onClick={() => fetchMessages(page + 1, true)}
@@ -1106,38 +1093,52 @@ const OrderCommunication = ({ orderId }) => {
         )}
 
         {messages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-slate-300 dark:text-slate-600 p-4">
-            <MessageSquare size={24} className="stroke-1 mb-2 animate-bounce" />
-            <p className="text-[10px] font-bold">No messages in room.</p>
+          <div className="h-full flex flex-col items-center justify-center text-slate-350 dark:text-slate-700 p-4">
+            <MessageSquare size={20} className="stroke-1.5 mb-2 text-indigo-400 animate-pulse" />
+            <p className="text-[10px] font-extrabold uppercase tracking-wider">Start a secure conversation</p>
           </div>
         ) : (
           messages.map((m) => {
             const myId = getUserIdFromToken(token);
             const isMe = myId && String(m.senderId) === String(myId);
+            const isSystemMsg = m.message && m.message.startsWith("[System]");
+
+            if (isSystemMsg) {
+              const displayMsg = m.message.replace("[System] ", "");
+              return (
+                <div key={m._id} className="flex justify-center my-3 animate-fade-in">
+                  <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200/40 dark:border-slate-800/60 rounded-full px-3.5 py-1 text-[8.5px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest shadow-xs flex items-center gap-1.5 select-none">
+                    {m.message.toLowerCase().includes("video") ? <Video size={10} /> : <Phone size={10} />}
+                    <span>{displayMsg}</span>
+                  </div>
+                </div>
+              );
+            }
+
             return (
-              <div key={m._id} className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}>
-                <div className="flex items-center gap-1.5 mb-0.5 text-[8.5px] font-black text-slate-400">
+              <div key={m._id} className={`flex flex-col space-y-0.5 ${isMe ? "items-end" : "items-start"} animate-fade-in`}>
+                <div className="flex items-center gap-1 px-1 text-[8px] font-bold tracking-wider text-slate-455 dark:text-slate-500 uppercase">
                   <span>{m.senderName}</span>
-                  <span className="text-[7.5px] font-semibold">({m.senderRole})</span>
+                  <span className="text-[7px] text-slate-350 dark:text-slate-650">({m.senderRole})</span>
                 </div>
                 <div
-                  className={`max-w-[75%] rounded-2xl px-3.5 py-2 text-xs font-semibold leading-normal ${
+                  className={`max-w-[72%] rounded-2xl px-3.5 py-2 text-xs font-semibold leading-relaxed shadow-sm transition ${
                     isMe
-                      ? "bg-[#4f46e5] text-white rounded-tr-none shadow-xs"
-                      : "bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 rounded-tl-none border border-slate-200/50 dark:border-slate-800 shadow-xs"
+                      ? "bg-linear-to-br from-indigo-500 to-[#4f46e5] text-white rounded-tr-none"
+                      : "bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 rounded-tl-none border border-slate-200/50 dark:border-slate-800/80"
                   }`}
                 >
                   {m.message}
                 </div>
                 
-                <div className="flex items-center gap-1 mt-0.5">
-                  <span className="text-[7px] text-slate-400 dark:text-slate-500 font-semibold">
+                <div className="flex items-center gap-1 px-1.5 mt-0.5 text-[7px] text-slate-400 font-bold select-none">
+                  <span>
                     {new Date(m.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   </span>
                   {isMe && (
-                    <span className="text-[9px] leading-none">
+                    <span className="text-[8px] leading-none">
                       {m.status === "seen" ? (
-                        <span className="text-[#4f46e5] font-black">✓✓</span>
+                        <span className="text-[#4f46e5] dark:text-indigo-400 font-black">✓✓</span>
                       ) : m.status === "delivered" ? (
                         <span className="text-slate-400 font-black">✓✓</span>
                       ) : (
