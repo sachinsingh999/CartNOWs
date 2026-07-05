@@ -218,7 +218,7 @@ const MyDeliveriesTab = ({
     const socketUrl = backendUrl.startsWith("http") ? backendUrl : window.location.origin;
     const socket = io(socketUrl, {
       auth: { token },
-      transports: ["polling", "websocket"],
+      transports: ["websocket"],
       reconnection: true,
       reconnectionAttempts: Infinity,
       reconnectionDelay: 1000

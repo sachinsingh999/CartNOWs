@@ -11,7 +11,9 @@ const useSocketProgress = (userId) => {
     if (!userId) return;
 
     // Establish Socket.io connection
-    const socket = io(backendUrl);
+    const socket = io(backendUrl, {
+      transports: ["websocket"]
+    });
     socketRef.current = socket;
 
     socket.on("connect", () => {

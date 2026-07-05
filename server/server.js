@@ -21,6 +21,8 @@ import { bannerRouter, adminBannerRouter } from "./routers/bannerRouter.js";
 import { dealOfDayRouter, adminDealOfDayRouter } from "./routers/dealOfDayRouter.js";
 import { createServer } from "http";
 import { Server } from "socket.io";
+import { createAdapter } from "@socket.io/redis-adapter";
+import IORedis from "ioredis";
 import { startTryOnWorker } from "./workers/tryOnWorker.js";
 import maintenanceMiddleware from "./middleware/maintenanceMiddleware.js";
 import systemRouter from "./routers/systemRouter.js";
@@ -103,10 +105,41 @@ app.get("/", (req, res) => {
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: "*",
-    methods: ["GET", "POST"]
+    origin: [
+      "https://cartnow-omega.vercel.app",
+      "https://cart-now-deliveryagent.vercel.app",
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "http://localhost:5175",
+      "http://localhost:5176"
+    ],
+    methods: ["GET", "POST"],
+    credentials: true
   }
 });
+
+// Setup Redis Adapter for multi-instance horizontal scaling
+if (process.env.REDIS_URL) {
+  try {
+    const pubClient = new IORedis(process.env.REDIS_URL, {
+      maxRetriesPerRequest: null,
+      showFriendlyErrorStack: false
+    });
+    const subClient = pubClient.duplicate();
+    
+    // Suppress errors on Redis adapter clients to prevent crash
+    pubClient.on("error", (err) => {});
+    subClient.on("error", (err) => {});
+    
+    io.adapter(createAdapter(pubClient, subClient));
+    console.log("[Socket.IO] Redis adapter successfully configured.");
+  } catch (err) {
+    console.error("[Socket.IO] Failed to configure Redis adapter:", err);
+  }
+} else {
+  console.log("[Socket.IO] REDIS_URL not set. Falling back to default in-memory adapter.");
+}
+
 app.set("socketio", io);
 const onlineUsers = new Map();
 app.set("onlineUsers", onlineUsers);
