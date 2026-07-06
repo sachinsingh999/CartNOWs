@@ -23,7 +23,6 @@ import { createServer } from "http";
 import { startTryOnWorker } from "./workers/tryOnWorker.js";
 import maintenanceMiddleware from "./middleware/maintenanceMiddleware.js";
 import systemRouter from "./routers/systemRouter.js";
-import { startCleanupCron } from "./utils/cloudinaryCron.js";
 import communicationRouter from "./routers/communicationRouter.js";
 import { initSocketServer } from "./socket/socketServer.js";
 
@@ -121,9 +120,6 @@ app.get("/api/socket-debug", async (req, res) => {
 
 // start worker
 startTryOnWorker(io);
-
-// Start Cloudinary storage cleanup scheduler
-startCleanupCron();
 
 // start server
 httpServer.listen(port, () => {
