@@ -223,7 +223,7 @@ export const sendMessage = async (req, res) => {
       console.log("=================================");
 
       console.log(`[Socket Broadcast] Emitting receive_message event to room: ${roomName} [Message Received]`);
-      io.to(roomName).emit("receive_message", msg);
+      io.to(roomName).emit("receive_message", msg.toObject());
 
       // Notification broadcast
       io.to(roomName).emit("new_notification", {

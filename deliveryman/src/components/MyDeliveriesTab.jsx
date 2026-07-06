@@ -29,6 +29,28 @@ const getUserIdFromToken = (token) => {
   }
 };
 
+const mergeAndDeduplicate = (existingMessages, newMessages) => {
+  const mergedMap = new Map();
+
+  existingMessages.forEach((msg, index) => {
+    const key = msg._id || `${msg.senderId}_${msg.createdAt || msg.time || ""}_${index}`;
+    mergedMap.set(key, msg);
+  });
+
+  newMessages.forEach((msg, index) => {
+    const key = msg._id || `${msg.senderId}_${msg.createdAt || msg.time || ""}_${index}`;
+    mergedMap.set(key, msg);
+  });
+
+  return Array.from(mergedMap.values()).sort((a, b) => {
+    const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+    const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+    if (timeA !== timeB) return timeA - timeB;
+    if (a._id && b._id) return String(a._id).localeCompare(String(b._id));
+    return 0;
+  });
+};
+
 const MyDeliveriesTab = ({
   token,
   driver,
@@ -265,10 +287,7 @@ const MyDeliveriesTab = ({
     socket.on("receive_message", (msg) => {
       console.log("🔥 RECEIVE_MESSAGE EVENT (Deliveryman Client)");
       console.log(msg);
-      setChatMessages((prev) => {
-        if (prev.some((m) => m._id === msg._id)) return prev;
-        return [...prev, msg];
-      });
+      setChatMessages((prev) => mergeAndDeduplicate(prev, [msg]));
       setTimeout(scrollToBottom, 50);
 
       const isMe = myId && String(msg.senderId) === String(myId);
@@ -449,7 +468,7 @@ const MyDeliveriesTab = ({
               { headers: { token } }
             );
             if (response.data.success) {
-              setChatMessages(response.data.messages || []);
+              setChatMessages((prev) => mergeAndDeduplicate(prev, response.data.messages || []));
             }
           } catch (e) {}
         };
@@ -479,7 +498,7 @@ const MyDeliveriesTab = ({
           { headers: { token } }
         );
         if (response.data.success) {
-          setChatMessages(response.data.messages || []);
+          setChatMessages((prev) => mergeAndDeduplicate(prev, response.data.messages || []));
           setTimeout(scrollToBottom, 100);
         }
       } catch (error) {

@@ -21,6 +21,28 @@ const getUserIdFromToken = (token) => {
   }
 };
 
+const mergeAndDeduplicate = (existingMessages, newMessages) => {
+  const mergedMap = new Map();
+
+  existingMessages.forEach((msg, index) => {
+    const key = msg._id || `${msg.senderId}_${msg.createdAt || msg.time || ""}_${index}`;
+    mergedMap.set(key, msg);
+  });
+
+  newMessages.forEach((msg, index) => {
+    const key = msg._id || `${msg.senderId}_${msg.createdAt || msg.time || ""}_${index}`;
+    mergedMap.set(key, msg);
+  });
+
+  return Array.from(mergedMap.values()).sort((a, b) => {
+    const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+    const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+    if (timeA !== timeB) return timeA - timeB;
+    if (a._id && b._id) return String(a._id).localeCompare(String(b._id));
+    return 0;
+  });
+};
+
 const OrderCommunication = ({ orderId }) => {
   const [status, setStatus] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -166,12 +188,8 @@ const OrderCommunication = ({ orderId }) => {
       );
 
       if (response.data.success) {
-        const fetched = response.data.messages;
-        if (append) {
-          setMessages((prev) => [...fetched, ...prev]);
-        } else {
-          setMessages(fetched);
-        }
+        const fetched = response.data.messages || [];
+        setMessages((prev) => mergeAndDeduplicate(prev, fetched));
         setHasMore(response.data.total > pageNum * 15);
         setPage(pageNum);
       }
@@ -239,11 +257,7 @@ const OrderCommunication = ({ orderId }) => {
     socket.on("receive_message", (msg) => {
       console.log("🔥 RECEIVE_MESSAGE EVENT (Customer Client)");
       console.log(msg);
-      // Append message so state is updated
-      setMessages((prev) => {
-        if (prev.some((m) => m._id === msg._id)) return prev;
-        return [...prev, msg];
-      });
+      setMessages((prev) => mergeAndDeduplicate(prev, [msg]));
       setTimeout(scrollToBottom, 50);
 
       const isMe = myId && String(msg.senderId) === String(myId);
