@@ -214,7 +214,6 @@ export const sendMessage = async (req, res) => {
     console.log(`[REST Message] Message successfully saved to database. MessageID: ${msg._id}, Sender: ${senderName} (Role: ${senderRole}), Room: ${room._id} [Message Sent]`);
 
     // Broadcast message via socket.io
-    const io = req.app.get("socketio");
     if (io) {
       const roomName = `order_${order._id.toString()}`;
       const room = io.sockets.adapter.rooms.get(roomName);
