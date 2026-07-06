@@ -20,21 +20,12 @@ import tryOnRouter from "./routers/tryOnRouter.js";
 import { bannerRouter, adminBannerRouter } from "./routers/bannerRouter.js";
 import { dealOfDayRouter, adminDealOfDayRouter } from "./routers/dealOfDayRouter.js";
 import { createServer } from "http";
-import { Server } from "socket.io";
-import { createAdapter } from "@socket.io/redis-adapter";
-import IORedis from "ioredis";
 import { startTryOnWorker } from "./workers/tryOnWorker.js";
 import maintenanceMiddleware from "./middleware/maintenanceMiddleware.js";
 import systemRouter from "./routers/systemRouter.js";
 import { startCleanupCron } from "./utils/cloudinaryCron.js";
-import jwt from "jsonwebtoken";
-import orderModel from "./models/orderModel.js";
-import sellerModel from "./models/sellerModel.js";
-import deliverymanModel from "./models/deliverymanModel.js";
-import { canCommunicate } from "./utils/communicationHelper.js";
 import communicationRouter from "./routers/communicationRouter.js";
-import chatRoomModel from "./models/chatRoomModel.js";
-import chatMessageModel from "./models/chatMessageModel.js";
+import { initSocketServer } from "./socket/socketServer.js";
 
 // Validate critical environment variables
 if (!process.env.JWT_SECRET) {
@@ -101,293 +92,31 @@ app.get("/", (req, res) => {
   res.send("API Working");
 });
 
+app.get("/test-deploy", (req, res) => {
+  res.send("Deploy Success V4 - cluster dynamic presence and room broadcast");
+});
+
 // Setup server and socket.io
 const httpServer = createServer(app);
-const io = new Server(httpServer, {
-  cors: {
-    origin: [
-      "https://cartnow-omega.vercel.app",
-      "https://cart-now-deliveryagent.vercel.app",
-      "http://localhost:5173",
-      "http://localhost:5174",
-      "http://localhost:5175",
-      "http://localhost:5176"
-    ],
-    methods: ["GET", "POST"],
-    credentials: true
-  }
-});
+const io = initSocketServer(httpServer, app);
 
-// Setup Redis Adapter for multi-instance horizontal scaling
-if (process.env.REDIS_URL) {
+app.get("/api/socket-debug", async (req, res) => {
   try {
-    const pubClient = new IORedis(process.env.REDIS_URL, {
-      maxRetriesPerRequest: null,
-      showFriendlyErrorStack: false
+    const socketio = req.app.get("socketio");
+    const allSockets = await socketio.fetchSockets();
+    const socketsData = allSockets.map(s => ({
+      id: s.id,
+      userId: s.userId,
+      rooms: [...s.rooms]
+    }));
+    res.json({
+      success: true,
+      socketsCount: socketsData.length,
+      sockets: socketsData
     });
-    const subClient = pubClient.duplicate();
-    
-    // Suppress errors on Redis adapter clients to prevent crash
-    pubClient.on("error", (err) => {});
-    subClient.on("error", (err) => {});
-    
-    io.adapter(createAdapter(pubClient, subClient));
-    console.log("[Socket.IO] Redis adapter successfully configured.");
   } catch (err) {
-    console.error("[Socket.IO] Failed to configure Redis adapter:", err);
+    res.status(500).json({ success: false, error: err.message });
   }
-} else {
-  console.log("[Socket.IO] REDIS_URL not set. Falling back to default in-memory adapter.");
-}
-
-app.set("socketio", io);
-const onlineUsers = new Map();
-app.set("onlineUsers", onlineUsers);
-
-// JWT Authentication middleware before socket connection
-io.use((socket, next) => {
-  try {
-    const token = socket.handshake.auth?.token || socket.handshake.query?.token;
-    if (!token) {
-      return next(new Error("Authentication error. Token missing."));
-    }
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    socket.userId = decoded.id || decoded._id;
-    next();
-  } catch (err) {
-    console.error("Socket Auth Error:", err.message);
-    return next(new Error("Authentication error. Invalid token."));
-  }
-});
-
-// Registry to track online users is set in app settings above
-
-io.on("connection", (socket) => {
-  console.log(`[Socket Connection] Connected: ${socket.id} (User: ${socket.userId})`);
-
-  // Track user online status in registry
-  const userIdStr = String(socket.userId);
-  if (!onlineUsers.has(userIdStr)) {
-    onlineUsers.set(userIdStr, new Set());
-  }
-  onlineUsers.get(userIdStr).add(socket.id);
-  socket.join(userIdStr); // Auto-join personal room for cluster-wide presence tracking
-
-  socket.on("join", (userId) => {
-    socket.join(userId);
-    console.log(`[Socket Room] Socket ${socket.id} joined personal room: ${userId}`);
-  });
-
-  // Secure room joining with DB validation
-  socket.on("join_order_room", async ({ orderId }) => {
-    try {
-      if (!orderId) {
-        return socket.emit("room_error", { message: "Invalid order ID." });
-      }
-
-      const order = await orderModel.findById(orderId);
-      if (!order) {
-        return socket.emit("room_error", { message: "Order not found." });
-      }
-
-      // Resolve roles and query DB to match current socket userId
-      const userId = socket.userId;
-      let role = "customer";
-
-      const seller = await sellerModel.findById(userId);
-      if (seller) {
-        role = "seller";
-      } else {
-        const deliveryman = await deliverymanModel.findById(userId);
-        if (deliveryman) {
-          role = "deliveryman";
-        }
-      }
-
-      const participant = canCommunicate(order, role, userId);
-      if (!participant) {
-        console.warn(`[Socket Security] Unauthorized room join blocked for user ${userId} (Role: ${role}) on order ${orderId}`);
-        return socket.emit("room_error", { message: "Access denied. Not a participant of this order." });
-      }
-
-      console.log("=================================");
-      console.log("JOIN REQUEST ROOM ID:", orderId);
-      console.log("USER ID:", socket.userId);
-      console.log("SOCKET ID:", socket.id);
-      console.log("=================================");
-
-      const roomName = `order_${orderId}`;
-      socket.join(roomName);
-
-      console.log("ROOMS FOR SOCKET AFTER JOIN:", [...socket.rooms]);
-
-      console.log(`[Socket Room] Socket ${socket.id} (User: ${userId}, Role: ${role}) joined room: ${roomName}`);
-      socket.emit("room_joined", { orderId });
-
-      // Notify the room that user has joined / is online (use io.to to broadcast across cluster nodes)
-      io.to(roomName).emit("user_online", { userId, role });
-
-      // Determine if partner is online across all cluster nodes
-      let partnerOnline = false;
-      let partnerRole = "";
-      let partnerIdStr = "";
-
-      if (role === "customer") {
-        partnerRole = "deliveryman";
-        partnerIdStr = order.deliverymanId ? String(order.deliverymanId) : "";
-      } else if (role === "deliveryman") {
-        partnerRole = "customer";
-        partnerIdStr = order.userId ? String(order.userId) : "";
-      }
-
-      console.log(`[Socket Presence Debug] Checking presence for partner: ${partnerIdStr} (Role: ${partnerRole})`);
-      if (partnerIdStr) {
-        const partnerSockets = await io.in(partnerIdStr).fetchSockets();
-        console.log(`[Socket Presence Debug] Sockets found in room ${partnerIdStr}:`, partnerSockets.map(s => s.id));
-        if (partnerSockets.length > 0) {
-          partnerOnline = true;
-        }
-      }
-
-      if (partnerOnline) {
-        socket.emit("partner_presence", { online: true, partnerRole });
-        // Also notify the partner that the current user is online
-        io.to(partnerIdStr).emit("partner_presence", { online: true, partnerRole: role });
-      } else {
-        socket.emit("partner_presence", { online: false, partnerRole });
-      }
-    } catch (err) {
-      console.error("[Socket Room Error] join_order_room failed:", err);
-      socket.emit("room_error", { message: "Failed to join order room." });
-    }
-  });
-
-  // Handle typing indicator broadcast
-  socket.on("typing", ({ orderId, isTyping }) => {
-    if (!orderId) return;
-    const roomName = `order_${orderId}`;
-    socket.to(roomName).emit("typing_status", {
-      userId: socket.userId,
-      isTyping
-    });
-  });
-
-  // Handle message seen receipts
-  socket.on("mark_seen", async ({ orderId }) => {
-    try {
-      if (!orderId) return;
-      const room = await chatRoomModel.findOne({ orderId });
-      if (!room) return;
-
-      const roomName = `order_${orderId}`;
-      
-      const result = await chatMessageModel.updateMany(
-        {
-          roomId: room._id,
-          senderId: { $ne: socket.userId },
-          status: { $ne: "seen" }
-        },
-        { $set: { status: "seen" } }
-      );
-
-      if (result.modifiedCount > 0) {
-        console.log(`[Socket Messages] Marked ${result.modifiedCount} messages as SEEN in order ${orderId} by user ${socket.userId}`);
-        io.to(roomName).emit("messages_seen", {
-          orderId,
-          seenBy: socket.userId
-        });
-      }
-    } catch (err) {
-      console.error("[Socket Message Error] mark_seen failed:", err);
-    }
-  });
-
-  // WebRTC Signaling: Relay SDP offer to recipient
-  socket.on("call_user", async ({ offer, to, orderId, type, callId, callerName }) => {
-    console.log(`[Socket Call] [Offer Sent] call_user event from ${socket.id} (User: ${socket.userId}) targeting ${to} for order ${orderId}`);
-    
-    // Relay offer directly to the target user's personal room across all cluster nodes
-    io.to(String(to)).emit("incoming_call", {
-      offer,
-      from: socket.userId,
-      callerName: callerName || (socket.userId === String(to) ? "Delivery Partner" : "Customer"),
-      orderId,
-      type,
-      callId
-    });
-  });
-
-  // WebRTC Signaling: Relay ringing notification back to caller
-  socket.on("ringing", ({ to, orderId }) => {
-    console.log(`[Socket Call] [Ringing Sent] ringing event from ${socket.id} (User: ${socket.userId}) targeting ${to}`);
-    io.to(String(to)).emit("ringing", { orderId });
-  });
-
-  // WebRTC Signaling: Relay SDP answer to caller
-  socket.on("call_accepted", ({ answer, to, orderId }) => {
-    console.log(`[Socket Call] [Answer Sent/Accepted] call_accepted from ${socket.id} (User: ${socket.userId}) targeting ${to}`);
-    io.to(String(to)).emit("call_accepted", { answer, orderId });
-  });
-
-  // WebRTC Signaling: Relay ICE Candidate
-  socket.on("ice_candidate", ({ candidate, to, orderId }) => {
-    console.log(`[Socket Call] [ICE Candidate Sent] ice_candidate from ${socket.id} (User: ${socket.userId}) targeting ${to}`);
-    io.to(String(to)).emit("ice_candidate", { candidate, orderId });
-  });
-
-  // WebRTC Signaling: Relay End Call event
-  socket.on("end_call", ({ to, orderId }) => {
-    console.log(`[Socket Call] [Call Ended Sent] end_call from ${socket.id} (User: ${socket.userId}) targeting ${to}`);
-    io.to(String(to)).emit("end_call", { orderId });
-  });
-
-  // WebRTC Signaling: Relay Call Rejected event
-  socket.on("call_rejected", ({ to, orderId }) => {
-    console.log(`[Socket Call] [Call Rejected Sent] call_rejected from ${socket.id} (User: ${socket.userId}) targeting ${to}`);
-    io.to(String(to)).emit("call_rejected", { orderId });
-  });
-
-  // WebRTC Signaling: Relay Call Busy event
-  socket.on("call_busy", ({ to, orderId }) => {
-    console.log(`[Socket Call] [Call Busy Sent] call_busy from ${socket.id} (User: ${socket.userId}) targeting ${to}`);
-    io.to(String(to)).emit("call_busy", { orderId });
-  });
-
-  // WebRTC Signaling: Relay Call Timeout event
-  socket.on("call_timeout", ({ to, orderId }) => {
-    console.log(`[Socket Call] [Call Timeout Sent] call_timeout from ${socket.id} (User: ${socket.userId}) targeting ${to}`);
-    io.to(String(to)).emit("call_timeout", { orderId });
-  });
-
-  // WebRTC Signaling: Relay Call Failed event
-  socket.on("call_failed", ({ to, orderId }) => {
-    console.log(`[Socket Call] [Call Failed Sent] call_failed from ${socket.id} (User: ${socket.userId}) targeting ${to}`);
-    io.to(String(to)).emit("call_failed", { orderId });
-  });
-
-  // Handle socket disconnecting to capture rooms
-  socket.on("disconnecting", () => {
-    for (const room of socket.rooms) {
-      if (room.startsWith("order_")) {
-        console.log(`[Socket Room] Socket ${socket.id} (User: ${socket.userId}) left room: ${room} [Room Left]`);
-        io.to(room).emit("user_offline", {
-          userId: socket.userId
-        });
-      }
-    }
-  });
-
-  socket.on("disconnect", () => {
-    console.log("[Socket Disconnection] Socket closed:", socket.id);
-    const sockets = onlineUsers.get(userIdStr);
-    if (sockets) {
-      sockets.delete(socket.id);
-      if (sockets.size === 0) {
-        onlineUsers.delete(userIdStr);
-        console.log(`[Socket Presence] User ${userIdStr} went completely offline.`);
-      }
-    }
-  });
 });
 
 // start worker

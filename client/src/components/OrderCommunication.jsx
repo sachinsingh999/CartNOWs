@@ -293,19 +293,22 @@ const OrderCommunication = ({ orderId }) => {
     });
 
     // Real-Time User Presence Status
-    socket.on("user_online", ({ userId }) => {
+    socket.on("user_online", ({ userId, role }) => {
+      console.log(`[Socket Presence] user_online event received: userId=${userId}, role=${role}`);
       if (String(userId) !== String(myId)) {
         setPartnerOnline(true);
       }
     });
 
     socket.on("user_offline", ({ userId }) => {
+      console.log(`[Socket Presence] user_offline event received: userId=${userId}`);
       if (String(userId) !== String(myId)) {
         setPartnerOnline(false);
       }
     });
 
-    socket.on("partner_presence", ({ online }) => {
+    socket.on("partner_presence", ({ online, partnerRole }) => {
+      console.log(`[Socket Presence] partner_presence event received: online=${online}, partnerRole=${partnerRole}`);
       setPartnerOnline(online);
     });
 
