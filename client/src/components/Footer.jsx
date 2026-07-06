@@ -85,6 +85,7 @@ const Footer = () => {
               <div className="relative overflow-hidden rounded-lg border border-slate-800 bg-slate-950/40 w-10 h-10 transition-all duration-300 group-hover:scale-105 group-hover:shadow-[0_0_12px_rgba(249,115,22,0.15)]">
                 <Logo
                   variant="icon"
+                  forceWhite={true}
                   className="h-full w-full p-1 text-slate-100 dark:text-white transition-transform duration-300 group-hover:scale-105"
                 />
               </div>

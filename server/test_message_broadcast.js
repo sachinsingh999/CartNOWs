@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import axios from "axios";
 
 const JWT_SECRET = "sachinsingh";
-const backendUrl = "https://cartnow.onrender.com";
+const backendUrl = "https://cartnows.onrender.com";
 const orderId = "6a4b6c9ab068c6d12ee4941a";
 
 const customerId = "6a0f36e952dbb8d7694cb5d5";

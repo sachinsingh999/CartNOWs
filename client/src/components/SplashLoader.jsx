@@ -131,7 +131,10 @@ const SplashLoader = ({ stage, onComplete }) => {
           initial="initial"
           className="flex items-center justify-center relative z-10"
         >
-          <Logo className="h-13 sm:h-15 w-auto text-slate-100 dark:text-white splash-logo-active" />
+          <Logo 
+            forceWhite={true}
+            className="h-13 sm:h-15 w-auto text-slate-100 dark:text-white splash-logo-active" 
+          />
         </motion.div>
 
         {/* Minimalist horizontal progress bar */}
