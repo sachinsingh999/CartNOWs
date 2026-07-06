@@ -240,8 +240,10 @@ io.on("connection", (socket) => {
         partnerIdStr = order.userId ? String(order.userId) : "";
       }
 
+      console.log(`[Socket Presence Debug] Checking presence for partner: ${partnerIdStr} (Role: ${partnerRole})`);
       if (partnerIdStr) {
         const partnerSockets = await io.in(partnerIdStr).fetchSockets();
+        console.log(`[Socket Presence Debug] Sockets found in room ${partnerIdStr}:`, partnerSockets.map(s => s.id));
         if (partnerSockets.length > 0) {
           partnerOnline = true;
         }
