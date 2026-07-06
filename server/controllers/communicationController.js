@@ -186,8 +186,8 @@ export const sendMessage = async (req, res) => {
 
     // Determine if message is delivered immediately (recipient is online)
     let status = "sent";
-    const onlineUsers = req.app.get("onlineUsers");
-    if (onlineUsers) {
+    const io = req.app.get("socketio");
+    if (io) {
       let partnerId = null;
       if (senderRole === "customer") {
         partnerId = order.deliverymanId;
@@ -195,8 +195,11 @@ export const sendMessage = async (req, res) => {
         partnerId = order.userId;
       }
 
-      if (partnerId && onlineUsers.has(String(partnerId))) {
-        status = "delivered";
+      if (partnerId) {
+        const partnerSockets = await io.in(String(partnerId)).fetchSockets();
+        if (partnerSockets.length > 0) {
+          status = "delivered";
+        }
       }
     }
 
