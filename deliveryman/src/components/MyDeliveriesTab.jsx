@@ -1032,6 +1032,57 @@ const MyDeliveriesTab = ({
     }
   };
 
+  const handleShareLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation is not supported by your browser.");
+      return;
+    }
+
+    if (!nextOrder || !token) return;
+    const orderId = nextOrder._id;
+
+    const toastId = toast.info("Fetching your location coordinates...", { autoClose: false });
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        toast.dismiss(toastId);
+        
+        try {
+          await axios.post(
+            `${backendUrl}/api/order-communication/${orderId}/message`,
+            {
+              receiverRole: "customer",
+              message: `[Location] https://www.google.com/maps?q=${latitude},${longitude}`
+            },
+            { headers: { token } }
+          );
+          toast.success("Location shared successfully!");
+        } catch (error) {
+          console.error("Error sending location:", error);
+          toast.error(error.response?.data?.message || "Failed to send location.");
+        }
+      },
+      (error) => {
+        toast.dismiss(toastId);
+        let errorMsg = "Failed to retrieve location.";
+        if (error.code === error.PERMISSION_DENIED) {
+          errorMsg = "Location access permission denied.";
+        } else if (error.code === error.POSITION_UNAVAILABLE) {
+          errorMsg = "Location information is unavailable.";
+        } else if (error.code === error.TIMEOUT) {
+          errorMsg = "Request to get location timed out.";
+        }
+        toast.error(errorMsg);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
+  };
+
   const handleReportSubmit = (e) => {
     e.preventDefault();
     alert(`Issue reported: ${reportIssueType}\nNotes: ${reportNotes || "None"}`);
@@ -2266,10 +2317,66 @@ const MyDeliveriesTab = ({
                 const timeStr = msg.createdAt 
                   ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
                   : (msg.time || "");
+                const msgText = msg.message || msg.text || "";
+                const isLocationMsg = msgText.startsWith("[Location]");
+
+                if (isLocationMsg) {
+                  const url = msgText.replace("[Location] ", "");
+                  const coordMatch = url.match(/q=(-?\d+\.\d+),(-?\d+\.\d+)/);
+                  const coordsLabel = coordMatch ? `${parseFloat(coordMatch[1]).toFixed(4)}°, ${parseFloat(coordMatch[2]).toFixed(4)}°` : "View on Map";
+
+                  return (
+                    <div key={msg._id || i} className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}>
+                      {/* Premium Location Card */}
+                      <div
+                        className={`p-3 rounded-2xl max-w-[80%] text-xs font-semibold shadow-xs border transition ${
+                          isMe 
+                            ? "bg-slate-900 border-slate-800 text-white rounded-tr-none" 
+                            : "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-tl-none"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 mb-2 pb-2 border-b border-slate-250 dark:border-slate-800/60 select-none">
+                          <div className="h-7 w-7 rounded-lg bg-orange-500/10 text-orange-400 flex items-center justify-center shrink-0">
+                            <MapPin size={14} className="animate-bounce" />
+                          </div>
+                          <div className="text-left">
+                            <div className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none">Shared Location</div>
+                            <div className="text-[10px] font-extrabold mt-0.5 tracking-tight text-slate-300 dark:text-slate-450">{coordsLabel}</div>
+                          </div>
+                        </div>
+                        
+                        <a
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#4f46e5] hover:bg-[#4338ca] text-white rounded-lg text-[9px] font-black uppercase tracking-wider transition-colors duration-200"
+                        >
+                          <MapPin size={10} className="stroke-[2.5]" />
+                          <span>Open Google Maps</span>
+                        </a>
+                      </div>
+                      <div className="flex items-center gap-1 mt-1">
+                        <span className="text-[8px] text-slate-400 font-bold">{timeStr}</span>
+                        {isMe && (
+                          <span className="text-[9px] leading-none">
+                            {msg.status === "seen" ? (
+                              <span className="text-blue-500 font-black">✓✓</span>
+                            ) : msg.status === "delivered" ? (
+                              <span className="text-slate-400 font-black">✓✓</span>
+                            ) : (
+                              <span className="text-slate-400">✓</span>
+                            )}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                }
+
                 return (
                   <div key={msg._id || i} className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}>
                     <div className={`p-2.5 rounded-2xl max-w-[80%] text-xs font-semibold leading-normal ${ isMe ? "bg-[#4f46e5] text-slate-100 dark:text-white rounded-tr-none shadow-xs" : "bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-tl-none shadow-xs" }`}>
-                      {msg.message || msg.text}
+                      {msgText}
                     </div>
                     <div className="flex items-center gap-1 mt-1">
                       <span className="text-[8px] text-slate-400 font-bold">{timeStr}</span>
@@ -2306,6 +2413,16 @@ const MyDeliveriesTab = ({
                     className="h-8 w-8 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800 flex items-center justify-center text-slate-400 cursor-pointer border-none shrink-0"
                   >
                     <Paperclip size={14} />
+                  </button>
+
+                  {/* Share Location Button */}
+                  <button
+                    type="button"
+                    onClick={handleShareLocation}
+                    title="Share Location"
+                    className="h-8 w-8 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-orange-500 transition cursor-pointer border-none shrink-0"
+                  >
+                    <MapPin size={14} />
                   </button>
 
                   {/* Text Input */}

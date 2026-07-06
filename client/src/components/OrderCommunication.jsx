@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import axios from "axios";
 import io from "socket.io-client";
 import { backendUrl } from "../config";
-import { MessageSquare, Phone, Send, ShieldCheck, X, ChevronDown, ChevronUp, Clock, User, PhoneCall, Volume2, VolumeX, Video, VideoOff, Mic, MicOff, PhoneOff, Paperclip, Lock } from "lucide-react";
+import { MessageSquare, Phone, Send, ShieldCheck, X, ChevronDown, ChevronUp, Clock, User, PhoneCall, Volume2, VolumeX, Video, VideoOff, Mic, MicOff, PhoneOff, Paperclip, Lock, MapPin } from "lucide-react";
 import { toast } from "react-toastify";
 
 const getUserIdFromToken = (token) => {
@@ -524,6 +524,67 @@ const OrderCommunication = ({ orderId }) => {
     } finally {
       setSending(false);
     }
+  };
+
+  const handleShareLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation is not supported by your browser.");
+      return;
+    }
+
+    const toastId = toast.info("Fetching your location coordinates...", { autoClose: false });
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        toast.dismiss(toastId);
+        
+        try {
+          setSending(true);
+          
+          let receiverRole = "deliveryman";
+          if (status.role === "customer") {
+            receiverRole = activeTab === "delivery" ? "deliveryman" : "seller";
+          } else if (status.role === "seller") {
+            receiverRole = activeTab === "delivery" ? "deliveryman" : "customer";
+          } else if (status.role === "deliveryman") {
+            receiverRole = activeTab === "delivery" ? "customer" : "seller";
+          }
+
+          const response = await axios.post(
+            `${backendUrl}/api/order-communication/${orderId}/message`,
+            { receiverRole, message: `[Location] https://www.google.com/maps?q=${latitude},${longitude}` },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+
+          if (response.data.success) {
+            toast.success("Location shared successfully!");
+            scrollToBottom();
+          }
+        } catch (error) {
+          toast.error(error.response?.data?.message || "Failed to transmit location.");
+        } finally {
+          setSending(false);
+        }
+      },
+      (error) => {
+        toast.dismiss(toastId);
+        let errorMsg = "Failed to retrieve location.";
+        if (error.code === error.PERMISSION_DENIED) {
+          errorMsg = "Location access permission denied.";
+        } else if (error.code === error.POSITION_UNAVAILABLE) {
+          errorMsg = "Location information is unavailable.";
+        } else if (error.code === error.TIMEOUT) {
+          errorMsg = "Request to get location timed out.";
+        }
+        toast.error(errorMsg);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
   };
 
   // Cleanup WebRTC resources on unmount
@@ -1121,6 +1182,7 @@ const OrderCommunication = ({ orderId }) => {
             const myId = getUserIdFromToken(token);
             const isMe = myId && String(m.senderId) === String(myId);
             const isSystemMsg = m.message && m.message.startsWith("[System]");
+            const isLocationMsg = m.message && m.message.startsWith("[Location]");
 
             if (isSystemMsg) {
               const displayMsg = m.message.replace("[System] ", "");
@@ -1129,6 +1191,67 @@ const OrderCommunication = ({ orderId }) => {
                   <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200/40 dark:border-slate-800/60 rounded-full px-3.5 py-1 text-[8.5px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest shadow-xs flex items-center gap-1.5 select-none">
                     {m.message.toLowerCase().includes("video") ? <Video size={10} /> : <Phone size={10} />}
                     <span>{displayMsg}</span>
+                  </div>
+                </div>
+              );
+            }
+
+            if (isLocationMsg) {
+              const url = m.message.replace("[Location] ", "");
+              const coordMatch = url.match(/q=(-?\d+\.\d+),(-?\d+\.\d+)/);
+              const coordsLabel = coordMatch ? `${parseFloat(coordMatch[1]).toFixed(4)}°, ${parseFloat(coordMatch[2]).toFixed(4)}°` : "View on Map";
+
+              return (
+                <div key={m._id} className={`flex flex-col space-y-0.5 ${isMe ? "items-end" : "items-start"} animate-fade-in`}>
+                  <div className="flex items-center gap-1 px-1 text-[8px] font-bold tracking-wider text-slate-455 dark:text-slate-500 uppercase">
+                    <span>{m.senderName}</span>
+                    <span className="text-[7px] text-slate-350 dark:text-slate-650">({m.senderRole})</span>
+                  </div>
+                  
+                  {/* Premium Location Card */}
+                  <div
+                    className={`max-w-[72%] rounded-2xl p-3 text-xs font-semibold shadow-sm transition border ${
+                      isMe
+                        ? "bg-slate-900 border-slate-800 text-white rounded-tr-none"
+                        : "bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 rounded-tl-none border-slate-200/50 dark:border-slate-800/80"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-2 pb-2 border-b border-slate-250 dark:border-slate-800/60 select-none">
+                      <div className="h-7 w-7 rounded-lg bg-orange-500/10 text-orange-400 flex items-center justify-center shrink-0">
+                        <MapPin size={14} className="animate-bounce" />
+                      </div>
+                      <div className="text-left">
+                        <div className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none">Shared Location</div>
+                        <div className="text-[10px] font-extrabold mt-0.5 tracking-tight text-slate-300 dark:text-slate-450">{coordsLabel}</div>
+                      </div>
+                    </div>
+                    
+                    <a
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#4f46e5] hover:bg-[#4338ca] text-white rounded-lg text-[9px] font-black uppercase tracking-wider transition-colors duration-200"
+                    >
+                      <MapPin size={10} className="stroke-[2.5]" />
+                      <span>Open Google Maps</span>
+                    </a>
+                  </div>
+                  
+                  <div className="flex items-center gap-1 px-1.5 mt-0.5 text-[7px] text-slate-400 font-bold select-none">
+                    <span>
+                      {new Date(m.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                    {isMe && (
+                      <span className="text-[8px] leading-none">
+                        {m.status === "seen" ? (
+                          <span className="text-[#4f46e5] dark:text-indigo-400 font-black">✓✓</span>
+                        ) : m.status === "delivered" ? (
+                          <span className="text-slate-400 font-black">✓✓</span>
+                        ) : (
+                          <span className="text-slate-400">✓</span>
+                        )}
+                      </span>
+                    )}
                   </div>
                 </div>
               );
@@ -1188,6 +1311,17 @@ const OrderCommunication = ({ orderId }) => {
               className="h-8 w-8 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800 flex items-center justify-center text-slate-400 cursor-pointer border-none shrink-0"
             >
               <Paperclip size={14} />
+            </button>
+
+            {/* Share Location Button */}
+            <button
+              type="button"
+              onClick={handleShareLocation}
+              disabled={sending}
+              title="Share Location"
+              className="h-8 w-8 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-orange-500 transition cursor-pointer border-none shrink-0"
+            >
+              <MapPin size={14} />
             </button>
 
             {/* Text Input */}
