@@ -258,6 +258,8 @@ const MyDeliveriesTab = ({
     });
 
     socket.on("receive_message", (msg) => {
+      console.log("🔥 RECEIVE_MESSAGE EVENT (Deliveryman Client)");
+      console.log(msg);
       setChatMessages((prev) => {
         if (prev.some((m) => m._id === msg._id)) return prev;
         return [...prev, msg];

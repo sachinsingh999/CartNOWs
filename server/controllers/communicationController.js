@@ -213,11 +213,20 @@ export const sendMessage = async (req, res) => {
     // Broadcast message via socket.io
     const io = req.app.get("socketio");
     if (io) {
-      console.log(`[Socket Broadcast] Emitting receive_message event to room: order_${order._id.toString()} [Message Received]`);
-      io.to(`order_${order._id.toString()}`).emit("receive_message", msg);
+      const roomName = `order_${order._id.toString()}`;
+      const room = io.sockets.adapter.rooms.get(roomName);
+
+      console.log("=================================");
+      console.log("ROOM NAME:", roomName);
+      console.log("ROOM SIZE:", room?.size || 0);
+      console.log("ROOM MEMBERS:", room ? [...room] : []);
+      console.log("=================================");
+
+      console.log(`[Socket Broadcast] Emitting receive_message event to room: ${roomName} [Message Received]`);
+      io.to(roomName).emit("receive_message", msg);
 
       // Notification broadcast
-      io.to(`order_${order._id.toString()}`).emit("new_notification", {
+      io.to(roomName).emit("new_notification", {
         type: "message",
         message: sanitizedMessage,
         senderId: msg.senderId,

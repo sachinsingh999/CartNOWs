@@ -209,8 +209,17 @@ io.on("connection", (socket) => {
         return socket.emit("room_error", { message: "Access denied. Not a participant of this order." });
       }
 
+      console.log("=================================");
+      console.log("JOIN REQUEST ROOM ID:", orderId);
+      console.log("USER ID:", socket.userId);
+      console.log("SOCKET ID:", socket.id);
+      console.log("=================================");
+
       const roomName = `order_${orderId}`;
       socket.join(roomName);
+
+      console.log("ROOMS FOR SOCKET AFTER JOIN:", [...socket.rooms]);
+
       console.log(`[Socket Room] Socket ${socket.id} (User: ${userId}, Role: ${role}) joined room: ${roomName}`);
       socket.emit("room_joined", { orderId });
 

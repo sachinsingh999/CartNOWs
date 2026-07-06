@@ -237,6 +237,8 @@ const OrderCommunication = ({ orderId }) => {
     });
 
     socket.on("receive_message", (msg) => {
+      console.log("🔥 RECEIVE_MESSAGE EVENT (Customer Client)");
+      console.log(msg);
       // Append message so state is updated
       setMessages((prev) => {
         if (prev.some((m) => m._id === msg._id)) return prev;
