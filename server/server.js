@@ -224,8 +224,8 @@ io.on("connection", (socket) => {
       console.log(`[Socket Room] Socket ${socket.id} (User: ${userId}, Role: ${role}) joined room: ${roomName}`);
       socket.emit("room_joined", { orderId });
 
-      // Notify the room that user has joined / is online
-      socket.to(roomName).emit("user_online", { userId, role });
+      // Notify the room that user has joined / is online (use io.to to broadcast across cluster nodes)
+      io.to(roomName).emit("user_online", { userId, role });
 
       // Determine if partner is online across all cluster nodes
       let partnerOnline = false;
@@ -251,6 +251,10 @@ io.on("connection", (socket) => {
 
       if (partnerOnline) {
         socket.emit("partner_presence", { online: true, partnerRole });
+        // Also notify the partner that the current user is online
+        io.to(partnerIdStr).emit("partner_presence", { online: true, partnerRole: role });
+      } else {
+        socket.emit("partner_presence", { online: false, partnerRole });
       }
     } catch (err) {
       console.error("[Socket Room Error] join_order_room failed:", err);
@@ -366,7 +370,7 @@ io.on("connection", (socket) => {
     for (const room of socket.rooms) {
       if (room.startsWith("order_")) {
         console.log(`[Socket Room] Socket ${socket.id} (User: ${socket.userId}) left room: ${room} [Room Left]`);
-        socket.to(room).emit("user_offline", {
+        io.to(room).emit("user_offline", {
           userId: socket.userId
         });
       }
