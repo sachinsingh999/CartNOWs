@@ -763,9 +763,9 @@ const Product = () => {
       
 
 
-      {/* ── Sticky Glass Control Bar ── */}
+      {/* ── Sticky Control Bar ── */}
       <div 
-        className="sticky z-30 bg-white/70 dark:bg-slate-950/75 backdrop-blur-lg border-b border-slate-200/40 dark:border-slate-800/40 py-4 shadow-[0_8px_30px_rgba(0,0,0,0.02)] transition-all duration-300"
+        className="sticky z-30 bg-white dark:bg-slate-950 border-b border-slate-200/40 dark:border-slate-800/40 py-4 shadow-[0_8px_30px_rgba(0,0,0,0.02)] transition-all duration-300"
         style={{ top: "var(--navbar-height, 80px)" }}
       >
         <div className="max-w-full mx-auto px-4 sm:px-8 lg:px-12 flex flex-col md:flex-row md:items-center justify-between gap-4">

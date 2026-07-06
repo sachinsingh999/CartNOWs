@@ -94,7 +94,7 @@ const App = () => {
       window.removeEventListener("resize", updateHeight);
       clearTimeout(timer);
     };
-  }, []);
+  }, [showSplash]);
 
   useEffect(() => {
     const checkMaintenance = async () => {

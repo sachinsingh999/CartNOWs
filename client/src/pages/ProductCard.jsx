@@ -169,7 +169,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
         
         {/* Discount Tag on Top Left (Matches screenshot: -30%) */}
         {originalVal > product.price && (
-          <div className="absolute top-3 left-3 bg-[#F43F5E] text-slate-100 dark:text-white px-2 py-0.5 rounded-[4px] text-[10px] font-black tracking-tighter z-30 shadow-xs">
+          <div className="absolute top-3 left-3 bg-[#F43F5E] text-slate-100 dark:text-white px-2 py-0.5 rounded-[4px] text-[10px] font-black tracking-tighter z-10 shadow-xs">
             -{discountPercent}%
           </div>
         )}
@@ -178,7 +178,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
         <button
           type="button"
           onClick={toggleFavorite}
-          className="absolute top-3 right-3 h-8 w-8 bg-white/90 dark:bg-slate-900/90 rounded-full flex items-center justify-center shadow-xs cursor-pointer hover:scale-105 active:scale-95 z-30"
+          className="absolute top-3 right-3 h-8 w-8 bg-white/90 dark:bg-slate-900/90 rounded-full flex items-center justify-center shadow-xs cursor-pointer hover:scale-105 active:scale-95 z-10"
         >
           <Heart
             size={14}
@@ -188,7 +188,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
 
         {/* Dynamic Rating Overlay (Myntra Style: 4.3 ★ | 1.5k) */}
         {averageRating > 0 && (
-          <div className="absolute bottom-2.5 left-2.5 bg-white/90 dark:bg-slate-900/90 px-1.5 py-0.5 rounded-[2px] text-[10px] font-black text-slate-800 dark:text-slate-200 flex items-center gap-1 z-25 shadow-xs border border-slate-200/20">
+          <div className="absolute bottom-2.5 left-2.5 bg-white/90 dark:bg-slate-900/90 px-1.5 py-0.5 rounded-[2px] text-[10px] font-black text-slate-800 dark:text-slate-200 flex items-center gap-1 z-10 shadow-xs border border-slate-200/20">
             <span>{averageRating.toFixed(1)}</span>
             <span className="text-[9px] text-teal-600 dark:text-teal-400">★</span>
             <span className="text-slate-300 dark:text-slate-700">|</span>
@@ -217,7 +217,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
         </div>
 
         {/* Quick Actions Hover Drawer (Slides up from bottom) */}
-        <div className="absolute bottom-0 left-0 right-0 p-2.5 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out bg-gradient-to-t from-slate-900/70 to-transparent backdrop-blur-xs flex items-center justify-center gap-2 z-30 select-none">
+        <div className="absolute bottom-0 left-0 right-0 p-2.5 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out bg-gradient-to-t from-slate-900/70 to-transparent backdrop-blur-xs flex items-center justify-center gap-2 z-10 select-none">
           <button
             type="button"
             disabled={isOOS}
@@ -300,7 +300,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
           type="button"
           disabled={isOOS}
           onClick={handleAddToCart}
-          className={`sm:hidden mt-2 w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all duration-200 active:scale-95 cursor-pointer border-none select-none z-20 ${ isOOS ? "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed" : "bg-[#F43F5E] text-slate-100 dark:text-white shadow-sm shadow-[#F43F5E]/10" }`}
+          className={`sm:hidden mt-2 w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all duration-200 active:scale-95 cursor-pointer border-none select-none z-10 ${ isOOS ? "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed" : "bg-[#F43F5E] text-slate-100 dark:text-white shadow-sm shadow-[#F43F5E]/10" }`}
         >
           <ShoppingCart size={11} className="stroke-[2.5]" />
           <span>{isOOS ? "Sold Out" : "Add to Cart"}</span>
