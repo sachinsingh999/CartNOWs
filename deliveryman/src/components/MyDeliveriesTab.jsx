@@ -209,6 +209,11 @@ const MyDeliveriesTab = ({
 
   // Persistent Socket Connection for background notifications
   useEffect(() => {
+    console.log("🔌 SOCKET CONNECTION EFFECT RUNNING:", { 
+      nextOrderExists: !!nextOrder, 
+      nextOrderId: nextOrder?._id, 
+      tokenExists: !!token 
+    });
     if (!nextOrder || !token) return;
 
     const orderId = nextOrder._id;
