@@ -70,6 +70,31 @@ const Cart = () => {
 
       const items = [];
 
+      const uniqueIds = [];
+      for (const key in cartData) {
+        if (cartData[key] > 0) {
+          const firstUnderscoreIdx = key.indexOf("_");
+          const itemId = firstUnderscoreIdx !== -1 ? key.substring(0, firstUnderscoreIdx) : key;
+          if (!uniqueIds.includes(itemId)) {
+            uniqueIds.push(itemId);
+          }
+        }
+      }
+
+      let bulkProductsMap = {};
+      if (uniqueIds.length > 0) {
+        try {
+          const bulkRes = await axios.post(`${backendUrl}/api/product/bulk`, { ids: uniqueIds });
+          if (bulkRes.data.success && bulkRes.data.products) {
+            bulkRes.data.products.forEach(p => {
+              bulkProductsMap[p._id] = p;
+            });
+          }
+        } catch (e) {
+          console.error("Failed to load bulk products for cart:", e);
+        }
+      }
+
       for (const key in cartData) {
         const firstUnderscoreIdx = key.indexOf("_");
         const itemId = firstUnderscoreIdx !== -1 ? key.substring(0, firstUnderscoreIdx) : key;
@@ -77,48 +102,40 @@ const Cart = () => {
         const qty = cartData[key];
 
         if (qty > 0) {
-          try {
-            const productRes = await axios.get(
-              `${backendUrl}/api/product/single/${itemId}`
-            );
+          const prod = bulkProductsMap[itemId];
+          if (prod) {
+            let itemPrice = prod.price;
+            let itemStock = prod.stock;
+            let itemSku = prod.sku;
 
-            if (productRes.data.success && productRes.data.product) {
-              const prod = productRes.data.product;
-              let itemPrice = prod.price;
-              let itemStock = prod.stock;
-              let itemSku = prod.sku;
-
-              if (prod.variants && prod.variants.length > 0 && size && size.includes(":")) {
-                const selectedAttributes = {};
-                size.split(",").forEach(pair => {
-                  const [k, v] = pair.split(":");
-                  if (k && v) selectedAttributes[k] = v;
-                });
-
-                const match = prod.variants.find(variant => {
-                  return Object.keys(selectedAttributes).every(k => variant.attributes?.[k] === selectedAttributes[k]);
-                });
-
-                if (match) {
-                  itemPrice = match.price;
-                  itemStock = match.stock;
-                  itemSku = match.sku;
-                }
-              }
-
-              items.push({
-                itemId,
-                size,
-                qty,
-                product: prod,
-                price: itemPrice,
-                stock: itemStock,
-                sku: itemSku,
-                selected: true,
+            if (prod.variants && prod.variants.length > 0 && size && size.includes(":")) {
+              const selectedAttributes = {};
+              size.split(",").forEach(pair => {
+                const [k, v] = pair.split(":");
+                if (k && v) selectedAttributes[k] = v;
               });
+
+              const match = prod.variants.find(variant => {
+                return Object.keys(selectedAttributes).every(k => variant.attributes?.[k] === selectedAttributes[k]);
+              });
+
+              if (match) {
+                itemPrice = match.price;
+                itemStock = match.stock;
+                itemSku = match.sku;
+              }
             }
-          } catch (err) {
-            console.log(`Failed to load cart item ${itemId}:`, err);
+
+            items.push({
+              itemId,
+              size,
+              qty,
+              product: prod,
+              price: itemPrice,
+              stock: itemStock,
+              sku: itemSku,
+              selected: true,
+            });
           }
         }
       }

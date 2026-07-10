@@ -124,7 +124,23 @@ const addProducts = async (req, res) => {
 
 const listProducts = async (req, res) => {
   try {
-    const { category, categories, subCategory, collection, audience, brand, price, rating, q, search, attributes, location, discount, availability } = req.query;
+    let { category, categories, subCategory, collection, audience, brand, price, rating, q, search, attributes, location, discount, availability } = req.query;
+
+    const safeString = (val) => {
+      if (!val) return "";
+      const str = typeof val === "string" ? val : String(val);
+      return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    };
+
+    category = safeString(category);
+    subCategory = safeString(subCategory);
+    collection = safeString(collection);
+    audience = safeString(audience);
+    brand = safeString(brand);
+    location = safeString(location);
+    q = safeString(q);
+    search = safeString(search);
+
     const searchTerm = search || q;
 
     // Build core query
@@ -726,6 +742,79 @@ const singleProduct = async (req, res) => {
     res.status(500).json({
       success: false,
       message: error.message,
+    });
+  }
+};
+
+const bulkProducts = async (req, res) => {
+  try {
+    const { ids } = req.body;
+    if (!ids || !Array.isArray(ids)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or missing product IDs array"
+      });
+    }
+
+    const dbIds = ids.filter(id => id && mongoose.Types.ObjectId.isValid(id));
+    const mockIds = ids.filter(id => id && String(id).startsWith("mock_"));
+
+    const products = await productModel.find({ _id: { $in: dbIds } });
+    const formatted = [];
+
+    for (const prod of products) {
+      const pObj = prod.toObject();
+      const dynAttrs = {};
+      if (prod.specifications) {
+        prod.specifications.forEach(s => {
+          dynAttrs[s.key] = s.value;
+        });
+      }
+      pObj.dynamicAttributes = dynAttrs;
+
+      const media = await listingMediaModel.find({ listingId: prod._id }).sort({ displayOrder: 1 });
+      pObj.media = media;
+
+      formatted.push(formatProductResponse(pObj));
+    }
+
+    if (mockIds.length > 0) {
+      const mockProducts = [
+        {
+          _id: "mock_eb_1",
+          name: "boAt Airdopes 141 Wireless Earbuds",
+          price: 1299,
+          originalPrice: 2990,
+          images: ["https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=600&auto=format&fit=crop&q=80"],
+          brand: "boAt",
+          category: "electronics",
+          stock: 15,
+          sizes: ["Standard"],
+          rating: 4.5,
+          specifications: []
+        }
+      ];
+      mockIds.forEach(mId => {
+        const found = mockProducts.find(p => p._id === mId);
+        if (found) {
+          formatted.push({
+            ...found,
+            image: found.images[0],
+            dynamicAttributes: {}
+          });
+        }
+      });
+    }
+
+    res.json({
+      success: true,
+      products: formatted
+    });
+  } catch (error) {
+    console.error("Bulk products fetch error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message
     });
   }
 };
@@ -1462,6 +1551,7 @@ export {
   listProducts,
   removeProduct,
   singleProduct,
+  bulkProducts,
   addProductReview,
   updateStock,
   generateDescription,

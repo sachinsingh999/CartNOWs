@@ -22,9 +22,7 @@ const SplashLoader = ({ stage, onComplete }) => {
       if (elapsed < duration) {
         requestAnimationFrame(updateProgress);
       } else {
-        setTimeout(() => {
-          if (onComplete) onComplete();
-        }, 500); // Polished delay
+        if (onComplete) onComplete();
       }
     };
 

@@ -25,6 +25,7 @@ import maintenanceMiddleware from "./middleware/maintenanceMiddleware.js";
 import systemRouter from "./routers/systemRouter.js";
 import communicationRouter from "./routers/communicationRouter.js";
 import { initSocketServer } from "./socket/socketServer.js";
+import postRouter from "./routers/postRouter.js";
 
 // Validate critical environment variables
 if (!process.env.JWT_SECRET) {
@@ -71,6 +72,7 @@ import path from "path";
 app.use('/api/invoice', invoiceRouter);
 app.use('/invoices', express.static(path.join(process.cwd(), 'public', 'invoices')));
 app.use('/api/order-communication', communicationRouter);
+app.use('/api/social', postRouter);
 
 
 

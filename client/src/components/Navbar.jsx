@@ -471,9 +471,9 @@ const Navbar = () => {
       <header id="main-navbar-header" className="sticky top-0 z-50 w-full">
 
         {/* ── Main bar ── */}
-        <nav className="border-b border-slate-200/70 dark:border-slate-800/70 bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl shadow-[0_1px_3px_0_rgb(0,0,0,0.07)] dark:shadow-[0_4px_24px_-4px_rgba(0,0,0,0.5)]">
+        <nav className="border-b border-slate-100 dark:border-slate-900 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md shadow-xs">
           <div className="mx-auto max-w-[1400px] px-4 sm:px-6">
-            <div className="flex h-13 items-center gap-3 lg:gap-4 w-full">
+            <div className="flex h-16 items-center gap-3 lg:gap-4 w-full">
 
               {/* ── Logo ── */}
               <Link
@@ -481,17 +481,17 @@ const Navbar = () => {
                 className="group flex shrink-0 items-center select-none"
               >
                 <Logo
-                  className="h-7.5 sm:h-8.5 w-auto text-slate-900 dark:text-white transition-transform duration-300 group-hover:scale-105"
+                  className="h-8 sm:h-9 w-auto text-slate-900 dark:text-white transition-transform duration-300 group-hover:scale-105"
                 />
               </Link>
 
-              {/* ── Desktop Categories (Myntra style) ── */}
-              <div className={`hidden lg:flex items-center font-extrabold text-[12px] uppercase tracking-widest text-[#282c3f] dark:text-slate-200 shrink-0 transition-all duration-300 ease-in-out ${searchFocused ? "max-w-0 opacity-0 overflow-hidden ml-0 gap-0 pointer-events-none" : "max-w-[600px] opacity-100 ml-6 gap-6"}`}>
-                <Link to="/product?collection=men" className="hover:text-[#ff3f6c] transition-colors py-4 border-b-2 border-transparent hover:border-[#ff3f6c]">Men</Link>
-                <Link to="/product?collection=women" className="hover:text-[#ff3f6c] transition-colors py-4 border-b-2 border-transparent hover:border-[#ff3f6c]">Women</Link>
-                <Link to="/product?collection=kid" className="hover:text-[#ff3f6c] transition-colors py-4 border-b-2 border-transparent hover:border-[#ff3f6c]">Kids</Link>
-                <Link to="/product?category=electronics" className="hover:text-[#ff3f6c] transition-colors py-4 border-b-2 border-transparent hover:border-[#ff3f6c]">Electronics</Link>
-                <Link to="/product?category=beauty" className="hover:text-[#ff3f6c] transition-colors py-4 border-b-2 border-transparent hover:border-[#ff3f6c]">Beauty</Link>
+              {/* ── Desktop Categories ── */}
+              <div className={`hidden lg:flex items-center font-black text-[11px] uppercase tracking-widest text-slate-700 dark:text-slate-300 shrink-0 transition-all duration-300 ease-in-out ${searchFocused ? "max-w-0 opacity-0 overflow-hidden ml-0 gap-0 pointer-events-none" : "max-w-[600px] opacity-100 ml-6 gap-7"}`}>
+                <Link to="/product?collection=men" className="hover:text-[#ff3f6c] dark:hover:text-rose-500 transition-colors py-5 border-b-2 border-transparent hover:border-[#ff3f6c] dark:hover:border-rose-500">Men</Link>
+                <Link to="/product?collection=women" className="hover:text-[#ff3f6c] dark:hover:text-rose-500 transition-colors py-5 border-b-2 border-transparent hover:border-[#ff3f6c] dark:hover:border-rose-500">Women</Link>
+                <Link to="/product?collection=kid" className="hover:text-[#ff3f6c] dark:hover:text-rose-500 transition-colors py-5 border-b-2 border-transparent hover:border-[#ff3f6c] dark:hover:border-rose-500">Kids</Link>
+                <Link to="/product?category=electronics" className="hover:text-[#ff3f6c] dark:hover:text-rose-500 transition-colors py-5 border-b-2 border-transparent hover:border-[#ff3f6c] dark:hover:border-rose-500">Electronics</Link>
+                <Link to="/product?category=beauty" className="hover:text-[#ff3f6c] dark:hover:text-rose-500 transition-colors py-5 border-b-2 border-transparent hover:border-[#ff3f6c] dark:hover:border-rose-500">Beauty</Link>
               </div>
 
               {/* ── Desktop Search (Minimalist Capsule) ── */}
@@ -501,9 +501,9 @@ const Navbar = () => {
               >
                 <form
                   onSubmit={(e) => { e.preventDefault(); submitSearch(); }}
-                  className={`flex w-full items-center overflow-hidden rounded-md border transition-all duration-300 ${searchFocused ? "border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xs" : "border-transparent bg-slate-100 dark:bg-slate-900/60" }`}
+                  className={`flex w-full items-center overflow-hidden rounded-2xl border transition-all duration-300 ${searchFocused ? "border-indigo-500/80 dark:border-indigo-500/60 bg-white dark:bg-slate-900 shadow-xs ring-4 ring-indigo-500/5" : "border-slate-200/80 dark:border-slate-800/80 bg-slate-50/60 dark:bg-slate-900/50" }`}
                 >
-                  <Search className="ml-3 h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500" />
+                  <Search className="ml-4 h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500" />
                   <input
                     type="text"
                     value={searchValue}
@@ -513,13 +513,13 @@ const Navbar = () => {
                       setShowSuggestions(true);
                     }}
                     placeholder="Search for products, brands and more"
-                    className="h-9 w-full bg-transparent px-3 text-[11.5px] text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none font-medium"
+                    className="h-10 w-full bg-transparent px-3 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none font-medium"
                   />
                   {searchValue && (
                     <button
                       type="button"
                       onClick={() => { setSearchValue(""); setShowSuggestions(false); }}
-                      className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-300 dark:hover:bg-slate-700 transition cursor-pointer"
+                      className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-300 dark:hover:bg-slate-700 transition cursor-pointer border-none"
                     >
                       <X size={10} />
                     </button>
@@ -528,7 +528,7 @@ const Navbar = () => {
                   <button
                     type="button"
                     onClick={handleVoiceSearch}
-                    className={`mr-3 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-slate-400 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 transition cursor-pointer ${isListening ? "bg-red-500/10 text-red-500" : ""}`}
+                    className={`mr-4 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-slate-400 dark:text-slate-500 hover:bg-slate-200/50 dark:hover:bg-slate-800/60 transition cursor-pointer border-none ${isListening ? "bg-red-500/10 text-red-500" : ""}`}
                     title="Search by Voice"
                   >
                     <Mic size={13} className={isListening ? "animate-pulse" : ""} />
@@ -693,7 +693,7 @@ const Navbar = () => {
                 {/* Mobile search trigger */}
                 <button
                   onClick={() => { setMobileSearchOpen(true); setTimeout(() => mobileSearchInputRef.current?.focus(), 50); }}
-                  className="lg:hidden flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 hover:scale-105 active:scale-95 transition cursor-pointer"
+                  className="lg:hidden flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200/80 dark:border-slate-800/80 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 active:scale-95 transition-all duration-200 cursor-pointer"
                   title="Search"
                 >
                   <Search size={17} />
@@ -702,19 +702,26 @@ const Navbar = () => {
                 {/* AI Try-On */}
                 <Link
                   to="/tryon"
-                  className={`hidden sm:inline-flex items-center gap-1.5 h-9 rounded-md bg-gradient-to-r from-[#ff3f6c] to-rose-600 px-3 text-[11px] font-black uppercase tracking-wider text-slate-100 dark:text-white shadow-md shadow-rose-500/15 hover:shadow-rose-500/30 active:scale-95 transition-all duration-300 cursor-pointer select-none whitespace-nowrap border-none ${searchFocused ? "max-w-0 opacity-0 overflow-hidden px-0 py-0 mr-0 pointer-events-none" : "max-w-[150px] opacity-100"}`}
+                  className={`hidden sm:inline-flex items-center gap-1.5 h-10 rounded-2xl bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-650 hover:to-pink-600 px-4 text-[10.5px] font-black uppercase tracking-widest text-slate-100 dark:text-white shadow-sm shadow-rose-500/10 hover:shadow-rose-500/25 active:scale-95 transition-all duration-200 cursor-pointer select-none whitespace-nowrap border-none ${searchFocused ? "max-w-0 opacity-0 overflow-hidden px-0 py-0 mr-0 pointer-events-none" : "max-w-[150px] opacity-100"}`}
                 >
                   <Sparkles size={13} className="shrink-0" />
                   <span>{t("ai_tryon")}</span>
                 </Link>
 
-
+                {/* Social Feed */}
+                <Link
+                  to="/social"
+                  className={`hidden sm:inline-flex items-center gap-1.5 h-10 rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-650 hover:to-violet-700 px-4 text-[10.5px] font-black uppercase tracking-widest text-slate-100 dark:text-white shadow-sm shadow-indigo-500/10 hover:shadow-indigo-500/25 active:scale-95 transition-all duration-200 cursor-pointer select-none whitespace-nowrap border-none ${searchFocused ? "max-w-0 opacity-0 overflow-hidden px-0 py-0 mr-0 pointer-events-none" : "max-w-[150px] opacity-100"}`}
+                >
+                  <Globe size={13} className="shrink-0 text-white animate-pulse" />
+                  <span>Social Feed</span>
+                </Link>
 
                 {/* Wishlist (desktop) */}
                 <Link
                   to="/wishlist"
                   title="My Wishlist"
-                  className="hidden md:flex h-9 w-9 items-center justify-center rounded-md border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-rose-50/10 dark:hover:bg-rose-950/10 hover:border-rose-200 dark:hover:border-rose-900/40 hover:scale-105 active:scale-95 transition cursor-pointer"
+                  className="hidden md:flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200/80 dark:border-slate-800/80 text-slate-600 dark:text-slate-400 hover:bg-rose-50/15 dark:hover:bg-rose-950/15 hover:border-rose-200 dark:hover:border-rose-900/40 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
                 >
                   <Heart size={16} className="text-rose-500" />
                 </Link>
@@ -725,7 +732,7 @@ const Navbar = () => {
                     <button
                       onClick={() => setNotiOpen((p) => !p)}
                       title="Notifications"
-                      className={`relative flex h-9 w-9 items-center justify-center rounded-xl border transition cursor-pointer hover:scale-105 active:scale-95 ${notiOpen ? "border-orange-400 bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400" : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900" }`}
+                      className={`relative flex h-10 w-10 items-center justify-center rounded-2xl border transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95 ${notiOpen ? "border-orange-400 bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400" : "border-slate-200/80 dark:border-slate-800/80 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900" }`}
                     >
                       <div className="relative flex items-center justify-center h-4 w-4">
                         <Bell size={16} className={unreadCount > 0 ? "animate-wiggle" : ""} />
@@ -996,7 +1003,7 @@ const Navbar = () => {
                 {/* Cart */}
                 <Link
                   to="/cart"
-                  className="relative flex h-9 w-9 items-center justify-center rounded-md border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 hover:scale-105 active:scale-95 transition cursor-pointer"
+                  className="relative flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200/80 dark:border-slate-800/80 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
                 >
                   <ShoppingCart size={16} />
                   {cartCount > 0 && (
@@ -1012,9 +1019,9 @@ const Navbar = () => {
                 <div ref={profileRef} className="relative hidden lg:block">
                   <button
                     onClick={() => { setOpen((p) => !p); setPincodeOpen(false); }}
-                    className={`flex h-9 items-center gap-2 rounded-md border px-2.5 font-bold text-sm transition-all cursor-pointer select-none ${open ? "border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 text-slate-800 dark:text-slate-200" : "border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900" }`}
+                    className={`flex h-10 items-center gap-2 rounded-2xl border px-3.5 font-black text-xs uppercase tracking-widest transition-all duration-200 cursor-pointer select-none ${open ? "border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 text-slate-800 dark:text-slate-200" : "border-slate-200 dark:border-slate-800/80 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900" }`}
                   >
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-[#ff3f6c] to-rose-600 text-[10px] font-black text-slate-100 dark:text-white shadow-sm">
+                    <span className="flex h-6.5 w-6.5 items-center justify-center rounded-full bg-gradient-to-br from-[#ff3f6c] to-rose-600 text-[9.5px] font-black text-slate-100 dark:text-white shadow-sm ring-1 ring-white dark:ring-slate-950">
                       {token && initials ? initials : <User size={12} />}
                     </span>
                     <span className="hidden sm:block max-w-[70px] truncate capitalize text-[12px]">
@@ -1045,6 +1052,7 @@ const Navbar = () => {
                               { icon: User, label: t("profile"), to: "/profile" },
                               { icon: Package, label: t("orders"), to: "/orderdetail" },
                               { icon: Heart, label: "Wishlist", to: "/wishlist" },
+                              { icon: Globe, label: "Social Feed", to: "/social" },
                               { icon: HelpCircle, label: "Help & Support", to: "/help" },
                             ].map(({ icon: Icon, label, to }) => (
                               <button

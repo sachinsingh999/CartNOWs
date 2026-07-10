@@ -841,6 +841,32 @@ const PlaceOrder = () => {
           }
 
           const items = [];
+          
+          const uniqueIds = [];
+          for (const key in cartData) {
+            if (cartData[key] > 0) {
+              const firstUnderscoreIdx = key.indexOf("_");
+              const itemId = firstUnderscoreIdx !== -1 ? key.substring(0, firstUnderscoreIdx) : key;
+              if (!uniqueIds.includes(itemId)) {
+                uniqueIds.push(itemId);
+              }
+            }
+          }
+
+          let bulkProductsMap = {};
+          if (uniqueIds.length > 0) {
+            try {
+              const bulkRes = await axios.post(`${backendUrl}/api/product/bulk`, { ids: uniqueIds });
+              if (bulkRes.data.success && bulkRes.data.products) {
+                bulkRes.data.products.forEach(p => {
+                  bulkProductsMap[p._id] = p;
+                });
+              }
+            } catch (e) {
+              console.error("Failed to load bulk products for place order:", e);
+            }
+          }
+
           for (const key in cartData) {
             const firstUnderscoreIdx = key.indexOf("_");
             const itemId = firstUnderscoreIdx !== -1 ? key.substring(0, firstUnderscoreIdx) : key;
@@ -848,47 +874,40 @@ const PlaceOrder = () => {
             const qtyVal = cartData[key];
 
             if (qtyVal > 0) {
-              try {
-                const productRes = await axios.get(
-                  `${backendUrl}/api/product/single/${itemId}`
-                );
-                if (productRes.data.success && productRes.data.product) {
-                  const prod = productRes.data.product;
-                  let itemPrice = prod.price;
-                  let itemStock = prod.stock;
-                  let itemSku = prod.sku;
-                  let selectedAttributes = undefined;
+              const prod = bulkProductsMap[itemId];
+              if (prod) {
+                let itemPrice = prod.price;
+                let itemStock = prod.stock;
+                let itemSku = prod.sku;
+                let selectedAttributes = undefined;
 
-                  if (prod.variants && prod.variants.length > 0 && sizeVal && sizeVal.includes(":")) {
-                    selectedAttributes = {};
-                    sizeVal.split(",").forEach(pair => {
-                      const [k, v] = pair.split(":");
-                      if (k && v) selectedAttributes[k] = v;
-                    });
-
-                    const match = prod.variants.find(variant => {
-                      return Object.keys(selectedAttributes).every(k => variant.attributes?.[k] === selectedAttributes[k]);
-                    });
-
-                    if (match) {
-                      itemPrice = match.price;
-                      itemStock = match.stock;
-                      itemSku = match.sku;
-                    }
-                  }
-
-                  items.push({
-                    ...prod,
-                    price: itemPrice,
-                    stock: itemStock,
-                    sku: itemSku,
-                    qty: qtyVal,
-                    size: sizeVal || "N/A",
-                    selectedAttributes
+                if (prod.variants && prod.variants.length > 0 && sizeVal && sizeVal.includes(":")) {
+                  selectedAttributes = {};
+                  sizeVal.split(",").forEach(pair => {
+                    const [k, v] = pair.split(":");
+                    if (k && v) selectedAttributes[k] = v;
                   });
+
+                  const match = prod.variants.find(variant => {
+                    return Object.keys(selectedAttributes).every(k => variant.attributes?.[k] === selectedAttributes[k]);
+                  });
+
+                  if (match) {
+                    itemPrice = match.price;
+                    itemStock = match.stock;
+                    itemSku = match.sku;
+                  }
                 }
-              } catch (err) {
-                console.log("Failed to fetch single product details:", err);
+
+                items.push({
+                  ...prod,
+                  price: itemPrice,
+                  stock: itemStock,
+                  sku: itemSku,
+                  qty: qtyVal,
+                  size: sizeVal || "N/A",
+                  selectedAttributes
+                });
               }
             }
           }

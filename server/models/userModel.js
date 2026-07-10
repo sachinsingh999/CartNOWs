@@ -83,6 +83,16 @@ const userSchema = new mongoose.Schema({
     rating: { type: Number, default: 0 },
     comment: { type: String, default: "" },
     createdAt: { type: Date, default: Date.now }
+  },
+
+  followers: {
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
+    default: []
+  },
+
+  following: {
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
+    default: []
   }
 
 },{ minimize:false });

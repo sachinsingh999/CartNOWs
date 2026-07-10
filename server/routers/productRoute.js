@@ -4,6 +4,7 @@ import {
   addProducts,
   removeProduct,
   singleProduct,
+  bulkProducts,
   addProductReview,
   updateStock,
   generateDescription,
@@ -36,6 +37,7 @@ productRouter.post('/remove',adminAuth,removeProduct)
 productRouter.post('/update-stock',adminAuth,updateStock)
 productRouter.post('/generate-description',adminAuth,generateDescription)
 productRouter.get('/single/:id',authUserOptional,singleProduct)
+productRouter.post('/bulk', bulkProducts)
 productRouter.post('/review/:id',authUser,addProductReview)
 productRouter.get('/list',listProducts)
 productRouter.get('/',listProducts)
