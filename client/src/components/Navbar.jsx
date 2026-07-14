@@ -61,6 +61,7 @@ const Navbar = () => {
   /* State */
   const [navCategories, setNavCategories] = useState([]);
   const [cartCount, setCartCount] = useState(0);
+  const [isCartBouncing, setIsCartBouncing] = useState(false);
   const [open, setOpen] = useState(false);
   const [notiOpen, setNotiOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
@@ -72,7 +73,7 @@ const Navbar = () => {
   });
   const [locationLoading, setLocationLoading] = useState(false);
   const [cartBump, setCartBump] = useState(false);
-  
+
   useEffect(() => {
     cachedGet(`${backendUrl}/api/product/categories`)
       .then(res => {
@@ -338,9 +339,17 @@ const Navbar = () => {
     };
     window.addEventListener("storage", handleCartUpdate);
     window.addEventListener("cartUpdate", handleCartUpdate);
+    
+    const handleCartBounce = () => {
+      setIsCartBouncing(true);
+      setTimeout(() => setIsCartBouncing(false), 800);
+    };
+    window.addEventListener("cartAddAnimComplete", handleCartBounce);
+    
     return () => {
       window.removeEventListener("storage", handleCartUpdate);
       window.removeEventListener("cartUpdate", handleCartUpdate);
+      window.removeEventListener("cartAddAnimComplete", handleCartBounce);
     };
   }, [token]);
 
@@ -471,7 +480,7 @@ const Navbar = () => {
       <header id="main-navbar-header" className="sticky top-0 z-50 w-full">
 
         {/* ── Main bar ── */}
-        <nav className="border-b border-slate-100 dark:border-slate-900 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md shadow-xs">
+        <nav className="border-b border-slate-200/50 dark:border-slate-800/60 bg-white/85 dark:bg-slate-950/85 backdrop-blur-xl shadow-xs transition-all duration-300">
           <div className="mx-auto max-w-[1400px] px-4 sm:px-6">
             <div className="flex h-16 items-center gap-3 lg:gap-4 w-full">
 
@@ -481,27 +490,27 @@ const Navbar = () => {
                 className="group flex shrink-0 items-center select-none"
               >
                 <Logo
-                  className="h-8 sm:h-9 w-auto text-slate-900 dark:text-white transition-transform duration-300 group-hover:scale-105"
+                  className="h-8 sm:h-9 w-auto text-slate-900 dark:text-white transition-transform duration-300"
                 />
               </Link>
 
               {/* ── Desktop Categories ── */}
-              <div className={`hidden lg:flex items-center font-black text-[11px] uppercase tracking-widest text-slate-700 dark:text-slate-300 shrink-0 transition-all duration-300 ease-in-out ${searchFocused ? "max-w-0 opacity-0 overflow-hidden ml-0 gap-0 pointer-events-none" : "max-w-[600px] opacity-100 ml-6 gap-7"}`}>
-                <Link to="/product?collection=men" className="hover:text-[#ff3f6c] dark:hover:text-rose-500 transition-colors py-5 border-b-2 border-transparent hover:border-[#ff3f6c] dark:hover:border-rose-500">Men</Link>
-                <Link to="/product?collection=women" className="hover:text-[#ff3f6c] dark:hover:text-rose-500 transition-colors py-5 border-b-2 border-transparent hover:border-[#ff3f6c] dark:hover:border-rose-500">Women</Link>
-                <Link to="/product?collection=kid" className="hover:text-[#ff3f6c] dark:hover:text-rose-500 transition-colors py-5 border-b-2 border-transparent hover:border-[#ff3f6c] dark:hover:border-rose-500">Kids</Link>
-                <Link to="/product?category=electronics" className="hover:text-[#ff3f6c] dark:hover:text-rose-500 transition-colors py-5 border-b-2 border-transparent hover:border-[#ff3f6c] dark:hover:border-rose-500">Electronics</Link>
-                <Link to="/product?category=beauty" className="hover:text-[#ff3f6c] dark:hover:text-rose-500 transition-colors py-5 border-b-2 border-transparent hover:border-[#ff3f6c] dark:hover:border-rose-500">Beauty</Link>
+              <div className={`hidden lg:flex items-center font-bold text-[13px] text-slate-700 dark:text-slate-200 shrink-0 transition-all duration-300 ease-in-out ${searchFocused ? "max-w-0 opacity-0 overflow-hidden ml-0 gap-0 pointer-events-none" : "max-w-[600px] opacity-100 ml-6 gap-6"}`}>
+                <Link to="/product?collection=men" className="py-5 border-b-2 border-transparent hover:border-[#ff3f6c] hover:text-[#ff3f6c] dark:hover:text-rose-500 dark:hover:border-rose-500 transition-colors">Men</Link>
+                <Link to="/product?collection=women" className="py-5 border-b-2 border-transparent hover:border-[#ff3f6c] hover:text-[#ff3f6c] dark:hover:text-rose-500 dark:hover:border-rose-500 transition-colors">Women</Link>
+                <Link to="/product?collection=kid" className="py-5 border-b-2 border-transparent hover:border-[#ff3f6c] hover:text-[#ff3f6c] dark:hover:text-rose-500 dark:hover:border-rose-500 transition-colors">Kids</Link>
+                <Link to="/product?category=electronics" className="py-5 border-b-2 border-transparent hover:border-[#ff3f6c] hover:text-[#ff3f6c] dark:hover:text-rose-500 dark:hover:border-rose-500 transition-colors">Electronics</Link>
+                <Link to="/product?category=beauty" className="py-5 border-b-2 border-transparent hover:border-[#ff3f6c] hover:text-[#ff3f6c] dark:hover:text-rose-500 dark:hover:border-rose-500 transition-colors">Beauty</Link>
               </div>
 
               {/* ── Desktop Search (Minimalist Capsule) ── */}
               <div
                 ref={searchRef}
-                className={`relative hidden md:flex flex-1 min-w-0 mx-auto transition-all duration-300 ease-in-out z-50 ${searchFocused ? "max-w-2xl" : "max-w-md" }`}
+                className={`relative hidden md:flex flex-1 min-w-0 mx-auto transition-all duration-300 ease-in-out z-50 ${searchFocused ? "max-w-2xl" : "max-w-md"}`}
               >
                 <form
                   onSubmit={(e) => { e.preventDefault(); submitSearch(); }}
-                  className={`flex w-full items-center overflow-hidden rounded-2xl border transition-all duration-300 ${searchFocused ? "border-indigo-500/80 dark:border-indigo-500/60 bg-white dark:bg-slate-900 shadow-xs ring-4 ring-indigo-500/5" : "border-slate-200/80 dark:border-slate-800/80 bg-slate-50/60 dark:bg-slate-900/50" }`}
+                  className={`flex w-full items-center overflow-hidden rounded-2xl border transition-all duration-300 ${searchFocused ? "border-indigo-500/80 dark:border-indigo-500/60 bg-white dark:bg-slate-900 shadow-xs ring-4 ring-indigo-500/5" : "border-slate-200/80 dark:border-slate-800/80 bg-slate-50/60 dark:bg-slate-900/50"}`}
                 >
                   <Search className="ml-4 h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500" />
                   <input
@@ -702,18 +711,18 @@ const Navbar = () => {
                 {/* AI Try-On */}
                 <Link
                   to="/tryon"
-                  className={`hidden sm:inline-flex items-center gap-1.5 h-10 rounded-2xl bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-650 hover:to-pink-600 px-4 text-[10.5px] font-black uppercase tracking-widest text-slate-100 dark:text-white shadow-sm shadow-rose-500/10 hover:shadow-rose-500/25 active:scale-95 transition-all duration-200 cursor-pointer select-none whitespace-nowrap border-none ${searchFocused ? "max-w-0 opacity-0 overflow-hidden px-0 py-0 mr-0 pointer-events-none" : "max-w-[150px] opacity-100"}`}
+                  className={`hidden sm:inline-flex items-center gap-1.5 h-10 rounded-full bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 px-4 text-[10px] font-bold uppercase tracking-wider text-white shadow-[0_4px_12px_rgba(244,63,94,0.15)] hover:shadow-[0_6px_16px_rgba(244,63,94,0.25)] transition-all duration-250 cursor-pointer select-none whitespace-nowrap border-none ${searchFocused ? "max-w-0 opacity-0 overflow-hidden px-0 py-0 mr-0 pointer-events-none" : "max-w-[150px] opacity-100"}`}
                 >
-                  <Sparkles size={13} className="shrink-0" />
+                  <Sparkles size={12} className="shrink-0" />
                   <span>{t("ai_tryon")}</span>
                 </Link>
 
                 {/* Social Feed */}
                 <Link
                   to="/social"
-                  className={`hidden sm:inline-flex items-center gap-1.5 h-10 rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-650 hover:to-violet-700 px-4 text-[10.5px] font-black uppercase tracking-widest text-slate-100 dark:text-white shadow-sm shadow-indigo-500/10 hover:shadow-indigo-500/25 active:scale-95 transition-all duration-200 cursor-pointer select-none whitespace-nowrap border-none ${searchFocused ? "max-w-0 opacity-0 overflow-hidden px-0 py-0 mr-0 pointer-events-none" : "max-w-[150px] opacity-100"}`}
+                  className={`hidden sm:inline-flex items-center gap-1.5 h-10 rounded-full bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 px-4 text-[10px] font-bold uppercase tracking-wider text-white shadow-[0_4px_12px_rgba(99,102,241,0.15)] hover:shadow-[0_6px_16px_rgba(99,102,241,0.25)] transition-all duration-250 cursor-pointer select-none whitespace-nowrap border-none ${searchFocused ? "max-w-0 opacity-0 overflow-hidden px-0 py-0 mr-0 pointer-events-none" : "max-w-[150px] opacity-100"}`}
                 >
-                  <Globe size={13} className="shrink-0 text-white animate-pulse" />
+                  <Globe size={12} className="shrink-0 text-white animate-pulse" />
                   <span>Social Feed</span>
                 </Link>
 
@@ -721,7 +730,7 @@ const Navbar = () => {
                 <Link
                   to="/wishlist"
                   title="My Wishlist"
-                  className="hidden md:flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200/80 dark:border-slate-800/80 text-slate-600 dark:text-slate-400 hover:bg-rose-50/15 dark:hover:bg-rose-950/15 hover:border-rose-200 dark:hover:border-rose-900/40 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
+                  className="hidden md:flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-50/60 dark:bg-slate-900/40 border border-slate-200/50 dark:border-slate-800 text-slate-650 dark:text-slate-400 hover:bg-rose-50/20 hover:text-rose-600 dark:hover:bg-rose-950/20 dark:hover:text-rose-400 hover:border-rose-200 dark:hover:border-rose-900/40 transition-all duration-200 cursor-pointer"
                 >
                   <Heart size={16} className="text-rose-500" />
                 </Link>
@@ -732,7 +741,7 @@ const Navbar = () => {
                     <button
                       onClick={() => setNotiOpen((p) => !p)}
                       title="Notifications"
-                      className={`relative flex h-10 w-10 items-center justify-center rounded-2xl border transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95 ${notiOpen ? "border-orange-400 bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400" : "border-slate-200/80 dark:border-slate-800/80 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900" }`}
+                      className={`relative flex h-10 w-10 items-center justify-center rounded-2xl border transition-all duration-200 cursor-pointer ${notiOpen ? "border-indigo-400 bg-indigo-50/20 dark:bg-indigo-950/20 text-indigo-655 dark:text-indigo-400 shadow-sm" : "bg-slate-50/60 dark:bg-slate-900/40 border-slate-200/50 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-850 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-200 dark:hover:border-indigo-900/30"}`}
                     >
                       <div className="relative flex items-center justify-center h-4 w-4">
                         <Bell size={16} className={unreadCount > 0 ? "animate-wiggle" : ""} />
@@ -745,7 +754,7 @@ const Navbar = () => {
 
                     {/* Notifications Dropdown */}
                     {notiOpen && (
-                      <div className="fixed sm:absolute left-4 right-4 sm:left-auto sm:right-0 top-16 sm:top-[calc(100%+12px)] sm:w-96 overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl z-50 ring-1 ring-black/5 dark:ring-white/10 animate-in fade-in slide-in-from-top-3 duration-200">
+                      <div data-lenis-prevent className="fixed sm:absolute left-4 right-4 sm:left-auto sm:right-0 top-16 sm:top-[calc(100%+12px)] sm:w-96 overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl z-50 ring-1 ring-black/5 dark:ring-white/10 animate-in fade-in slide-in-from-top-3 duration-200">
                         {/* Header */}
                         <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-5 py-4 bg-slate-50 dark:bg-slate-900/50">
                           <div className="flex items-center gap-2">
@@ -771,13 +780,13 @@ const Navbar = () => {
                         <div className="flex gap-1.5 px-4 py-2 border-b border-slate-100/50 dark:border-slate-800/30 bg-slate-50/30 dark:bg-slate-900/10">
                           <button
                             onClick={() => setActiveTab("all")}
-                            className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${activeTab === "all" ? "bg-slate-900 text-slate-100 dark:text-white dark:bg-white dark:text-slate-950 shadow-sm scale-105" : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200/40 dark:hover:bg-slate-800/20" }`}
+                            className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${activeTab === "all" ? "bg-slate-900 text-slate-100 dark:text-white dark:bg-white dark:text-slate-950 shadow-sm scale-105" : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200/40 dark:hover:bg-slate-800/20"}`}
                           >
                             All {notifications.length > 0 && `(${notifications.length})`}
                           </button>
                           <button
                             onClick={() => setActiveTab("unread")}
-                            className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${activeTab === "unread" ? "bg-orange-500 text-slate-100 dark:text-white shadow-sm scale-105" : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200/40 dark:hover:bg-slate-800/20" }`}
+                            className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${activeTab === "unread" ? "bg-orange-500 text-slate-100 dark:text-white shadow-sm scale-105" : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200/40 dark:hover:bg-slate-800/20"}`}
                           >
                             Unread {unreadCount > 0 && `(${unreadCount})`}
                           </button>
@@ -862,7 +871,7 @@ const Navbar = () => {
                                     }
                                     setNotiOpen(false);
                                   }}
-                                  className={`px-5 py-4 flex gap-3.5 text-left transition cursor-pointer hover:bg-orange-500/[0.03] dark:hover:bg-orange-500/[0.03] relative group border-l-4 ${!n.isRead ? "bg-orange-500/[0.01] dark:bg-orange-500/[0.01] border-orange-500" : "border-transparent" }`}
+                                  className={`px-5 py-4 flex gap-3.5 text-left transition cursor-pointer hover:bg-orange-500/[0.03] dark:hover:bg-orange-500/[0.03] relative group border-l-4 ${!n.isRead ? "bg-orange-500/[0.01] dark:bg-orange-500/[0.01] border-orange-500" : "border-transparent"}`}
                                 >
                                   {getNotificationIcon(n.title)}
                                   <div className="min-w-0 flex-1">
@@ -1002,13 +1011,14 @@ const Navbar = () => {
 
                 {/* Cart */}
                 <Link
+                  id="navbar-cart-btn"
                   to="/cart"
-                  className="relative flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200/80 dark:border-slate-800/80 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
+                  className={`relative flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-50/60 dark:bg-slate-900/40 border border-slate-200/50 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-850 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-200 dark:hover:border-indigo-900/30 transition-all duration-200 cursor-pointer shadow-none ${isCartBouncing ? "cart-bounce-active" : ""}`}
                 >
                   <ShoppingCart size={16} />
                   {cartCount > 0 && (
                     <span
-                      className="absolute -right-1.5 -top-1.5 flex min-w-[18px] h-[18px] items-center justify-center rounded-full bg-[#ff3f6c] px-[3px] text-[9px] font-black text-slate-100 dark:text-white ring-2 ring-white dark:ring-slate-950 shadow-md transition-transform"
+                      className="absolute -right-1.5 -top-1.5 flex min-w-[18px] h-[18px] items-center justify-center rounded-full bg-[#ff3f6c] px-[3px] text-[9px] font-black text-slate-100 dark:text-white ring-2 ring-white dark:ring-slate-950 shadow-md transition-transform animate-pulse"
                     >
                       {cartCount > 99 ? "99+" : cartCount}
                     </span>
@@ -1019,7 +1029,7 @@ const Navbar = () => {
                 <div ref={profileRef} className="relative hidden lg:block">
                   <button
                     onClick={() => { setOpen((p) => !p); setPincodeOpen(false); }}
-                    className={`flex h-10 items-center gap-2 rounded-2xl border px-3.5 font-black text-xs uppercase tracking-widest transition-all duration-200 cursor-pointer select-none ${open ? "border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/60 text-slate-800 dark:text-slate-200" : "border-slate-200 dark:border-slate-800/80 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900" }`}
+                    className={`flex h-10 items-center gap-2 rounded-md border px-3.5 font-bold text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer select-none ${open ? "border-indigo-400 dark:border-indigo-500 bg-indigo-50/20 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 shadow-sm" : "bg-slate-50/60 dark:bg-slate-900/40 border-slate-200/50 dark:border-slate-800 text-slate-705 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-850 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-200 dark:hover:border-indigo-900/30"}`}
                   >
                     <span className="flex h-6.5 w-6.5 items-center justify-center rounded-full bg-gradient-to-br from-[#ff3f6c] to-rose-600 text-[9.5px] font-black text-slate-100 dark:text-white shadow-sm ring-1 ring-white dark:ring-slate-950">
                       {token && initials ? initials : <User size={12} />}
@@ -1032,7 +1042,7 @@ const Navbar = () => {
 
                   {/* Dropdown */}
                   {open && (
-                    <div className="absolute right-0 top-[calc(100%+8px)] w-64 overflow-hidden rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl shadow-[0_20px_50px_rgba(0,0,0,0.12)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-50 ring-1 ring-black/5 dark:ring-white/10 animate-in fade-in slide-in-from-top-3 duration-200">
+                    <div className="absolute right-0 top-[calc(100%+8px)] w-64 overflow-hidden rounded-md border border-slate-200/80 dark:border-slate-800/80 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl shadow-[0_20px_50px_rgba(0,0,0,0.12)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-50 ring-1 ring-black/5 dark:ring-white/10 animate-in fade-in slide-in-from-top-3 duration-200">
                       {token ? (
                         <>
                           {/* User greeting */}
@@ -1429,9 +1439,9 @@ const Navbar = () => {
                       navigate("/login");
                     }
                   }}
-                  className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all cursor-pointer ${active ? "text-[#F43F5E]" : "text-slate-500 dark:text-slate-400" }`}
+                  className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all cursor-pointer ${active ? "text-[#F43F5E]" : "text-slate-500 dark:text-slate-400"}`}
                 >
-                  <div className={`relative flex h-7 w-7 items-center justify-center rounded-full transition-all ${active ? "bg-[#F43F5E] text-slate-100 dark:text-white shadow-md shadow-[#F43F5E]/30" : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400" }`}>
+                  <div className={`relative flex h-7 w-7 items-center justify-center rounded-full transition-all ${active ? "bg-[#F43F5E] text-slate-100 dark:text-white shadow-md shadow-[#F43F5E]/30" : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400"}`}>
                     {token && initials
                       ? <span className="text-[11px] font-black">{initials}</span>
                       : <Icon size={14} />
@@ -1446,9 +1456,9 @@ const Navbar = () => {
               <Link
                 key={to}
                 to={to}
-                className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all relative ${active ? "text-[#F43F5E]" : "text-slate-500 dark:text-slate-400" }`}
+                className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all relative ${active ? "text-[#F43F5E]" : "text-slate-500 dark:text-slate-400"}`}
               >
-                <div className={`relative flex h-7 w-7 items-center justify-center rounded-xl transition-all ${active ? "bg-rose-100 dark:bg-rose-950/30 text-[#F43F5E]" : "" }`}>
+                <div className={`relative flex h-7 w-7 items-center justify-center rounded-xl transition-all ${active ? "bg-rose-100 dark:bg-rose-950/30 text-[#F43F5E]" : ""}`}>
                   <Icon size={17} />
                   {label === "Orders" && token && (
                     <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-[#F43F5E]" />

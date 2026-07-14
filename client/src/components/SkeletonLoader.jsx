@@ -48,8 +48,8 @@ export const BrandsSkeleton = () => (
 
 /* ─────────────── 4. SINGLE PRODUCT CARD SKELETON ─────────────── */
 export const ProductCardSkeleton = () => (
-  <div className="bg-white dark:bg-slate-900 rounded-3xl p-4 border border-slate-200/50 dark:border-slate-800/80 space-y-4 animate-pulse">
-    <div className="bg-slate-200 dark:bg-slate-800 h-48 w-full rounded-2xl" />
+  <div className="bg-white dark:bg-slate-900 rounded-none p-4 border border-slate-200/50 dark:border-slate-800/80 space-y-4 animate-pulse">
+    <div className="bg-slate-200 dark:bg-slate-800 h-48 w-full rounded-none" />
     <div className="space-y-2">
       <div className="bg-slate-200 dark:bg-slate-800 h-4 w-3/4 rounded" />
       <div className="bg-slate-200 dark:bg-slate-800 h-3 w-1/2 rounded" />

@@ -162,7 +162,7 @@ const HomeProductCard = ({ product, onQuickView }) => {
         } catch (e) { }
         navigate(`/product/${product._id}`);
       }}
-      className="group relative flex flex-col bg-white dark:bg-slate-900 rounded-[24px] border border-slate-100 dark:border-slate-800/80 overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.02)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.06)] transition-all duration-300 ease-out cursor-pointer text-left w-full h-full"
+      className="group relative flex flex-col bg-white dark:bg-slate-900 rounded-none border border-slate-100 dark:border-slate-800/80 overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.02)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.06)] transition-all duration-300 ease-out cursor-pointer text-left w-full h-full"
     >
       {/* 300px centered white image container */}
       <div className="relative w-full h-[280px] bg-white dark:bg-slate-900 flex items-center justify-center p-6 border-b border-slate-50 select-none">

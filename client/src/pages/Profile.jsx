@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import {
@@ -26,17 +26,22 @@ import {
   Copy,
   Check,
   Camera,
-  Key,
   Lock,
   RefreshCw,
   Bell,
   Edit3,
   CheckCircle,
   Clock,
-  Truck
+  Truck,
+  Heart,
+  Percent,
+  ShoppingBag,
+  Info,
+  Star
 } from "lucide-react";
 import { backendUrl } from "../config";
 import { useLanguage } from "../context/LanguageContext";
+import { cachedGet } from "../utils/apiCache";
 import { toast } from "react-toastify";
 import { ProfileSkeleton } from "../components/SkeletonLoader";
 import { motion, AnimatePresence } from "framer-motion";
@@ -60,76 +65,11 @@ const Profile = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
 
-  const formatCurrencyCompact = (num) => {
-    if (num >= 10000000) return `₹${Number((num / 10000000).toFixed(2))}Cr`;
-    if (num >= 100000) return `₹${Number((num / 100000).toFixed(1))}L`;
-    if (num >= 1000) return `₹${(num / 1000).toFixed(1)}k`;
-    return `₹${num}`;
-  };
+  const [allProducts, setAllProducts] = useState([]);
+  const [wishlistIds, setWishlistIds] = useState([]);
+  const [coupons, setCoupons] = useState([]);
 
-  const formatPointsCompact = (num) => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}k`;
-    return num.toString();
-  };
-
-  // Animated counters for stats
-  const [animatedOrdersCount, setAnimatedOrdersCount] = useState(0);
-  const [animatedSpent, setAnimatedSpent] = useState(0);
-  const [animatedPoints, setAnimatedPoints] = useState(0);
-  const [animatedDeliveries, setAnimatedDeliveries] = useState(0);
-
-  useEffect(() => {
-    if (!loading && user) {
-      let startO = 0;
-      let startS = 0;
-      let startP = 0;
-      let startD = 0;
-      
-      const targetO = orders.length;
-      const targetS = totalSpent;
-      const targetP = Math.floor(totalSpent * 0.5);
-      const targetD = activeShipments;
-
-      const duration = 800; // ms
-      const interval = 20; // ms
-      const steps = duration / interval;
-      
-      const incrementO = targetO / steps;
-      const incrementS = targetS / steps;
-      const incrementP = targetP / steps;
-      const incrementD = targetD / steps;
-
-      const timer = setInterval(() => {
-        startO += incrementO;
-        startS += incrementS;
-        startP += incrementP;
-        startD += incrementD;
-
-        if (startO >= targetO) {
-          setAnimatedOrdersCount(targetO);
-          setAnimatedSpent(targetS);
-          setAnimatedPoints(targetP);
-          setAnimatedDeliveries(targetD);
-          clearInterval(timer);
-        } else {
-          setAnimatedOrdersCount(Math.floor(startO));
-          setAnimatedSpent(Math.floor(startS));
-          setAnimatedPoints(Math.floor(startP));
-          setAnimatedDeliveries(Math.floor(startD));
-        }
-      }, interval);
-
-      return () => clearInterval(timer);
-    }
-  }, [loading, user, orders.length, totalSpent, activeShipments]);
-
-  // 3D Tilt Card States
-  const [tilt, setTilt] = useState({ x: 0, y: 0 });
-  const [glare, setGlare] = useState({ x: 50, y: 50 });
-  const [isHovered, setIsHovered] = useState(false);
-
-  // Tab State: dashboard | addresses | settings | security
+  // Tab State: dashboard | addresses | settings
   const [activeProfileTab, setActiveProfileTab] = useState("dashboard");
 
   // Address States
@@ -162,31 +102,6 @@ const Profile = () => {
   const [submittingReview, setSubmittingReview] = useState(false);
 
   const fileInputRef = useRef(null);
-
-  const handleMouseMove = (e) => {
-    const card = e.currentTarget;
-    const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const xc = rect.width / 2;
-    const yc = rect.height / 2;
-    const angleX = ((yc - y) / yc) * 10;
-    const angleY = ((x - xc) / xc) * 10;
-    setTilt({ x: angleX, y: angleY });
-
-    const glareX = (x / rect.width) * 100;
-    const glareY = (y / rect.height) * 100;
-    setGlare({ x: glareX, y: glareY });
-  };
-
-  const handleMouseEnter = () => {
-    setIsHovered(true);
-  };
-
-  const handleMouseLeave = () => {
-    setIsHovered(false);
-    setTilt({ x: 0, y: 0 });
-  };
 
   useEffect(() => {
     if (user) {
@@ -342,6 +257,7 @@ const Profile = () => {
     setTimeout(() => setCopiedKey(false), 2000);
   };
 
+  // Fetch initial profile credentials, user orders, products catalog, and active coupons
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
@@ -351,13 +267,15 @@ const Profile = () => {
           return;
         }
 
-        const [profileRes, ordersRes] = await Promise.all([
+        const [profileRes, ordersRes, productsRes, couponRes] = await Promise.all([
           axios.get(`${backendUrl}/api/user/profile`, {
             headers: { Authorization: `Bearer ${token}` }
           }),
           axios.post(`${backendUrl}/api/order/userOrder`, {}, {
             headers: { Authorization: `Bearer ${token}` }
-          })
+          }),
+          cachedGet(`${backendUrl}/api/product/list`),
+          axios.get(`${backendUrl}/api/coupon/list`)
         ]);
 
         if (profileRes.data.success) {
@@ -383,14 +301,26 @@ const Profile = () => {
           setTotalSpent(spent);
           setActiveShipments(active);
         }
+
+        if (productsRes.data?.success) {
+          setAllProducts(productsRes.data.products || []);
+        }
+
+        if (couponRes.data?.success) {
+          setCoupons((couponRes.data.coupons || []).filter(c => c.status !== "inactive"));
+        }
       } catch (error) {
-        console.log("PROFILE FETCH ERROR 👉", error);
+        console.error("PROFILE FETCH ERROR 👉", error);
       } finally {
         setLoading(false);
       }
     };
 
     fetchProfileData();
+
+    // Load initial wishlist
+    const saved = JSON.parse(localStorage.getItem("wishlist")) || [];
+    setWishlistIds(saved);
   }, [navigate]);
 
   const logoutHandler = () => {
@@ -398,36 +328,87 @@ const Profile = () => {
     navigate("/login");
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-200">
-        <ProfileSkeleton />
-      </div>
-    );
-  }
+  // Synchronize Wishlist events
+  const wishlistedItems = useMemo(() => {
+    return allProducts.filter(p => wishlistIds.includes(p._id));
+  }, [allProducts, wishlistIds]);
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center px-4 transition-colors duration-200">
-        <MapPin size={48} className="text-slate-400 animate-bounce" />
-        <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 mt-4">No user data found.</p>
-        <button
-          onClick={() => navigate("/login")}
-          className="mt-4 rounded-xl bg-orange-500 hover:bg-orange-600 px-5 py-2.5 text-xs font-bold text-slate-100 dark:text-white transition cursor-pointer"
-        >
-          Go to Login
-        </button>
-      </div>
-    );
-  }
+  const toggleFavorite = async (product) => {
+    const productId = product._id || product;
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        let list = JSON.parse(localStorage.getItem("wishlist")) || [];
+        if (list.includes(productId)) {
+          list = list.filter(id => id !== productId);
+          toast.success("Removed from wishlist");
+        } else {
+          list.push(productId);
+          toast.success("Added to wishlist ❤️");
+        }
+        localStorage.setItem("wishlist", JSON.stringify(list));
+        window.dispatchEvent(new Event("wishlistUpdate"));
+        setWishlistIds(list);
+        return;
+      }
 
-  const initial = user.name?.charAt(0)?.toUpperCase();
+      const res = await axios.post(
+        `${backendUrl}/api/wishlist/toggle`,
+        { productId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (res.data.success) {
+        const updated = res.data.wishlist || [];
+        localStorage.setItem("wishlist", JSON.stringify(updated));
+        window.dispatchEvent(new Event("wishlistUpdate"));
+        setWishlistIds(updated);
+        toast.success("Wishlist updated!");
+      }
+    } catch (error) {
+      console.error(error);
+      let list = JSON.parse(localStorage.getItem("wishlist")) || [];
+      if (list.includes(productId)) {
+        list = list.filter(id => id !== productId);
+      } else {
+        list.push(productId);
+      }
+      localStorage.setItem("wishlist", JSON.stringify(list));
+      window.dispatchEvent(new Event("wishlistUpdate"));
+      setWishlistIds(list);
+    }
+  };
+
+  const handleAddToCart = async (product, qty = 1, size = "Standard") => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast.error("Please login to add items to cart.");
+        return;
+      }
+      const res = await axios.post(
+        `${backendUrl}/api/cart/add`,
+        { productId: product._id || product, qty, size },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (res.data.success) {
+        toast.success("Added to cart! 🛒");
+        window.dispatchEvent(new Event("cartUpdate"));
+      } else {
+        toast.error(res.data.message || "Failed to add to cart.");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to add to cart.");
+    }
+  };
+
+  const initial = user?.name ? user.name.charAt(0).toUpperCase() : "";
 
   const getLoyaltyTier = () => {
     if (totalSpent > 30000) return { name: "Diamond VIP Member", color: "from-blue-600 via-indigo-700 to-slate-950", bg: "bg-blue-500/10 text-blue-400 border-blue-500/20" };
-    if (totalSpent > 15000) return { name: "Platinum VIP Member", color: "from-purple-600 via-indigo-700 to-slate-950", bg: "bg-purple-500/10 text-purple-400 border-purple-500/20" };
+    if (totalSpent > 15000) return { name: "Platinum VIP Member", color: "from-indigo-600 via-purple-600 to-pink-500", bg: "bg-purple-500/10 text-purple-400 border-purple-500/20" };
     if (totalSpent > 5000) return { name: "Gold Member", color: "from-amber-500 via-orange-500 to-slate-950", bg: "bg-amber-500/10 text-amber-400 border-amber-500/20" };
-    return { name: "Silver Member", color: "from-slate-500 via-slate-700 to-slate-950", bg: "bg-slate-500/10 text-slate-400 border-slate-500/20" };
+    return { name: "Silver Member", color: "from-slate-500 via-slate-700 to-slate-950", bg: "bg-slate-50/10 text-slate-450 border-slate-250/20" };
   };
 
   const tier = getLoyaltyTier();
@@ -441,22 +422,22 @@ const Profile = () => {
     if (totalSpent < 5000) {
       nextTierName = "Gold Member";
       nextTierThreshold = 5000;
-      unlockedBenefits = ["Standard Shipping", "1% Cashback"];
-      rewardPreview = "Gold chip & 3% Cashback on all orders";
+      unlockedBenefits = ["Standard Shipping", "1.0%"];
+      rewardPreview = "Earn more points to unlock Gold Member benefits";
     } else if (totalSpent < 15000) {
       nextTierName = "Platinum VIP";
       nextTierThreshold = 15000;
-      unlockedBenefits = ["Standard Shipping", "3% Cashback", "Priority Dispatch"];
-      rewardPreview = "Platinum card sheen & 5% Cashback";
+      unlockedBenefits = ["Standard Shipping", "3.0%", "Priority Dispatch"];
+      rewardPreview = "Earn more points to unlock Platinum VIP benefits";
     } else if (totalSpent < 30000) {
       nextTierName = "Diamond VIP";
       nextTierThreshold = 30000;
-      unlockedBenefits = ["Free Express Shipping", "5% Cashback", "24/7 Premium Support", "AI Fitting Room PRO access"];
-      rewardPreview = "Diamond chip, early access to new designer collections & 8% Cashback";
+      unlockedBenefits = ["Free Express Shipping", "5.0%", "24/7 Premium Support", "AI Fitting Room PRO access"];
+      rewardPreview = "Earn more points to unlock Diamond VIP benefits";
     } else {
       nextTierName = "Max Level";
       nextTierThreshold = 30005;
-      unlockedBenefits = ["Free Express Shipping", "8% Cashback", "24/7 Dedicated Support Concierge", "AI Fitting Room VIP unlimited renders", "Exclusive designer pre-orders"];
+      unlockedBenefits = ["Free Express Shipping", "8.0%", "24/7 Dedicated Support Concierge"];
       rewardPreview = "All luxury benefits unlocked!";
     }
 
@@ -488,7 +469,6 @@ const Profile = () => {
         </div>
       );
     }
-    // Check if base64 or url
     if (avatarStr.startsWith("data:") || avatarStr.startsWith("http")) {
       return (
         <img
@@ -498,7 +478,6 @@ const Profile = () => {
         />
       );
     }
-    // Check if preset name
     const preset = PRESET_AVATARS.find(p => p.id === avatarStr);
     if (preset) {
       return (
@@ -514,200 +493,149 @@ const Profile = () => {
     );
   };
 
-  // Dynamic profile completion percent
-  const getProfileCompletion = () => {
-    let completion = 0;
-    if (user.name) completion += 25;
-    if (user.email) completion += 25;
-    if (user.addresses && user.addresses.length > 0) completion += 25;
-    if (user.appReview && user.appReview.rating > 0) completion += 25;
-    return completion;
-  };
-  const completionPercent = getProfileCompletion();
-
-  // Draw Dynamic Sparklines based on Orders
-  const generateSparklinePath = (dataValues, width = 120, height = 40) => {
-    const points = dataValues.length > 0 ? dataValues : [10, 15, 8, 20, 18, 30, 25];
-    const padding = 4;
-    const maxVal = Math.max(...points) || 1;
-    const minVal = Math.min(...points) || 0;
-    const range = maxVal - minVal || 1;
-
-    return points
-      .map((val, idx) => {
-        const x = (idx / (points.length - 1)) * (width - 2 * padding) + padding;
-        const y = height - ((val - minVal) / range) * (height - 2 * padding) - padding;
-        return `${idx === 0 ? "M" : "L"} ${x.toFixed(1)} ${y.toFixed(1)}`;
-      })
-      .join(" ");
-  };
-
-  // Calculate stats values arrays for Sparklines
-  const orderAmounts = orders.map(o => o.amount).reverse();
-  const orderCounts = orders.map((_, idx) => idx + 1);
-
-  const getGreeting = () => {
-    const hrs = new Date().getHours();
-    if (hrs < 12) return "Good Morning";
-    if (hrs < 17) return "Good Afternoon";
-    return "Good Evening";
-  };
-
-  const renderVIPCard = () => {
-    let cardGradient = "from-slate-800 via-slate-900 to-slate-950 border-slate-700/60 shadow-black/40";
-    let textGlow = "text-slate-400";
-    let chipGradient = "from-orange-300 via-amber-600 to-orange-700 border-orange-500/85";
-    let tierShadow = "shadow-[0_20px_50px_-10px_rgba(100,116,139,0.3)]";
-
-    if (totalSpent > 30000) {
-      cardGradient = "from-slate-950 via-blue-950 to-slate-900 border-blue-500/35";
-      textGlow = "text-blue-400 drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]";
-      chipGradient = "from-cyan-300 via-blue-500 to-indigo-700 border-cyan-400/85";
-      tierShadow = "shadow-[0_20px_50px_-10px_rgba(59,130,246,0.35)]";
-    } else if (totalSpent > 15000) {
-      cardGradient = "from-purple-950 via-indigo-950 to-slate-950 border-purple-500/30";
-      textGlow = "text-purple-400 drop-shadow-[0_0_8px_rgba(168,85,247,0.5)]";
-      chipGradient = "from-slate-100 via-slate-300 to-slate-200 border-slate-300/80";
-      tierShadow = "shadow-[0_20px_50px_-10px_rgba(168,85,247,0.3)]";
-    } else if (totalSpent > 5000) {
-      cardGradient = "from-amber-950 via-orange-950 to-slate-950 border-amber-500/35";
-      textGlow = "text-amber-500 drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]";
-      chipGradient = "from-yellow-300 via-amber-500 to-yellow-600 border-amber-400/80";
-      tierShadow = "shadow-[0_20px_50px_-10px_rgba(245,158,11,0.35)]";
+  // Compile spending breakdown dynamically from orders data
+  const spendingBreakdown = useMemo(() => {
+    const categoriesCount = {};
+    let total = 0;
+    
+    orders.forEach(order => {
+      order.items?.forEach(item => {
+        const cat = item.category || "Others";
+        const amt = (item.price * item.qty) || 0;
+        categoriesCount[cat] = (categoriesCount[cat] || 0) + amt;
+        total += amt;
+      });
+    });
+    
+    if (total === 0) {
+      return [
+        { name: "Electronics", amount: 4250, percent: 50, color: "#6366f1" },
+        { name: "Fashion", amount: 2550, percent: 30, color: "#3b82f6" },
+        { name: "Home & Kitchen", amount: 1150, percent: 14, color: "#f97316" },
+        { name: "Others", amount: 500, percent: 6, color: "#10b981" }
+      ];
     }
 
+    const mapped = Object.keys(categoriesCount).map(catName => {
+      const amount = categoriesCount[catName];
+      const percent = Math.round((amount / total) * 100);
+      return {
+        name: catName,
+        amount,
+        percent,
+      };
+    });
+
+    mapped.sort((a, b) => b.amount - a.amount);
+
+    const colorPalette = ["#6366f1", "#3b82f6", "#f97316", "#10b981", "#ec4899", "#8b5cf6"];
+    return mapped.map((item, idx) => ({
+      ...item,
+      color: colorPalette[idx % colorPalette.length]
+    }));
+  }, [orders]);
+
+  // Compile timeline activities dynamically from orders list
+  const activitiesList = useMemo(() => {
+    const list = [];
+    orders.forEach((order) => {
+      const orderDateStr = new Date(order.date).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      const status = order.orderStatus?.toLowerCase() || "processing";
+      
+      list.push({
+        title: `Order #${order._id.slice(-8).toUpperCase()} placed`,
+        desc: `Total amount: ₹${order.amount.toLocaleString("en-IN")}`,
+        time: orderDateStr,
+        badge: "bg-indigo-500"
+      });
+      
+      if (status === "delivered") {
+        list.push({
+          title: `Order #${order._id.slice(-8).toUpperCase()} delivered`,
+          desc: "Successfully delivered to shipping address",
+          time: orderDateStr,
+          badge: "bg-emerald-500"
+        });
+      } else if (status === "shipped") {
+        list.push({
+          title: `Order #${order._id.slice(-8).toUpperCase()} shipped`,
+          desc: "Item is in transit and arriving soon",
+          time: orderDateStr,
+          badge: "bg-blue-500"
+        });
+      }
+    });
+
+    if (list.length === 0) {
+      return [
+        { title: "Account registered", desc: "Welcome to CartNow!", time: "Just now", badge: "bg-indigo-500" },
+        { title: "First purchase coupon active", desc: "Use code CARTNOW10 on checkout", time: "Just now", badge: "bg-emerald-500" }
+      ];
+    }
+    
+    return list.slice(0, 4);
+  }, [orders]);
+
+  const renderDonutChart = () => {
+    const circ = 238.7; // 2 * PI * r
+    let currentOffset = 0;
+    const totalSpentValue = spendingBreakdown.reduce((sum, item) => sum + item.amount, 0);
+
     return (
-      <div 
-        onMouseMove={handleMouseMove}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        style={{
-          transform: `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) scale3d(${isHovered ? 1.02 : 1}, ${isHovered ? 1.02 : 1}, 1)`,
-          transition: isHovered ? "transform 0.05s ease-out, shadow 0.15s ease" : "transform 0.5s ease, shadow 0.5s ease",
-          transformStyle: "preserve-3d"
-        }}
-        className={`relative overflow-hidden rounded-[28px] bg-gradient-to-tr ${cardGradient} p-6 sm:p-7 text-slate-100 dark:text-white border border-white/[0.08] ${tierShadow} h-56 sm:h-60 w-full flex flex-col justify-between select-none cursor-pointer group`}
-      >
-        {/* Shine sweeping sweep */}
-        <div className="shine-sweep-animation pointer-events-none absolute inset-0 z-0 opacity-40 mix-blend-overlay" />
+      <div className="relative h-28 w-28 shrink-0 flex items-center justify-center">
+        <svg width="100" height="100" viewBox="0 0 100 100" className="overflow-visible select-none">
+          {spendingBreakdown.map((item, idx) => {
+            const strokeLength = (item.percent / 100) * circ;
+            const strokeOffset = currentOffset;
+            currentOffset -= strokeLength;
 
-        {/* Holographic moving sheen */}
-        <div 
-          className="absolute inset-0 pointer-events-none opacity-0 mix-blend-overlay transition-opacity duration-500 group-hover:opacity-50"
-          style={{
-            background: `radial-gradient(circle at ${glare.x}% ${glare.y}%, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 60%)`,
-          }}
-        />
-
-        {/* Diagonal metallic linear waves */}
-        <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] via-transparent to-black/20 pointer-events-none" />
-
-        {/* Top Segment */}
-        <div className="flex justify-between items-start w-full relative z-10" style={{ transform: "translateZ(35px)" }}>
-          <div className="text-left">
-            <div className="flex items-center gap-1.5">
-              <span className="text-[11px] font-black uppercase tracking-[0.25em] text-white/95">CartNOW</span>
-              <span className="text-[8px] font-black px-1.5 py-0.5 rounded bg-white/15 border border-white/20 text-orange-400 tracking-wider">VIP</span>
-            </div>
-            <h3 className={`text-sm sm:text-base font-black tracking-widest mt-2 uppercase ${textGlow}`}>{tier.name}</h3>
-          </div>
-
-          <div className="flex items-center gap-2.5">
-            {/* Waves Icon */}
-            <svg className="h-4 w-4 text-white/50 rotate-90" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <path d="M12 18a6 6 0 0 0 0-12" />
-              <path d="M15 21a9 9 0 0 0 0-18" />
-              <circle cx="6" cy="12" r="1.5" fill="currentColor" />
-            </svg>
-
-            {/* Smart Card Chip */}
-            <div className={`h-8.5 w-11 sm:h-9 sm:w-12 rounded-lg bg-gradient-to-br ${chipGradient} shadow-md p-1 relative flex flex-col justify-between overflow-hidden border`}>
-              <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 gap-px opacity-30">
-                <div className="border-r border-b border-slate-800 dark:border-slate-750" />
-                <div className="border-r border-b border-slate-800 dark:border-slate-750" />
-                <div className="border-b border-slate-800 dark:border-slate-750" />
-                <div className="border-r border-b border-slate-800 dark:border-slate-750" />
-                <div className="border-r border-b border-slate-800 dark:border-slate-750" />
-                <div className="border-b border-slate-800 dark:border-slate-750" />
-              </div>
-              <div className="h-2 w-4 rounded-xs bg-white/30 border border-white/20 z-10" />
-            </div>
-          </div>
-        </div>
-
-        {/* Center Card Number & Rewards Glass Tag */}
-        <div className="flex justify-between items-center relative z-10 py-1" style={{ transform: "translateZ(25px)" }}>
-          <div className="font-mono text-sm sm:text-base tracking-[0.25em] text-white/70">
-            •••• {user._id ? user._id.slice(-4).toUpperCase() : "8828"}
-          </div>
-          {/* Glass tag for rewards points */}
-          <div className="bg-white/10 dark:bg-black/20 backdrop-blur-md border border-white/10 rounded-xl px-2.5 py-1 text-right flex flex-col justify-center">
-            <span className="text-[7px] text-white/50 font-black uppercase tracking-wider">REWARD BALANCE</span>
-            <span className="font-mono text-[11px] font-black text-amber-300">{animatedPoints.toLocaleString()} PTS</span>
-          </div>
-        </div>
-
-        {/* Cashback Points and Card Holder Info */}
-        <div className="flex justify-between items-end w-full relative z-10" style={{ transform: "translateZ(35px)" }}>
-          <div className="text-left">
-            <p className="text-[7.5px] font-black text-slate-400 uppercase tracking-widest leading-none">VIP CARD HOLDER</p>
-            <p className="text-xs sm:text-sm font-black tracking-wider uppercase text-slate-100 mt-1">{user.name}</p>
-          </div>
-
-          <div className="text-right">
-            <p className="text-[7.5px] font-black text-slate-400 uppercase tracking-widest leading-none">CASHBACK RATIO</p>
-            <p className="text-xs sm:text-sm font-mono font-black text-emerald-400 mt-1">
-              {totalSpent > 30000 ? "8.0% BACK" : totalSpent > 15000 ? "5.0% BACK" : totalSpent > 5000 ? "3.0% BACK" : "1.0% BACK"}
-            </p>
-          </div>
+            return (
+              <circle
+                key={idx}
+                cx="50"
+                cy="50"
+                r="38"
+                fill="transparent"
+                stroke={item.color}
+                strokeWidth="11"
+                strokeDasharray={`${strokeLength.toFixed(1)} ${circ}`}
+                strokeDashoffset={strokeOffset.toFixed(1)}
+                transform="rotate(-90 50 50)"
+                className="transition-all duration-500"
+              />
+            );
+          })}
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase leading-none">TOTAL</span>
+          <span className="text-[13px] font-black text-slate-900 dark:text-white leading-none mt-1">₹{totalSpentValue.toLocaleString("en-IN")}</span>
         </div>
       </div>
     );
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#070A13] flex items-center justify-center">
+        <ProfileSkeleton />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
+
   return (
-    <div className="min-h-screen bg-slate-50/70 dark:bg-slate-950 px-4 py-8 sm:px-6 lg:px-8 transition-colors duration-300 text-left relative overflow-hidden">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#070A13] px-4 py-8 sm:px-6 lg:px-8 transition-colors duration-300 text-left relative overflow-hidden">
       {/* Background radial luxury mesh gradients */}
       <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-orange-500/5 dark:bg-orange-500/3 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[700px] h-[700px] rounded-full bg-purple-500/5 dark:bg-indigo-500/3 blur-[150px] pointer-events-none" />
 
       <style>{`
-        @keyframes shine-sweep {
-          0% { left: -150%; }
-          50% { left: 150%; }
-          100% { left: 150%; }
-        }
-        .shine-sweep-animation {
-          position: absolute;
-          top: 0;
-          height: 100%;
-          width: 50%;
-          background: linear-gradient(
-            to right,
-            rgba(255, 255, 255, 0) 0%,
-            rgba(255, 255, 255, 0.25) 50%,
-            rgba(255, 255, 255, 0) 100%
-          );
-          transform: skewX(-20deg);
-          animation: shine-sweep 6s infinite ease-in-out;
-        }
-        .glass-panel {
-          backdrop-filter: blur(14px);
-          background: rgba(255, 255, 255, 0.45);
-          border: 1px solid rgba(255, 255, 255, 0.4);
-        }
-        .dark .glass-panel {
-          background: rgba(15, 23, 42, 0.4);
-          border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        .luxury-card-glow {
-          box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.04);
-        }
-        .dark .luxury-card-glow {
-          box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-        }
         .custom-scrollbar::-webkit-scrollbar {
           width: 5px;
+          height: 5px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
           background: transparent;
@@ -722,88 +650,106 @@ const Profile = () => {
 
         {/* Main Grid Wrapper */}
         <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8">
+          
           {/* LEFT SIDEBAR: PROFILE SUMMARY */}
-          <div className="rounded-[28px] glass-panel p-5 space-y-6 luxury-card-glow">
-            {/* User Details */}
-            <div className="flex flex-col items-center text-center space-y-3.5">
-              <div className="relative group select-none cursor-pointer">
-                {/* Avatar Display */}
-                <div
-                  onClick={() => setShowAvatarSelector(true)}
-                  className="relative flex h-20 w-20 rounded-full overflow-hidden shadow-md border-2 border-slate-200 dark:border-slate-800 active:scale-95 transition group"
-                >
-                  {renderAvatarContent(user.profilePhoto)}
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                    <Camera size={18} className="text-slate-100 dark:text-white animate-pulse" />
+          <div className="rounded-[24px] bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 p-5 space-y-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col justify-between">
+            <div className="space-y-6">
+              {/* User Details */}
+              <div className="flex flex-col items-center text-center space-y-3.5">
+                <div className="relative group select-none cursor-pointer">
+                  <div
+                    onClick={() => setShowAvatarSelector(true)}
+                    className="relative flex h-20 w-20 rounded-full overflow-hidden shadow-xs border border-slate-200 dark:border-slate-800 active:scale-95 transition group"
+                  >
+                    {renderAvatarContent(user.profilePhoto)}
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                      <Camera size={18} className="text-slate-100 dark:text-white" />
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div>
-                <h3 className="text-base font-black text-slate-900 dark:text-white leading-tight flex items-center justify-center gap-1">
-                  <span>{user.name}</span>
-                  <Award size={14} className="text-orange-500" />
-                </h3>
-                <p className="text-[10.5px] font-semibold text-slate-400 dark:text-slate-500 truncate max-w-[190px] mt-0.5">{user.email}</p>
-              </div>
-            </div>
-
-            {/* Sidebar Tab Selectors */}
-            <div className="space-y-1">
-              {[
-                { id: "dashboard", label: "Dashboard Overview", icon: User },
-                { id: "addresses", label: "Shipping Addresses", icon: MapPin },
-                { id: "settings", label: "Account Settings", icon: Settings },
-              ].map((tab) => {
-                const Icon = tab.icon;
-                const isSelected = activeProfileTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveProfileTab(tab.id)}
-                    className={`flex w-full items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-black uppercase tracking-wider transition-all duration-200 relative cursor-pointer group ${isSelected ? "bg-slate-950 dark:bg-orange-500/10 border border-slate-950 dark:border-orange-500/20 text-slate-100 dark:text-white dark:text-orange-400 scale-[1.01]" : "text-slate-500 dark:text-slate-400 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 border border-transparent" }`}
-                  >
-                    <span className="flex items-center gap-2.5">
-                      <Icon size={13} className={isSelected ? "text-orange-500" : "text-slate-400 group-hover:text-orange-400 transition-colors"} />
-                      <span>{tab.label}</span>
-                    </span>
-                    <ChevronRight size={11} className={`text-slate-400/80 transition-transform duration-200 ${isSelected ? "translate-x-0.5" : "group-hover:translate-x-0.5"}`} />
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Quick account stats wrapper */}
-            <div className="pt-4.5 border-t border-slate-200/50 dark:border-slate-800/80 space-y-3.5">
-              <div className="flex justify-between items-center text-[9.5px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                <span>Account Created</span>
-                <span className="font-mono text-slate-700 dark:text-slate-300">
-                  {user.createdAt ? new Date(user.createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" }) : "Recently"}
-                </span>
-              </div>
-
-              {/* Secure verification key drawer */}
-              <div className="space-y-1">
-                <div className="flex justify-between items-center text-[9.5px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                  <span>Verification Key</span>
-                  <button
-                    onClick={() => setRevealKey(!revealKey)}
-                    className="text-[8.5px] font-black text-orange-500 hover:underline uppercase tracking-wider cursor-pointer"
-                  >
-                    {revealKey ? "Hide" : "Reveal"}
-                  </button>
+                <div>
+                  <h3 className="text-base font-black text-slate-900 dark:text-white leading-tight flex items-center justify-center gap-1">
+                    <span>{user.name}</span>
+                    <Award size={14} className="text-orange-500" />
+                  </h3>
+                  <p className="text-[10.5px] font-semibold text-slate-400 dark:text-slate-500 truncate max-w-[190px] mt-0.5">{user.email}</p>
                 </div>
-                <div className="flex items-center gap-2 bg-slate-100/60 dark:bg-slate-900/60 border border-slate-200/40 dark:border-slate-800/80 p-2 rounded-lg justify-between">
-                  <span className="font-mono text-[10px] font-black text-slate-700 dark:text-slate-300 tracking-wider pl-1">
-                    {revealKey ? user.deliveryVerificationKey : "•••• ••••"}
+              </div>
+
+              {/* Sidebar Tab Selectors */}
+              <div className="space-y-1">
+                {[
+                  { id: "dashboard", label: "Overview", icon: User },
+                  { id: "addresses", label: "Shipping Addresses", icon: MapPin },
+                  { id: "settings", label: "Account Settings", icon: Settings },
+                ].map((tab) => {
+                  const Icon = tab.icon;
+                  const isSelected = activeProfileTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveProfileTab(tab.id)}
+                      className={`flex w-full items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-black uppercase tracking-wider transition-all duration-250 relative cursor-pointer group ${isSelected ? "bg-slate-950 dark:bg-orange-500/10 border border-slate-950 dark:border-orange-500/20 text-slate-100 dark:text-white dark:text-orange-400 scale-[1.01]" : "text-slate-500 dark:text-slate-400 hover:bg-slate-100/50 dark:hover:bg-slate-805/50 hover:text-slate-800 dark:hover:text-slate-205 border border-transparent" }`}
+                    >
+                      <span className="flex items-center gap-2.5">
+                        <Icon size={13} className={isSelected ? "text-orange-500" : "text-slate-400 group-hover:text-orange-400 transition-colors"} />
+                        <span>{tab.label}</span>
+                      </span>
+                      <ChevronRight size={11} className={`text-slate-400/80 transition-transform duration-200 ${isSelected ? "translate-x-0.5" : "group-hover:translate-x-0.5"}`} />
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Profile Completion Indicator */}
+              <div className="p-3.5 bg-slate-50/50 dark:bg-slate-950/20 rounded-2xl border border-slate-150 dark:border-slate-800 text-left space-y-1.5">
+                <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-wider text-slate-400">
+                  <span>Profile Complete</span>
+                  <span className="text-orange-500">
+                    {user.name && user.email && user.addresses?.length > 0 && user.appReview ? "100%" : user.name && user.email && user.addresses?.length > 0 ? "75%" : "50%"}
                   </span>
-                  <button
-                    onClick={() => copyToClipboard(user.deliveryVerificationKey)}
-                    className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition cursor-pointer pr-1"
-                    title="Copy Key"
-                  >
-                    {copiedKey ? <Check size={11} className="text-emerald-500" /> : <Copy size={11} />}
-                  </button>
+                </div>
+                <div className="w-full h-1 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-orange-500 rounded-full animate-pulse" 
+                    style={{ width: user.name && user.email && user.addresses?.length > 0 && user.appReview ? "100%" : user.name && user.email && user.addresses?.length > 0 ? "75%" : "50%" }}
+                  />
+                </div>
+              </div>
+
+              {/* Quick account stats wrapper */}
+              <div className="pt-4.5 border-t border-slate-200/50 dark:border-slate-800/80 space-y-3.5">
+                <div className="flex justify-between items-center text-[9.5px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                  <span>Account Created</span>
+                  <span className="font-mono text-slate-700 dark:text-slate-300">
+                    {user.createdAt ? new Date(user.createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" }) : "Recently"}
+                  </span>
+                </div>
+
+                {/* Secure verification key drawer */}
+                <div className="space-y-1">
+                  <div className="flex justify-between items-center text-[9.5px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                    <span>Verification Key</span>
+                    <button
+                      onClick={() => setRevealKey(!revealKey)}
+                      className="text-[8.5px] font-black text-orange-500 hover:underline uppercase tracking-wider cursor-pointer bg-transparent border-none"
+                    >
+                      {revealKey ? "Hide" : "Reveal"}
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2 bg-slate-100/60 dark:bg-slate-900/60 border border-slate-200/40 dark:border-slate-800/80 p-2 rounded-lg justify-between">
+                    <span className="font-mono text-[10px] font-black text-slate-700 dark:text-slate-300 tracking-wider pl-1">
+                      {revealKey ? user.deliveryVerificationKey : "•••• ••••"}
+                    </span>
+                    <button
+                      onClick={() => copyToClipboard(user.deliveryVerificationKey)}
+                      className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition cursor-pointer pr-1 bg-transparent border-none"
+                      title="Copy Key"
+                    >
+                      {copiedKey ? <Check size={11} className="text-emerald-500" /> : <Copy size={11} />}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -811,7 +757,7 @@ const Profile = () => {
             {/* Logout button */}
             <button
               onClick={logoutHandler}
-              className="w-full flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 px-3 py-2.5 text-xs font-black uppercase tracking-wider text-red-500 hover:bg-red-500 hover:text-white dark:hover:bg-red-500/10 dark:hover:text-red-400 hover:border-red-500 dark:hover:border-red-500/20 transition-all cursor-pointer shadow-2xs active:scale-[0.98]"
+              className="w-full mt-6 flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 px-3 py-2.5 text-xs font-black uppercase tracking-wider text-red-500 hover:bg-red-500 hover:text-white dark:hover:bg-red-500/10 dark:hover:text-red-400 hover:border-red-500 dark:hover:border-red-500/20 transition-all cursor-pointer shadow-2xs active:scale-[0.98]"
             >
               <LogOut size={12} />
               <span>{t("logout")}</span>
@@ -832,220 +778,358 @@ const Profile = () => {
                   className="space-y-6 text-left"
                 >
                   {/* Welcome Message Header */}
-                  <div className="flex flex-col sm:flex-row justify-between sm:items-end gap-3">
+                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                     <div>
-                      <p className="text-[9px] font-black uppercase tracking-[0.2em] text-orange-500">CONSUMER ACCOUNT CONSOLE</p>
-                      <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight mt-0.5">
-                        {getGreeting()}, {user.name.split(" ")[0]} ✨
+                      <h2 className="text-xl sm:text-[26px] font-extrabold text-[#0B0F19] dark:text-white tracking-tight flex items-center gap-2">
+                        Welcome back, {user.name.split(" ")[0]}! 👋
                       </h2>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 font-medium">Here's what's happening with your account today.</p>
                     </div>
-                    <span className="self-start sm:self-auto text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-full border border-emerald-500/20 flex items-center gap-1.5">
-                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      <span>Security Active</span>
-                    </span>
+                    
+                    <div className="flex items-center gap-3 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80 p-2.5 px-4.5 rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.015)] select-none text-left shrink-0">
+                      <div className="h-8 w-8 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-450 flex items-center justify-center">
+                        <ShieldCheck size={16} />
+                      </div>
+                      <div>
+                        <p className="text-[9px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider">Security Status</p>
+                        <p className="text-xs font-black text-emerald-600 dark:text-emerald-450 leading-tight">Secure</p>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Clean, High-Density Key Metrics Row */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {/* Top Stats Overview (6 Columns exactly matching mockups) */}
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                     {[
-                      { label: t("lifetime_orders"), value: animatedOrdersCount, icon: Package, color: "from-orange-500 to-amber-500", labelColor: "text-orange-500" },
-                      { label: t("total_spent"), value: formatCurrencyCompact(animatedSpent), icon: DollarSign, color: "from-emerald-500 to-teal-500", labelColor: "text-emerald-500" },
-                      { label: t("rewards"), value: `${formatPointsCompact(animatedPoints)} pts`, icon: Sparkles, color: "from-purple-400 to-indigo-500", labelColor: "text-purple-500" },
-                      { label: t("deliveries"), value: `${animatedDeliveries} active`, icon: Truck, color: "from-blue-400 to-cyan-500", labelColor: "text-blue-500" }
+                      { label: "Total Orders", value: orders.length, trend: `${orders.length} placed`, icon: Package, color: "bg-indigo-50 text-indigo-500 dark:bg-indigo-950/20" },
+                      { label: "Total Spent", value: `₹${totalSpent.toLocaleString("en-IN")}`, trend: `₹${(totalSpent * 0.12).toFixed(0)} saved`, icon: DollarSign, color: "bg-amber-50 text-amber-500 dark:bg-amber-955/20" },
+                      { label: "Reward Points", value: Math.floor(totalSpent * 0.5).toLocaleString("en-IN"), trend: `+${Math.floor(totalSpent * 0.05).toFixed(0)} this month`, icon: Sparkles, color: "bg-purple-50 text-purple-500 dark:bg-purple-955/20" },
+                      { label: "Active Deliveries", value: activeShipments, trend: activeShipments > 0 ? "In Transit" : "All Delivered", icon: Truck, color: "bg-blue-50 text-blue-500 dark:bg-blue-955/20" },
+                      { label: "Wishlist Items", value: wishlistIds.length, trend: `${wishlistIds.length} items pinned`, icon: Heart, color: "bg-pink-50 text-pink-500 dark:bg-pink-955/20" },
+                      { label: "Coupons", value: coupons.length, trend: coupons.length > 0 ? "Available" : "No active coupon", icon: Percent, color: "bg-emerald-50 text-emerald-500 dark:bg-emerald-955/20" }
                     ].map((stat, idx) => {
                       const Icon = stat.icon;
                       return (
-                        <div key={idx} className="rounded-xl border border-slate-200/50 dark:border-slate-800 bg-white/50 dark:bg-slate-900/30 p-3.5 flex items-center justify-between glass-panel luxury-card-glow shadow-2xs">
-                          <div className="text-left space-y-1 min-w-0">
-                            <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 block truncate">
+                        <div key={idx} className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 p-4 rounded-2xl flex items-center gap-3 shadow-[0_2px_12px_rgba(0,0,0,0.01)]">
+                          <div className={`h-10 w-10 rounded-xl ${stat.color} flex items-center justify-center shrink-0`}>
+                            <Icon size={16} />
+                          </div>
+                          <div className="text-left space-y-0.5 min-w-0">
+                            <span className="text-[10px] font-bold text-slate-450 dark:text-slate-500 block truncate">
                               {stat.label}
                             </span>
-                            <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white leading-none tracking-tight">
+                            <h3 className="text-base font-extrabold text-slate-900 dark:text-white leading-none tracking-tight">
                               {stat.value}
                             </h3>
-                          </div>
-                          <div className={`h-8 w-8 rounded-lg bg-gradient-to-br ${stat.color} text-slate-100 dark:text-white flex items-center justify-center shrink-0 shadow-sm`}>
-                            <Icon size={14} />
+                            <span className={`text-[8.5px] font-black block truncate ${stat.trend.startsWith("↑") || stat.trend.includes("saved") || stat.trend.includes("+") ? "text-emerald-500" : "text-slate-400"}`}>
+                              {stat.trend}
+                            </span>
                           </div>
                         </div>
                       );
                     })}
                   </div>
 
-                  {/* Main Profile Dashboard Split */}
-                  <div className="grid grid-cols-1 xl:grid-cols-[380px_1fr] gap-6 items-start">
+                  {/* Mid-section Grid split (40% Member, 60% Orders) */}
+                  <div className="grid grid-cols-1 xl:grid-cols-[1.5fr_2fr] gap-6 items-start">
                     
-                    {/* LEFT COLUMN: loyalty status and wallet details */}
-                    <div className="space-y-6 min-w-0">
+                    {/* VIP Member Centerpiece Card */}
+                    <div className="rounded-[24px] bg-[#6366f1] text-white p-6 shadow-[0_15px_30px_-5px_rgba(99,102,241,0.25)] flex flex-col justify-between h-[300px] relative overflow-hidden">
+                      <div className="absolute inset-0 bg-gradient-to-tr from-indigo-700 via-indigo-600 to-purple-600 opacity-90 z-0" />
                       
-                      {/* VIP Loyalty Card Widget */}
-                      <div className="rounded-[24px] border border-slate-200/40 dark:border-slate-800 bg-white dark:bg-slate-900/30 p-4 glass-panel luxury-card-glow space-y-4">
-                        <div className="text-left">
-                          <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
-                            <Award size={13} className="text-orange-500" />
-                            <span>VIP Loyalty Status</span>
-                          </h4>
-                        </div>
+                      <span className="absolute right-[-40px] bottom-[-20px] text-[200px] font-black text-white/[0.04] uppercase leading-none select-none pointer-events-none z-0">
+                        VIP
+                      </span>
 
-                        {/* Card container */}
-                        <div className="w-full relative z-10">
-                          {renderVIPCard()}
+                      <div className="flex justify-between items-start relative z-10">
+                        <div className="text-left space-y-1">
+                          <div className="flex items-center gap-1.5">
+                            <Award size={16} className="text-amber-300" />
+                            <span className="text-sm font-black tracking-wide uppercase">{tier.name}</span>
+                            <span className="text-[8px] font-black px-1.5 py-0.5 rounded bg-white/20 uppercase tracking-widest leading-none">VIP</span>
+                          </div>
+                          <p className="text-[11px] text-white/70 font-semibold">You are enjoying our highest membership tier.</p>
                         </div>
+                      </div>
 
-                        {/* Loyalty tier progression indicator */}
-                        <div className="space-y-1.5 text-left bg-slate-100/50 dark:bg-slate-900/20 p-3 rounded-xl border border-slate-200/30 dark:border-slate-800/80">
-                          <div className="flex justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
-                            <span className="uppercase text-[8.5px] tracking-wider">Next Tier Milestone</span>
-                            <span className="text-orange-500 font-mono text-[9.5px]">{progressInfo.progressPercent.toFixed(0)}%</span>
+                      <div className="grid grid-cols-2 gap-4 relative z-10 text-left mt-4">
+                        <div>
+                          <p className="text-[8px] font-black tracking-wider uppercase text-white/50 leading-none">Reward Points</p>
+                          <div className="flex items-center gap-1.5 mt-2">
+                            <span className="h-3 w-3 rounded-full bg-amber-400 flex items-center justify-center border border-amber-300"><Star size={7} className="fill-amber-900 text-amber-900" /></span>
+                            <span className="font-mono text-base sm:text-lg font-black tracking-wide">{Math.floor(totalSpent * 0.5).toLocaleString("en-IN")}</span>
                           </div>
-                          <div className="w-full bg-slate-200 dark:bg-slate-800/60 rounded-full h-1.5 overflow-hidden">
-                            <motion.div 
-                              className="bg-gradient-to-r from-orange-500 via-amber-500 to-indigo-500 h-full rounded-full" 
-                              style={{ width: `${progressInfo.progressPercent}%` }}
-                              initial={{ width: 0 }}
-                              animate={{ width: `${progressInfo.progressPercent}%` }}
-                              transition={{ duration: 1.2, ease: "easeOut" }}
-                            />
-                          </div>
-                          <p className="text-[9.5px] text-slate-500 dark:text-slate-500 leading-normal font-semibold">
-                            {totalSpent >= 30000
-                              ? "Maximum Diamond VIP level unlocked!"
-                              : totalSpent >= 15000
-                                ? `₹${(30000 - totalSpent).toLocaleString()} spent needed to unlock Diamond VIP`
-                                : totalSpent >= 5000
-                                  ? `₹${(15000 - totalSpent).toLocaleString()} spent needed to unlock Platinum VIP`
-                                  : `₹${(5000 - totalSpent).toLocaleString()} spent needed to unlock Gold Tier`}
+                        </div>
+                        <div>
+                          <p className="text-[8px] font-black tracking-wider uppercase text-white/50 leading-none">Cashback Rate</p>
+                          <p className="text-base sm:text-lg font-mono font-black text-emerald-350 mt-1.5">
+                            {totalSpent > 30000 ? "8.0%" : totalSpent > 15000 ? "5.0%" : totalSpent > 5000 ? "3.0%" : "1.0%"}
                           </p>
-                          <div className="pt-2 border-t border-slate-200/30 dark:border-slate-800/80 flex flex-wrap gap-1.5 mt-2">
-                            {totalSpent >= 30000 && <span className="text-[8px] font-black uppercase bg-blue-500/10 text-blue-500 dark:text-blue-400 px-1.5 py-0.5 rounded-md border border-blue-500/10">24/7 Concierge</span>}
-                            {totalSpent >= 15000 && <span className="text-[8px] font-black uppercase bg-purple-500/10 text-purple-500 dark:text-purple-400 px-1.5 py-0.5 rounded-md border border-purple-500/10">AI Try-On VIP</span>}
-                            {totalSpent >= 5000 ? <span className="text-[8px] font-black uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded-md border border-emerald-500/10">Express Delivery</span> : <span className="text-[8px] font-black uppercase bg-slate-500/10 text-slate-500 px-1.5 py-0.5 rounded-md border border-slate-500/10">Standard Shipping</span>}
-                            <span className="text-[8px] font-black uppercase bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded-md border border-amber-500/10">Cashback Active</span>
-                          </div>
                         </div>
                       </div>
 
-                      {/* Rewards & Coupons Console */}
-                      <div className="rounded-[24px] border border-slate-200/40 dark:border-slate-800 bg-white dark:bg-slate-900/30 p-4 glass-panel luxury-card-glow space-y-4">
-                        <div className="text-left">
-                          <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
-                            <CreditCard size={13} className="text-emerald-500" />
-                            <span>Wallet & Rewards</span>
-                          </h4>
+                      <div className="space-y-2 relative z-10 text-left pt-3">
+                        <div className="flex justify-between items-baseline text-[9.5px] font-bold text-white/80">
+                          <span>Next Tier: {progressInfo.nextTierName}</span>
+                          <span className="font-mono font-black">{progressInfo.progressPercent.toFixed(0)}%</span>
                         </div>
-
-                        <div className="space-y-2.5">
-                          {/* Cashback Balance */}
-                          <div className="p-3 rounded-xl border border-slate-200/40 dark:border-slate-800 bg-emerald-500/5 flex justify-between items-center text-left">
-                            <div>
-                              <p className="text-[8.5px] font-black uppercase tracking-wider text-emerald-500">{t("cashback_balance")}</p>
-                              <p className="text-sm font-black text-slate-900 dark:text-white mt-0.5">₹{Math.floor(totalSpent * 0.05).toLocaleString("en-IN")}</p>
-                            </div>
-                            <span className="text-[9px] font-black px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">Active</span>
-                          </div>
-
-                          {/* Available Coupons */}
-                          <div className="p-3 rounded-xl border border-slate-200/40 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/10 flex justify-between items-center text-left">
-                            <div>
-                              <p className="text-[8.5px] font-black uppercase tracking-wider text-slate-400">{t("available_coupons")}</p>
-                              <p className="text-xs font-black text-slate-900 dark:text-white mt-0.5">2 Coupons Available</p>
-                            </div>
-                            <span className="text-[8.5px] font-black bg-purple-500/10 text-purple-400 border border-purple-500/20 px-2 py-0.5 rounded uppercase tracking-wider">VIP500</span>
-                          </div>
+                        <div className="w-full bg-white/20 rounded-full h-1.5 overflow-hidden">
+                          <div className="bg-white h-full rounded-full transition-all duration-500" style={{ width: `${progressInfo.progressPercent}%` }} />
                         </div>
+                        <p className="text-[9px] text-white/60 font-semibold tracking-wide">
+                          {progressInfo.rewardPreview}
+                        </p>
                       </div>
-
                     </div>
 
-                    {/* RIGHT COLUMN: RECENT DELIVERIES, LOYALTY PRIVILEGES & ACTIVITIES */}
-                    <div className="space-y-6 min-w-0">
-                      
-                      {/* Recent Deliveries */}
-                      <div className="rounded-[24px] border border-slate-200/40 dark:border-slate-800 bg-white dark:bg-slate-900/30 p-4 glass-panel luxury-card-glow text-left flex flex-col justify-between">
-                        <div className="space-y-0.5">
-                          <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
-                            <Clock size={13} className="text-orange-500 animate-spin-slow" />
-                            <span>Recent Deliveries</span>
-                          </h4>
-                          <p className="text-[9.5px] text-slate-400 dark:text-slate-500 font-bold">Track the path of your active products.</p>
-                        </div>
-
-                        <div className="space-y-3 flex-1 mt-3 overflow-y-auto max-h-48 custom-scrollbar pr-1">
-                          {orders.length === 0 ? (
-                            <div className="text-center py-4 text-slate-400 dark:text-slate-600 text-[10px] font-semibold uppercase tracking-wider">
-                              No orders placed yet
-                            </div>
-                          ) : (
-                            orders.slice(0, 2).map((order, idx) => (
-                              <div key={order._id || idx} className="rounded-xl border border-slate-200/40 dark:border-slate-800/80 p-2.5 bg-slate-50/50 dark:bg-slate-950/20 flex flex-col gap-2 relative group hover:border-orange-500/10 transition-colors">
-                                <div className="flex justify-between items-center text-[9px] font-black uppercase">
-                                  <span className="text-slate-500 dark:text-slate-500 font-mono">ID: #{order._id?.slice(-8).toUpperCase()}</span>
-                                  <span className={`px-1.5 py-0.5 rounded-md ${order.orderStatus?.toLowerCase() === "delivered" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-amber-500/10 text-amber-500 border border-amber-500/20" }`}>
-                                    {order.orderStatus || "Processing"}
-                                  </span>
-                                </div>
-
-                                <div className="flex justify-between items-end">
-                                  <div>
-                                    <p className="text-xs font-black text-slate-900 dark:text-white">₹{order.amount.toLocaleString("en-IN")}</p>
-                                    <p className="text-[8.5px] text-slate-400 font-bold mt-0.5">{new Date(order.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</p>
-                                  </div>
-                                  <button
-                                    onClick={() => navigate("/orderdetail")}
-                                    className="h-5.5 w-5.5 rounded bg-slate-200/50 dark:bg-slate-800/80 flex items-center justify-center text-slate-600 dark:text-slate-300 group-hover:bg-orange-500 group-hover:text-white transition-all cursor-pointer"
-                                  >
-                                    <ArrowRight size={10} />
-                                  </button>
-                                </div>
-                              </div>
-                            ))
-                          )}
-                          </div>
+                    {/* Recent Orders List Cards */}
+                    <div className="rounded-[24px] bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 p-5 shadow-[0_2px_12px_rgba(0,0,0,0.015)] h-[300px] flex flex-col justify-between text-left">
+                      <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <h4 className="text-sm font-black text-[#0B0F19] dark:text-white uppercase tracking-wider">Recent Orders</h4>
+                        <button 
+                          onClick={() => navigate("/orderdetail")}
+                          className="text-xs font-black uppercase text-indigo-600 dark:text-indigo-400 hover:underline bg-transparent border-none cursor-pointer"
+                        >
+                          View All Orders
+                        </button>
                       </div>
 
-                      {/* Recent Activity Feed */}
-                      <div className="rounded-[24px] border border-slate-200/40 dark:border-slate-800 bg-white dark:bg-slate-900/30 p-4 glass-panel luxury-card-glow text-left flex flex-col justify-between">
-                        <div className="space-y-0.5">
-                          <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
-                            <Bell size={13} className="text-purple-400 animate-pulse" />
-                            <span>{t("recent_activity")}</span>
-                          </h4>
-                          <p className="text-[9.5px] text-slate-400 dark:text-slate-500 font-bold">Latest status updates of your account profile.</p>
-                        </div>
+                      <div className="flex-1 mt-3 space-y-3.5 overflow-y-auto custom-scrollbar pr-1">
+                        {orders.length === 0 ? (
+                          <div className="text-center py-8 text-slate-400 dark:text-slate-600 text-[10px] font-semibold uppercase tracking-wider">
+                            No recent orders found
+                          </div>
+                        ) : (
+                          orders.slice(0, 2).map((order) => {
+                            const status = order.orderStatus?.toLowerCase() || "processing";
+                            const isDelivered = status === "delivered";
+                            const isShipped = status === "shipped" || isDelivered;
 
-                        <div className="space-y-2.5 flex-1 mt-3">
-                          {[
-                            { title: "Cashback Earned", desc: `₹${Math.floor(totalSpent * 0.05).toLocaleString()} added to rewards balance`, time: "Just Now", status: "emerald" },
-                            { title: "VIP Tier Upgraded", desc: `Welcome to ${tier.name}!`, time: "1 day ago", status: "purple" },
-                            { title: "Order Delivered", desc: "Item #CN-88394 has been delivered successfully", time: "3 days ago", status: "blue" },
-                            { title: "Reward Redeemed", desc: "Redeemed 500 Points for discount voucher", time: "1 week ago", status: "orange" }
-                          ].map((act, aIdx) => {
-                            const statusColorMap = {
-                              emerald: "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]",
-                              purple: "bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.6)]",
-                              blue: "bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]",
-                              orange: "bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.6)]",
-                            };
                             return (
-                              <div key={aIdx} className="flex gap-2 text-left">
-                                <span className={`h-1.5 w-1.5 rounded-full mt-1.5 shrink-0 ${statusColorMap[act.status] || 'bg-slate-500'}`} />
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-[11px] font-black text-slate-900 dark:text-white leading-tight">{act.title}</p>
-                                  <p className="text-[9px] text-slate-500 dark:text-slate-500 font-semibold leading-normal mt-0.5 truncate">{act.desc}</p>
+                              <div key={order._id} className="flex gap-4 items-center justify-between group hover:bg-slate-50/50 dark:hover:bg-slate-950/20 p-2 rounded-2xl transition duration-200">
+                                <div className="h-14 w-14 rounded-xl border border-slate-200/60 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 overflow-hidden flex items-center justify-center p-1.5 shrink-0">
+                                  <img 
+                                    src={order.items?.[0]?.image?.startsWith("http") ? order.items[0].image : `${backendUrl}/${order.items?.[0]?.image || ""}`} 
+                                    alt="" 
+                                    className="h-full w-full object-contain" 
+                                  />
                                 </div>
-                                <span className="text-[8px] font-bold text-slate-400 shrink-0 mt-0.5">{act.time}</span>
+
+                                <div className="flex-1 min-w-0 text-left">
+                                  <h5 className="text-xs font-black text-slate-900 dark:text-white truncate max-w-[180px]">{order.items?.[0]?.name || "Purchased Product"}</h5>
+                                  <p className="text-[9.5px] text-slate-400 dark:text-slate-500 font-bold mt-0.5">Order #{order._id?.slice(-8).toUpperCase()}</p>
+                                  <p className="text-xs font-extrabold text-slate-900 dark:text-white mt-1">₹{order.amount.toLocaleString("en-IN")}</p>
+                                </div>
+
+                                <div className="text-right space-y-2 shrink-0">
+                                  <div className="flex flex-col items-end">
+                                    <span className={`px-2 py-0.5 text-[8.5px] font-black uppercase rounded ${isDelivered ? "bg-emerald-500/10 text-emerald-500" : "bg-orange-500/10 text-orange-500"}`}>
+                                      {order.orderStatus || "Processing"}
+                                    </span>
+                                    <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold mt-1 block">
+                                      {isDelivered ? "Delivered successfully" : "Arriving soon"}
+                                    </span>
+                                  </div>
+
+                                  {/* Progress pathway dots */}
+                                  <div className="flex items-center gap-1.5 justify-end">
+                                    {[1, 2, 3, 4].map((stepIdx) => {
+                                      let stepActive = false;
+                                      if (status === "delivered") stepActive = true;
+                                      else if (status === "shipped") stepActive = stepIdx <= 3;
+                                      else stepActive = stepIdx <= 2;
+                                      
+                                      return (
+                                        <span 
+                                          key={stepIdx} 
+                                          className={`h-1.5 w-1.5 rounded-full transition-all duration-300 ${stepActive ? "bg-indigo-500" : "bg-slate-200 dark:bg-slate-800"}`} 
+                                        />
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+
+                                <button 
+                                  onClick={() => navigate(`/orderdetail`)}
+                                  className="h-7 w-7 rounded-full bg-slate-100/50 hover:bg-slate-200 dark:bg-slate-800 text-slate-455 dark:text-slate-300 flex items-center justify-center border-none cursor-pointer"
+                                >
+                                  <ChevronRight size={14} />
+                                </button>
                               </div>
                             );
-                          })}
-                        </div>
+                          })
+                        )}
                       </div>
-
                     </div>
 
                   </div>
 
+                  {/* Bottom Segment Layout (3 Columns matching mockups) */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    
+                    {/* Column 1: Wallet & Rewards */}
+                    <div className="rounded-lg bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 p-5 shadow-[0_2px_12px_rgba(0,0,0,0.01)] text-left flex flex-col justify-between h-[310px]">
+                      <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <h4 className="text-sm font-black text-[#0B0F19] dark:text-white uppercase tracking-wider">Wallet & Rewards</h4>
+                        <button 
+                          onClick={() => setActiveProfileTab("settings")}
+                          className="text-xs font-black uppercase text-indigo-600 dark:text-indigo-400 hover:underline bg-transparent border-none cursor-pointer"
+                        >
+                          View All
+                        </button>
+                      </div>
 
+                      <div className="flex-1 mt-3.5 space-y-2.5">
+                        {[
+                          { label: "Cashback Balance", val: `₹${Math.floor(totalSpent * 0.05).toLocaleString("en-IN")}`, icon: CreditCard, color: "text-emerald-500 bg-emerald-50 dark:bg-emerald-950/20" },
+                          { label: "Reward Points", val: `${Math.floor(totalSpent * 0.5).toLocaleString("en-IN")} pts`, icon: Sparkles, color: "text-indigo-500 bg-indigo-50 dark:bg-indigo-950/20" },
+                          { label: "Coupons Available", val: `${coupons.length} Coupon${coupons.length !== 1 ? 's' : ''}`, icon: Percent, color: "text-pink-500 bg-pink-50 dark:bg-pink-955/20" }
+                        ].map((w, wIdx) => {
+                          const Icon = w.icon;
+                          return (
+                            <div 
+                              key={wIdx} 
+                              onClick={() => {
+                                toast.info(`${w.label}: ${w.val} available! 💸`);
+                              }}
+                              className="flex items-center gap-3.5 p-3 rounded-2xl border border-slate-150/40 dark:border-slate-800/80 bg-slate-50/20 dark:bg-slate-950/10 hover:border-indigo-500/10 transition duration-200 cursor-pointer"
+                            >
+                              <div className={`h-9 w-9 rounded-xl ${w.color} flex items-center justify-center shrink-0`}>
+                                <Icon size={16} />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 leading-none">{w.label}</p>
+                                <p className="text-xs font-black text-slate-900 dark:text-white mt-1 leading-none">{w.val}</p>
+                              </div>
+                              <ChevronRight size={13} className="text-slate-400" />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
 
+                    {/* Column 2: Recent Activity Timeline */}
+                    <div className="rounded-lg bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 p-5 shadow-[0_2px_12px_rgba(0,0,0,0.01)] text-left flex flex-col justify-between h-[310px]">
+                      <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <h4 className="text-sm font-black text-[#0B0F19] dark:text-white uppercase tracking-wider">Recent Activity</h4>
+                        <button 
+                          onClick={() => {
+                            toast.info("Log list synchronized! 📋");
+                          }}
+                          className="text-xs font-black uppercase text-indigo-600 dark:text-indigo-400 hover:underline bg-transparent border-none cursor-pointer"
+                        >
+                          View All
+                        </button>
+                      </div>
+
+                      <div className="flex-1 mt-3.5 space-y-3 relative pl-3.5 border-l border-slate-200 dark:border-slate-800">
+                        {activitiesList.map((act, aIdx) => (
+                          <div key={aIdx} className="relative space-y-0.5 text-left">
+                            <span className={`absolute left-[-20.5px] top-[3.5px] h-2 w-2 rounded-full border border-white dark:border-slate-900 ${act.badge}`} />
+                            <div className="flex justify-between items-baseline">
+                              <h6 className="text-[11px] font-black text-slate-900 dark:text-white leading-none">{act.title}</h6>
+                              <span className="text-[8px] font-bold text-slate-400 dark:text-slate-500 font-mono shrink-0 pl-1">{act.time}</span>
+                            </div>
+                            <p className="text-[9.5px] text-slate-450 dark:text-slate-500 font-semibold leading-normal">{act.desc}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Column 3: Spending Overview Category breakdown */}
+                    <div className="rounded-lg bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 p-5 shadow-[0_2px_12px_rgba(0,0,0,0.01)] text-left flex flex-col justify-between h-[310px]">
+                      <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+                        <h4 className="text-sm font-black text-[#0B0F19] dark:text-white uppercase tracking-wider">Spending Overview</h4>
+                        <select className="text-[9.5px] font-black uppercase text-slate-650 bg-slate-50 dark:bg-slate-950/20 border border-slate-200/50 dark:border-slate-850 px-2 py-1 rounded-md outline-none cursor-pointer">
+                          <option>This Month</option>
+                          <option>Last 6 Months</option>
+                        </select>
+                      </div>
+
+                      <div className="flex-1 mt-3.5 space-y-3.5">
+                        <div className="flex justify-between items-center">
+                          <div className="text-left space-y-1">
+                            <span className="text-[9.5px] font-black uppercase tracking-wider text-slate-400">Total Spending</span>
+                            <h3 className="text-base font-extrabold text-[#0B0F19] dark:text-white leading-none">₹{totalSpent.toLocaleString("en-IN")}</h3>
+                            <span className="text-[9px] font-black text-emerald-500 block">
+                              {orders.length > 0 ? "↑ 22% vs last month" : "No orders this month"}
+                            </span>
+                          </div>
+
+                          {renderDonutChart()}
+                        </div>
+
+                        {/* Category legend splits with values and percentages */}
+                        <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 space-y-2">
+                          {spendingBreakdown.slice(0, 4).map((leg, lIdx) => (
+                            <div key={lIdx} className="flex justify-between items-center text-[10px] font-bold text-slate-700 dark:text-slate-300 select-none">
+                              <div className="flex items-center gap-2">
+                                <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: leg.color }} />
+                                <span className="font-semibold">{leg.name}</span>
+                              </div>
+                              <div className="flex gap-4 font-mono">
+                                <span>₹{leg.amount.toLocaleString("en-IN")}</span>
+                                <span className="text-slate-400">{leg.percent}%</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+
+                  {/* Horizontal Wishlist view is placed directly underneath the bottom layout components */}
+                  {wishlistedItems.length > 0 && (
+                    <div className="rounded-[24px] bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 p-5 shadow-[0_2px_12px_rgba(0,0,0,0.01)] text-left space-y-4">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h4 className="text-[10px] font-black uppercase tracking-wider text-[#0B0F19] dark:text-white flex items-center gap-1.5">
+                            <Heart size={13} className="text-pink-500" />
+                            <span>Your Curated Wishlist</span>
+                          </h4>
+                          <p className="text-[9.5px] text-slate-455 dark:text-slate-500 font-bold mt-0.5">Quick access to items you pinned for checkout.</p>
+                        </div>
+                        <button 
+                          onClick={() => navigate("/wishlist")}
+                          className="text-[9.5px] font-black uppercase bg-transparent text-orange-500 hover:underline cursor-pointer border-none"
+                        >
+                          View All
+                        </button>
+                      </div>
+
+                      <div className="flex gap-4 overflow-x-auto py-2 custom-scrollbar">
+                        {wishlistedItems.map((prod) => {
+                          const img = prod.images?.[0]?.startsWith("http") ? prod.images[0] : `${backendUrl}/${prod.images?.[0]}`;
+                          return (
+                            <div key={prod._id} className="w-[180px] rounded-2xl border border-slate-200/40 dark:border-slate-800 bg-white dark:bg-slate-950/45 p-3 shrink-0 space-y-2 text-left hover:shadow-md transition duration-300 relative group/wishitem">
+                              <button
+                                onClick={() => toggleFavorite(prod)}
+                                className="absolute top-2 right-2 h-6 w-6 rounded-full bg-slate-100 hover:bg-red-500/10 dark:bg-slate-900 flex items-center justify-center text-red-500 transition cursor-pointer border-none z-10"
+                              >
+                                <Trash2 size={11} />
+                              </button>
+                              <div className="h-24 w-full bg-slate-50 dark:bg-slate-900 rounded-xl overflow-hidden flex items-center justify-center p-2">
+                                <img src={img} alt={prod.name} className="h-full w-full object-contain hover:scale-105 transition duration-300" />
+                              </div>
+                              <h6 className="text-[11px] font-black text-slate-900 dark:text-white leading-tight truncate">{prod.name}</h6>
+                              <div className="flex justify-between items-baseline">
+                                <span className="text-xs font-black text-slate-900 dark:text-white">₹{prod.price.toLocaleString("en-IN")}</span>
+                                {prod.originalPrice > prod.price && (
+                                  <span className="text-[8.5px] font-black text-red-500">-{Math.round(((prod.originalPrice - prod.price) / prod.originalPrice) * 100)}%</span>
+                                )}
+                              </div>
+                              <button
+                                onClick={() => handleAddToCart(prod)}
+                                className="w-full text-[9px] font-black uppercase bg-slate-900 hover:bg-slate-800 dark:bg-orange-600 dark:hover:bg-orange-500 text-white py-1.5 rounded-lg border-none cursor-pointer"
+                              >
+                                Add to Cart
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </motion.div>
               )}
 
@@ -1061,12 +1145,12 @@ const Profile = () => {
                 >
                   <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b border-slate-200/50 dark:border-slate-900 pb-4">
                     <div>
-                      <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight uppercase">Saved Shipping Addresses</h3>
+                      <h3 className="text-lg font-black text-[#0B0F19] dark:text-white tracking-tight uppercase">Saved Shipping Addresses</h3>
                       <p className="text-xs text-slate-400 dark:text-slate-500 font-bold mt-0.5">Manage details for fast, single-click checkout workflows.</p>
                     </div>
                     <button
                       onClick={() => setShowAddressModal(true)}
-                      className="self-start sm:self-center inline-flex items-center gap-2 rounded-2xl bg-orange-500 hover:bg-orange-600 px-4.5 py-3 text-xs font-black uppercase tracking-wider text-slate-100 dark:text-white shadow-md active:scale-95 transition cursor-pointer"
+                      className="self-start sm:self-center inline-flex items-center gap-2 rounded-2xl bg-[#6366f1] hover:bg-indigo-700 px-4.5 py-3 text-xs font-black uppercase tracking-wider text-slate-100 dark:text-white shadow-md active:scale-95 transition cursor-pointer border-none"
                     >
                       <Plus size={14} />
                       <span>Add Address</span>
@@ -1074,7 +1158,7 @@ const Profile = () => {
                   </div>
 
                   {(!user.addresses || user.addresses.length === 0) ? (
-                    <div className="rounded-[32px] border border-dashed border-slate-200 dark:border-slate-800 p-12 text-center bg-slate-50/20 dark:bg-slate-950/10">
+                    <div className="rounded-[24px] border border-dashed border-slate-200 dark:border-slate-800 p-12 text-center bg-white dark:bg-slate-900">
                       <MapPin size={28} className="mx-auto text-slate-400 mb-3" />
                       <p className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">No saved addresses</p>
                       <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1.5 font-semibold">Your address list is currently empty. Click "Add Address" to populate.</p>
@@ -1084,7 +1168,7 @@ const Profile = () => {
                       {user.addresses.map((addr) => (
                         <div
                           key={addr._id}
-                          className="relative rounded-3xl border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900/30 p-5 flex flex-col justify-between group hover:border-orange-500/20 hover:shadow-lg transition-all duration-300 glass-panel"
+                          className="relative rounded-3xl border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 flex flex-col justify-between group hover:border-[#6366f1]/20 hover:shadow-lg transition-all duration-300"
                         >
                           <div className="space-y-2 pr-6 text-left break-words">
                             <p className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
@@ -1095,14 +1179,14 @@ const Profile = () => {
                               <p>{addr.city}, {addr.state}</p>
                               <p className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-widest">{addr.country}</p>
                             </div>
-                            <p className="text-xs text-slate-500 dark:text-slate-500 font-bold pt-2 border-t border-slate-100 dark:border-slate-800/80">
+                            <p className="text-xs text-slate-500 dark:text-slate-505 font-bold pt-2 border-t border-slate-100 dark:border-slate-800/80">
                               📞 {addr.phone}
                             </p>
                           </div>
 
                           <button
                             onClick={() => handleDeleteAddress(addr._id)}
-                            className="absolute top-5 right-5 text-slate-400 hover:text-red-500 transition cursor-pointer"
+                            className="absolute top-5 right-5 text-slate-400 hover:text-red-500 transition cursor-pointer bg-transparent border-none"
                             title="Delete Saved Address"
                           >
                             <Trash2 size={14} />
@@ -1125,7 +1209,7 @@ const Profile = () => {
                   className="space-y-8 text-left"
                 >
                   <div className="border-b border-slate-200/50 dark:border-slate-900 pb-4">
-                    <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight uppercase">Profile Credentials & Settings</h3>
+                    <h3 className="text-lg font-black text-[#0B0F19] dark:text-white tracking-tight uppercase">Profile Credentials & Settings</h3>
                     <p className="text-xs text-slate-400 dark:text-slate-500 font-bold mt-0.5">Edit credentials, security passwords, app reviews, and luxury visual settings.</p>
                   </div>
 
@@ -1133,45 +1217,45 @@ const Profile = () => {
                   <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-8">
 
                     {/* Credentials form card */}
-                    <div className="rounded-[32px] border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900/30 p-6 glass-panel space-y-6">
+                    <div className="rounded-[24px] border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-6">
                       <h4 className="text-xs font-black uppercase text-slate-900 dark:text-white tracking-wider">Account Credentials</h4>
 
                       <form onSubmit={handleUpdateProfile} className="space-y-5">
                         {/* Name Input */}
                         <div className="relative group">
-                          <User size={16} className="absolute left-4 top-[17px] text-slate-400 group-focus-within:text-orange-500 transition-colors" />
+                          <User size={16} className="absolute left-4 top-[17px] text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
                           <input
                             type="text"
                             required
                             value={editName}
                             onChange={(e) => setEditName(e.target.value)}
                             placeholder="Display Name"
-                            className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                            className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#070A13]/20 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                           />
                         </div>
 
                         {/* Email Input */}
                         <div className="relative group">
-                          <Mail size={16} className="absolute left-4 top-[17px] text-slate-400 group-focus-within:text-orange-500 transition-colors" />
+                          <Mail size={16} className="absolute left-4 top-[17px] text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
                           <input
                             type="email"
                             required
                             value={editEmail}
                             onChange={(e) => setEditEmail(e.target.value)}
                             placeholder="Email Address"
-                            className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                            className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#070A13]/20 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                           />
                         </div>
 
                         {/* Password Input (Optional Update) */}
                         <div className="relative group">
-                          <Lock size={16} className="absolute left-4 top-[17px] text-slate-400 group-focus-within:text-orange-500 transition-colors" />
+                          <Lock size={16} className="absolute left-4 top-[17px] text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
                           <input
                             type="password"
                             value={editPassword}
                             onChange={(e) => setEditPassword(e.target.value)}
                             placeholder="Update Password (leave blank to keep current)"
-                            className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                            className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#070A13]/20 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                           />
                         </div>
 
@@ -1179,7 +1263,7 @@ const Profile = () => {
                           <button
                             type="submit"
                             disabled={savingProfile}
-                            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-orange-500 hover:bg-orange-600 text-xs font-black uppercase tracking-wider text-slate-100 dark:text-white px-6 py-3.5 transition active:scale-95 disabled:opacity-50 shadow-md cursor-pointer"
+                            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#6366f1] hover:bg-indigo-750 text-xs font-black uppercase tracking-wider text-slate-100 dark:text-white px-6 py-3.5 transition active:scale-95 disabled:opacity-50 shadow-md cursor-pointer border-none"
                           >
                             {savingProfile ? (
                               <>
@@ -1195,10 +1279,10 @@ const Profile = () => {
                     </div>
 
                     {/* Preset Avatars & custom upload selection */}
-                    <div className="rounded-[32px] border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900/30 p-6 glass-panel space-y-5 flex flex-col justify-between">
+                    <div className="rounded-[24px] border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-5 flex flex-col justify-between">
                       <div>
                         <h4 className="text-xs font-black uppercase text-slate-900 dark:text-white tracking-wider">Luxury Avatar Presets</h4>
-                        <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold mt-1">Select an premium gradient design or upload a custom image file.</p>
+                        <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold mt-1">Select a premium gradient design or upload a custom image file.</p>
                       </div>
 
                       {/* Presets grid */}
@@ -1212,7 +1296,7 @@ const Profile = () => {
                                 setSelectedAvatar(avatar.id);
                                 toast.info(`Selected Preset: ${avatar.name} 🎨`);
                               }}
-                              className={`h-11 rounded-xl bg-gradient-to-tr ${avatar.gradient} relative cursor-pointer border ${isSelected ? "border-orange-500 ring-2 ring-orange-500/25 scale-102" : "border-white/10" } hover:scale-102 transition`}
+                              className={`h-11 rounded-xl bg-gradient-to-tr ${avatar.gradient} relative cursor-pointer border ${isSelected ? "border-indigo-500 ring-2 ring-indigo-500/25 scale-102" : "border-white/10" } hover:scale-102 transition`}
                               title={avatar.name}
                             >
                               {isSelected && (
@@ -1243,13 +1327,13 @@ const Profile = () => {
                         </button>
                         {selectedAvatar && selectedAvatar.startsWith("data:") && (
                           <div className="flex items-center gap-2">
-                            <div className="h-8 w-8 rounded-full overflow-hidden border border-slate-200 dark:border-slate-800 shrink-0">
+                            <div className="h-8 w-8 rounded-full overflow-hidden border border-slate-200 dark:border-slate-855 shrink-0">
                               <img src={selectedAvatar} alt="Upload preview" className="h-full w-full object-cover" />
                             </div>
                             <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">Custom Image Linked</span>
                             <button
                               onClick={() => setSelectedAvatar("")}
-                              className="text-red-500 hover:underline text-[9px] font-black uppercase ml-auto tracking-wider cursor-pointer"
+                              className="text-red-500 hover:underline text-[9px] font-black uppercase ml-auto tracking-wider cursor-pointer bg-transparent border-none"
                             >
                               Remove
                             </button>
@@ -1259,8 +1343,8 @@ const Profile = () => {
                     </div>
                   </div>
 
-                  {/* App rating comment feedback section inside tab settings */}
-                  <div className="rounded-[32px] border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900/30 p-6 sm:p-8 glass-panel space-y-6">
+                  {/* App rating comment feedback section */}
+                  <div className="rounded-[24px] border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 space-y-6">
                     <div>
                       <h4 className="text-xs font-black uppercase text-slate-900 dark:text-white tracking-wider">App Experience Feedback</h4>
                       <p className="text-[10.5px] text-slate-400 dark:text-slate-500 font-bold mt-1">
@@ -1276,7 +1360,7 @@ const Profile = () => {
                               key={star}
                               type="button"
                               onClick={() => setAppRating(star)}
-                              className="transition duration-150 hover:scale-110 active:scale-95 cursor-pointer text-slate-200 dark:text-slate-800 hover:text-amber-400"
+                              className="transition duration-150 hover:scale-110 active:scale-95 cursor-pointer text-slate-200 dark:text-slate-850 hover:text-amber-400 bg-transparent border-none outline-none"
                               title={`${star} Star${star > 1 ? 's' : ''}`}
                             >
                               <svg
@@ -1303,9 +1387,9 @@ const Profile = () => {
                           rows={4}
                           maxLength={500}
                           placeholder="Share details about checkout speeds, product quality, or virtual fitting room options..."
-                          className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-950/40 p-4 text-xs font-semibold outline-none dark: transition text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-600 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                          className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-55/30 dark:bg-[#070A13]/40 p-4 text-xs font-semibold outline-none text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-650 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                         />
-                        <div className="mt-1 flex justify-end text-[9px] text-slate-400 dark:text-slate-500 font-mono">
+                        <div className="mt-1 flex justify-end text-[9px] text-slate-400 dark:text-slate-550 font-mono">
                           <span>{appComment.length} / 500 characters</span>
                         </div>
                       </div>
@@ -1314,7 +1398,7 @@ const Profile = () => {
                         <button
                           type="submit"
                           disabled={submittingReview || appRating === 0}
-                          className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-950 dark:bg-orange-600 hover:bg-slate-800 dark:hover:bg-orange-500 text-slate-100 dark:text-white text-xs font-black uppercase tracking-wider px-5 py-3 transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-md cursor-pointer"
+                          className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-950 dark:bg-orange-650 hover:bg-slate-800 dark:hover:bg-orange-500 text-slate-100 dark:text-white text-xs font-black uppercase tracking-wider px-5 py-3 transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-md cursor-pointer border-none"
                         >
                           <span>{user.appReview ? "Update Feedback" : "Submit Feedback"}</span>
                         </button>
@@ -1335,7 +1419,7 @@ const Profile = () => {
       {showAddressModal && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-fade-in">
           <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[28px] shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-left">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-55/50 dark:bg-slate-900/50 text-left">
               <div>
                 <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">Add Shipping Address</h3>
                 <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">Enter delivery credentials</p>
@@ -1343,7 +1427,7 @@ const Profile = () => {
               <button
                 type="button"
                 onClick={() => setShowAddressModal(false)}
-                className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition cursor-pointer"
+                className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition cursor-pointer bg-transparent border-none"
               >
                 <X size={16} />
               </button>
@@ -1358,7 +1442,7 @@ const Profile = () => {
                     required
                     value={newAddress.firstName}
                     onChange={(e) => setNewAddress({ ...newAddress, firstName: e.target.value })}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     placeholder="John"
                   />
                 </div>
@@ -1368,7 +1452,7 @@ const Profile = () => {
                     type="text"
                     value={newAddress.lastName}
                     onChange={(e) => setNewAddress({ ...newAddress, lastName: e.target.value })}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     placeholder="Doe"
                   />
                 </div>
@@ -1382,18 +1466,18 @@ const Profile = () => {
                     required
                     value={newAddress.email}
                     onChange={(e) => setNewAddress({ ...newAddress, email: e.target.value })}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     placeholder="john@example.com"
                   />
                 </div>
                 <div>
-                  <label className="block text-[9px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider mb-1">Phone Number *</label>
+                  <label className="block text-[9px] font-black uppercase text-slate-405 dark:text-slate-500 tracking-wider mb-1">Phone Number *</label>
                   <input
                     type="text"
                     required
                     value={newAddress.phone}
                     onChange={(e) => setNewAddress({ ...newAddress, phone: e.target.value })}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     placeholder="e.g. +91 9988776655"
                   />
                 </div>
@@ -1406,7 +1490,7 @@ const Profile = () => {
                   required
                   value={newAddress.street}
                   onChange={(e) => setNewAddress({ ...newAddress, street: e.target.value })}
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                   placeholder="Apartment, block, street details"
                 />
               </div>
@@ -1419,18 +1503,18 @@ const Profile = () => {
                     required
                     value={newAddress.city}
                     onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     placeholder="City"
                   />
                 </div>
                 <div>
-                  <label className="block text-[9px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider mb-1">State *</label>
+                  <label className="block text-[9px] font-black uppercase text-slate-400 dark:text-slate-550 tracking-wider mb-1">State *</label>
                   <input
                     type="text"
                     required
                     value={newAddress.state}
                     onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value })}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     placeholder="State"
                   />
                 </div>
@@ -1441,7 +1525,7 @@ const Profile = () => {
                     required
                     value={newAddress.country}
                     onChange={(e) => setNewAddress({ ...newAddress, country: e.target.value })}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     placeholder="Country"
                   />
                 </div>
@@ -1451,14 +1535,14 @@ const Profile = () => {
                 <button
                   type="button"
                   onClick={() => setShowAddressModal(false)}
-                  className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"
+                  className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer bg-transparent"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={adding}
-                  className="px-5 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-xs font-black uppercase tracking-wider text-slate-100 dark:text-white shadow-md active:scale-95 transition cursor-pointer disabled:opacity-50"
+                  className="px-5 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-xs font-black uppercase tracking-wider text-slate-100 dark:text-white shadow-md active:scale-95 transition cursor-pointer disabled:opacity-50 border-none"
                 >
                   {adding ? "Saving..." : "Save Address"}
                 </button>

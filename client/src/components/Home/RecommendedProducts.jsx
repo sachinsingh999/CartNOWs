@@ -28,13 +28,13 @@ const RecommendedProducts = ({ recommended = [], trending = [], topRated = [], n
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[22%_78%] gap-6 lg:gap-8 items-start mb-8 select-none text-left">
-      
+
       {/* Premium Luxury Sidebar Panel - Purple/Indigo theme */}
-      <div className="relative overflow-hidden rounded-2xl p-5 text-slate-100 dark:text-white flex flex-col justify-between shadow-xl shadow-purple-500/5 dark:shadow-black/50 h-[390px] text-left bg-slate-950 border border-slate-800/80">
+      <div className="relative overflow-hidden rounded-none p-5 text-slate-100 dark:text-white flex flex-col justify-between shadow-xl shadow-purple-500/5 dark:shadow-black/50 h-[390px] text-left bg-slate-950 border border-slate-800/80">
         {/* Glowing Mesh Animation */}
         <div className="absolute top-[-30%] left-[-30%] w-[100%] h-[100%] bg-gradient-to-tr from-purple-500/15 to-transparent rounded-full blur-[90px] pointer-events-none animate-pulse" style={{ animationDuration: "9s" }} />
         <div className="absolute bottom-[-30%] right-[30%] w-[100%] h-[100%] bg-gradient-to-tr from-indigo-500/15 to-transparent rounded-full blur-[90px] pointer-events-none animate-pulse" style={{ animationDuration: "7s" }} />
-        
+
         <div className="space-y-3.5 relative z-10">
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-purple-500/10 border border-purple-500/30 rounded-full text-[9px] font-black uppercase tracking-wider text-purple-400">
             <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
@@ -57,7 +57,7 @@ const RecommendedProducts = ({ recommended = [], trending = [], topRated = [], n
             <button
               key={tab.id}
               onClick={() => setActiveRecommendedTab(tab.id)}
-              className={`flex items-center gap-3 px-4 py-2 rounded-xl text-[11px] font-bold uppercase tracking-wider text-left transition-all duration-200 cursor-pointer ${ activeRecommendedTab === tab.id ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-slate-100 dark:text-white shadow-md hover:brightness-105 active:scale-[0.98]" : "bg-slate-900/40 text-slate-400 hover:bg-slate-900/60 hover:text-white border border-white/5" }`}
+              className={`flex items-center gap-3 px-4 py-2 rounded-none text-[11px] font-bold uppercase tracking-wider text-left transition-all duration-200 cursor-pointer ${activeRecommendedTab === tab.id ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-slate-100 dark:text-white shadow-md hover:brightness-105 active:scale-[0.98]" : "bg-slate-900/40 text-slate-400 hover:bg-slate-900/60 hover:text-white border border-white/5"}`}
             >
               {React.createElement(tab.icon, { size: 13, className: `${tab.iconColor} shrink-0` })}
               <span>{tab.label}</span>
@@ -67,7 +67,7 @@ const RecommendedProducts = ({ recommended = [], trending = [], topRated = [], n
 
         <button
           onClick={() => navigate("/product")}
-          className="group relative w-full py-3 bg-slate-900 hover:bg-slate-800 text-slate-100 dark:text-white font-extrabold text-[10px] uppercase tracking-wider rounded-xl shadow-md transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 border border-white/5 z-10"
+          className="group relative w-full py-3 bg-slate-900 hover:bg-slate-800 text-slate-100 dark:text-white font-extrabold text-[10px] uppercase tracking-wider rounded-none shadow-md transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 border border-white/5 z-10"
         >
           <span>Explore Catalog</span>
           <ArrowRight size={12} className="transition-transform duration-200 group-hover:translate-x-1" />
@@ -82,7 +82,7 @@ const RecommendedProducts = ({ recommended = [], trending = [], topRated = [], n
             <span>Recommended Lineup</span>
             <span className="h-1.5 w-1.5 rounded-full bg-purple-500 animate-pulse" />
           </h3>
-          
+
           {/* Glassmorphism navigation buttons */}
           <div className="flex gap-2">
             <button
@@ -111,9 +111,9 @@ const RecommendedProducts = ({ recommended = [], trending = [], topRated = [], n
             className="flex gap-3 md:gap-4 lg:gap-5 overflow-x-hidden scroll-smooth snap-x snap-mandatory pb-1"
           >
             {recommendedFiltered.map((p) => (
-              <div 
-                key={p._id} 
-                className="min-w-[calc((100%-0.75rem)/2)] max-w-[calc((100%-0.75rem)/2)] w-[calc((100%-0.75rem)/2)] md:min-w-[calc((100%-2*1rem)/3)] md:max-w-[calc((100%-2*1rem)/3)] md:w-[calc((100%-2*1rem)/3)] lg:min-w-[calc((100%-3*1.25rem)/4)] lg:max-w-[calc((100%-3*1.25rem)/4)] lg:w-[calc((100%-3*1.25rem)/4)] snap-start flex-shrink-0 border border-slate-200/50 dark:border-slate-800 rounded-2xl overflow-hidden shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-300"
+              <div
+                key={p._id}
+                className="min-w-[calc((100%-0.75rem)/2)] max-w-[calc((100%-0.75rem)/2)] w-[calc((100%-0.75rem)/2)] md:min-w-[calc((100%-2*1rem)/3)] md:max-w-[calc((100%-2*1rem)/3)] md:w-[calc((100%-2*1rem)/3)] lg:min-w-[calc((100%-3*1.25rem)/4)] lg:max-w-[calc((100%-3*1.25rem)/4)] lg:w-[calc((100%-3*1.25rem)/4)] snap-start flex-shrink-0 border border-slate-200/50 dark:border-slate-800 rounded-none overflow-hidden shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-300"
               >
                 <ProductCard
                   product={p}

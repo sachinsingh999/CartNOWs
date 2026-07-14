@@ -6,8 +6,10 @@ import { backendUrl } from "../config";
 import { Star, Eye, ShoppingCart, Heart, BarChart2, Truck, CheckCircle2 } from "lucide-react";
 import { useComparison } from "../context/ComparisonContext";
 import { getAverageRating, getReviewCount } from "../utils/productRatings";
+import { triggerFlyToCart } from "../utils/animation";
 
 const ProductCard = ({ product, compact = false, onQuickView }) => {
+  const [isBursting, setIsBursting] = useState(false);
   const navigate = useNavigate();
   const [imgIdx, setImgIdx] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
@@ -23,6 +25,8 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
 
   const toggleFavorite = async (e) => {
     e.stopPropagation();
+    setIsBursting(true);
+    setTimeout(() => setIsBursting(false), 450);
     if (token) {
       try {
         const response = await axios.post(
@@ -35,6 +39,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
           const updatedList = response.data.wishlist || [];
           localStorage.setItem("wishlist", JSON.stringify(updatedList));
           toast.success(!isFavorite ? "Added to wishlist" : "Removed from wishlist");
+          window.dispatchEvent(new Event("wishlistUpdate"));
         }
       } catch (error) {
         console.log(error);
@@ -52,12 +57,17 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
         toast.success("Removed from wishlist");
       }
       localStorage.setItem("wishlist", JSON.stringify(list));
+      window.dispatchEvent(new Event("wishlistUpdate"));
     }
   };
 
   const handleAddToCart = async (e) => {
     e.stopPropagation();
     if (isOOS) return;
+
+    if (e.clientX && e.clientY) {
+      triggerFlyToCart(e.clientX, e.clientY, getSrc(0));
+    }
 
     const size = product.sizes?.length ? product.sizes[0] : "standard";
 
@@ -66,7 +76,9 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
       const key = `${product._id}_${size}`;
       guestCart[key] = (guestCart[key] || 0) + 1;
       localStorage.setItem("cart", JSON.stringify(guestCart));
-      window.dispatchEvent(new Event("cartUpdate"));
+      setTimeout(() => {
+        window.dispatchEvent(new Event("cartUpdate"));
+      }, 850);
       toast.success("Added to cart! 🛍️");
     } else {
       try {
@@ -76,7 +88,9 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
           { headers: { Authorization: `Bearer ${token}` } }
         );
         if (res.data.success) {
-          window.dispatchEvent(new Event("cartUpdate"));
+          setTimeout(() => {
+            window.dispatchEvent(new Event("cartUpdate"));
+          }, 850);
           toast.success("Added to cart! 🛍️");
         } else {
           toast.error(res.data.message);
@@ -162,7 +176,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
         } catch (e) { }
         navigate(`/product/${product._id}`);
       }}
-      className="group relative flex flex-col bg-white dark:bg-slate-900 overflow-hidden hover:shadow-[0_15px_30px_rgba(0,0,0,0.1)] transition-all duration-300 cursor-pointer text-left w-full h-full"
+      className="group relative flex flex-col bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-lg overflow-hidden hover:shadow-[0_15px_30px_rgba(0,0,0,0.15)] hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-300 cursor-pointer text-left w-full h-full"
     >
       {/* Image Section */}
       <div className="relative w-full h-[290px] bg-slate-50 dark:bg-slate-950 flex items-center justify-center select-none overflow-hidden">
@@ -182,7 +196,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
         >
           <Heart
             size={14}
-            className={`transition-colors duration-300 ${isFavorite ? "text-rose-500 fill-rose-500 stroke-none" : "text-slate-500 dark:text-slate-400 hover:text-rose-500"}`}
+            className={`transition-colors duration-300 ${isFavorite ? "text-rose-500 fill-rose-500 stroke-none" : "text-slate-500 dark:text-slate-400 hover:text-rose-500"} ${isBursting ? "heart-burst" : ""}`}
           />
         </button>
 

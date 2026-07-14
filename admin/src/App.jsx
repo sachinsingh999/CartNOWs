@@ -21,7 +21,7 @@ import AuditLogs from './pages/AuditLogs'
 import Profile from './pages/Profile'
 import InvoiceManagement from './pages/InvoiceManagement'
 import Login from './components/Login'
-import { ToastContainer } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 import SystemSettings from './pages/SystemSettings'
 import HeroSlideshow from './pages/HeroSlideshow'
 import Banners from './pages/Banners'
@@ -30,7 +30,23 @@ import axios from 'axios'
 import { backendUrl } from './config'
 
 const App = () => {
-  const [token, setToken] = useState(localStorage.getItem('token') ? localStorage.getItem('token') : '');
+  const [token, setToken] = useState(() => {
+    const savedToken = localStorage.getItem('token') || '';
+    if (savedToken) {
+      try {
+        const payload = JSON.parse(atob(savedToken.split('.')[1]));
+        const expTime = payload.exp * 1000;
+        if (Date.now() >= expTime) {
+          localStorage.removeItem('token');
+          return '';
+        }
+      } catch (e) {
+        localStorage.removeItem('token');
+        return '';
+      }
+    }
+    return savedToken;
+  });
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(
     localStorage.getItem('sidebar_collapsed') === 'true'
   );
@@ -43,8 +59,33 @@ const App = () => {
   const [maintenanceActive, setMaintenanceActive] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem('token', token)
-  }, [token])
+    if (token) {
+      localStorage.setItem('token', token);
+      
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const expTime = payload.exp * 1000;
+        const timeRemaining = expTime - Date.now();
+        
+        if (timeRemaining <= 0) {
+          setToken('');
+          localStorage.removeItem('token');
+        } else {
+          const timer = setTimeout(() => {
+            setToken('');
+            localStorage.removeItem('token');
+            toast.warn("Your session has expired. Please log in again.");
+          }, timeRemaining);
+          return () => clearTimeout(timer);
+        }
+      } catch (e) {
+        setToken('');
+        localStorage.removeItem('token');
+      }
+    } else {
+      localStorage.removeItem('token');
+    }
+  }, [token]);
 
   useEffect(() => {
     if (theme === 'dark') {

@@ -8,7 +8,8 @@ html {
   scroll-padding-top: var(--navbar-height, 80px);
 }
 
-section, [id] {
+section,
+[id] {
   scroll-margin-top: var(--navbar-height, 80px);
 }
 
@@ -39,6 +40,7 @@ section, [id] {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
@@ -51,34 +53,69 @@ section, [id] {
 }
 
 /* ── Toast type accent borders ── */
-.Toastify__toast--success  { border-left: 3px solid #22c55e !important; }
-.Toastify__toast--error    { border-left: 3px solid #ef4444 !important; }
-.Toastify__toast--warning  { border-left: 3px solid #f59e0b !important; }
-.Toastify__toast--info     { border-left: 3px solid #6366f1 !important; }
+.Toastify__toast--success {
+  border-left: 3px solid #22c55e !important;
+}
+
+.Toastify__toast--error {
+  border-left: 3px solid #ef4444 !important;
+}
+
+.Toastify__toast--warning {
+  border-left: 3px solid #f59e0b !important;
+}
+
+.Toastify__toast--info {
+  border-left: 3px solid #6366f1 !important;
+}
 
 /* Success progress bar */
-.Toastify__toast--success .Toastify__progress-bar { background: linear-gradient(to right, #22c55e, #4ade80) !important; }
+.Toastify__toast--success .Toastify__progress-bar {
+  background: linear-gradient(to right, #22c55e, #4ade80) !important;
+}
+
 /* Error progress bar */
-.Toastify__toast--error   .Toastify__progress-bar { background: linear-gradient(to right, #ef4444, #f87171) !important; }
+.Toastify__toast--error .Toastify__progress-bar {
+  background: linear-gradient(to right, #ef4444, #f87171) !important;
+}
+
 /* Warning progress bar */
-.Toastify__toast--warning .Toastify__progress-bar { background: linear-gradient(to right, #f59e0b, #fbbf24) !important; }
+.Toastify__toast--warning .Toastify__progress-bar {
+  background: linear-gradient(to right, #f59e0b, #fbbf24) !important;
+}
+
 /* Info progress bar */
-.Toastify__toast--info    .Toastify__progress-bar { background: linear-gradient(to right, #6366f1, #818cf8) !important; }
+.Toastify__toast--info .Toastify__progress-bar {
+  background: linear-gradient(to right, #6366f1, #818cf8) !important;
+}
 
 /* Icon color per type */
-.Toastify__toast--success .Toastify__toast-icon svg { fill: #22c55e; }
-.Toastify__toast--error   .Toastify__toast-icon svg { fill: #ef4444; }
-.Toastify__toast--warning .Toastify__toast-icon svg { fill: #f59e0b; }
-.Toastify__toast--info    .Toastify__toast-icon svg { fill: #6366f1; }
+.Toastify__toast--success .Toastify__toast-icon svg {
+  fill: #22c55e;
+}
+
+.Toastify__toast--error .Toastify__toast-icon svg {
+  fill: #ef4444;
+}
+
+.Toastify__toast--warning .Toastify__toast-icon svg {
+  fill: #f59e0b;
+}
+
+.Toastify__toast--info .Toastify__toast-icon svg {
+  fill: #6366f1;
+}
 
 /* Remove default toastify background so our custom class controls it */
-.Toastify__toast-container { padding: 0 12px 12px !important; }
+.Toastify__toast-container {
+  padding: 0 12px 12px !important;
+}
 
 :root {
   --font-primary: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-display: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --glass-bg: rgba(255,255,255,0.12);
-  --glass-border: rgba(255,255,255,0.18);
+  --glass-bg: rgba(255, 255, 255, 0.12);
+  --glass-border: rgba(255, 255, 255, 0.18);
 }
 
 body {
@@ -88,7 +125,12 @@ body {
   color: #e0e0e0;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-display) !important;
   font-weight: 800;
 }
@@ -98,20 +140,43 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   border-radius: 1rem;
-  box-shadow: 0 4px 30px rgba(0,0,0,0.12);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.12);
 }
 
 .animate-fade-in {
   animation: fadeIn 0.4s ease-out forwards;
 }
-@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
 
 @keyframes wiggle {
-  0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(15deg); }
-  50% { transform: rotate(-10deg); }
-  75% { transform: rotate(10deg); }
+
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(15deg);
+  }
+
+  50% {
+    transform: rotate(-10deg);
+  }
+
+  75% {
+    transform: rotate(10deg);
+  }
 }
+
 .animate-wiggle {
   animation: wiggle 0.8s ease-in-out infinite;
   transform-origin: top center;
@@ -119,40 +184,74 @@ h1, h2, h3, h4, h5, h6 {
 
 /* ── Custom Landing Page Animations ── */
 @keyframes kenBurns {
-  0% { transform: scale(1) translate(0, 0); }
-  50% { transform: scale(1.08) translate(-1%, -1%); }
-  100% { transform: scale(1) translate(0, 0); }
+  0% {
+    transform: scale(1) translate(0, 0);
+  }
+
+  50% {
+    transform: scale(1.08) translate(-1%, -1%);
+  }
+
+  100% {
+    transform: scale(1) translate(0, 0);
+  }
 }
+
 .animate-ken-burns {
   animation: kenBurns 20s ease-in-out infinite;
 }
 
 @keyframes pulseGlow {
-  0%, 100% { opacity: 0.5; transform: scale(1); }
-  50% { opacity: 0.8; transform: scale(1.1); }
+
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.8;
+    transform: scale(1.1);
+  }
 }
+
 .animate-pulse-glow {
   animation: pulseGlow 10s ease-in-out infinite;
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-10px) rotate(1deg); }
+
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-10px) rotate(1deg);
+  }
 }
+
 .animate-float-slow {
   animation: float 6s ease-in-out infinite;
 }
 
 @keyframes progressLoader {
-  from { width: 0%; }
-  to { width: 100%; }
+  from {
+    width: 0%;
+  }
+
+  to {
+    width: 100%;
+  }
 }
+
 .animate-progress-loader {
   animation: progressLoader 10s linear forwards;
 }
 
 /* Lenis smooth scrolling rules */
-html.lenis, html.lenis body {
+html.lenis,
+html.lenis body {
   height: auto;
 }
 
@@ -172,5 +271,97 @@ html.lenis, html.lenis body {
   pointer-events: none;
 }
 
+/* ── Premium SaaS Splash Screen Styles ── */
+.splash-bg-glow {
+  background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(139, 92, 246, 0.18) 0%, rgba(236, 72, 153, 0.08) 35%, rgba(59, 130, 246, 0.04) 60%, transparent 100%);
+}
 
+body.splash-active #main-navbar-logo {
+  opacity: 0 !important;
+  transform: scale(0.9) !important;
+  pointer-events: none !important;
+}
 
+@keyframes logoPulseGlow {
+  0% {
+    transform: scale(0.9);
+    filter: drop-shadow(0 0 0px rgba(139, 92, 246, 0));
+  }
+  20% {
+    transform: scale(1.12);
+    filter: drop-shadow(0 0 15px rgba(139, 92, 246, 0.75)) drop-shadow(0 0 30px rgba(236, 72, 153, 0.4));
+  }
+  45% {
+    transform: scale(0.96);
+    filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.4));
+  }
+  70% {
+    transform: scale(1.03);
+    filter: drop-shadow(0 0 4px rgba(139, 92, 246, 0.2));
+  }
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0px rgba(139, 92, 246, 0));
+  }
+}
+
+.logo-pulse-active #main-navbar-logo {
+  animation: logoPulseGlow 1.4s cubic-bezier(0.25, 1, 0.5, 1) forwards !important;
+  opacity: 1 !important;
+}
+
+/* ── E-Commerce Micro-Animations ── */
+@keyframes cartBounce {
+  0%, 100% { transform: scale(1); }
+  25% { transform: scale(1.3) rotate(-10deg); }
+  50% { transform: scale(0.9) rotate(8deg); }
+  75% { transform: scale(1.15) rotate(-4deg); }
+}
+
+.cart-bounce-active {
+  animation: cartBounce 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards !important;
+  border-color: rgba(99, 102, 241, 0.6) !important;
+  color: rgb(79, 70, 229) !important;
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.25) !important;
+}
+
+@keyframes heartBurst {
+  0% { transform: scale(1); }
+  35% { transform: scale(0.7); }
+  60% { transform: scale(1.4) rotate(5deg); }
+  100% { transform: scale(1); }
+}
+
+.heart-burst {
+  animation: heartBurst 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
+}
+
+/* ── Hover Reflection Light Sweep ── */
+.light-sweep-container {
+  position: relative;
+}
+
+.light-sweep-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.06) 20%,
+    rgba(255, 255, 255, 0.16) 50%,
+    rgba(255, 255, 255, 0.06) 80%,
+    transparent
+  );
+  transform: skewX(-25deg);
+  pointer-events: none;
+  z-index: 5;
+  transition: left 0.85s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.light-sweep-container:hover::after {
+  left: 150%;
+}

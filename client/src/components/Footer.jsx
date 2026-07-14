@@ -81,22 +81,12 @@ const Footer = () => {
         <div className="grid grid-cols-1 gap-5 md:grid-cols-3 lg:grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr_1.2fr] md:gap-8">
           {/* Identity */}
           <div className="space-y-4">
-            <Link to="/" className="group flex items-center gap-2 select-none">
-              <div className="relative overflow-hidden rounded-lg border border-slate-800 bg-slate-950/40 w-10 h-10 transition-all duration-300 group-hover:scale-105 group-hover:shadow-[0_0_12px_rgba(249,115,22,0.15)]">
-                <Logo
-                  variant="icon"
-                  forceWhite={true}
-                  className="h-full w-full p-1 text-slate-100 dark:text-white transition-transform duration-300 group-hover:scale-105"
-                />
-              </div>
-              <span className="flex flex-col">
-                <span className="text-xl font-bold tracking-tight text-slate-100 dark:text-white">
-                  Cart<span className="text-orange-500 group-hover:text-orange-400 transition-colors duration-300">NOW</span>
-                </span>
-                <span className="text-[8px] font-semibold uppercase tracking-[0.2em] text-orange-400 group-hover:text-orange-300 transition-colors duration-300">
-                  Everyday premium store
-                </span>
-              </span>
+            <Link to="/" className="group flex items-center select-none">
+              <Logo
+                variant="horizontal"
+                forceWhite={true}
+                className="h-9 w-auto text-slate-100 dark:text-white"
+              />
             </Link>
             <p className="max-w-xs text-xs leading-relaxed text-gray-400">
               Discover curated fashion, state-of-the-art AI Try-On experiences, simple checkout, and dynamic courier tracking.

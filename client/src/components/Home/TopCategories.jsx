@@ -250,19 +250,19 @@ const TopCategories = ({ popularCategories = [] }) => {
           <div
             key={i}
             onClick={() => navigate(`/categories/${cat.name.toLowerCase()}`)}
-            className={`group relative aspect-[2/3] sm:aspect-square flex flex-col justify-between bg-slate-900/90 dark:bg-slate-950/80 sm:bg-white sm:dark:bg-slate-900 border border-slate-800/80 dark:border-slate-800/80 sm:border-slate-200 sm:dark:border-slate-800 rounded-2xl sm:rounded-[28px] transition-[box-shadow,border-color] duration-300 cursor-pointer shadow-sm hover:shadow-xl ${cat.borderGlow} ${cat.shadowColor} w-[105px] sm:w-auto shrink-0 snap-start overflow-hidden transform-gpu`}
+            className={`group relative aspect-[2/3] sm:aspect-square flex flex-col justify-between bg-slate-900/90 dark:bg-slate-950/80 sm:bg-white sm:dark:bg-slate-900 border border-slate-800/80 dark:border-slate-800/80 sm:border-slate-200 sm:dark:border-slate-800 rounded-xl transition-[box-shadow,border-color] duration-300 cursor-pointer shadow-sm hover:shadow-xl ${cat.borderGlow} ${cat.shadowColor} w-[105px] sm:w-auto shrink-0 snap-start overflow-hidden transform-gpu`}
           >
             {/* Background Gradient Glow (Persists on Desktop) */}
             <div className={`absolute inset-0 ${cat.bgClass} opacity-80 z-0 transition-opacity duration-500 group-hover:opacity-100 hidden sm:block`} />
             
             {/* Center Image: Fitted nicely inside top-middle section, transparent bg */}
-            <div className="absolute inset-x-0 top-0 h-[68%] sm:h-full w-full flex items-center justify-center p-2.5 sm:p-0 z-0 select-none pointer-events-none overflow-hidden rounded-t-2xl sm:rounded-[28px] transform-gpu">
+            <div className="absolute inset-x-0 top-0 h-[68%] sm:h-full w-full flex items-center justify-center p-2.5 sm:p-0 z-0 select-none pointer-events-none overflow-hidden rounded-xl transform-gpu">
               <img
                 src={cat.img}
                 alt={cat.name}
                 loading="lazy"
                 decoding="async"
-                className="max-h-full max-w-full sm:w-full sm:h-full object-contain sm:object-cover rounded-t-2xl sm:rounded-[28px]"
+                className="max-h-full max-w-full sm:w-full sm:h-full object-contain sm:object-cover rounded-xl"
               />
             </div>
 

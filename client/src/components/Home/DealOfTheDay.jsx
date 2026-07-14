@@ -10,13 +10,13 @@ const DealOfTheDay = ({ deals = [], activeDeal = null, onAddToCart }) => {
   const [timeLeft, setTimeLeft] = useState(null);
 
   const now = new Date();
-  const isCampaignActive = activeDeal && activeDeal.isActive && 
-    new Date(activeDeal.startDate) <= now && 
-    new Date(activeDeal.endDate) >= now && 
+  const isCampaignActive = activeDeal && activeDeal.isActive &&
+    new Date(activeDeal.startDate) <= now &&
+    new Date(activeDeal.endDate) >= now &&
     !isExpired;
 
-  const dealProduct = isCampaignActive 
-    ? (activeDeal.productId || null) 
+  const dealProduct = isCampaignActive
+    ? (activeDeal.productId || null)
     : (deals && deals.length > 0 ? deals[0] : null);
 
   const endDate = isCampaignActive ? activeDeal.endDate : null;
@@ -61,14 +61,14 @@ const DealOfTheDay = ({ deals = [], activeDeal = null, onAddToCart }) => {
   // Fallbacks
   const title = isCampaignActive ? (activeDeal.title || "Deal of the Day") : "Deal of the Day";
   const subtitle = isCampaignActive ? (activeDeal.subtitle || "Limited Time Offer") : "Includes official brand warranty. Free express delivery within 24 hours.";
-  
+
   const originalVal = dealProduct.originalPrice || Math.round(dealProduct.price * 1.25);
   const displayPrice = Number(dealProduct.price || 0);
   const displayOriginalPrice = Number(originalVal || 0);
   const discountPercent = Math.max(5, Math.round(((displayOriginalPrice - displayPrice) / displayOriginalPrice) * 100));
 
-  const discountLabel = isCampaignActive 
-    ? (activeDeal.discountLabel || `SAVE ${discountPercent}%`) 
+  const discountLabel = isCampaignActive
+    ? (activeDeal.discountLabel || `SAVE ${discountPercent}%`)
     : `SAVE ${discountPercent}%`;
 
   const rawModelImg = isCampaignActive ? (activeDeal.modelImage || dealProduct.images?.[0] || "") : (dealProduct.images?.[0] || "");
@@ -104,8 +104,8 @@ const DealOfTheDay = ({ deals = [], activeDeal = null, onAddToCart }) => {
   };
 
   return (
-    <div className="group relative bg-gradient-to-br from-[#0c0f1d] via-[#070913] to-[#030409] border border-white/[0.08] text-slate-100 dark:text-white rounded-[32px] p-6 sm:p-8 shadow-2xl flex flex-col sm:flex-row lg:flex-col xl:flex-row gap-6 justify-between min-h-[500px] text-left transition-all duration-300 hover:border-white/20 overflow-hidden col-span-1 select-none">
-      
+    <div className="group relative bg-gradient-to-br from-[#0c0f1d] via-[#070913] to-[#030409] border border-white/[0.08] text-slate-100 dark:text-white rounded-none p-6 sm:p-8 shadow-2xl flex flex-col sm:flex-row lg:flex-col xl:flex-row gap-6 justify-between min-h-[500px] text-left transition-all duration-300 hover:border-white/20 overflow-hidden col-span-1 select-none">
+
       {/* Custom inline style for keyframes to support advanced float */}
       <style>{`
         @keyframes custom-float {
@@ -118,7 +118,7 @@ const DealOfTheDay = ({ deals = [], activeDeal = null, onAddToCart }) => {
       `}</style>
 
       {/* Decorative Grid texture */}
-      <div className="absolute inset-0 bg-[radial-gradient(#ffffff04_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none rounded-[32px] z-0" />
+      <div className="absolute inset-0 bg-[radial-gradient(#ffffff04_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none rounded-none z-0" />
 
       {/* Ambient background decoration */}
       <div className="absolute top-[-30px] right-[-30px] w-32 h-32 bg-orange-500/10 rounded-full blur-3xl pointer-events-none group-hover:scale-110 transition-transform duration-500 z-0" />
@@ -210,7 +210,7 @@ const DealOfTheDay = ({ deals = [], activeDeal = null, onAddToCart }) => {
           <button
             onClick={handleAddToCart}
             disabled={dealProduct.stock === 0}
-            className={`flex-1 py-2.5 px-4 rounded-xl font-extrabold text-[10px] uppercase tracking-widest shadow-md transition-all border-none flex items-center justify-center gap-1.5 select-none ${ dealProduct.stock === 0 ? "bg-white/5 text-white/30 cursor-not-allowed" : "bg-gradient-to-r from-[#ff0055] to-[#ff3377] hover:brightness-110 text-slate-100 dark:text-white cursor-pointer active:scale-95 shadow-xl shadow-pink-500/15" }`}
+            className={`flex-1 py-2.5 px-4 rounded-xl font-extrabold text-[10px] uppercase tracking-widest shadow-md transition-all border-none flex items-center justify-center gap-1.5 select-none ${dealProduct.stock === 0 ? "bg-white/5 text-white/30 cursor-not-allowed" : "bg-gradient-to-r from-[#ff0055] to-[#ff3377] hover:brightness-110 text-slate-100 dark:text-white cursor-pointer active:scale-95 shadow-xl shadow-pink-500/15"}`}
           >
             <ShoppingCart size={12} />
             <span>Shop Now</span>
@@ -227,8 +227,8 @@ const DealOfTheDay = ({ deals = [], activeDeal = null, onAddToCart }) => {
       </div>
 
       {/* RIGHT SHOWCASE AREA */}
-      <div className="w-full sm:w-1/2 lg:w-full xl:w-1/2 h-60 sm:h-auto lg:h-52 xl:h-auto min-h-[220px] rounded-2xl relative overflow-hidden bg-gradient-to-br from-[#0c0f20] to-[#04050a] border border-white/[0.06] flex items-center justify-center shadow-inner group z-10">
-        
+      <div className="w-full sm:w-1/2 lg:w-full xl:w-1/2 h-60 sm:h-auto lg:h-52 xl:h-auto min-h-[220px] rounded-none relative overflow-hidden bg-gradient-to-br from-[#0c0f20] to-[#04050a] border border-white/[0.06] flex items-center justify-center shadow-inner group z-10">
+
         {/* Soft background spotlight glow */}
         <div className="absolute w-36 h-36 bg-orange-500/10 rounded-full blur-2xl pointer-events-none" />
 
@@ -251,7 +251,7 @@ const DealOfTheDay = ({ deals = [], activeDeal = null, onAddToCart }) => {
         )}
 
         {/* Floating rating badge (bottom-left) */}
-        <div className="absolute bottom-3 left-3 z-20 bg-black/75 backdrop-blur-md border border-white/10 rounded-xl px-2.5 py-1.5 shadow-xl scale-90">
+        <div className="absolute bottom-3 left-3 z-20 bg-black/75 backdrop-blur-md border border-white/10 rounded-none px-2.5 py-1.5 shadow-xl scale-90">
           <div className="flex items-center gap-1">
             <Star size={10} className="fill-yellow-400 text-yellow-400" />
             <span className="font-bold text-slate-100 dark:text-white text-[9px]">
@@ -262,14 +262,14 @@ const DealOfTheDay = ({ deals = [], activeDeal = null, onAddToCart }) => {
 
         {/* Floating product thumbnail card (bottom-right) */}
         {finalProductImgUrl && (
-          <div 
+          <div
             onClick={handleViewProduct}
-            className="absolute bottom-3 right-3 z-20 bg-slate-950/80 backdrop-blur-md border border-white/10 p-1.5 rounded-2xl flex items-center gap-2 shadow-xl hover:border-orange-500/40 cursor-pointer transition select-none active:scale-95"
+            className="absolute bottom-3 right-3 z-20 bg-slate-950/80 backdrop-blur-md border border-white/10 p-1.5 rounded-none flex items-center gap-2 shadow-xl hover:border-orange-500/40 cursor-pointer transition select-none active:scale-95"
           >
-            <img 
-              src={finalProductImgUrl} 
-              alt={dealProduct.name} 
-              className="w-7 h-7 object-contain bg-white dark:bg-slate-900 rounded-lg p-0.5 border border-slate-200/50"
+            <img
+              src={finalProductImgUrl}
+              alt={dealProduct.name}
+              className="w-7 h-7 object-contain bg-white dark:bg-slate-900 rounded-none p-0.5 border border-slate-200/50"
             />
             <div className="text-[7.5px] font-bold text-slate-100 dark:text-white leading-tight pr-1.5 flex flex-col justify-center text-left">
               <span className="opacity-60 text-[5.5px] uppercase font-black tracking-widest">Product</span>

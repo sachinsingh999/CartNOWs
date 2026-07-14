@@ -477,3 +477,29 @@ export const deleteStory = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
+
+export const getPostLikes = async (req, res) => {
+  try {
+    const { postId } = req.params;
+    const likes = await postLikeModel
+      .find({ postId })
+      .populate("userId", "name profilePhoto followers");
+
+    const currentUserId = req.user ? req.user._id : null;
+    const likedUsers = likes
+      .map((l) => {
+        if (!l.userId) return null;
+        const userObj = l.userId.toObject();
+        userObj.isFollowing = currentUserId
+          ? l.userId.followers.some((fid) => fid.toString() === currentUserId.toString())
+          : false;
+        return userObj;
+      })
+      .filter(Boolean);
+
+    return res.status(200).json({ success: true, likes: likedUsers });
+  } catch (error) {
+    console.error("Error fetching post likes:", error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};

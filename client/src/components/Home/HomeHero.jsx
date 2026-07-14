@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
@@ -24,7 +24,9 @@ import {
   FlaskConical,
   Award,
   Hourglass,
-  LayoutGrid
+  LayoutGrid,
+  CheckCircle,
+  ThumbsUp
 } from "lucide-react";
 
 // Import local premium WebP studio campaign photography assets
@@ -38,12 +40,30 @@ import sportswearFallback from "../../assets/brand_asset_sportswear.webp";
 
 const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
   const navigate = useNavigate();
+  const heroContainerRef = useRef(null);
+  
   const [slideIdx, setSlideIdx] = useState(0);
   const [slides, setSlides] = useState([]);
   const [loading, setLoading] = useState(true);
   const [customBanners, setCustomBanners] = useState([]);
   const [categories, setCategories] = useState([]);
   const [showBanners, setShowBanners] = useState(false);
+  const [couponCopied, setCouponCopied] = useState(false);
+
+  // Mouse parallax position states
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  const handleMouseMove = (e) => {
+    if (!heroContainerRef.current) return;
+    const { left, top, width, height } = heroContainerRef.current.getBoundingClientRect();
+    const x = (e.clientX - left - width / 2) / 25; // Sensitivity divisor
+    const y = (e.clientY - top - height / 2) / 25;
+    setMousePosition({ x, y });
+  };
+
+  const handleMouseLeave = () => {
+    setMousePosition({ x: 0, y: 0 });
+  };
 
   // Sync theme changes with component state dynamically using a MutationObserver
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains("dark"));
@@ -61,49 +81,49 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
       imageUrl: womensFashionFallback,
       name: "Women's Luxury Line",
       category: "Women's Fashion",
-      tagline: "Timeless Minimalist Tailoring",
+      tagline: "Timeless Minimalist Tailoring & Modern Silhouettes",
       scaleClass: "scale-[1.0] sm:scale-[1.05] lg:scale-[1.12]"
     },
     {
       imageUrl: mensFashionFallback,
       name: "Men's Premium Edit",
       category: "Men's Fashion",
-      tagline: "Structured Modern Classics",
+      tagline: "Structured Modern Classics & Performance Tailoring",
       scaleClass: "scale-[1.0] sm:scale-[1.05] lg:scale-[1.12]"
     },
     {
       imageUrl: sneakersFallback,
       name: "Sneakers Campaign",
       category: "Sneakers",
-      tagline: "High-Performance Silhouettes",
+      tagline: "High-Performance Aesthetics & All-Day Cushioning",
       scaleClass: "scale-[1.0] sm:scale-[1.05] lg:scale-[1.12]"
     },
     {
       imageUrl: electronicsFallback,
       name: "Smart Audio Collection",
       category: "Electronics",
-      tagline: "Pure Sound. Zero Noise.",
+      tagline: "Pure Acoustic Fidelity & Active Hybrid ANC",
       scaleClass: "scale-[0.85] sm:scale-[0.9] lg:scale-[0.95]"
     },
     {
       imageUrl: beautyFallback,
       name: "Advanced Skincare",
       category: "Beauty",
-      tagline: "Radiant Skin Science",
+      tagline: "Radiant Cellular Science & Clean Clinical Actives",
       scaleClass: "scale-[0.85] sm:scale-[0.9] lg:scale-[0.95]"
     },
     {
       imageUrl: accessoriesFallback,
       name: "Designer Accents",
       category: "Accessories",
-      tagline: "Bold Silhouettes, Refined Craft",
+      tagline: "Refined Luxury Silhouettes & Steel Craftsmanship",
       scaleClass: "scale-[0.9] sm:scale-[0.95] lg:scale-[1.02]"
     },
     {
       imageUrl: sportswearFallback,
       name: "High-Active Collection",
       category: "Sportswear",
-      tagline: "Engineered For Peak Performance",
+      tagline: "Engineered Compression Fit & Peak Performance Fiber",
       scaleClass: "scale-[1.0] sm:scale-[1.05] lg:scale-[1.12]"
     }
   ];
@@ -113,49 +133,49 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
       imageUrl: womensFashionFallback,
       name: "Midnight Luxury Line",
       category: "Women's Fashion",
-      tagline: "Obsidian Tailoring & Modern Silhouette",
+      tagline: "Obsidian Tailoring & Refined Modern Silhouettes",
       scaleClass: "scale-[1.0] sm:scale-[1.05] lg:scale-[1.12]"
     },
     {
       imageUrl: mensFashionFallback,
       name: "Noir Silhouette Edit",
       category: "Men's Fashion",
-      tagline: "Dark-Theme Tailored Classics",
+      tagline: "Dark-Theme Tailored Classics & Heavy Knitwear",
       scaleClass: "scale-[1.0] sm:scale-[1.05] lg:scale-[1.12]"
     },
     {
       imageUrl: sneakersFallback,
       name: "Cyber Sneakers Campaign",
       category: "Sneakers",
-      tagline: "Neon Accents. Infinite Speed.",
+      tagline: "Neon Accents. Infinite Speed & Composite Outsoles.",
       scaleClass: "scale-[1.0] sm:scale-[1.05] lg:scale-[1.12]"
     },
     {
       imageUrl: electronicsFallback,
       name: "Obsidian Sound Systems",
       category: "Electronics",
-      tagline: "Acoustic Purity. Pure Silence.",
+      tagline: "Pure Sound. Zero Outside Noise. Studio Accuracy.",
       scaleClass: "scale-[0.85] sm:scale-[0.9] lg:scale-[0.95]"
     },
     {
       imageUrl: beautyFallback,
       name: "Nocturnal Beauty Edit",
       category: "Beauty",
-      tagline: "Midnight Restoration Science",
+      tagline: "Midnight Cellular Restoration & Plant Peptides",
       scaleClass: "scale-[0.85] sm:scale-[0.9] lg:scale-[0.95]"
     },
     {
       imageUrl: accessoriesFallback,
       name: "Dark Chrome Accents",
       category: "Accessories",
-      tagline: "Refined Leather & Steel Craft",
+      tagline: "Refined Full-Grain Leather & Matte Chrome Details",
       scaleClass: "scale-[0.9] sm:scale-[0.95] lg:scale-[1.02]"
     },
     {
       imageUrl: sportswearFallback,
       name: "Neon Activewear Line",
       category: "Sportswear",
-      tagline: "Engineered For Night Workouts",
+      tagline: "Engineered Aerodynamics For Night Performance",
       scaleClass: "scale-[1.0] sm:scale-[1.05] lg:scale-[1.12]"
     }
   ];
@@ -186,7 +206,7 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
           console.error("Failed to fetch banners:", bannerErr);
         }
 
-        // Fetch cutout assets unconditionally to support transition from banner to models slideshow
+        // Fetch cutout assets
         try {
           const response = await cachedGet(`${backendUrl}/api/system/hero-assets`);
           if (response.data?.success && response.data?.assets?.length > 0) {
@@ -235,25 +255,25 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
         const cat = (slide.category || "").toLowerCase();
         if (cat.includes("women")) {
           name = "Midnight Luxury Line";
-          tagline = "Obsidian Tailoring & Modern Silhouette";
+          tagline = "Obsidian Tailoring & Refined Modern Silhouettes";
         } else if (cat.includes("men")) {
           name = "Noir Silhouette Edit";
-          tagline = "Dark-Theme Tailored Classics";
+          tagline = "Dark-Theme Tailored Classics & Heavy Knitwear";
         } else if (cat.includes("sneakers") || cat.includes("shoes")) {
           name = "Cyber Sneakers Campaign";
-          tagline = "Neon Accents. Infinite Speed.";
+          tagline = "Neon Accents. Infinite Speed & Composite Outsoles.";
         } else if (cat.includes("electronics") || cat.includes("sound")) {
           name = "Obsidian Sound Systems";
-          tagline = "Acoustic Purity. Pure Silence.";
+          tagline = "Pure Sound. Zero Outside Noise. Studio Accuracy.";
         } else if (cat.includes("beauty") || cat.includes("skin")) {
           name = "Nocturnal Beauty Edit";
-          tagline = "Midnight Restoration Science";
+          tagline = "Midnight Cellular Restoration & Plant Peptides";
         } else if (cat.includes("accessories")) {
           name = "Dark Chrome Accents";
-          tagline = "Refined Leather & Steel Craft";
+          tagline = "Refined Full-Grain Leather & Matte Chrome Details";
         } else if (cat.includes("sport") || cat.includes("active")) {
           name = "Neon Activewear Line";
-          tagline = "Engineered For Night Workouts";
+          tagline = "Engineered Aerodynamics For Night Performance";
         }
         return { ...slide, name, tagline };
       });
@@ -279,85 +299,38 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
     setSlideIdx(0);
   }, [showBanners]);
 
-  // Auto slide every 5 seconds (5000ms)
+  // Auto slide every 6 seconds (6000ms)
   useEffect(() => {
     const totalSlides = showBanners ? customBanners.length : activeSlides.length;
     if (totalSlides <= 1) return;
     const timer = setInterval(() => {
       setSlideIdx((prev) => (prev + 1) % totalSlides);
-    }, 5000);
+    }, 6000);
     return () => clearInterval(timer);
   }, [showBanners, customBanners.length, activeSlides.length]);
 
-
-
   const currentSlide = activeSlides[slideIdx] || fallbackSlides[0];
-
-  const slideBadges = useMemo(() => {
-    const cat = (currentSlide.category || "").toLowerCase();
-    if (cat.includes("women")) {
-      return {
-        badge1: { text: "Premium Fit", icon: Sparkles, iconColor: "text-rose-500" },
-        badge2: { text: "Trending Now", icon: Flame, iconColor: "text-orange-500" },
-        badge3: { text: "50% Off", icon: Tag, iconColor: "text-emerald-500" }
-      };
-    } else if (cat.includes("men")) {
-      return {
-        badge1: { text: "Structured Fit", icon: Zap, iconColor: "text-indigo-500" },
-        badge2: { text: "New Season", icon: Sparkles, iconColor: "text-purple-500" },
-        badge3: { text: "4.9 Rating", icon: Star, iconColor: "text-amber-500" }
-      };
-    } else if (cat.includes("sneaker") || cat.includes("shoes")) {
-      return {
-        badge1: { text: "Limited Edition", icon: Compass, iconColor: "text-teal-500" },
-        badge2: { text: "Ultra Cushion", icon: Sparkles, iconColor: "text-blue-500" },
-        badge3: { text: "High Demand", icon: Flame, iconColor: "text-rose-500" }
-      };
-    } else if (cat.includes("electr") || cat.includes("audio")) {
-      return {
-        badge1: { text: "Active ANC", icon: Headphones, iconColor: "text-violet-500" },
-        badge2: { text: "Hi-Res Audio", icon: Music, iconColor: "text-pink-500" },
-        badge3: { text: "Smart Connect", icon: Radio, iconColor: "text-blue-500" }
-      };
-    } else if (cat.includes("beauty") || cat.includes("skin")) {
-      return {
-        badge1: { text: "Organic Extract", icon: Leaf, iconColor: "text-emerald-500" },
-        badge2: { text: "Hydration Pro", icon: Droplet, iconColor: "text-cyan-500" },
-        badge3: { text: "Derm Tested", icon: FlaskConical, iconColor: "text-purple-500" }
-      };
-    }
-    return {
-      badge1: { text: "Fast Shipping", icon: Truck, iconColor: "text-indigo-500" },
-      badge2: { text: "Best Seller", icon: Award, iconColor: "text-amber-500" },
-      badge3: { text: "Top Rated", icon: Star, iconColor: "text-yellow-500" }
-    };
-  }, [currentSlide]);
-
-  const handleBannerClick = (categoryIds) => {
-    if (categoryIds && categoryIds.length > 0) {
-      navigate(`/products?categories=${categoryIds.join(",")}`);
-    } else {
-      navigate("/products");
-    }
-  };
 
   const handleModelClick = (categoryName) => {
     if (!categoryName) {
       navigate("/products");
       return;
     }
-
-    // Find the category _id in the fetched categories list
     const foundCat = categories.find(
       (c) => c.name.toLowerCase() === categoryName.toLowerCase()
     );
-
     if (foundCat) {
       navigate(`/products?categories=${foundCat._id}`);
     } else {
-      // Fallback: search by query string if _id not found
       navigate(`/products?q=${encodeURIComponent(categoryName.toLowerCase())}`);
     }
+  };
+
+  const copyCoupon = (e) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText("CARTNOW10");
+    setCouponCopied(true);
+    setTimeout(() => setCouponCopied(false), 2000);
   };
 
   const [timeLeft, setTimeLeft] = useState(null);
@@ -381,7 +354,6 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
     };
 
     setTimeLeft(calculateTime());
-
     const timer = setInterval(() => {
       setTimeLeft(calculateTime());
     }, 1000);
@@ -405,18 +377,57 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
 
   const currentBanner = customBanners[slideIdx] || customBanners[0];
 
+  const categoryCounts = {
+    Men: "1,240",
+    Women: "2,810",
+    Kids: "920",
+    Sneakers: "640",
+    Electronics: "890",
+    Beauty: "1,450"
+  };
+
   return (
-    <div className="w-full flex flex-col relative">
+    <div 
+      ref={heroContainerRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="w-full flex flex-col relative group/hero overflow-hidden"
+    >
+      {/* Dynamic Cursor Spotlight Effect */}
+      <div 
+        className="absolute inset-0 pointer-events-none opacity-0 group-hover/hero:opacity-100 transition-opacity duration-700 z-0"
+        style={{
+          background: `radial-gradient(800px circle at ${mousePosition.x * 25 + (heroContainerRef.current?.getBoundingClientRect().width || 1200) / 2}px ${mousePosition.y * 25 + (heroContainerRef.current?.getBoundingClientRect().height || 650) / 2}px, rgba(99,102,241,0.06), transparent 50%)`
+        }}
+      />
+
       {/* Top Announcement Bar */}
-      <div className="w-full bg-[#0B0F19] dark:bg-[#070A13] border-b border-slate-800/60 py-2.5 px-4 sm:px-8 lg:px-12 flex items-center justify-between text-slate-100 dark:text-white cursor-pointer hover:bg-slate-900/60 transition duration-300">
-        <div className="flex items-center gap-2">
+      <div 
+        onClick={() => navigate("/products")}
+        className="w-full bg-[#0B0F19] dark:bg-[#070A13] border-b border-slate-800/60 py-2.5 px-4 sm:px-8 lg:px-12 flex items-center justify-between text-slate-100 dark:text-white cursor-pointer hover:bg-slate-900/60 transition duration-300 overflow-hidden relative z-20"
+      >
+        <div className="flex items-center gap-2 shrink-0">
           <span className="w-2 h-2 rounded-full bg-[#ff3f6c] animate-pulse" />
-          <span className="text-[10px] sm:text-xs font-black uppercase tracking-[0.15em] text-[#ff3f6c] dark:text-[#ff3f6c]">
+          <span className="text-[10px] sm:text-xs font-black uppercase tracking-[0.15em] text-[#ff3f6c] dark:text-[#ff3f6c] select-none">
             MIDNIGHT CAMPAIGN LIVE
           </span>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5">
+
+        {/* Scrolling announcement text marquee */}
+        <div className="hidden md:flex flex-1 overflow-hidden mx-8 select-none">
+          <div className="animate-marquee whitespace-nowrap text-[10px] font-bold text-slate-400 uppercase tracking-widest flex gap-12">
+            <span>🔥 CYBER FLASH SEASON IS LIVE: USE COUPON CODE CARTNOW10 FOR 10% OFF</span>
+            <span>⚡ OVER 12,410 SHOPPERS TRANSACTING ON THE HUB RIGHT NOW</span>
+            <span>📦 FREE DELIVERY ON ALL ORDERS OVER ₹999</span>
+            {/* Repeated for seamless marquee loop */}
+            <span>🔥 CYBER FLASH SEASON IS LIVE: USE COUPON CODE CARTNOW10 FOR 10% OFF</span>
+            <span>⚡ OVER 12,410 SHOPPERS TRANSACTING ON THE HUB RIGHT NOW</span>
+            <span>📦 FREE DELIVERY ON ALL ORDERS OVER ₹999</span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-1.5 select-none">
             <div className="flex -space-x-1.5">
               <img className="inline-block h-5 w-5 rounded-full ring-2 ring-slate-950 object-cover" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop" alt="" />
               <img className="inline-block h-5 w-5 rounded-full ring-2 ring-slate-950 object-cover" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&h=80&fit=crop" alt="" />
@@ -427,6 +438,7 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
           <ArrowRight size={14} className="text-slate-400 stroke-[2.5]" />
         </div>
       </div>
+
       <AnimatePresence mode="wait">
       {showBanners && customBanners.length > 0 ? (
         <motion.section
@@ -435,16 +447,16 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.8 }}
-          className="relative overflow-visible bg-slate-50 dark:bg-slate-950 text-[#0F172A] dark:text-slate-100 flex items-center justify-center py-16 md:py-24 select-none w-full min-h-[480px] sm:min-h-[550px] lg:min-h-[620px]"
+          className="relative overflow-visible bg-slate-50 dark:bg-slate-950 text-[#0F172A] dark:text-slate-100 flex items-center justify-center py-16 md:py-24 select-none w-full min-h-[480px] sm:min-h-[550px] lg:min-h-[620px] z-10"
         >
           {/* Main Slider Wrapper */}
           <div className="max-w-7xl mx-auto px-6 sm:px-12 lg:px-20 w-full flex flex-col items-center justify-center relative overflow-visible">
             
             {/* Banner Main Card */}
-            <div className={`relative w-full h-[360px] md:h-[400px] rounded-[32px] overflow-visible shadow-2xl flex flex-row items-center border border-slate-200/50 dark:border-white/10 text-slate-100 dark:text-white transition-all duration-500 ${currentBanner.backgroundTheme || 'bg-gradient-to-r from-slate-900 to-indigo-950'}`}>
+            <div className={`relative w-full h-[360px] md:h-[400px] rounded-none overflow-visible shadow-2xl flex flex-row items-center border border-slate-200/50 dark:border-white/10 text-slate-100 dark:text-white transition-all duration-500 ${currentBanner.backgroundTheme || 'bg-gradient-to-r from-slate-900 to-indigo-950'}`}>
               
               {/* Glassmorphic sheen layout layers */}
-              <div className="absolute inset-0 bg-white/[0.02] backdrop-blur-[1px] rounded-[32px] pointer-events-none" />
+              <div className="absolute inset-0 bg-white/[0.02] backdrop-blur-[1px] rounded-none pointer-events-none" />
               <div className="absolute left-[-20px] top-[10%] w-40 h-40 bg-white/5 rounded-full blur-2xl pointer-events-none" />
 
               {/* Left Section (60%) */}
@@ -552,7 +564,6 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
                       <ArrowRight size={13} className="stroke-[3]" />
                     </button>
                   )}
-
                 </div>
               </div>
 
@@ -567,7 +578,7 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
                 <img
                   src={currentBanner.modelImage ? (currentBanner.modelImage.startsWith("http") ? currentBanner.modelImage : `${backendUrl}${currentBanner.modelImage}`) : (currentBanner.image ? (currentBanner.image.startsWith("http") ? currentBanner.image : `${backendUrl}${currentBanner.image}`) : "")}
                   alt={currentBanner.title}
-                  fetchpriority="high"
+                  fetchPriority="high"
                   decoding="sync"
                   style={{
                     WebkitMaskImage: "linear-gradient(to top, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 8%)",
@@ -579,12 +590,12 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
                 {currentBanner.productId && currentBanner.productId.images?.[0] && (
                   <div 
                     onClick={() => navigate(`/product/${currentBanner.productId._id || currentBanner.productId}`)}
-                    className="absolute bottom-6 left-[-30px] z-20 bg-white/10 dark:bg-slate-900/60 backdrop-blur-xl border border-white/20 dark:border-white/[0.08] p-2 rounded-2xl flex items-center gap-2.5 shadow-xl hover:bg-white/20 dark:hover:bg-slate-900/80 cursor-pointer transition select-none animate-float-slow"
+                    className="absolute bottom-6 left-[-30px] z-20 bg-white/10 dark:bg-slate-900/60 backdrop-blur-xl border border-white/20 dark:border-white/[0.08] p-2 rounded-none flex items-center gap-2.5 shadow-xl hover:bg-white/20 dark:hover:bg-slate-900/80 cursor-pointer transition select-none animate-float-slow"
                   >
                     <img 
                       src={currentBanner.productId.images?.[0]?.startsWith("http") ? currentBanner.productId.images[0] : `${backendUrl}/${currentBanner.productId.images?.[0] || ""}`} 
                       alt="" 
-                      className="w-9 h-9 object-contain bg-white dark:bg-slate-900 rounded-xl p-1 border border-slate-200/50"
+                      className="w-9 h-9 object-contain bg-white dark:bg-slate-900 rounded-none p-1 border border-slate-200/50"
                     />
                     <div className="text-slate-100 dark:text-white text-[9px] font-bold tracking-tight pr-1.5 flex flex-col justify-center text-left">
                       <span className="opacity-60 text-[6.5px] uppercase font-black tracking-widest leading-none">Featured Item</span>
@@ -602,12 +613,11 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
               </div>
 
               {/* On Mobile / Small screens, show a subtle background image of the model */}
-              <div className="absolute inset-0 block lg:hidden z-0 opacity-[0.08] pointer-events-none rounded-[32px] overflow-hidden">
+              <div className="absolute inset-0 block lg:hidden z-0 opacity-[0.08] pointer-events-none rounded-none overflow-hidden">
                 <img
                   src={currentBanner.modelImage ? (currentBanner.modelImage.startsWith("http") ? currentBanner.modelImage : `${backendUrl}${currentBanner.modelImage}`) : (currentBanner.image ? (currentBanner.image.startsWith("http") ? currentBanner.image : `${backendUrl}${currentBanner.image}`) : "")}
                   alt=""
                   loading="lazy"
-                  fetchpriority="low"
                   className="w-full h-full object-cover object-center"
                 />
               </div>
@@ -636,7 +646,7 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.8 }}
-          className="relative overflow-hidden h-[560px] sm:h-[650px] lg:h-[calc(100vh-var(--navbar-height,80px))] bg-gradient-to-br from-[#FFFFFF] via-[#FCFCFD] to-[#F9F9FB] dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-[#0F172A] dark:text-slate-100 flex items-center py-10 lg:py-12 select-none w-full"
+          className="relative overflow-hidden h-auto lg:h-[calc(100vh-var(--navbar-height,80px))] bg-gradient-to-br from-[#FFFFFF] via-[#FCFCFD] to-[#F9F9FB] dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-[#0F172A] dark:text-slate-100 flex items-center py-12 select-none w-full min-h-[580px] z-10"
         >
           <style>{`
             @keyframes rotate-slow {
@@ -646,15 +656,6 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
             @keyframes pulse-slow {
               0%, 100% { opacity: 0.35; transform: scale(1); }
               50% { opacity: 0.7; transform: scale(1.1); }
-            }
-            @keyframes float-orb-1 {
-              0%, 100% { transform: translate(0px, 0px) scale(1); }
-              33% { transform: translate(40px, -60px) scale(1.1); }
-              66% { transform: translate(-30px, 30px) scale(0.9); }
-            }
-            @keyframes float-orb-2 {
-              0%, 100% { transform: translate(0px, 0px) scale(1.05); }
-              50% { transform: translate(-50px, 50px) scale(0.9); }
             }
             @keyframes marquee {
               0% { transform: translateX(0%); }
@@ -666,108 +667,146 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
             }
             .animate-rotate-slow { animation: rotate-slow 28s linear infinite; }
             .animate-pulse-slow { animation: pulse-slow 5s ease-in-out infinite; }
-            .animate-orb-1 { animation: float-orb-1 12s ease-in-out infinite; }
-            .animate-orb-2 { animation: float-orb-2 14s ease-in-out infinite; }
-            .animate-marquee { display: inline-block; animation: marquee 24s linear infinite; }
+            .animate-marquee { display: inline-block; animation: marquee 20s linear infinite; }
             .animate-twinkle { animation: twinkle 4s ease-in-out infinite; }
             .animate-twinkle-delayed { animation: twinkle 5s ease-in-out infinite 1.5s; }
           `}</style>
-          {/* Subtle Ambient Lighting Overlay */}
-          {isDark ? (
-            <>
-              <div className="absolute top-[10%] right-[15%] w-96 h-96 bg-indigo-500/10 rounded-full blur-[140px] pointer-events-none" />
-              <div className="absolute bottom-[20%] left-[10%] w-[350px] h-[350px] bg-rose-500/5 rounded-full blur-[120px] pointer-events-none" />
-            </>
-          ) : (
-            <>
-              <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-[#7C3AED]/3 dark:bg-[#7C3AED]/2 rounded-full blur-3xl pointer-events-none" />
-              <div className="absolute bottom-1/4 left-1/4 w-[400px] h-[400px] bg-[#3B82F6]/3 dark:bg-[#3B82F6]/1 rounded-full blur-3xl pointer-events-none" />
-            </>
-          )}
 
-          <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 w-full grid grid-cols-[58%_42%] sm:grid-cols-[50%_50%] lg:grid-cols-[45%_55%] gap-2 sm:gap-8 lg:gap-12 items-center z-10 relative">
+          {/* Ambient Lighting Mesh Gradient Overlay */}
+          <div className="absolute top-[10%] right-[15%] w-96 h-96 bg-indigo-500/[0.04] dark:bg-indigo-500/[0.08] rounded-full blur-[140px] pointer-events-none z-0" />
+          <div className="absolute bottom-[20%] left-[10%] w-[350px] h-[350px] bg-rose-500/[0.03] dark:bg-rose-500/[0.05] rounded-full blur-[120px] pointer-events-none z-0" />
+
+          {/* Balanced 50/50 Composition Grid */}
+          <div className="max-w-7xl mx-auto px-6 sm:px-12 lg:px-20 w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center z-10 relative">
 
             {/* Left Side Content Area */}
-            <div className="flex flex-col space-y-4 sm:space-y-5 lg:space-y-6 text-left max-w-xl mx-auto lg:mx-0 items-start z-10 relative">
-
-              {/* Dynamic Headline: updates dynamically per slide */}
-              <div className="min-h-[120px] md:min-h-[160px] lg:min-h-[200px] flex flex-col justify-center">
+            <div className="flex flex-col space-y-5 lg:space-y-6 text-left max-w-xl mx-auto lg:mx-0 items-start z-10 relative">
+              
+              {/* Dynamic Headline with reveal animation */}
+              <div className="min-h-[140px] md:min-h-[180px] lg:min-h-[220px] flex flex-col justify-center w-full">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={slideIdx}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.3, ease: "easeOut" }}
-                    className="space-y-2"
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    className="space-y-3"
                   >
-                    <span className="text-[9px] sm:text-[10px] font-black text-amber-500 dark:text-amber-400 uppercase tracking-widest block">
+                    {/* Social proof rating */}
+                    <div className="flex items-center gap-2 flex-wrap select-none">
+                      <div className="flex gap-0.5 text-amber-500">
+                        <Star size={11} className="fill-amber-400 text-amber-400" />
+                        <Star size={11} className="fill-amber-400 text-amber-400" />
+                        <Star size={11} className="fill-amber-400 text-amber-400" />
+                        <Star size={11} className="fill-amber-400 text-amber-400" />
+                        <Star size={11} className="fill-amber-400 text-amber-400" />
+                      </div>
+                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                        4.9★ rating (45k+ buyers)
+                      </span>
+                    </div>
+
+                    <span className="text-[9px] sm:text-[10px] font-black text-indigo-500 dark:text-indigo-400 uppercase tracking-widest block select-none">
                       {currentSlide.category}
                     </span>
-                    <h1 className="text-xl sm:text-4xl lg:text-5xl xl:text-6xl font-extrabold leading-[1.1] sm:leading-[1.05] tracking-tight text-slate-900 dark:text-white">
-                      {currentSlide.name}
+
+                    {/* Word-by-word title reveal */}
+                    <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-extrabold leading-[1.05] tracking-tight text-slate-900 dark:text-white flex flex-wrap gap-x-2.5">
+                      {currentSlide.name.split(" ").map((word, wIdx) => (
+                        <span key={wIdx} className="overflow-hidden inline-block py-0.5">
+                          <motion.span
+                            variants={{
+                              hidden: { y: "40px", opacity: 0 },
+                              visible: { y: 0, opacity: 1, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } }
+                            }}
+                            className="inline-block"
+                          >
+                            {word}
+                          </motion.span>
+                        </span>
+                      ))}
                     </h1>
-                    <p className="text-[11px] sm:text-base text-slate-500 dark:text-slate-400 leading-relaxed font-medium mt-1 sm:mt-2">
+
+                    <p className="text-[11.5px] sm:text-base text-slate-500 dark:text-slate-400 leading-relaxed font-semibold mt-1 sm:mt-2">
                       {currentSlide.tagline}
                     </p>
-                    {/* Gold Divider Accent Line */}
-                    <div className="w-12 sm:w-16 h-[2px] sm:h-1 bg-amber-500 dark:bg-amber-400 rounded-full mt-2.5 sm:mt-4" />
                   </motion.div>
                 </AnimatePresence>
               </div>
 
-              {/* First Purchase Promo Banner */}
-              <div className="flex items-center gap-2.5 sm:gap-3.5 bg-slate-900/10 dark:bg-slate-900/60 border border-amber-500/30 dark:border-amber-500/20 rounded-xl sm:rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 select-none w-fit text-left shadow-md">
-                <div className="bg-amber-500/10 p-1.5 sm:p-2 rounded-lg sm:rounded-xl border border-amber-500/20 shrink-0">
-                  <Award size={14} className="text-amber-500 dark:text-amber-400 sm:w-[18px] sm:h-[18px]" />
+              {/* Premium Offer/Coupon Card */}
+              <div 
+                onClick={copyCoupon}
+                className="flex items-center gap-3.5 bg-slate-900/5 dark:bg-slate-900/40 border border-amber-500/20 dark:border-amber-500/10 rounded-2xl px-4 py-3 select-none w-full sm:w-fit text-left hover:border-amber-500/40 transition duration-300 shadow-md cursor-pointer relative group/coupon overflow-hidden"
+              >
+                {/* Active hover reflection sheen */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-500/[0.05] to-transparent -translate-x-full group-hover/coupon:translate-x-full transition-transform duration-1000" />
+                
+                <div className="bg-amber-500/10 p-2 rounded-xl border border-amber-500/25 shrink-0 flex items-center justify-center">
+                  <Award size={18} className="text-amber-500 dark:text-amber-400" />
                 </div>
-                <div className="flex flex-col">
-                  <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400">First Purchase Offer</span>
-                  <span className="text-[9.5px] sm:text-[10.5px] font-bold text-slate-600 dark:text-slate-300 leading-tight">Get extra 10% off with coupon code <span className="font-mono border border-dashed border-amber-500 bg-amber-500/10 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded font-black text-[9px] sm:text-[10px]">CARTNOW10</span></span>
+                
+                <div className="flex-1 leading-tight pr-2">
+                  <span className="text-[9px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400 block">First Purchase Discount</span>
+                  <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-300 block mt-0.5">
+                    Save an extra 10% on your first order.
+                  </span>
                 </div>
+                
+                <button
+                  type="button"
+                  className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all duration-300 border ${
+                    couponCopied 
+                      ? "bg-emerald-500 border-emerald-500 text-white" 
+                      : "bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400"
+                  }`}
+                >
+                  {couponCopied ? "✓ Copied" : "Copy: CARTNOW10"}
+                </button>
               </div>
 
-              {/* Action CTAs */}
-              <div className="flex flex-wrap gap-2 sm:gap-4 items-center w-full">
+              {/* Action CTAs with magnetic hover scales */}
+              <div className="flex flex-wrap gap-4 items-center w-full">
                 <motion.button
-                  whileHover={{ scale: 1.02, y: -1 }}
-                  whileTap={{ scale: 0.98 }}
+                  whileHover={{ scale: 1.03, y: -2 }}
+                  whileTap={{ scale: 0.97 }}
                   onClick={() => handleModelClick(currentSlide.category)}
-                  className="inline-flex items-center justify-center gap-1.5 px-4 sm:px-8 py-2.5 sm:py-3 rounded-full text-[9px] sm:text-xs font-black uppercase tracking-widest transition-all cursor-pointer border-none bg-slate-900 text-slate-100 dark:text-white dark:bg-[#ff3f6c] dark:text-white hover:bg-slate-800 dark:hover:bg-[#e0355c] shadow-lg shadow-indigo-500/10 dark:shadow-rose-500/20"
+                  className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full text-xs font-black uppercase tracking-widest border-none bg-slate-900 dark:bg-[#ff3f6c] text-white hover:bg-slate-800 dark:hover:bg-[#e0355c] cursor-pointer shadow-lg shadow-indigo-500/10 dark:shadow-rose-500/25 transition-all duration-200"
                 >
                   <span>Shop Now</span>
-                  <ArrowRight size={12} className="stroke-[2.5] sm:w-[14px] sm:h-[14px]" />
+                  <ArrowRight size={13} className="stroke-[3]" />
                 </motion.button>
 
                 <motion.button
-                  whileHover={{ scale: 1.02, y: -1 }}
-                  whileTap={{ scale: 0.98 }}
+                  whileHover={{ scale: 1.03, y: -2 }}
+                  whileTap={{ scale: 0.97 }}
                   onClick={() => navigate("/products")}
-                  className="inline-flex items-center justify-center gap-1.5 px-4 sm:px-8 py-2.5 sm:py-3 rounded-full bg-transparent text-slate-800 dark:text-white text-[9px] sm:text-xs font-black uppercase tracking-widest border border-slate-300 dark:border-white/20 shadow-xs hover:bg-slate-50 dark:hover:bg-slate-900 cursor-pointer transition-all"
+                  className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full bg-transparent text-slate-800 dark:text-white text-xs font-black uppercase tracking-widest border border-slate-300 dark:border-white/20 hover:bg-slate-50 dark:hover:bg-slate-900 cursor-pointer shadow-sm transition-all duration-200"
                 >
-                  <LayoutGrid size={12} className="stroke-[2] sm:w-[14px] sm:h-[14px]" />
+                  <LayoutGrid size={13} className="stroke-[2.5]" />
                   <span>View Catalog</span>
                 </motion.button>
-
-
               </div>
 
-              {/* Quick Shop Category Buttons */}
-              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-1.5 pt-1">
-                <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 mr-1.5">Shop Popular:</span>
+              {/* Category count pills */}
+              <div className="flex flex-wrap items-center gap-2 pt-1 z-10 w-full justify-start select-none">
+                <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 mr-1">Popular Categories:</span>
                 {["Men", "Women", "Kids", "Sneakers", "Electronics", "Beauty"].map((tag) => (
-                  <button
+                  <motion.button
                     key={tag}
-                    onClick={() => navigate(`/product?q=${tag.toLowerCase()}`)}
-                    className="text-[10px] font-extrabold px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200/50 dark:border-slate-800/80 transition cursor-pointer"
+                    whileHover={{ scale: 1.04, y: -1 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => handleModelClick(tag)}
+                    className="text-[10.5px] font-bold px-3 py-1.5 rounded-full bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/40 dark:border-slate-800/80 transition-all cursor-pointer flex items-center gap-1.5 shadow-sm"
                   >
-                    {tag}
-                  </button>
+                    <span>{tag}</span>
+                    <span className="text-[8.5px] opacity-50 font-mono">({categoryCounts[tag]})</span>
+                  </motion.button>
                 ))}
               </div>
 
-              {/* Indicators / Dots */}
-              <div className="flex items-center justify-center lg:justify-start gap-2.5 pt-2">
+              {/* Slide Navigation Dots */}
+              <div className="flex items-center justify-start gap-2.5 pt-2 select-none">
                 {activeSlides.map((_, i) => (
                   <button
                     key={i}
@@ -775,14 +814,14 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
                       e.stopPropagation();
                       setSlideIdx(i);
                     }}
-                    className={`h-2 rounded-full transition-all duration-300 ${slideIdx === i ? "w-8 bg-[#ff3f6c] dark:bg-[#ff3f6c]" : "w-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700" }`}
+                    className={`h-2 rounded-full transition-all duration-300 ${slideIdx === i ? "w-8 bg-[#ff3f6c]" : "w-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700" }`}
                     aria-label={`Go to slide ${i + 1}`}
                   />
                 ))}
               </div>
 
-              {/* Trust Indicators */}
-              <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 dark:text-slate-600 pt-5 border-t border-slate-200/50 dark:border-slate-800/80 sm:flex sm:flex-wrap sm:items-center sm:gap-x-6 sm:gap-y-3">
+              {/* Trust badges */}
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 dark:text-slate-600 pt-5 border-t border-slate-200/40 dark:border-slate-800/80 sm:flex sm:flex-wrap sm:items-center sm:gap-x-6 sm:gap-y-3 select-none">
                 <div className="flex items-center gap-2 hover:text-slate-900 dark:hover:text-slate-300 transition-colors duration-250">
                   <ShieldCheck size={14} className="text-emerald-500 stroke-[2.5]" />
                   <span>Secure Checkout</span>
@@ -798,9 +837,9 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
               </div>
             </div>
 
-            {/* Right Side Luxury Slideshow Component */}
-            <div className="relative w-full h-full flex items-end justify-center select-none bg-transparent opacity-100 z-10 pointer-events-auto">
-
+            {/* Right Side Product / Model Area */}
+            <div className="relative w-full h-full min-h-[350px] sm:min-h-[450px] lg:min-h-[500px] flex items-end justify-center select-none bg-transparent z-10 pointer-events-auto overflow-visible">
+              
               {/* Twinkling Gold Stars */}
               <div className="absolute inset-0 pointer-events-none z-0">
                 <Sparkles size={16} className="absolute top-[15%] left-[10%] text-amber-400/70 animate-twinkle" />
@@ -809,63 +848,35 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
               </div>
 
               {/* Circular Golden Glowing Paths around model */}
-              <div className="absolute w-[85%] h-[85%] max-w-[440px] max-h-[440px] rounded-full border border-amber-500/10 dark:border-amber-400/10 pointer-events-none z-0" />
-              <div className="absolute w-[95%] h-[95%] max-w-[480px] max-h-[480px] rounded-full border border-dashed border-amber-500/5 pointer-events-none z-0 animate-rotate-slow" />
+              <div className="absolute w-[80%] h-[80%] max-w-[400px] max-h-[400px] rounded-full border border-slate-200/30 dark:border-white/[0.04] pointer-events-none z-0" />
+              <div className="absolute w-[95%] h-[95%] max-w-[460px] max-h-[460px] rounded-full border border-dashed border-slate-200/20 dark:border-white/[0.02] pointer-events-none z-0 animate-rotate-slow" />
 
-              {/* Ambient Glow Backlight behind the model (Clean and Minimalist) */}
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden select-none">
-                {/* Elegant Studio Aura Backdrop Circle */}
-                <div className="absolute w-[80%] h-[80%] max-w-[420px] max-h-[420px] rounded-full border border-slate-200/40 dark:border-slate-800/40 bg-white/5 dark:bg-slate-900/5 backdrop-blur-[2px] z-0" />
+              {/* Aura Backdrop Circle */}
+              <div className="absolute w-[75%] h-[75%] max-w-[380px] max-h-[380px] rounded-full bg-[#3B82F6]/[0.02] dark:bg-indigo-500/[0.03] blur-[30px] z-0" />
 
-                <AnimatePresence>
+              {/* Cross-fading Slideshow Container with Parallax and Float */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={slideIdx}
+                  initial={{ opacity: 0, scale: 0.94 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 1.04 }}
+                  transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] }}
+                  className="absolute inset-0 w-full h-full flex items-end justify-center overflow-visible"
+                >
+                  {/* Floating Model Container (shifted by mouse parallax) */}
                   <motion.div
-                    key={slideIdx}
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 0.95 }}
-                    exit={{ scale: 1.05, opacity: 0 }}
-                    transition={{ duration: 0.8 }}
-                    className="absolute w-[90%] h-[90%] rounded-full blur-[80px] animate-pulse-slow z-0"
-                    style={{
-                      background: isDark
-                        ? `radial-gradient(circle, ${currentSlide.category?.toLowerCase().includes("women") ? "rgba(236,72,153,0.3)" :
-                          currentSlide.category?.toLowerCase().includes("men") ? "rgba(59,130,246,0.3)" :
-                            currentSlide.category?.toLowerCase().includes("sneaker") ? "rgba(20,184,166,0.3)" :
-                              currentSlide.category?.toLowerCase().includes("electr") ? "rgba(245,158,11,0.3)" :
-                                currentSlide.category?.toLowerCase().includes("beauty") ? "rgba(168,85,247,0.3)" :
-                                  currentSlide.category?.toLowerCase().includes("access") ? "rgba(16,185,129,0.3)" :
-                                    "rgba(239,68,68,0.3)"
-                        } 0%, transparent 70%)`
-                        : `radial-gradient(circle, ${currentSlide.category?.toLowerCase().includes("women") ? "rgba(236,72,153,0.18)" :
-                          currentSlide.category?.toLowerCase().includes("men") ? "rgba(59,130,246,0.18)" :
-                            currentSlide.category?.toLowerCase().includes("sneaker") ? "rgba(20,184,166,0.18)" :
-                              currentSlide.category?.toLowerCase().includes("electr") ? "rgba(245,158,11,0.18)" :
-                                currentSlide.category?.toLowerCase().includes("beauty") ? "rgba(168,85,247,0.18)" :
-                                  currentSlide.category?.toLowerCase().includes("access") ? "rgba(16,185,129,0.18)" :
-                                    "rgba(239,68,68,0.18)"
-                        } 0%, transparent 70%)`
+                    animate={{
+                      x: mousePosition.x * 0.8,
+                      y: mousePosition.y * 0.8
                     }}
-                  />
-                </AnimatePresence>
-              </div>
-
-              {/* Cross-fading Slideshow Container with Premium Entrance and Floating Animation */}
-              <div className="absolute inset-0 w-full h-full flex items-end justify-center">
-                <AnimatePresence>
-                  <motion.div
-                    key={slideIdx}
-                    initial={{ opacity: 0, y: 40, scale: 0.92, rotate: -1 }}
-                    animate={{ opacity: 1, y: 0, scale: 1, rotate: 0 }}
-                    exit={{ opacity: 0, y: -20, scale: 1.03, rotate: 1 }}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
+                    transition={{ type: "spring", stiffness: 120, damping: 18 }}
+                    className="absolute bottom-0 inset-x-0 h-[88%] w-full flex items-end justify-center select-none cursor-pointer z-10"
                     onClick={() => handleModelClick(currentSlide.category)}
-                    className="absolute bottom-0 inset-x-0 h-[92%] w-full flex items-end justify-center select-none cursor-pointer z-10"
                   >
                     <motion.div
                       animate={{
-                        y: [0, -10, 0],
-                        rotate: [0, 0.5, -0.5, 0]
+                        y: [0, -10, 0]
                       }}
                       transition={{
                         duration: 6,
@@ -877,54 +888,109 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
                       <img
                         src={currentSlide.imageUrl}
                         alt={currentSlide.name}
-                        fetchpriority="high"
+                        fetchPriority="high"
                         decoding="sync"
                         style={{
-                          WebkitMaskImage: "linear-gradient(to top, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 12%)",
-                          WebkitMaskComposite: "source-in",
-                          maskComposite: "intersect"
+                          WebkitMaskImage: "linear-gradient(to top, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 10%)",
                         }}
                         className={`h-full max-h-full object-contain object-bottom select-none z-10 transition-transform duration-700 ${currentSlide.scaleClass || "scale-100"}`}
                       />
                     </motion.div>
                   </motion.div>
-                </AnimatePresence>
-              </div>
+
+                  {/* Glassmorphic AI recommendation snippet floating on left */}
+                  <motion.div
+                    animate={{
+                      x: mousePosition.x * 1.4 - 15,
+                      y: mousePosition.y * 1.4 - 20
+                    }}
+                    transition={{ type: "spring", stiffness: 100, damping: 20 }}
+                    className="absolute top-[22%] left-[-15px] bg-white/20 dark:bg-slate-900/60 backdrop-blur-xl border border-white/30 dark:border-white/[0.08] px-3.5 py-2.5 rounded-2xl shadow-xl max-w-[170px] text-left hidden sm:block z-20 pointer-events-none"
+                  >
+                    <div className="flex items-center gap-1.5 mb-1 text-[8.5px] font-black uppercase text-indigo-600 dark:text-indigo-400">
+                      <Sparkles size={11} className="fill-indigo-500/20" />
+                      <span>AI Choice</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-slate-700 dark:text-slate-200 leading-tight block">
+                      Matches trending seasonal aesthetics
+                    </span>
+                  </motion.div>
+
+                  {/* Glassmorphic review snippet floating on right */}
+                  <motion.div
+                    animate={{
+                      x: mousePosition.x * 1.3 + 15,
+                      y: mousePosition.y * 1.3 + 20
+                    }}
+                    transition={{ type: "spring", stiffness: 100, damping: 20 }}
+                    className="absolute top-[38%] right-[-15px] bg-white/20 dark:bg-slate-900/60 backdrop-blur-xl border border-white/30 dark:border-white/[0.08] p-3.5 rounded-2xl shadow-xl max-w-[175px] text-left hidden lg:block z-20 pointer-events-none"
+                  >
+                    <p className="text-[9.5px] text-slate-600 dark:text-slate-300 font-semibold italic leading-relaxed">
+                      "Premium build quality. Fits absolutely perfectly."
+                    </p>
+                    <span className="text-[9px] font-black text-amber-500 dark:text-amber-400 mt-1.5 block">
+                      ★ 4.9 Aarav S.
+                    </span>
+                  </motion.div>
+
+                  {/* Popularity Meter floating at bottom-right */}
+                  <motion.div
+                    animate={{
+                      x: mousePosition.x * 1.1 + 10,
+                      y: mousePosition.y * 1.1 + 10
+                    }}
+                    transition={{ type: "spring", stiffness: 100, damping: 20 }}
+                    className="absolute bottom-[10%] right-[5%] bg-white/20 dark:bg-slate-900/60 backdrop-blur-xl border border-white/30 dark:border-white/[0.08] p-3 rounded-2xl shadow-xl w-36 text-left hidden sm:block z-20 pointer-events-none"
+                  >
+                    <div className="flex justify-between items-center text-[8px] font-black uppercase text-slate-400 dark:text-slate-500 mb-1">
+                      <span>Demand</span>
+                      <span className="text-orange-500">97% High</span>
+                    </div>
+                    <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                      <div className="w-[97%] h-full bg-gradient-to-r from-orange-400 to-red-500 rounded-full" />
+                    </div>
+                    <span className="text-[8.5px] font-bold text-slate-500 dark:text-slate-400 mt-1 block">
+                      12k+ items sold this week
+                    </span>
+                  </motion.div>
+                </motion.div>
+              </AnimatePresence>
             </div>
+
           </div>
         </motion.section>
       )}
-    </AnimatePresence>
+      </AnimatePresence>
 
-    {/* Floating Glassmorphic Deal of the Day Badge */}
-    {hasActiveDeal && (
-      <motion.button
-        whileHover={{ scale: 1.08 }}
-        whileTap={{ scale: 0.95 }}
-        animate={{ y: ["-50%", "-55%", "-50%"] }}
-        transition={{
-          y: {
-            duration: 3,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }
-        }}
-        onClick={onShowDealOfDay}
-        className="fixed md:absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center justify-center gap-1.5 p-3 rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-orange-500/30 dark:border-orange-500/20 hover:border-orange-500/60 dark:hover:border-orange-500/40 shadow-lg cursor-pointer transition-all duration-300 select-none group"
-        style={{
-          boxShadow: "0 0 20px rgba(249, 115, 22, 0.15)",
-        }}
-      >
-        {/* Pulsing glow ring around icon */}
-        <div className="relative w-10 h-10 flex items-center justify-center rounded-xl bg-orange-500/10 text-orange-500 group-hover:bg-orange-500/20 transition-colors">
-          <Flame size={20} className="fill-orange-500/20 animate-pulse" />
-          <span className="absolute inset-0 rounded-xl border border-orange-500/40 animate-ping opacity-60 pointer-events-none" />
-        </div>
-        <span className="text-[8px] font-black uppercase tracking-widest text-orange-600 dark:text-orange-400">
-          Deal
-        </span>
-      </motion.button>
-    )}
+      {/* Floating Glassmorphic Deal of the Day Badge */}
+      {hasActiveDeal && (
+        <motion.button
+          whileHover={{ scale: 1.08 }}
+          whileTap={{ scale: 0.95 }}
+          animate={{ y: ["-50%", "-55%", "-50%"] }}
+          transition={{
+            y: {
+              duration: 3,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }
+          }}
+          onClick={onShowDealOfDay}
+          className="fixed md:absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-40 flex flex-col items-center justify-center gap-1.5 p-3 rounded-none bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-orange-500/30 dark:border-orange-500/20 hover:border-orange-500/60 dark:hover:border-orange-500/40 shadow-lg cursor-pointer transition-all duration-300 select-none group"
+          style={{
+            boxShadow: "0 0 20px rgba(249, 115, 22, 0.15)",
+          }}
+        >
+          {/* Pulsing glow ring around icon */}
+          <div className="relative w-10 h-10 flex items-center justify-center rounded-none bg-orange-500/10 text-orange-500 group-hover:bg-orange-500/20 transition-colors">
+            <Flame size={20} className="fill-orange-500/20 animate-pulse" />
+            <span className="absolute inset-0 rounded-none border border-orange-500/40 animate-ping opacity-60 pointer-events-none" />
+          </div>
+          <span className="text-[8px] font-black uppercase tracking-widest text-orange-600 dark:text-orange-400">
+            Deal
+          </span>
+        </motion.button>
+      )}
     </div>
   );
 };

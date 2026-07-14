@@ -15,6 +15,7 @@ import {
   createStory,
   getActiveStories,
   deleteStory,
+  getPostLikes,
 } from "../controllers/postController.js";
 
 const postRouter = express.Router();
@@ -47,6 +48,9 @@ postRouter.post("/", authUser, upload.single("media"), createPost);
 
 // Like/Unlike a post
 postRouter.post("/:postId/like", authUser, likePost);
+
+// Get users who liked a post
+postRouter.get("/:postId/likes", authUserOptional, getPostLikes);
 
 // Comments endpoints
 postRouter.post("/:postId/comment", authUser, addComment);

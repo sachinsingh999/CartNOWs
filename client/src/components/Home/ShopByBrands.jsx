@@ -289,7 +289,7 @@ const ShopByBrands = ({ popularBrands = [] }) => {
           <div
             key={i}
             onClick={() => navigate(`/brands/${brand.name.toLowerCase()}`)}
-            className={`group relative aspect-square border rounded-[28px] transition-[box-shadow,border-color] duration-300 cursor-pointer overflow-hidden ${brand.colorClass} ${brand.shadowClass} w-[220px] sm:w-auto shrink-0 snap-start transform-gpu`}
+            className={`group relative aspect-square border rounded-xl transition-[box-shadow,border-color] duration-300 cursor-pointer overflow-hidden ${brand.colorClass} ${brand.shadowClass} w-[220px] sm:w-auto shrink-0 snap-start transform-gpu`}
           >
             {/* Center: Brand Logo (no background, no scale transition on hover, responsive padding) */}
             <div className="absolute inset-0 flex items-center justify-center p-6 md:p-5 lg:p-4.5 select-none pointer-events-none z-0 transform-gpu">

@@ -34,14 +34,14 @@ const FlashDeals = ({ deals = [], onQuickView, onAddToCart, onToggleFavorite, wi
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[22%_78%] gap-6 lg:gap-8 items-start mb-8 select-none">
-      
+    <div className="grid grid-cols-1 lg:grid-cols-[22%_78%] gap-6 lg:gap-8 items-start mb-3 select-none">
+
       {/* Premium Luxury Glowing Card - Exact 390px Height to align with products */}
-      <div className="relative overflow-hidden rounded-2xl p-5 text-slate-100 dark:text-white flex flex-col justify-between shadow-xl shadow-indigo-500/5 dark:shadow-black/50 h-[390px] text-left bg-slate-950 border border-slate-800/80">
+      <div className="relative overflow-hidden rounded-none p-5 text-slate-100 dark:text-white flex flex-col justify-between shadow-xl shadow-indigo-500/5 dark:shadow-black/50 h-[390px] text-left bg-slate-950 border border-slate-800/80">
         {/* Glowing Mesh Animation */}
         <div className="absolute top-[-30%] left-[-30%] w-[100%] h-[100%] bg-gradient-to-tr from-[#7C3AED]/20 to-transparent rounded-full blur-[90px] pointer-events-none animate-pulse" style={{ animationDuration: "8s" }} />
         <div className="absolute bottom-[-30%] right-[-30%] w-[100%] h-[100%] bg-gradient-to-tr from-[#F97316]/15 to-transparent rounded-full blur-[90px] pointer-events-none animate-pulse" style={{ animationDuration: "6s" }} />
-        
+
         <div className="space-y-3.5 relative z-10">
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 border border-amber-500/30 rounded-full text-[9px] font-black uppercase tracking-wider text-amber-400">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
@@ -61,7 +61,7 @@ const FlashDeals = ({ deals = [], onQuickView, onAddToCart, onToggleFavorite, wi
             { label: "Mins", val: timeLeft.minutes },
             { label: "Secs", val: timeLeft.seconds }
           ].map((item, idx) => (
-            <div key={idx} className="bg-slate-900/60 backdrop-blur-md rounded-xl py-2 flex flex-col items-center border border-white/5 shadow-inner transition duration-300">
+            <div key={idx} className="bg-slate-900/60 backdrop-blur-md rounded-none py-2 flex flex-col items-center border border-white/5 shadow-inner transition duration-300">
               <span className="text-base font-black text-slate-100 dark:text-white">{String(item.val).padStart(2, "0")}</span>
               <span className="text-[7px] font-black uppercase text-amber-400/80 tracking-wider mt-0.5">{item.label}</span>
             </div>
@@ -75,7 +75,7 @@ const FlashDeals = ({ deals = [], onQuickView, onAddToCart, onToggleFavorite, wi
             <span className="text-amber-400 font-black">84%</span>
           </div>
           <div className="h-1.5 w-full bg-slate-900/90 rounded-full overflow-hidden border border-white/5 shadow-inner">
-            <motion.div 
+            <motion.div
               initial={{ width: 0 }}
               animate={{ width: "84%" }}
               transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
@@ -86,7 +86,7 @@ const FlashDeals = ({ deals = [], onQuickView, onAddToCart, onToggleFavorite, wi
 
         <button
           onClick={() => navigate("/product")}
-          className="group relative w-full py-3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-slate-100 dark:text-white font-extrabold text-[10px] uppercase tracking-wider rounded-xl shadow-lg shadow-orange-500/20 hover:shadow-orange-500/35 hover:scale-[1.02] active:scale-95 transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 border-none z-10"
+          className="group relative w-full py-3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-slate-100 dark:text-white font-extrabold text-[10px] uppercase tracking-wider rounded-none shadow-lg shadow-orange-500/20 hover:shadow-orange-500/35 hover:scale-[1.02] active:scale-95 transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 border-none z-10"
         >
           <span>View All Deals</span>
           <ArrowRight size={12} className="transition-transform duration-200 group-hover:translate-x-1" />
@@ -101,7 +101,7 @@ const FlashDeals = ({ deals = [], onQuickView, onAddToCart, onToggleFavorite, wi
             <span>Today's Flash Lineup</span>
             <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse" />
           </h3>
-          
+
           {/* Glassmorphism navigation buttons */}
           <div className="flex gap-2">
             <button
@@ -129,17 +129,17 @@ const FlashDeals = ({ deals = [], onQuickView, onAddToCart, onToggleFavorite, wi
             id="flash-slider"
             className="flex gap-3 md:gap-4 lg:gap-5 overflow-x-hidden scroll-smooth snap-x snap-mandatory pb-1"
           >
-              {flashProducts.map((p) => (
-                <div 
-                  key={p._id} 
-                  className="min-w-[calc((100%-0.75rem)/2)] max-w-[calc((100%-0.75rem)/2)] w-[calc((100%-0.75rem)/2)] md:min-w-[calc((100%-2*1rem)/3)] md:max-w-[calc((100%-2*1rem)/3)] md:w-[calc((100%-2*1rem)/3)] lg:min-w-[calc((100%-3*1.25rem)/4)] lg:max-w-[calc((100%-3*1.25rem)/4)] lg:w-[calc((100%-3*1.25rem)/4)] snap-start flex-shrink-0 border border-slate-200/50 dark:border-slate-800 rounded-2xl overflow-hidden shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-300"
-                >
-                  <ProductCard
-                    product={p}
-                    onQuickView={onQuickView}
-                  />
-                </div>
-              ))}
+            {flashProducts.map((p) => (
+              <div
+                key={p._id}
+                className="min-w-[calc((100%-0.75rem)/2)] max-w-[calc((100%-0.75rem)/2)] w-[calc((100%-0.75rem)/2)] md:min-w-[calc((100%-2*1rem)/3)] md:max-w-[calc((100%-2*1rem)/3)] md:w-[calc((100%-2*1rem)/3)] lg:min-w-[calc((100%-3*1.25rem)/4)] lg:max-w-[calc((100%-3*1.25rem)/4)] lg:w-[calc((100%-3*1.25rem)/4)] snap-start flex-shrink-0 border border-slate-200/50 dark:border-slate-800 rounded-none overflow-hidden shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-300"
+              >
+                <ProductCard
+                  product={p}
+                  onQuickView={onQuickView}
+                />
+              </div>
+            ))}
           </div>
         )}
       </div>
