@@ -31,15 +31,18 @@ import { BrowserRouter } from "react-router-dom";
 import { LanguageProvider } from "./context/LanguageContext.jsx";
 import { ComparisonProvider } from "./context/ComparisonContext.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
-    <AuthProvider>
-      <LanguageProvider>
-        <ComparisonProvider>
-          <App />
-        </ComparisonProvider>
-      </LanguageProvider>
-    </AuthProvider>
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+      <AuthProvider>
+        <LanguageProvider>
+          <ComparisonProvider>
+            <App />
+          </ComparisonProvider>
+        </LanguageProvider>
+      </AuthProvider>
+    </GoogleOAuthProvider>
   </BrowserRouter>
 );

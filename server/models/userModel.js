@@ -35,7 +35,22 @@ const userSchema = new mongoose.Schema({
 
   password: { 
     type: String, 
-    required: true 
+    required: function() { return this.provider === 'local'; }
+  },
+
+  provider: {
+    type: String,
+    default: "local"
+  },
+
+  googleId: {
+    type: String,
+    default: ""
+  },
+
+  isVerified: {
+    type: Boolean,
+    default: false
   },
 
   profilePhoto: {

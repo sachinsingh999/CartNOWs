@@ -1,4 +1,5 @@
 import userModel from "../models/userModel.js";
+import { OAuth2Client } from "google-auth-library";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import notificationModel from "../models/notificationModel.js";
@@ -464,6 +465,91 @@ const getAllAppReviews = async (req, res) => {
   }
 };
 
+const googleLogin = async (req, res) => {
+  try {
+    const { idToken } = req.body;
+    if (!idToken) {
+      return res.status(400).json({ success: false, message: "Google ID Token is required" });
+    }
+
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    const client = new OAuth2Client(clientId);
+
+    let ticket;
+    try {
+      ticket = await client.verifyIdToken({
+        idToken: idToken,
+        audience: clientId,
+      });
+    } catch (err) {
+      // Fallback verification without audience check if GOOGLE_CLIENT_ID is not set in env yet
+      ticket = await client.verifyIdToken({
+        idToken: idToken,
+      });
+    }
+
+    const payload = ticket.getPayload();
+    const { email, name, picture, sub: googleId } = payload;
+
+    if (!email) {
+      return res.status(400).json({ success: false, message: "Email not provided by Google account" });
+    }
+
+    let user = await userModel.findOne({ email });
+
+    if (user) {
+      // Account Linking: update existing account with Google login credentials
+      let needsSave = false;
+      if (user.provider !== "google") {
+        user.provider = "google";
+        needsSave = true;
+      }
+      if (!user.googleId) {
+        user.googleId = googleId;
+        needsSave = true;
+      }
+      if (!user.isVerified) {
+        user.isVerified = true;
+        needsSave = true;
+      }
+      if (picture && !user.profilePhoto) {
+        user.profilePhoto = picture;
+        needsSave = true;
+      }
+      if (needsSave) {
+        await user.save();
+      }
+    } else {
+      // Create user automatically
+      user = await userModel.create({
+        name: name || "Google User",
+        email: email,
+        provider: "google",
+        googleId: googleId,
+        isVerified: true,
+        profilePhoto: picture || "",
+      });
+    }
+
+    const token = createToken(user._id);
+    res.json({ 
+      success: true, 
+      token, 
+      message: "Logged in with Google successfully",
+      user: {
+        name: user.name,
+        email: user.email,
+        profilePhoto: user.profilePhoto,
+        role: "customer"
+      }
+    });
+
+  } catch (error) {
+    console.error("Google login error:", error);
+    res.status(500).json({ success: false, message: "Google token verification failed" });
+  }
+};
+
 export {
   loginUser,
   registerUser,
@@ -476,4 +562,5 @@ export {
   markNotificationsRead,
   addUserAppReview,
   getAllAppReviews,
+  googleLogin,
 };

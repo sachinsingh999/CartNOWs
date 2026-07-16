@@ -11,6 +11,7 @@ import {
   markNotificationsRead,
   addUserAppReview,
   getAllAppReviews,
+  googleLogin,
 } from '../controllers/userController.js';
 import authUser from '../middleware/auth.js';
 import rateLimit from '../middleware/rateLimiter.js';
@@ -22,6 +23,7 @@ const userRouter=express.Router();
 
 userRouter.post('/register', registerLimiter, registerUser);
 userRouter.post('/login', loginLimiter, loginUser);
+userRouter.post('/google-login', loginLimiter, googleLogin);
 userRouter.post('/admin', loginLimiter, adminLogin);
 userRouter.get("/profile", authUser, getUserProfile);
 userRouter.put("/update-profile", authUser, updateUserProfile);
