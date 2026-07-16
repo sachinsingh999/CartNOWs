@@ -690,7 +690,7 @@ const Profile = () => {
                     <button
                       key={tab.id}
                       onClick={() => setActiveProfileTab(tab.id)}
-                      className={`flex w-full items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-black uppercase tracking-wider transition-all duration-250 relative cursor-pointer group ${isSelected ? "bg-slate-950 dark:bg-orange-500/10 border border-slate-950 dark:border-orange-500/20 text-slate-100 dark:text-white dark:text-orange-400 scale-[1.01]" : "text-slate-500 dark:text-slate-400 hover:bg-slate-100/50 dark:hover:bg-slate-805/50 hover:text-slate-800 dark:hover:text-slate-205 border border-transparent" }`}
+                      className={`flex w-full items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-black uppercase tracking-wider transition-all duration-250 relative cursor-pointer group ${isSelected ? "bg-slate-950 dark:bg-orange-500/10 border border-slate-950 dark:border-orange-500/20 text-slate-100 dark:text-white dark:text-orange-400 scale-[1.01]" : "text-slate-500 dark:text-slate-400 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 border border-transparent" }`}
                     >
                       <span className="flex items-center gap-2.5">
                         <Icon size={13} className={isSelected ? "text-orange-500" : "text-slate-400 group-hover:text-orange-400 transition-colors"} />

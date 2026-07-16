@@ -74,11 +74,11 @@ const Revenue = ({ token, seller, orders = [] }) => {
               <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Gross Sales Volume</p>
               <p className="text-2xl font-black text-slate-900 dark:text-slate-100 mt-1">₹{totalRevenue.toFixed(2)}</p>
             </div>
-            <div className="h-10 w-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center border border-indigo-100">
+            <div className="h-10 w-10 bg-indigo-50 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center border border-indigo-100 dark:border-indigo-900/50">
               <DollarSign size={20} />
             </div>
           </div>
-          <div className="mt-4 flex items-center gap-1.5 text-[10px] text-indigo-600 font-bold border-t border-slate-50 pt-3">
+          <div className="mt-4 flex items-center gap-1.5 text-[10px] text-indigo-600 dark:text-indigo-400 font-bold border-t border-slate-50 dark:border-slate-800/60 pt-3">
             <TrendingUp size={12} />
             <span>Inclusive of consumer shipment rates</span>
           </div>
@@ -91,11 +91,11 @@ const Revenue = ({ token, seller, orders = [] }) => {
               <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Net Merchant Earnings</p>
               <p className="text-2xl font-black text-slate-900 dark:text-slate-100 mt-1">₹{netEarnings.toFixed(2)}</p>
             </div>
-            <div className="h-10 w-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center border border-emerald-100">
+            <div className="h-10 w-10 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center justify-center border border-emerald-100 dark:border-emerald-900/50">
               <ShieldCheck size={20} />
             </div>
           </div>
-          <div className="mt-4 text-[10px] text-slate-400 font-semibold border-t border-slate-50 pt-3">
+          <div className="mt-4 text-[10px] text-slate-405 dark:text-slate-400 font-semibold border-t border-slate-50 dark:border-slate-800/60 pt-3">
             After CartNOW's standard {commissionRate}% commission
           </div>
         </div>
@@ -133,11 +133,11 @@ const Revenue = ({ token, seller, orders = [] }) => {
               payoutHistory.map((p, index) => (
                 <div
                   key={p._id || index}
-                  className="border border-slate-100 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-slate-200 transition text-xs"
+                  className="border border-slate-100 dark:border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-slate-200 dark:hover:border-slate-700 transition text-xs"
                 >
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-[9px] font-black text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">
+                      <span className="font-mono text-[9px] font-black text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-950 px-1.5 py-0.5 rounded border border-transparent dark:border-slate-850">
                         #{String(p._id || index).slice(-6).toUpperCase()}
                       </span>
                       <span className="font-bold text-slate-800 dark:text-slate-100">Direct Bank Transfer</span>
@@ -148,7 +148,7 @@ const Revenue = ({ token, seller, orders = [] }) => {
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
                     <span className="font-black text-slate-900 dark:text-slate-100">₹{(p.amount || 0).toFixed(2)}</span>
-                    <span className={`border rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${ p.status === "approved" || p.status === "completed" ? "bg-emerald-50 text-emerald-600 border-emerald-100" : p.status === "rejected" ? "bg-red-50 text-red-600 border-red-100" : "bg-amber-50 text-amber-600 border-amber-100" }`}>
+                    <span className={`border rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${ p.status === "approved" || p.status === "completed" ? "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-450 border-emerald-100 dark:border-emerald-900/50" : p.status === "rejected" ? "bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 border-red-100 dark:border-red-900/50" : "bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-450 border-amber-100 dark:border-amber-900/50" }`}>
                       {p.status}
                     </span>
                   </div>

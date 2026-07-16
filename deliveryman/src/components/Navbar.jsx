@@ -27,15 +27,11 @@ const Navbar = ({
         {/* Left Section: Logo & Compact Navigation Tabs */}
         <div className="flex items-center gap-6">
           {/* Brand Logo */}
-          <div className="flex items-center gap-3 shrink-0 group cursor-pointer">
-            <div className="relative h-9 w-9 rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-slate-50 dark:bg-slate-900 flex items-center justify-center shadow-sm group-hover:scale-105 group-hover:rotate-3 transition-all duration-300">
-              <Logo variant="icon" className="h-full w-full p-1.5 text-slate-800 dark:text-white" />
-              <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500"></span>
-              </span>
-            </div>
-            <div className="flex flex-col leading-none hidden sm:flex">
+          <div 
+            onClick={() => handleTabClick("my-deliveries")}
+            className="flex items-center shrink-0 group cursor-pointer"
+          >
+            <div className="flex flex-col leading-none">
               <span className="text-sm font-black text-slate-900 dark:text-white tracking-tight group-hover:text-blue-500 transition-colors duration-200">CartNOW</span>
               <span className="text-[9px] text-blue-500 dark:text-blue-400 font-extrabold uppercase mt-0.5 tracking-wider">Courier</span>
             </div>
@@ -153,7 +149,7 @@ const Navbar = ({
                     <p className="text-xs font-black text-slate-900 dark:text-white truncate">{driver?.name}</p>
                     <p className="text-[9px] text-slate-500 font-semibold mt-0.5 uppercase tracking-wider">{driver?.email}</p>
                     <span className="inline-block mt-1.5 px-2 py-0.5 bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/50 text-[8px] font-black rounded-md text-blue-600 dark:text-blue-400">
-                      {driver?.deliveryZone || "Zone A-2"}
+                      {driver?.assignedAreas && driver.assignedAreas.length > 0 ? driver.assignedAreas.join(", ") : "All Zones"}
                     </span>
                   </div>
 
@@ -173,7 +169,7 @@ const Navbar = ({
                       </span>
                     </button>
 
-                    {/* Settings option */}
+                    {/* My Profile option */}
                     <button
                       onClick={() => {
                         handleTabClick("profile");
@@ -181,8 +177,8 @@ const Navbar = ({
                       }}
                       className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left text-[11px] font-bold text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white transition cursor-pointer"
                     >
-                      <Settings size={13} />
-                      <span>Settings & Zone</span>
+                      <User size={13} />
+                      <span>My Profile</span>
                     </button>
 
                     {/* Emergency SOS option */}

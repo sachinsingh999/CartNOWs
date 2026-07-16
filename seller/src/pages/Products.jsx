@@ -295,7 +295,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
       }));
     };
 
-    const inputClass = "w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-800 text-sm outline-none focus:border-orange-500 bg-white transition";
+    const inputClass = "w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none focus:border-orange-500 bg-white dark:bg-slate-900 transition";
 
     switch (field.fieldType) {
       case "Text Area":
@@ -534,14 +534,14 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
   return (
     <div className="space-y-6 animate-fadeIn pb-24 sm:pb-8">
       {/* Top Header */}
-      <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+      <div className="flex items-center justify-between border-b border-slate-200/40 dark:border-slate-800/40 pb-4">
         <div>
           <h2 className="text-xl md:text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">Product Catalog</h2>
           <p className="text-xs text-slate-400 mt-0.5">Manage details, stocks, pricing, and visual representations.</p>
         </div>
         <button
           onClick={() => navigate("/add-product")}
-          className="hidden sm:flex items-center gap-1.5 px-4.5 py-2.5 bg-brand hover:bg-orange-600 text-slate-100 dark:text-white rounded-xl text-xs font-black uppercase tracking-wider transition active:scale-95 shadow-md shadow-orange-600/10 cursor-pointer"
+          className="hidden sm:flex items-center gap-1.5 px-4.5 py-2.5 bg-brand hover:bg-orange-600 text-slate-100 dark:text-white rounded-none text-xs font-black uppercase tracking-wider transition active:scale-95 shadow-md shadow-orange-600/10 cursor-pointer"
         >
           <Plus size={14} />
           <span>Add Product</span>
@@ -550,39 +550,37 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
 
       {/* Mini Stats Row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/60 rounded-2xl p-4.5 flex items-center justify-between shadow-xs">
+        <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-md border border-slate-200/30 dark:border-slate-800/40 rounded-none p-4.5 flex items-center justify-between shadow-xs">
           <div>
             <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Active Listings</span>
             <h4 className="text-base font-black text-slate-800 dark:text-slate-100 mt-0.5">{products.length} Items</h4>
           </div>
-          <div className="h-8 w-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-500">
+          <div className="h-8 w-8 rounded-none bg-indigo-500/10 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-500 dark:text-indigo-400 border border-indigo-500/20">
             <Package size={16} />
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/60 rounded-2xl p-4.5 flex items-center justify-between shadow-xs">
+        <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-md border border-slate-200/30 dark:border-slate-800/40 rounded-none p-4.5 flex items-center justify-between shadow-xs">
           <div>
             <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Inventory Capital</span>
             <h4 className="text-base font-black text-slate-800 dark:text-slate-100 mt-0.5">₹{totalValue.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</h4>
           </div>
-          <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+          <div className="h-8 w-8 rounded-none bg-emerald-500/10 dark:bg-emerald-500/20 flex items-center justify-center text-emerald-500 dark:text-emerald-400 border border-emerald-500/20">
             <DollarSign size={16} />
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/60 rounded-2xl p-4.5 flex items-center justify-between shadow-xs">
+        <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-md border border-slate-200/30 dark:border-slate-800/40 rounded-none p-4.5 flex items-center justify-between shadow-xs">
           <div>
             <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Low Stock Warnings</span>
             <h4 className="text-base font-black text-slate-800 dark:text-slate-100 mt-0.5">{lowStockCount} Products</h4>
           </div>
-          <div className="h-8 w-8 rounded-lg bg-red-50/80 flex items-center justify-center text-red-500 border border-red-100">
+          <div className="h-8 w-8 rounded-none bg-red-50/80 dark:bg-red-950/20 flex items-center justify-center text-red-500 dark:text-red-400 border border-red-100 dark:border-red-900/50">
             <AlertTriangle size={16} />
           </div>
         </div>
-      </div>
-
-      {/* Search and Filters Bar */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200/60 rounded-2xl p-4 shadow-sm flex flex-col md:flex-row gap-3 items-center">
+      </div>      {/* Search and Filters Bar */}
+      <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-md border border-slate-200/30 dark:border-slate-800/40 rounded-none p-4 shadow-sm flex flex-col md:flex-row gap-3 items-center">
         <div className="relative w-full md:flex-1">
           <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
@@ -590,7 +588,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
             placeholder="Search products by title, details..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+            className="w-full pl-10 pr-4 py-2.5 rounded-none border border-slate-200 dark:border-slate-800 bg-white/40 dark:bg-slate-950/20 text-slate-800 dark:text-slate-100 text-sm outline-none transition font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
           />
         </div>
         
@@ -599,7 +597,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className="px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-xs outline-none transition bg-white dark:bg-slate-900 font-bold cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+            className="px-3 py-2.5 rounded-none border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs outline-none transition bg-white dark:bg-slate-950 font-bold cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
           >
             <option value="All">All Categories</option>
             {categories.filter(c => c !== "All").map(cat => (
@@ -610,7 +608,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
           <select
             value={stockFilter}
             onChange={(e) => setStockFilter(e.target.value)}
-            className="px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-xs outline-none transition bg-white dark:bg-slate-900 font-bold cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+            className="px-3 py-2.5 rounded-none border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs outline-none transition bg-white dark:bg-slate-950 font-bold cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
           >
             <option value="All">All Stocks</option>
             <option value="Healthy">Healthy Stock</option>
@@ -621,7 +619,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-xs outline-none transition bg-white dark:bg-slate-900 font-bold cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+            className="px-3 py-2.5 rounded-none border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs outline-none transition bg-white dark:bg-slate-950 font-bold cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
           >
             <option value="name-asc">Sort: A-Z</option>
             <option value="price-asc">Price: Low to High</option>
@@ -644,7 +642,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
         <div className="flex md:hidden w-full gap-2 shrink-0">
           <button
             onClick={() => setIsFilterDrawerOpen(true)}
-            className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 text-xs font-extrabold text-slate-700 rounded-xl transition cursor-pointer"
+            className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-extrabold text-slate-700 dark:text-slate-300 rounded-none transition cursor-pointer"
           >
             <SlidersHorizontal size={14} />
             <span>Filters Drawer</span>
@@ -652,7 +650,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
           {(searchQuery || categoryFilter !== "All" || stockFilter !== "All" || sortBy !== "name-asc") && (
             <button
               onClick={handleClearFilters}
-              className="px-4 py-2.5 border border-brand/20 bg-orange-50/50 text-xs font-extrabold text-brand rounded-xl transition cursor-pointer"
+              className="px-4 py-2.5 border border-brand/20 bg-orange-50/50 dark:bg-orange-950/20 text-xs font-extrabold text-brand rounded-none transition cursor-pointer"
             >
               Reset
             </button>
@@ -668,9 +666,9 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
         />
         <div className={`absolute top-0 right-0 h-full w-80 bg-white dark:bg-slate-900 shadow-2xl p-6 flex flex-col justify-between transform transition-transform duration-300 ease-out ${isFilterDrawerOpen ? "translate-x-0" : "translate-x-full"}`}>
           <div className="space-y-6">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div className="flex items-center justify-between border-b border-slate-200/40 dark:border-slate-800/40 pb-3">
               <h3 className="font-black text-sm text-slate-900 dark:text-slate-100 uppercase tracking-wider">Refine Catalog</h3>
-              <button onClick={() => setIsFilterDrawerOpen(false)} className="text-slate-400 hover:text-slate-800 p-1.5 rounded-lg hover:bg-slate-50 transition">
+              <button onClick={() => setIsFilterDrawerOpen(false)} className="text-slate-400 hover:text-slate-800 p-1.5 rounded-none hover:bg-slate-50 dark:hover:bg-slate-800 transition">
                 <X size={18} />
               </button>
             </div>
@@ -681,7 +679,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                 <select
                   value={categoryFilter}
                   onChange={(e) => setCategoryFilter(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-xs outline-none bg-white dark:bg-slate-900 font-bold cursor-pointer"
+                  className="w-full px-3 py-2.5 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-xs outline-none bg-white dark:bg-slate-900 font-bold cursor-pointer"
                 >
                   <option value="All">All Categories</option>
                   {categories.filter(c => c !== "All").map(cat => (
@@ -695,7 +693,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                 <select
                   value={stockFilter}
                   onChange={(e) => setStockFilter(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-xs outline-none bg-white dark:bg-slate-900 font-bold cursor-pointer"
+                  className="w-full px-3 py-2.5 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-xs outline-none bg-white dark:bg-slate-900 font-bold cursor-pointer"
                 >
                   <option value="All">All Stocks</option>
                   <option value="Healthy">Healthy Stock</option>
@@ -709,7 +707,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-xs outline-none bg-white dark:bg-slate-900 font-bold cursor-pointer"
+                  className="w-full px-3 py-2.5 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-xs outline-none bg-white dark:bg-slate-900 font-bold cursor-pointer"
                 >
                   <option value="name-asc">Sort: A-Z</option>
                   <option value="price-asc">Price: Low to High</option>
@@ -721,19 +719,19 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
             </div>
           </div>
 
-          <div className="space-y-2.5 pt-4 border-t border-slate-100">
+          <div className="space-y-2.5 pt-4 border-t border-slate-200/40 dark:border-slate-800/40">
             <button
               onClick={() => {
                 handleClearFilters();
                 setIsFilterDrawerOpen(false);
               }}
-              className="w-full py-2.5 border border-slate-200 dark:border-slate-800 text-slate-700 font-bold rounded-xl text-xs uppercase transition cursor-pointer hover:bg-slate-50"
+              className="w-full py-2.5 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-bold rounded-none text-xs uppercase transition cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800"
             >
               Clear Filters
             </button>
             <button
               onClick={() => setIsFilterDrawerOpen(false)}
-              className="w-full py-2.5 bg-slate-900 text-slate-100 dark:text-white font-black rounded-xl text-xs uppercase tracking-wider transition cursor-pointer hover:bg-slate-800"
+              className="w-full py-2.5 bg-slate-900 text-slate-100 dark:text-white font-black rounded-none text-xs uppercase tracking-wider transition cursor-pointer hover:bg-slate-800"
             >
               Apply Filter
             </button>
@@ -746,8 +744,8 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
         // Premium skeletons block
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4.5 space-y-4 animate-pulse">
-              <div className="h-40 bg-slate-100 dark:bg-slate-800 rounded-xl" />
+            <div key={i} className="bg-white dark:bg-slate-900 border border-slate-200/40 dark:border-slate-800/40 rounded-none p-4.5 space-y-4 animate-pulse">
+              <div className="h-40 bg-slate-100 dark:bg-slate-800 rounded-none" />
               <div className="space-y-2">
                 <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/3" />
                 <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-3/4" />
@@ -758,7 +756,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
         </div>
       ) : filteredProducts.length === 0 ? (
         // Custom empty onboarding state
-        <div className="border border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-3xl p-12 text-center max-w-xl mx-auto space-y-4 shadow-xs">
+        <div className="border border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-none p-12 text-center max-w-xl mx-auto space-y-4 shadow-xs">
           <div className="mx-auto h-16 w-16 rounded-full bg-orange-50 border border-orange-100 flex items-center justify-center text-brand">
             <Package size={28} />
           </div>
@@ -772,14 +770,14 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
             { (searchQuery || categoryFilter !== "All" || stockFilter !== "All" || sortBy !== "name-asc") ? (
               <button
                 onClick={handleClearFilters}
-                className="px-5 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 transition cursor-pointer"
+                className="px-5 py-2.5 border border-slate-200 dark:border-slate-800 rounded-none text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"
               >
                 Clear Active Filters
               </button>
             ) : (
               <button
                 onClick={() => navigate("/add-product")}
-                className="px-5 py-2.5 bg-brand text-slate-100 dark:text-white hover:bg-orange-600 rounded-xl text-xs font-black uppercase tracking-wider transition shadow-md cursor-pointer"
+                className="px-5 py-2.5 bg-brand text-slate-100 dark:text-white hover:bg-orange-600 rounded-none text-xs font-black uppercase tracking-wider transition shadow-md cursor-pointer"
               >
                 Add Your First Product
               </button>
@@ -795,41 +793,41 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
               return (
                 <div 
                   key={item._id}
-                  className="bg-white dark:bg-slate-900 border border-slate-200/85 rounded-2xl p-4 shadow-sm hover:shadow-md transition flex flex-col justify-between gap-4"
+                  className="bg-white dark:bg-slate-900 border border-slate-200/40 dark:border-slate-800/40 rounded-none p-4 shadow-sm hover:shadow-md transition flex flex-col justify-between gap-4"
                 >
                   <div className="flex gap-4">
                     <img 
                       src={item.image?.[0] || item.images?.[0] || "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100"} 
                       alt={item.name} 
-                      className="h-20 w-20 object-cover rounded-xl border border-slate-200/80 shadow-xs shrink-0" 
+                      className="h-20 w-20 object-cover rounded-none border border-slate-200/30 dark:border-slate-800/40 shadow-xs shrink-0" 
                     />
                     <div className="min-w-0 flex-1 space-y-1.5 text-left">
-                      <span className="inline-block text-[9px] font-black uppercase bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">
+                      <span className="inline-block text-[9px] font-black uppercase bg-slate-50 dark:bg-slate-950 text-slate-500 dark:text-slate-400 border border-slate-200/40 dark:border-slate-800 px-2 py-0.5 rounded-none">
                         {item.category}
                       </span>
-                      <h4 className="text-sm font-extrabold text-slate-900 dark:text-slate-100 leading-snug truncate" onClick={() => handleEditProductClick(item)}>
+                      <h4 className="text-sm font-extrabold text-slate-900 dark:text-slate-100 leading-snug truncate cursor-pointer" onClick={() => handleEditProductClick(item)}>
                         {item.name}
                       </h4>
                       <div className="flex justify-between items-center pt-1">
                         <span className="text-sm font-black text-slate-900 dark:text-slate-100">₹{item.price.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
-                        <span className={`inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${ stock === 0 ? "bg-red-50 text-red-600" : stock < 10 ? "bg-amber-50 text-amber-600" : "bg-emerald-50 text-emerald-600" }`}>
+                        <span className={`inline-flex px-2 py-0.5 rounded-none text-[9px] font-bold uppercase tracking-wider border ${ stock === 0 ? "bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 border-red-100 dark:border-red-900/50" : stock < 10 ? "bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/50" : "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/50" }`}>
                           {stock === 0 ? "Out of Stock" : stock < 10 ? `${stock} Left` : `${stock} Units`}
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex gap-2 pt-3 border-t border-slate-50">
+                  <div className="flex gap-2 pt-3 border-t border-slate-200/40 dark:border-slate-800/40">
                     <button
                       onClick={() => handleEditProductClick(item)}
-                      className="flex-1 flex items-center justify-center gap-1 py-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 text-xs font-bold text-slate-700 transition cursor-pointer"
+                      className="flex-1 flex items-center justify-center gap-1 py-2 rounded-none bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 text-xs font-bold text-slate-700 dark:text-slate-300 transition cursor-pointer"
                     >
                       <Edit3 size={13} />
                       <span>Edit</span>
                     </button>
                     <button
                       onClick={() => deleteProduct(item._id)}
-                      className="flex-1 flex items-center justify-center gap-1 py-2 rounded-xl bg-red-50 border border-red-100 hover:bg-red-100/40 text-xs font-bold text-red-600 transition cursor-pointer"
+                      className="flex-1 flex items-center justify-center gap-1 py-2 rounded-none bg-red-50 border border-red-100 hover:bg-red-100/40 text-xs font-bold text-red-600 transition cursor-pointer"
                     >
                       <Trash2 size={13} />
                       <span>Delete</span>
@@ -839,12 +837,10 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
               );
             })}
           </div>
-
-          {/* Desktop Table Layout (>= 1024px) */}
-          <div className="hidden lg:block overflow-x-auto bg-white dark:bg-slate-900 border border-slate-200/80 rounded-2xl shadow-sm">
+          <div className="hidden lg:block overflow-x-auto bg-white dark:bg-slate-900 border border-slate-200/40 dark:border-slate-800/40 rounded-none shadow-sm">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-100 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/50">
+                <tr className="border-b border-slate-200/40 dark:border-slate-800/40 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-slate-50/50 dark:bg-slate-950/20">
                   <th className="py-3.5 px-4 w-16">Item</th>
                   <th className="py-3.5 px-4">Product details</th>
                   <th className="py-3.5 px-4">Category</th>
@@ -857,26 +853,26 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                 {filteredProducts.map((item) => {
                   const stock = parseInt(item.stock) || 0;
                   return (
-                    <tr key={item._id} className="border-b border-slate-50 border-slate-50 hover:bg-slate-50/40 transition duration-150">
+                    <tr key={item._id} className="border-b border-slate-200/20 dark:border-slate-800/30 hover:bg-slate-50/40 dark:hover:bg-slate-950/20 transition duration-150">
                       <td className="py-4 px-4">
                         <img 
                           src={item.image?.[0] || item.images?.[0] || "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100"} 
                           alt={item.name} 
-                          className="h-10 w-10 object-cover rounded-xl border border-slate-200/80 shadow-sm" 
+                          className="h-10 w-10 object-cover rounded-none border border-slate-200/40 dark:border-slate-800 shadow-sm" 
                         />
                       </td>
                       <td className="py-4 px-4">
-                        <p className="text-sm font-bold text-slate-900 dark:text-slate-100 leading-tight hover:text-orange-500 transition cursor-pointer" onClick={() => handleEditProductClick(item)}>{item.name}</p>
-                        <p className="text-[10px] text-slate-400 mt-0.5 line-clamp-1 max-w-sm">{item.description}</p>
+                        <p className="text-sm font-bold text-slate-900 dark:text-slate-100 leading-tight hover:text-orange-500 transition cursor-pointer text-left" onClick={() => handleEditProductClick(item)}>{item.name}</p>
+                        <p className="text-[10px] text-slate-400 mt-0.5 line-clamp-1 max-w-sm text-left">{item.description}</p>
                       </td>
                       <td className="py-4 px-4">
-                        <span className="text-xs font-bold text-slate-500 bg-slate-100 border border-slate-200/30 px-2 py-0.5 rounded-full">
+                        <span className="text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-950 border border-slate-200/30 dark:border-slate-800/40 px-2.5 py-0.5 rounded-none">
                           {item.category}
                         </span>
                       </td>
                       <td className="py-4 px-4 text-sm font-black text-slate-900 dark:text-slate-100 text-right">₹{item.price.toFixed(2)}</td>
                       <td className="py-4 px-4 text-center">
-                        <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${ stock === 0 ? "bg-red-50 text-red-600 border border-red-100" : stock < 10 ? "bg-amber-50 text-amber-600 border border-amber-100" : "bg-emerald-50 text-emerald-600 border border-emerald-100" }`}>
+                        <span className={`inline-flex px-2.5 py-0.5 rounded-none text-[10px] font-bold uppercase tracking-wider border ${ stock === 0 ? "bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 border-red-100 dark:border-red-900/50" : stock < 10 ? "bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-450 border-amber-100 dark:border-amber-900/50" : "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-450 border-emerald-100 dark:border-emerald-900/50" }`}>
                           {stock === 0 ? "Out of Stock" : stock < 10 ? `Low: ${stock} Left` : `${stock} Units`}
                         </span>
                       </td>
@@ -884,14 +880,14 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                         <div className="flex items-center justify-end gap-2.5">
                           <button 
                             onClick={() => handleEditProductClick(item)}
-                            className="p-1.5 hover:bg-slate-100 text-slate-500 hover:text-slate-800 rounded-lg transition cursor-pointer active:scale-95"
+                            className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white rounded-none transition cursor-pointer active:scale-95"
                             title="Edit Details"
                           >
                             <Edit3 size={15} />
                           </button>
                           <button 
                             onClick={() => deleteProduct(item._id)}
-                            className="p-1.5 hover:bg-red-50 text-slate-400 hover:text-red-600 rounded-lg transition cursor-pointer active:scale-95"
+                            className="p-1.5 hover:bg-red-50 dark:hover:bg-red-950/20 text-slate-400 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 rounded-none transition cursor-pointer active:scale-95"
                             title="Delete Listing"
                           >
                             <Trash2 size={15} />
@@ -919,15 +915,15 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
       {/* Edit Product Modal */}
       {editingProduct && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-3xl p-6 md:p-8 flex flex-col max-h-[90vh] shadow-2xl relative border border-slate-100 dark:border-slate-800 animate-scaleUp">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-none p-6 md:p-8 flex flex-col max-h-[90vh] shadow-2xl relative border border-slate-200/40 dark:border-slate-800 animate-scaleUp">
             <button
               onClick={() => setEditingProduct(null)}
-              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition cursor-pointer z-10"
+              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-none transition cursor-pointer z-10"
             >
               <X size={20} />
             </button>
 
-            <div className="pb-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
+            <div className="pb-4 border-b border-slate-200/40 dark:border-slate-800 shrink-0">
               <h2 className="text-xl font-black text-slate-900 dark:text-slate-100 tracking-tight">Edit Product Listing</h2>
               <p className="text-xs text-slate-400 mt-1">Update product specifications, details, and gallery images.</p>
             </div>
@@ -941,7 +937,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                       type="text"
                       value={editForm.name}
                       onChange={(e) => setEditForm({...editForm, name: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                       required
                     />
                   </div>
@@ -951,7 +947,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                     <select
                       value={editForm.category}
                       onChange={(e) => setEditForm({...editForm, category: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900 cursor-pointer"
+                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900 cursor-pointer"
                       required
                     >
                       <option value="">Select Category</option>
@@ -968,7 +964,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                     <select
                       value={editForm.collection}
                       onChange={(e) => setEditForm({...editForm, collection: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900 cursor-pointer"
+                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900 cursor-pointer"
                     >
                       <option value="General">General</option>
                       <option value="Women">Women</option>
@@ -984,7 +980,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                       type="text"
                       value={editForm.subCategory}
                       onChange={(e) => setEditForm({...editForm, subCategory: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     />
                   </div>
                 </div>
@@ -996,7 +992,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                       type="text"
                       value={editForm.brand}
                       onChange={(e) => setEditForm({...editForm, brand: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     />
                   </div>
 
@@ -1006,7 +1002,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                       type="text"
                       value={editForm.sku}
                       onChange={(e) => setEditForm({...editForm, sku: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     />
                   </div>
                 </div>
@@ -1019,7 +1015,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                       step="0.01"
                       value={editForm.price}
                       onChange={(e) => setEditForm({...editForm, price: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                       required
                     />
                   </div>
@@ -1030,7 +1026,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                       type="number"
                       value={editForm.stock}
                       onChange={(e) => setEditForm({...editForm, stock: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     />
                   </div>
                 </div>
@@ -1041,7 +1037,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                     rows={3}
                     value={editForm.description}
                     onChange={(e) => setEditForm({...editForm, description: e.target.value})}
-                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition resize-none focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition resize-none focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                   />
                 </div>
 
@@ -1051,7 +1047,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                     <select
                       value={editForm.audience}
                       onChange={(e) => setEditForm({...editForm, audience: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900 cursor-pointer"
+                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900 cursor-pointer"
                     >
                       <option value="Unisex">Unisex</option>
                       <option value="Men">Men</option>
@@ -1066,7 +1062,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                       type="text"
                       value={editForm.shortDescription}
                       onChange={(e) => setEditForm({...editForm, shortDescription: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                       placeholder="Short summary description"
                     />
                   </div>
@@ -1079,7 +1075,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                       type="text"
                       value={editForm.tags}
                       onChange={(e) => setEditForm({...editForm, tags: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                       placeholder="e.g. shoes, cotton, casual"
                     />
                   </div>
@@ -1090,7 +1086,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                       type="text"
                       value={editForm.keywords}
                       onChange={(e) => setEditForm({...editForm, keywords: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                       placeholder="e.g. nike sneakers, summer wear"
                     />
                   </div>
@@ -1103,7 +1099,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                       type="text"
                       value={editForm.highlights}
                       onChange={(e) => setEditForm({...editForm, highlights: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                       placeholder="e.g. Premium leather, Soft cushioning"
                     />
                   </div>
@@ -1114,14 +1110,14 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                       type="text"
                       value={editForm.careInstructions}
                       onChange={(e) => setEditForm({...editForm, careInstructions: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                       placeholder="e.g. Hand wash only, Lay flat to dry"
                     />
                   </div>
                 </div>
 
                 {/* Custom Dynamic Specifications Builder */}
-                <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800 text-left animate-fade-in">
+                <div className="space-y-4 pt-4 border-t border-slate-200/40 dark:border-slate-800 text-left animate-fade-in">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5 text-xs font-black text-indigo-600 uppercase tracking-wider">
                       <Layers size={13} />
@@ -1130,7 +1126,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                     <button
                       type="button"
                       onClick={() => setEditCustomAttributes(prev => [...prev, { key: "", value: "" }])}
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-slate-100 dark:text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition cursor-pointer shadow-sm"
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-slate-100 dark:text-white rounded-none text-[10px] font-black uppercase tracking-wider transition cursor-pointer shadow-sm"
                     >
                       <Plus size={11} />
                       <span>Add Attribute</span>
@@ -1138,13 +1134,13 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                   </div>
 
                   {editCustomAttributes.length === 0 ? (
-                    <div className="border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl py-8 text-center text-slate-400 text-xs italic bg-slate-50/50 dark:bg-slate-950">
+                    <div className="border border-dashed border-slate-200 dark:border-slate-800 rounded-none py-8 text-center text-slate-400 text-xs italic bg-slate-50/50 dark:bg-slate-950">
                       No attributes added yet. Click "Add Attribute" to add custom key-value specifications.
                     </div>
                   ) : (
                     <div className="space-y-3">
                       {editCustomAttributes.map((attr, idx) => (
-                        <div key={idx} className="flex items-center gap-2.5 p-3.5 border border-slate-200 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-900 shadow-sm transition hover:shadow-md">
+                        <div key={idx} className="flex items-center gap-2.5 p-3.5 border border-slate-200 dark:border-slate-800 rounded-none bg-white dark:bg-slate-900 shadow-sm transition hover:shadow-md">
                           <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div className="space-y-1">
                               <label className="text-[9px] font-bold text-slate-400 uppercase block">Attribute Name</label>
@@ -1160,7 +1156,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                                     return updated;
                                   });
                                 }}
-                                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                               />
                             </div>
                             <div className="space-y-1">
@@ -1177,7 +1173,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                                     return updated;
                                   });
                                 }}
-                                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                               />
                             </div>
                           </div>
@@ -1248,7 +1244,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                       />
                       <label
                         htmlFor="edit-image-upload-input"
-                        className={`px-3 py-1.5 bg-slate-900 text-slate-100 dark:text-white hover:bg-slate-800 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1 ${ editUploadLoading ? "opacity-50 cursor-wait" : "" }`}
+                        className={`px-3 py-1.5 bg-slate-900 text-slate-100 dark:text-white hover:bg-slate-800 rounded-none text-xs font-bold transition cursor-pointer flex items-center gap-1 ${ editUploadLoading ? "opacity-50 cursor-wait" : "" }`}
                       >
                         <Upload size={13} />
                         <span>{editUploadLoading ? "Uploading..." : "Add Images"}</span>
@@ -1263,25 +1259,25 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                   ) : (
                     <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
                       {editImages.map((imgObj, idx) => (
-                        <div key={imgObj._id} className="relative group border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden p-1.5 flex flex-col gap-1.5 shadow-sm bg-slate-50 dark:bg-slate-950">
+                        <div key={imgObj._id} className="relative group border border-slate-200 dark:border-slate-800 rounded-none overflow-hidden p-1.5 flex flex-col gap-1.5 shadow-sm bg-slate-50 dark:bg-slate-950">
                           <img
                             src={imgObj.imageUrl}
                             alt="Product"
-                            className="w-full h-16 object-cover rounded-lg"
+                            className="w-full h-16 object-cover rounded-none"
                           />
                           <div className="flex flex-col gap-1 text-[9px]">
                             <div className="flex items-center justify-between">
                               <button
                                 type="button"
                                 onClick={() => handleEditSetCover(imgObj._id)}
-                                className={`px-1.5 py-0.5 rounded-full font-bold transition ${ imgObj.isCover ? "bg-orange-500 text-slate-100 dark:text-white animate-pulse" : "bg-slate-200 text-slate-600 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-300" }`}
+                                className={`px-1.5 py-0.5 rounded-none font-bold transition ${ imgObj.isCover ? "bg-orange-500 text-slate-100 dark:text-white animate-pulse" : "bg-slate-200 text-slate-600 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-300" }`}
                               >
                                 {imgObj.isCover ? "Cover" : "Set Cover"}
                               </button>
                               <button
                                 type="button"
                                 onClick={() => handleEditImageDelete(imgObj._id)}
-                                className="text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 p-1 rounded transition"
+                                className="text-red-500 hover:bg-red-50 dark:hover:bg-red-955/30 p-1 rounded-none transition"
                               >
                                 <Trash2 size={10} />
                               </button>
@@ -1314,17 +1310,17 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800 shrink-0">
+              <div className="flex justify-end gap-3 pt-4 border-t border-slate-200/40 dark:border-slate-800/40 shrink-0">
                 <button
                   type="button"
                   onClick={() => setEditingProduct(null)}
-                  className="px-4 py-2 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"
+                  className="px-4 py-2 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 rounded-none text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-orange-500 text-slate-100 dark:text-white hover:bg-orange-600 rounded-xl text-xs font-black uppercase tracking-wider transition shadow-md active:scale-95 cursor-pointer"
+                  className="px-5 py-2 bg-orange-500 text-slate-100 dark:text-white hover:bg-orange-600 rounded-none text-xs font-black uppercase tracking-wider transition shadow-md active:scale-95 cursor-pointer"
                 >
                   Save Changes
                 </button>

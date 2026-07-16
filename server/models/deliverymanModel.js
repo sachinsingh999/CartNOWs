@@ -37,6 +37,8 @@ const deliverymanSchema = new mongoose.Schema(
     earnings: { type: Number, default: 0 },
     completedDeliveries: { type: Number, default: 0 },
     failedDeliveries: { type: Number, default: 0 },
+    passwordResetToken: { type: String, default: null },
+    passwordResetExpires: { type: Date, default: null },
   },
   { timestamps: true }
 );

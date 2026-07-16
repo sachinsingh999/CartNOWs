@@ -47,6 +47,10 @@ import MobileShowcase from "./pages/MobileShowcase";
 import SocialFeed from "./pages/SocialFeed";
 import SassHome from "./pages/SassHome";
 
+// Auth guards and role dashboards
+import ProtectedRoute from "./components/ProtectedRoute";
+import PublicRoute from "./components/PublicRoute";
+
 
 const App = () => {
   const location = useLocation();
@@ -187,41 +191,52 @@ const App = () => {
                   <span>Loading Page...</span>
                 </div>
               }>
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/product" element={<Product />} />
-                  <Route path="/products" element={<Product />} />
-                  <Route path="/product/men" element={<AudienceCatalog audience="men" />} />
-                  <Route path="/product/women" element={<AudienceCatalog audience="women" />} />
-                  <Route path="/product/kid" element={<AudienceCatalog audience="kids" />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/signup" element={<Signup />} />
-                  <Route path="/product/:id" element={<ProductDetail />} />
-                  <Route path="/cart" element={<Cart />} />
-                  <Route path="/placeorder" element={<PlaceOrder />} />
-                  <Route path="/orderdetail" element={<Orderdetail />} />
-                  <Route path="/order/:orderId" element={<SingleOrderDetail />} />
-                  <Route path="/track/:id" element={<Track />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/help" element={<Help />} />
-                  <Route path="/tryon" element={<TryOn />} />
-                  <Route path="/verify" element={<Verify />} />
-                  <Route path="/order-confirmed/:orderId" element={<OrderConfirmed />} />
-                  <Route path="/wishlist" element={<Wishlist />} />
-                  <Route path="/category/:slug" element={<CatalogDetail type="category" />} />
-                  <Route path="/discover" element={<Discover />} />
-                  <Route path="/categories" element={<Categories />} />
-                  <Route path="/categories/:slug" element={<CatalogDetail type="category" />} />
-                  <Route path="/collections" element={<Collections />} />
-                  <Route path="/collections/:slug" element={<CatalogDetail type="collection" />} />
-                  <Route path="/brands" element={<Brands />} />
-                  <Route path="/brands/:slug" element={<CatalogDetail type="brand" />} />
-                  <Route path="/mobile" element={<MobileShowcase />} />
-                  <Route path="/social" element={<SocialFeed />} />
-                  <Route path="/saas" element={<SassHome />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
+                    <Routes>
+                      {/* Public / Unprotected routes */}
+                      <Route path="/" element={<Home />} />
+                      <Route path="/about" element={<About />} />
+                      <Route path="/product" element={<Product />} />
+                      <Route path="/products" element={<Product />} />
+                      <Route path="/product/men" element={<AudienceCatalog audience="men" />} />
+                      <Route path="/product/women" element={<AudienceCatalog audience="women" />} />
+                      <Route path="/product/kid" element={<AudienceCatalog audience="kids" />} />
+                      <Route path="/product/:id" element={<ProductDetail />} />
+                      <Route path="/help" element={<Help />} />
+                      <Route path="/category/:slug" element={<CatalogDetail type="category" />} />
+                      <Route path="/discover" element={<Discover />} />
+                      <Route path="/categories" element={<Categories />} />
+                      <Route path="/categories/:slug" element={<CatalogDetail type="category" />} />
+                      <Route path="/collections" element={<Collections />} />
+                      <Route path="/collections/:slug" element={<CatalogDetail type="collection" />} />
+                      <Route path="/brands" element={<Brands />} />
+                      <Route path="/brands/:slug" element={<CatalogDetail type="brand" />} />
+                      <Route path="/mobile" element={<MobileShowcase />} />
+                      <Route path="/social" element={<SocialFeed />} />
+                      <Route path="/saas" element={<SassHome />} />
+
+                      {/* Auth Guest-Only Routes */}
+                      <Route element={<PublicRoute />}>
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/signup" element={<Signup />} />
+                        <Route path="/register" element={<Signup />} />
+                      </Route>
+
+                      {/* Customer Private Routes */}
+                      <Route element={<ProtectedRoute allowedRoles={["customer"]} />}>
+                        <Route path="/cart" element={<Cart />} />
+                        <Route path="/placeorder" element={<PlaceOrder />} />
+                        <Route path="/orderdetail" element={<Orderdetail />} />
+                        <Route path="/order/:orderId" element={<SingleOrderDetail />} />
+                        <Route path="/track/:id" element={<Track />} />
+                        <Route path="/profile" element={<Profile />} />
+                        <Route path="/tryon" element={<TryOn />} />
+                        <Route path="/verify" element={<Verify />} />
+                        <Route path="/order-confirmed/:orderId" element={<OrderConfirmed />} />
+                        <Route path="/wishlist" element={<Wishlist />} />
+                      </Route>
+
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
               </Suspense>
             </ErrorBoundary>
           </main>

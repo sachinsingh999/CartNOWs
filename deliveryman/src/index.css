@@ -1,13 +1,111 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+@theme {
+  --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  
+  --color-brand: #2563eb;
+  --color-brand-hover: #1d4ed8;
+  
+  --radius-3xl: 8px;
+  --radius-2xl: 6px;
+  --radius-xl: 4px;
+  --radius-lg: 4px;
+  --radius-md: 2px;
+}
+
 * {
-  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Custom Styled Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
+}
+
+/* Glassmorphism Styles */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(226, 232, 240, 0.8) !important;
+}
+
+.dark .glass-panel {
+  background: rgba(15, 23, 42, 0.75) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(51, 65, 85, 0.5) !important;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.5) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(226, 232, 240, 0.6) !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dark .glass-card {
+  background: rgba(30, 41, 59, 0.45) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(51, 65, 85, 0.35) !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.85) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px -10px rgba(37, 99, 235, 0.12) !important;
+}
+
+.dark .glass-card:hover {
+  background: rgba(30, 41, 59, 0.65) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 35px -10px rgba(99, 102, 241, 0.2) !important;
+}
+
+/* Animations */
+@keyframes float {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-15px) rotate(2deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+.animate-float {
+  animation: float 7s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float 9s ease-in-out infinite;
+  animation-delay: 2.5s;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 15px -3px rgba(37, 99, 235, 0.2); }
+  50% { box-shadow: 0 0 25px 2px rgba(37, 99, 235, 0.4); }
+}
+
+.glow-pulse {
+  animation: pulse-glow 3s infinite;
 }
 
 @media (hover: hover) {
-  /* Prevent layout/visual hover shifts globally by disabling hover translations, scales, and rotations */
+  /* Prevent layout/visual hover shifts globally */
   [class*="hover:-translate"]:hover,
   [class*="hover:translate"]:hover,
   [class*="hover:scale"]:hover,
@@ -21,5 +119,11 @@
     scale: none !important;
     rotate: none !important;
   }
+}
+
+/* Reset Leaflet default divIcon style borders and backgrounds */
+.leaflet-div-icon {
+  background: transparent !important;
+  border: none !important;
 }
 

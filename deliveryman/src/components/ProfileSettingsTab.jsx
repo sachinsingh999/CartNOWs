@@ -1,6 +1,14 @@
-import React, { useEffect, useRef } from "react";
-import { User, ShieldAlert, MapPin, Settings, Mail, Phone, Truck, ShieldCheck, HelpCircle } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { User, ShieldAlert, MapPin, Settings, Mail, Phone, Truck, ShieldCheck, HelpCircle, Crosshair, Lock, Bell } from "lucide-react";
+import { toast } from "react-toastify";
+import axios from "axios";
+import { backendUrl } from "../config";
 
+/**
+ * Enhanced ProfileSettingsTab component.
+ * Preserves the interactive Leaflet dispatch sector map and adds security configurations
+ * (Change Password, Forgot/Reset Password) and delivery preferences.
+ */
 const ProfileSettingsTab = ({
   driver,
   stats,
@@ -12,11 +20,164 @@ const ProfileSettingsTab = ({
   deliveryRadius,
   setDeliveryRadius,
   handleSaveMapArea,
-  mapSaving
+  mapSaving,
+  token
 }) => {
   const circleRef = useRef(null);
   const markerRef = useRef(null);
   const mapRef = useRef(null);
+  const [gpsStatus, setGpsStatus] = useState("idle");
+
+  // Change Password state variables
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [passwordLoading, setPasswordLoading] = useState(false);
+
+  // Forgot / Reset Password state variables
+  const [showResetFlow, setShowResetFlow] = useState(false);
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [resetTokenInput, setResetTokenInput] = useState("");
+  const [resetNewPassword, setResetNewPassword] = useState("");
+  const [resetLoading, setResetLoading] = useState(false);
+
+  // Other delivery man options
+  const [audioAlerts, setAudioAlerts] = useState(() => {
+    return localStorage.getItem("driver_audio_alerts") !== "false";
+  });
+  const [autoAccept, setAutoAccept] = useState(() => {
+    return localStorage.getItem("driver_auto_accept") === "true";
+  });
+
+  // Handle toggling audio settings
+  useEffect(() => {
+    localStorage.setItem("driver_audio_alerts", audioAlerts);
+  }, [audioAlerts]);
+
+  useEffect(() => {
+    localStorage.setItem("driver_auto_accept", autoAccept);
+  }, [autoAccept]);
+
+  // Submit Password Change
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    if (!oldPassword || !newPassword) {
+      toast.error("Please fill in all password fields");
+      return;
+    }
+    setPasswordLoading(true);
+    try {
+      const response = await axios.post(
+        `${backendUrl}/api/deliveryman/change-password`,
+        { oldPassword, newPassword },
+        { headers: { token } }
+      );
+      if (response.data.success) {
+        toast.success("Password updated successfully!");
+        setOldPassword("");
+        setNewPassword("");
+      } else {
+        toast.error(response.data.message || "Failed to update password");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response?.data?.message || error.message || "Network error");
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
+  // Submit Forgot Password request to generate token
+  const handleForgotPasswordRequest = async () => {
+    if (!driver?.email) {
+      toast.error("Driver email not loaded");
+      return;
+    }
+    setForgotLoading(true);
+    try {
+      const response = await axios.post(`${backendUrl}/api/deliveryman/forgot-password`, {
+        email: driver.email
+      });
+      if (response.data.success) {
+        toast.info(`Reset code generated! Check popup / console.`);
+        // For testing/local debug convenience, print and display the mock token
+        alert(`MOCK EMAIL DELIVERY:\nYour password reset code is: ${response.data.resetToken}`);
+        setResetTokenInput(response.data.resetToken); // Pre-fill for ease of use
+        setShowResetFlow(true);
+      } else {
+        toast.error(response.data.message || "Failed to request reset token");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response?.data?.message || error.message || "Network error");
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
+  // Submit token and new password to complete reset
+  const handleResetPasswordSubmit = async (e) => {
+    e.preventDefault();
+    if (!resetTokenInput || !resetNewPassword) {
+      toast.error("Please enter the reset token and choose a new password");
+      return;
+    }
+    setResetLoading(true);
+    try {
+      const response = await axios.post(`${backendUrl}/api/deliveryman/reset-password`, {
+        token: resetTokenInput,
+        newPassword: resetNewPassword
+      });
+      if (response.data.success) {
+        toast.success("Password reset successfully! You can now use your new credentials.");
+        setShowResetFlow(false);
+        setResetTokenInput("");
+        setResetNewPassword("");
+      } else {
+        toast.error(response.data.message || "Failed to reset password");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response?.data?.message || error.message || "Network error");
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  const handleLocateMe = () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation is not supported by your browser");
+      setGpsStatus("error");
+      return;
+    }
+    setGpsStatus("fetching");
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = parseFloat(position.coords.latitude.toFixed(6));
+        const lng = parseFloat(position.coords.longitude.toFixed(6));
+        setDeliveryLat(lat);
+        setDeliveryLng(lng);
+        setGpsStatus("success");
+        toast.success("Synchronized coordinates with device GPS!");
+        
+        // Dynamic Leaflet map updates
+        if (mapRef.current) {
+          mapRef.current.setView([lat, lng], 13);
+        }
+        if (markerRef.current) {
+          markerRef.current.setLatLng([lat, lng]);
+        }
+        if (circleRef.current) {
+          circleRef.current.setLatLng([lat, lng]);
+        }
+      },
+      (error) => {
+        console.error("GPS error:", error);
+        setGpsStatus("error");
+        toast.error(`GPS Sync Error: ${error.message || "Access denied"}`);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  };
 
   useEffect(() => {
     let mapInstance = null;
@@ -114,7 +275,7 @@ const ProfileSettingsTab = ({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6 items-start">
       
-      {/* Left Column: Driver Agent Profile Summary */}
+      {/* Left Column: Driver Agent Profile Summary & Credentials */}
       <div className="space-y-6">
         {/* Profile Card */}
         <div className="bg-white dark:bg-gray-900 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-6 shadow-sm relative overflow-hidden group transition-all duration-300">
@@ -176,6 +337,149 @@ const ProfileSettingsTab = ({
           </div>
         </div>
 
+        {/* Change / Reset Password Security Options */}
+        <div className="bg-white dark:bg-gray-900 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-5.5 shadow-sm space-y-4">
+          <div className="flex items-start gap-3">
+            <Lock size={16} className="text-slate-500 shrink-0 mt-0.5" />
+            <div>
+              <h4 className="font-black text-xs uppercase tracking-wider">Security Settings</h4>
+              <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 leading-normal">Configure authentication preferences and change passwords.</p>
+            </div>
+          </div>
+
+          {!showResetFlow ? (
+            <form onSubmit={handleChangePassword} className="space-y-3.5 pt-1">
+              <div>
+                <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest block leading-none mb-1">Current Password</label>
+                <input
+                  type="password"
+                  required
+                  value={oldPassword}
+                  onChange={(e) => setOldPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full text-xs p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest block leading-none mb-1">New Password</label>
+                <input
+                  type="password"
+                  required
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full text-xs p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={passwordLoading}
+                className="w-full bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-100 dark:text-white py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition active:scale-95 cursor-pointer disabled:opacity-50"
+              >
+                {passwordLoading ? "Updating..." : "Update Password"}
+              </button>
+
+              <div className="border-t border-slate-100 dark:border-slate-800/80 pt-3 flex justify-center">
+                <button
+                  type="button"
+                  onClick={handleForgotPasswordRequest}
+                  disabled={forgotLoading}
+                  className="text-[9px] font-black text-blue-500 hover:underline uppercase tracking-wider cursor-pointer"
+                >
+                  {forgotLoading ? "Requesting..." : "Forgot Password? Get Reset Token"}
+                </button>
+              </div>
+            </form>
+          ) : (
+            <form onSubmit={handleResetPasswordSubmit} className="space-y-3.5 pt-1">
+              <div className="bg-blue-500/5 border border-blue-500/10 p-2.5 rounded-lg">
+                <p className="text-[9px] text-blue-600 dark:text-blue-400 leading-normal font-bold">
+                  Enter the recovery reset token code shown in your alert/toast notification below to choose a new password.
+                </p>
+              </div>
+              <div>
+                <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest block leading-none mb-1">Reset Token</label>
+                <input
+                  type="text"
+                  required
+                  value={resetTokenInput}
+                  onChange={(e) => setResetTokenInput(e.target.value)}
+                  placeholder="ENTER TOKEN"
+                  className="w-full text-xs p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 font-mono"
+                />
+              </div>
+              <div>
+                <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest block leading-none mb-1">Choose New Password</label>
+                <input
+                  type="password"
+                  required
+                  value={resetNewPassword}
+                  onChange={(e) => setResetNewPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full text-xs p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                />
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowResetFlow(false)}
+                  className="flex-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-wider transition cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={resetLoading}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl text-[9px] font-black uppercase tracking-wider transition active:scale-95 cursor-pointer disabled:opacity-50"
+                >
+                  {resetLoading ? "Resetting..." : "Submit Reset"}
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
+
+        {/* Driver Preferences Card */}
+        <div className="bg-white dark:bg-gray-900 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm space-y-4">
+          <div className="flex items-start gap-3">
+            <Settings size={16} className="text-slate-500 shrink-0 mt-0.5" />
+            <div>
+              <h4 className="font-black text-xs uppercase tracking-wider">Driver Options</h4>
+              <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 leading-normal">Configure alert notifications and dispatch preferences.</p>
+            </div>
+          </div>
+
+          <div className="space-y-2.5">
+            {/* Audio Alerts */}
+            <label className="flex items-center justify-between p-3 bg-slate-50/50 dark:bg-slate-900/40 rounded-xl border border-slate-100 dark:border-slate-800/60 cursor-pointer select-none">
+              <span className="text-[11px] text-slate-650 dark:text-slate-350 font-bold flex items-center gap-2">
+                <Bell size={13} className="text-slate-400" />
+                <span>Audio alerts on new job</span>
+              </span>
+              <input
+                type="checkbox"
+                checked={audioAlerts}
+                onChange={() => setAudioAlerts(!audioAlerts)}
+                className="w-4 h-4 accent-blue-600 cursor-pointer rounded"
+              />
+            </label>
+
+            {/* Auto Accept short jobs */}
+            <label className="flex items-center justify-between p-3 bg-slate-50/50 dark:bg-slate-900/40 rounded-xl border border-slate-100 dark:border-slate-800/60 cursor-pointer select-none">
+              <span className="text-[11px] text-slate-650 dark:text-slate-350 font-bold flex items-center gap-2">
+                <ShieldCheck size={13} className="text-slate-400" />
+                <span>Auto-accept short routes</span>
+              </span>
+              <input
+                type="checkbox"
+                checked={autoAccept}
+                onChange={() => setAutoAccept(!autoAccept)}
+                className="w-4 h-4 accent-blue-600 cursor-pointer rounded"
+              />
+            </label>
+          </div>
+        </div>
+
         {/* Deactivation Card */}
         <div className="bg-rose-500/5 dark:bg-rose-950/30 border border-rose-500/10 dark:border-rose-950 rounded-2xl p-5 shadow-sm space-y-4">
           <div className="flex items-start gap-3 text-rose-600 dark:text-rose-400">
@@ -193,7 +497,7 @@ const ProfileSettingsTab = ({
           </button>
         </div>
       </div>
-
+ 
       {/* Right Column: Interactive Sector Map Settings */}
       <div className="bg-white dark:bg-gray-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-5 hover:shadow-md transition-all duration-300">
         <div className="border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center justify-between gap-3">
@@ -210,10 +514,10 @@ const ProfileSettingsTab = ({
             <HelpCircle size={14} />
           </div>
         </div>
-
+ 
         {/* Map Container */}
         <div id="delivery-leaflet-map" className="h-[320px] w-full rounded-2xl border border-slate-200 dark:border-slate-800/80 relative z-10 shadow-inner" />
-
+ 
         <div className="grid grid-cols-1 md:grid-cols-[1fr_240px] gap-6 items-end pt-2">
           {/* Left sub-column: Radius Slider */}
           <div className="space-y-3.5">
@@ -234,20 +538,30 @@ const ProfileSettingsTab = ({
               />
             </div>
           </div>
-
+ 
           {/* Right sub-column: Coordinate metrics & Save */}
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-2 text-[10px] bg-slate-50 dark:bg-slate-900/40 p-3 rounded-xl border border-slate-200/60 dark:border-slate-800/80">
               <div>
-                <span className="text-[8px] font-black uppercase text-slate-400 dark:text-slate-500 block tracking-widest">Lat</span>
+                <span className="text-[8px] font-black uppercase text-slate-400 dark:text-slate-550 block tracking-widest">Lat</span>
                 <span className="font-mono font-black text-slate-800 dark:text-slate-200">{deliveryLat}</span>
               </div>
               <div>
-                <span className="text-[8px] font-black uppercase text-slate-400 dark:text-slate-500 block tracking-widest">Lng</span>
+                <span className="text-[8px] font-black uppercase text-slate-400 dark:text-slate-550 block tracking-widest">Lng</span>
                 <span className="font-mono font-black text-slate-800 dark:text-slate-200">{deliveryLng}</span>
               </div>
             </div>
-
+ 
+            <button
+              onClick={handleLocateMe}
+              disabled={gpsStatus === "fetching"}
+              type="button"
+              className="w-full flex items-center justify-center gap-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700/80 text-slate-800 dark:text-slate-200 py-2.5 text-xs font-bold transition duration-200 cursor-pointer border border-slate-200 dark:border-slate-700 disabled:opacity-60"
+            >
+              <Crosshair size={14} className={gpsStatus === "fetching" ? "animate-spin text-blue-500" : "text-slate-500"} />
+              <span>{gpsStatus === "fetching" ? "Acquiring GPS..." : "Sync Device GPS"}</span>
+            </button>
+ 
             <button
               onClick={handleSaveMapArea}
               disabled={mapSaving}
@@ -258,7 +572,7 @@ const ProfileSettingsTab = ({
           </div>
         </div>
       </div>
-
+ 
     </div>
   );
 };

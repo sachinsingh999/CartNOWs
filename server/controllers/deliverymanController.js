@@ -771,6 +771,96 @@ const updateProfile = async (req, res) => {
   }
 };
 
+const changePassword = async (req, res) => {
+  try {
+    const driverId = req.deliveryman.id;
+    const { oldPassword, newPassword } = req.body;
+
+    if (!oldPassword || !newPassword) {
+      return res.json({ success: false, message: "Missing current or new password" });
+    }
+
+    const driver = await deliverymanModel.findById(driverId);
+    if (!driver) {
+      return res.json({ success: false, message: "Driver not found" });
+    }
+
+    const isMatch = await bcrypt.compare(oldPassword, driver.password);
+    if (!isMatch) {
+      return res.json({ success: false, message: "Incorrect current password" });
+    }
+
+    const passwordCheck = validatePassword(newPassword);
+    if (!passwordCheck.isValid) {
+      return res.json({ success: false, message: passwordCheck.message });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    driver.password = hashedPassword;
+    await driver.save();
+
+    res.json({ success: true, message: "Password updated successfully" });
+  } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
+};
+
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const driver = await deliverymanModel.findOne({ email });
+    if (!driver) {
+      return res.json({ success: false, message: "Email not found" });
+    }
+
+    const resetToken = Math.random().toString(36).substring(2, 12).toUpperCase();
+    driver.passwordResetToken = resetToken;
+    driver.passwordResetExpires = Date.now() + 3600000; // 1 hour expiry
+    await driver.save();
+
+    res.json({ success: true, message: "Password reset token generated", resetToken });
+  } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    if (!token || !newPassword) {
+      return res.json({ success: false, message: "Missing reset token or new password" });
+    }
+
+    const driver = await deliverymanModel.findOne({
+      passwordResetToken: token,
+      passwordResetExpires: { $gt: Date.now() }
+    });
+
+    if (!driver) {
+      return res.json({ success: false, message: "Invalid or expired reset token" });
+    }
+
+    const passwordCheck = validatePassword(newPassword);
+    if (!passwordCheck.isValid) {
+      return res.json({ success: false, message: passwordCheck.message });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    driver.password = hashedPassword;
+    driver.passwordResetToken = null;
+    driver.passwordResetExpires = null;
+    await driver.save();
+
+    res.json({ success: true, message: "Password has been reset successfully" });
+  } catch (error) {
+    res.json({ success: false, message: error.message });
+  }
+};
+
 const updateAvailability = async (req, res) => {
   try {
     const driverId = req.deliveryman.id;
@@ -956,5 +1046,8 @@ export {
   updateDeliveryZones,
   acceptDelivery,
   rejectDelivery,
-  updateDeliveryCoordinates
+  updateDeliveryCoordinates,
+  changePassword,
+  forgotPassword,
+  resetPassword
 };

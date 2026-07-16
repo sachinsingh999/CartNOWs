@@ -13,6 +13,7 @@ import io from "socket.io-client";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { backendUrl } from "../config";
+import DeliveryMap from "./DeliveryMap";
 
 const getUserIdFromToken = (token) => {
   if (!token) return null;
@@ -83,6 +84,12 @@ const MyDeliveriesTab = ({
   paginatedTableOrders,
   totalTablePages
 }) => {
+  const [isNavigating, setIsNavigating] = useState(false);
+
+  useEffect(() => {
+    setIsNavigating(false);
+  }, [nextOrder]);
+
   // WebRTC Symmetrical Call States & Refs & FSM
   const [callState, setCallState] = useState("idle");
   const [callActive, setCallActive] = useState(false);
@@ -194,7 +201,7 @@ const MyDeliveriesTab = ({
   const [emergencyModalOpen, setEmergencyModalOpen] = useState(false);
   
   // Expanded states for deliveries list card
-  const [expandedCardId, setExpandedCardId] = useState(null);
+  const [expandedCardIds, setExpandedCardIds] = useState({});
 
   // Confetti celebration state upon successful delivery
   const [showCelebration, setShowCelebration] = useState(false);
@@ -1452,15 +1459,24 @@ const MyDeliveriesTab = ({
             {nextOrder && (
               <div className="flex flex-col sm:flex-row gap-3 mt-2">
                 <div className="flex gap-2.5 flex-1">
-                  <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(formatAddress(nextOrder.address))}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex-1 flex items-center justify-center gap-1.5 bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-150 cursor-pointer shadow-sm"
+                  <button
+                    onClick={() => {
+                      setIsNavigating((prev) => !prev);
+                      if (!isNavigating) {
+                        toast.success("Active Navigation Started!");
+                      } else {
+                        toast.info("Exited navigation mode");
+                      }
+                    }}
+                    className={`flex-1 flex items-center justify-center gap-1.5 border py-3 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-150 cursor-pointer shadow-sm ${
+                      isNavigating
+                        ? "bg-rose-600 hover:bg-rose-700 border-rose-600 text-white font-black animate-pulse"
+                        : "bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white"
+                    }`}
                   >
-                    <Navigation size={12} className="text-blue-500 dark:text-blue-400" />
-                    <span>Navigate</span>
-                  </a>
+                    <Navigation size={12} className={isNavigating ? "text-white" : "text-blue-500 dark:text-blue-400"} />
+                    <span>{isNavigating ? "Exit Nav" : "Navigate"}</span>
+                  </button>
                   
                   <button
                     onClick={() => handleInitiateCall("audio")}
@@ -1502,102 +1518,14 @@ const MyDeliveriesTab = ({
         </div>
 
         {/* SECTION 3: LIVE MAP PANEL */}
-        <div className="lg:col-span-5 glass-panel border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-5 shadow-xl flex flex-col justify-between relative overflow-hidden min-h-[360px]">
-          {/* Header Map overlay */}
-          <div className="absolute top-4 left-4 z-10 glass-panel border border-slate-200/80 dark:border-slate-800/80 rounded-xl px-3.5 py-2 shadow-md flex items-center gap-2.5">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
-            <div>
-              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none">GPS Connection</p>
-              <h5 className="text-[10px] font-black text-slate-900 dark:text-white mt-1">Live Tracking Active</h5>
-            </div>
-          </div>
-
-          <div className="absolute top-4 right-4 z-10 flex gap-1.5">
-            <button className="p-2 rounded-xl bg-white/90 dark:bg-slate-900/90 hover:bg-white dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 shadow-md cursor-pointer text-slate-600">
-              <Crosshair size={13} />
-            </button>
-          </div>
-
-          {/* SVG Map Canvas */}
-          <div className="w-full flex-1 rounded-2xl overflow-hidden bg-slate-100 dark:bg-[#0c0f1d] border border-slate-200 dark:border-slate-800/60 relative mt-1.5">
-            <svg viewBox="0 0 400 240" className="w-full h-full">
-              {/* Background abstract roads pattern */}
-              <g stroke="#ffffff" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" className="dark:stroke-slate-900 opacity-60">
-                <line x1="20" y1="40" x2="380" y2="40" />
-                <line x1="20" y1="120" x2="380" y2="120" />
-                <line x1="20" y1="200" x2="380" y2="200" />
-                <line x1="60" y1="20" x2="60" y2="220" />
-                <line x1="200" y1="20" x2="200" y2="220" />
-                <line x1="340" y1="20" x2="340" y2="220" />
-                <path d="M 60 120 C 120 70, 280 170, 340 120" fill="none" strokeWidth="6" />
-              </g>
-
-              {/* Grid dots mapping */}
-              <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-                <circle cx="2" cy="2" r="1" fill="#94a3b8" opacity="0.15" />
-              </pattern>
-              <rect width="100%" height="100%" fill="url(#grid)" />
-
-              {/* Suggested route mapping path */}
-              <path 
-                d="M 30 150 C 90 90, 160 40, 220 120 T 360 80" 
-                fill="none" 
-                stroke="#6366f1" 
-                strokeWidth="4" 
-                strokeLinecap="round" 
-                className="animate-dash opacity-40" 
-              />
-              <path 
-                d="M 30 150 C 90 90, 160 40, 220 120 T 360 80" 
-                fill="none" 
-                stroke="#3b82f6" 
-                strokeWidth="4" 
-                strokeLinecap="round" 
-                strokeDasharray="8 6" 
-              />
-
-              {/* Hub / Store pin marker */}
-              <g transform="translate(30, 150)">
-                <circle cx="0" cy="0" r="10" fill="#3b82f6" fillOpacity="0.15" />
-                <circle cx="0" cy="0" r="5" fill="#3b82f6" />
-                <text x="8" y="3" className="text-[8px] font-black uppercase text-blue-500 fill-blue-500">Pick-up</text>
-              </g>
-
-              {/* Customer pin destination */}
-              <g transform="translate(360, 80)">
-                <circle cx="0" cy="0" r="14" fill="#ef4444" fillOpacity="0.15" className="animate-ping" />
-                <circle cx="0" cy="0" r="6" fill="#ef4444" />
-                <path d="M-4 -12 L4 -12 L0 -6 Z" fill="#ef4444" />
-                <text x="-38" y="-4" className="text-[8px] font-black uppercase text-rose-500 fill-rose-500">Destination</text>
-              </g>
-
-              {/* Animated driver marker moving along the path */}
-              {nextOrder && (
-                <g className="driver-vehicle-marker">
-                  <circle cx="0" cy="0" r="12" fill="#10b981" fillOpacity="0.25" className="animate-pulse" />
-                  <circle cx="0" cy="0" r="5" fill="#10b981" border="1px solid white" />
-                  <polygon points="-4,-4 5,0 -4,4" fill="#ffffff" transform="rotate(-30)" />
-                </g>
-              )}
-            </svg>
-
-            {/* Float Bottom Map overlay */}
-            {nextOrder && (
-              <div className="absolute bottom-3 left-3 right-3 glass-panel border border-slate-200/80 dark:border-slate-800/80 rounded-xl p-3 shadow-md flex items-center justify-between gap-4">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-lg bg-blue-500/10 text-blue-500">
-                    <Truck size={14} />
-                  </div>
-                  <div>
-                    <h6 className="text-[10px] font-black text-slate-800 dark:text-white leading-none">Delivering to Room B-3</h6>
-                    <p className="text-[8px] text-slate-400 mt-1 uppercase font-bold tracking-wider">Eta 12 mins • Light traffic</p>
-                  </div>
-                </div>
-                <span className="text-xs font-mono font-black text-blue-500 dark:text-blue-400">2.1 km left</span>
-              </div>
-            )}
-          </div>
-        </div>
+        <DeliveryMap 
+          nextOrder={nextOrder} 
+          stats={stats} 
+          driver={driver} 
+          isNavigating={isNavigating}
+          setIsNavigating={setIsNavigating}
+          formatAddress={formatAddress}
+        />
 
       </div>
 
@@ -1931,24 +1859,24 @@ const MyDeliveriesTab = ({
         </div>
 
         {/* Deliveries cards stack */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 items-start">
           {paginatedTableOrders.length === 0 ? (
-            <div className="col-span-2 glass-panel rounded-2xl p-10 text-center text-slate-500">
+            <div className="col-span-full glass-panel rounded-2xl p-10 text-center text-slate-500">
               No orders found matching the filter criteria.
             </div>
           ) : (
             paginatedTableOrders.map((order) => {
               const isNext = nextOrder && nextOrder._id === order._id;
-              const isExpanded = expandedCardId === order._id;
+              const isExpanded = !!expandedCardIds[order._id];
               
               return (
                 <div 
                   key={order._id}
-                  className={`glass-panel border rounded-2xl p-4.5 shadow-sm transition-all duration-300 relative ${ isNext ? "border-blue-400 dark:border-blue-700 bg-blue-500/5 dark:bg-blue-500/10" : "border-slate-200 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700" }`}
+                  className={`glass-panel border rounded-2xl p-3 shadow-sm transition-all duration-300 relative ${ isNext ? "border-blue-400 dark:border-blue-700 bg-blue-500/5 dark:bg-blue-500/10" : "border-slate-200 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700" }`}
                 >
-                  <div className="flex justify-between items-start gap-4">
+                  <div className="flex justify-between items-start gap-2.5">
                     <div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
                         <span className="font-mono font-black text-xs text-slate-900 dark:text-white">
                           #{order._id.slice(-6).toUpperCase()}
                         </span>
@@ -1959,30 +1887,30 @@ const MyDeliveriesTab = ({
                           <span className="bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[8px] font-black px-1.5 py-0.5 rounded border border-amber-500/25 uppercase tracking-wider">Pending Action</span>
                         )}
                       </div>
-                      <h4 className="font-bold text-xs text-slate-800 dark:text-slate-200 mt-1">
+                      <h4 className="font-bold text-xs text-slate-800 dark:text-slate-200 mt-0.5">
                         {order.address?.firstName} {order.address?.lastName}
                       </h4>
                     </div>
 
                     <div className="text-right">
                       <p className="text-xs font-black text-slate-900 dark:text-white">₹{order.amount}</p>
-                      <span className={`inline-block px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-wider border mt-1 ${ order.orderStatus === "Delivered" ? "bg-emerald-50 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-950/40" : "bg-indigo-50 text-indigo-700 dark:text-indigo-400 border-indigo-100 dark:border-indigo-950/40" }`}>
+                      <span className={`inline-block px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border mt-0.5 ${ order.orderStatus === "Delivered" ? "bg-emerald-50 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-950/40" : "bg-indigo-50 text-indigo-700 dark:text-indigo-400 border-indigo-100 dark:border-indigo-950/40" }`}>
                         {order.orderStatus}
                       </span>
                     </div>
                   </div>
 
                   {/* Summary row */}
-                  <div className="flex items-center justify-between mt-3 text-[10px] text-slate-400 border-t border-slate-100 dark:border-slate-800/60 pt-2.5">
+                  <div className="flex items-center justify-between mt-2.5 text-[9px] text-slate-400 border-t border-slate-100 dark:border-slate-800/60 pt-2">
                     <span className="font-semibold">{order.paymentMethod}</span>
                     <span>{new Date(order.createdAt).toLocaleDateString()}</span>
                     
                     <button 
-                      onClick={() => setExpandedCardId(isExpanded ? null : order._id)}
+                      onClick={() => setExpandedCardIds((prev) => ({ ...prev, [order._id]: !prev[order._id] }))}
                       className="text-blue-500 dark:text-blue-400 hover:underline flex items-center gap-0.5 font-bold cursor-pointer"
                     >
                       <span>{isExpanded ? "Collapse" : "Expand"}</span>
-                      {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                      {isExpanded ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
                     </button>
                   </div>
 

@@ -111,18 +111,12 @@ const NavBar = ({ setToken, toggleSidebar, isCollapsed, theme, setTheme, token }
 
           <div 
             onClick={() => navigate("/")} 
-            className="flex items-center gap-3 cursor-pointer select-none group"
+            className="flex items-center cursor-pointer select-none group"
             title="Go to Dashboard"
           >
-            <div className="relative overflow-hidden h-7 w-7 rounded-lg border border-slate-200 dark:border-white/[0.08] bg-slate-100 dark:bg-slate-900 flex items-center justify-center group-hover:border-blue-500 transition duration-200">
-              <Logo
-                variant="icon"
-                className="h-5 w-5 text-slate-900 dark:text-white"
-              />
-            </div>
             <div className="flex flex-col leading-none">
-              <span className="text-sm font-bold text-slate-900 dark:text-white tracking-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition duration-200">CartNOW</span>
-              <span className="text-[9px] text-blue-700 dark:text-blue-400 font-bold uppercase tracking-widest mt-0.5">Control Center</span>
+              <span className="text-sm font-black text-slate-900 dark:text-white tracking-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition duration-200">CartNOW</span>
+              <span className="text-[9px] text-blue-700 dark:text-blue-400 font-extrabold uppercase tracking-widest mt-0.5">Control Center</span>
             </div>
           </div>
         </div>

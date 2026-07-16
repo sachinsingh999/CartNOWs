@@ -63,7 +63,7 @@ const Analytics = ({ products = [], orders = [] }) => {
               <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Page Views</p>
               <p className="text-2xl font-black text-slate-900 dark:text-slate-100 mt-1">{pageViews.toLocaleString()}</p>
             </div>
-            <div className="h-10 w-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center border border-indigo-100">
+            <div className="h-10 w-10 bg-indigo-50 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center border border-indigo-100 dark:border-indigo-900/50">
               <LineChart size={18} />
             </div>
           </div>
@@ -80,7 +80,7 @@ const Analytics = ({ products = [], orders = [] }) => {
               <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Conversion Rate</p>
               <p className="text-2xl font-black text-slate-900 dark:text-slate-100 mt-1">{conversionRate}%</p>
             </div>
-            <div className="h-10 w-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center border border-emerald-100">
+            <div className="h-10 w-10 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center justify-center border border-emerald-100 dark:border-emerald-900/50">
               <Percent size={18} />
             </div>
           </div>
@@ -94,7 +94,7 @@ const Analytics = ({ products = [], orders = [] }) => {
               <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Avg. Order Value</p>
               <p className="text-2xl font-black text-slate-900 dark:text-slate-100 mt-1">₹{avgOrderValue.toFixed(2)}</p>
             </div>
-            <div className="h-10 w-10 bg-violet-50 text-violet-600 rounded-xl flex items-center justify-center border border-violet-100">
+            <div className="h-10 w-10 bg-violet-50 dark:bg-violet-950/20 text-violet-600 dark:text-violet-400 rounded-xl flex items-center justify-center border border-violet-100 dark:border-violet-900/50">
               <ArrowUpRight size={18} />
             </div>
           </div>
@@ -141,20 +141,20 @@ const Analytics = ({ products = [], orders = [] }) => {
                 <defs>
                   {/* Gradients */}
                   <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="brand" />
+                    <stop offset="0%" stopColor="#ff6b00" />
                     <stop offset="100%" stopColor="#4f46e5" />
                   </linearGradient>
                   <linearGradient id="barGradHover" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#ff7b39" />
+                    <stop offset="0%" stopColor="#ff8f3d" />
                     <stop offset="100%" stopColor="#6366f1" />
                   </linearGradient>
                 </defs>
 
                 {/* Grid Lines */}
-                <line x1="0" y1="40" x2="600" y2="40" stroke="#f1f5f9" strokeWidth="1" strokeDasharray="4 4" />
-                <line x1="0" y1="90" x2="600" y2="90" stroke="#f1f5f9" strokeWidth="1" strokeDasharray="4 4" />
-                <line x1="0" y1="140" x2="600" y2="140" stroke="#f1f5f9" strokeWidth="1" strokeDasharray="4 4" />
-                <line x1="0" y1="180" x2="600" y2="180" stroke="#e2e8f0" strokeWidth="1.5" />
+                <line x1="0" y1="40" x2="600" y2="40" stroke="currentColor" className="text-slate-100 dark:text-slate-800/40" strokeWidth="1" strokeDasharray="4 4" />
+                <line x1="0" y1="90" x2="600" y2="90" stroke="currentColor" className="text-slate-100 dark:text-slate-800/40" strokeWidth="1" strokeDasharray="4 4" />
+                <line x1="0" y1="140" x2="600" y2="140" stroke="currentColor" className="text-slate-100 dark:text-slate-800/40" strokeWidth="1" strokeDasharray="4 4" />
+                <line x1="0" y1="180" x2="600" y2="180" stroke="currentColor" className="text-slate-200 dark:text-slate-800/70" strokeWidth="1.5" />
 
                 {/* Bars */}
                 {weeklyTraffic.map((t, idx) => {
@@ -202,20 +202,20 @@ const Analytics = ({ products = [], orders = [] }) => {
           <p className="text-[11px] text-slate-400">Detailed breakdown of product listing distributions.</p>
           <div className="space-y-4 pt-2">
             <div className="space-y-1">
-              <div className="flex justify-between text-xs text-slate-700 font-bold">
+              <div className="flex justify-between text-xs text-slate-700 dark:text-slate-300 font-bold">
                 <span>Active Products</span>
                 <span>{products.length} Items</span>
               </div>
-              <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                <div className="bg-indigo-600 bg-indigo-600 h-full w-[80%]" />
+              <div className="w-full bg-slate-100 dark:bg-slate-950 border border-transparent dark:border-slate-800/40 rounded-full h-1.5 overflow-hidden">
+                <div className="bg-indigo-600 h-full w-[80%]" />
               </div>
             </div>
             <div className="space-y-1">
-              <div className="flex justify-between text-xs text-slate-700 font-bold">
+              <div className="flex justify-between text-xs text-slate-700 dark:text-slate-300 font-bold">
                 <span>Unique Categories</span>
                 <span>{[...new Set(products.map((p) => p.category))].length} tags</span>
               </div>
-              <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+              <div className="w-full bg-slate-100 dark:bg-slate-950 border border-transparent dark:border-slate-800/40 rounded-full h-1.5 overflow-hidden">
                 <div className="bg-orange-500 h-full w-[55%]" />
               </div>
             </div>

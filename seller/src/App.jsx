@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Route, Routes, Navigate, useNavigate, useLocation } from "react-router-dom";
 import { 
   User, 
@@ -42,6 +42,29 @@ import Notifications from "./pages/Notifications";
 import SellerInvoices from "./pages/SellerInvoices";
 import Returns from "./pages/Returns";
 import { backendUrl } from "./config";
+
+const isTokenExpired = (token) => {
+  if (!token) return true;
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return true;
+    const base64Url = parts[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      window
+        .atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    const payload = JSON.parse(jsonPayload);
+    if (!payload.exp) return false;
+    const currentTime = Math.floor(Date.now() / 1000);
+    return payload.exp < currentTime;
+  } catch (error) {
+    return true;
+  }
+};
 
 const App = () => {
   const [token, setToken] = useState(
@@ -194,18 +217,45 @@ const App = () => {
     }
   };
 
-  useEffect(() => {
-    if (token) {
-      fetchProducts();
-      fetchOrders();
-    }
-  }, [token]);
-
-  const logout = () => {
+  const logout = useCallback(() => {
     setToken("");
     setSeller(null);
+    localStorage.removeItem("seller_token");
+    localStorage.removeItem("seller_info");
     navigate("/login");
-  };
+  }, [navigate]);
+
+  useEffect(() => {
+    if (token) {
+      if (isTokenExpired(token)) {
+        toast.error("Session expired. Please log in again.");
+        logout();
+      } else {
+        fetchProducts();
+        fetchOrders();
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token, logout]);
+
+  useEffect(() => {
+    const interceptor = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+          if (localStorage.getItem("seller_token")) {
+            toast.error(error.response.data?.message || "Session expired. Please log in again.");
+            logout();
+          }
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      axios.interceptors.response.eject(interceptor);
+    };
+  }, [logout]);
 
   return (
     <div className={`bg-slate-50/50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col antialiased transition-colors duration-200 ${token ? "h-[100dvh] overflow-hidden" : ""}`}>
@@ -228,18 +278,18 @@ const App = () => {
 
           {/* Left Sidebar */}
           <aside 
-            className={`fixed inset-y-0 left-0 z-35 bg-[#0F172A] border-r border-slate-800 flex flex-col justify-between text-slate-300 shrink-0 transform transition-all duration-300 ease-in-out lg:translate-x-0 ${ isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0" } ${isSidebarCollapsed ? "lg:w-20" : "lg:w-64"} w-64 overscroll-y-contain`}
+            className={`fixed inset-y-0 left-0 z-35 bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-900 flex flex-col justify-between text-slate-600 dark:text-slate-300 shrink-0 transform transition-all duration-300 ease-in-out lg:translate-x-0 ${ isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0" } ${isSidebarCollapsed ? "lg:w-20" : "lg:w-64"} w-64 overscroll-y-contain`}
           >
             <div className="p-4 lg:p-6 space-y-6 flex-1 flex flex-col min-h-0">
               
               {/* Logo Section */}
               <div className="flex items-center gap-3">
-                <div className="h-9 w-9 rounded-xl border border-slate-800 bg-slate-950 flex items-center justify-center shrink-0">
-                  <Logo variant="icon" className="h-full w-full p-1 text-slate-100 dark:text-white" />
+                <div className="h-9 w-9 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 flex items-center justify-center shrink-0">
+                  <Logo variant="icon" className="h-full w-full p-1 text-slate-800 dark:text-white" />
                 </div>
                 {!isSidebarCollapsed && (
-                  <div className="flex flex-col leading-none transition-opacity duration-200">
-                    <span className="text-sm font-extrabold text-slate-100 dark:text-white tracking-tight">CartNOW</span>
+                  <div className="flex flex-col text-left leading-none transition-opacity duration-200">
+                    <span className="text-sm font-extrabold text-slate-900 dark:text-white tracking-tight">CartNOW</span>
                     <span className="text-[10px] text-orange-500 font-black uppercase tracking-wider mt-0.5">Seller Hub</span>
                   </div>
                 )}
@@ -247,7 +297,7 @@ const App = () => {
                 {/* Collapse / Expand Toggle for Desktop */}
                 <button 
                   onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} 
-                  className="hidden lg:flex h-6 w-6 rounded-lg bg-slate-800 border border-slate-700 items-center justify-center text-slate-400 hover:text-white transition shadow-sm ml-auto cursor-pointer"
+                  className="hidden lg:flex h-6 w-6 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition shadow-sm ml-auto cursor-pointer"
                   title={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
                 >
                   {isSidebarCollapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
@@ -288,7 +338,7 @@ const App = () => {
                         setIsMobileSidebarOpen(false);
                       }}
                       title={isSidebarCollapsed ? item.label : undefined}
-                      className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer ${ isActive ? "bg-brand text-slate-100 dark:text-white shadow-md shadow-orange-600/25" : "hover:bg-slate-800 hover:text-white text-slate-400" } ${isSidebarCollapsed ? "justify-center" : ""}`}
+                      className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer ${ isActive ? "bg-brand text-white shadow-md shadow-orange-600/25" : "hover:bg-slate-100 dark:hover:bg-slate-900/60 hover:text-slate-900 dark:hover:text-white text-slate-500 dark:text-slate-400" } ${isSidebarCollapsed ? "justify-center" : ""}`}
                     >
                       <Icon size={14} className="shrink-0" />
                       {!isSidebarCollapsed && <span className="truncate">{item.label}</span>}
@@ -299,13 +349,13 @@ const App = () => {
             </div>
  
             {/* Bottom Profile / Quick Info */}
-            <div className="p-4 border-t border-slate-800">
+            <div className="p-4 border-t border-slate-200 dark:border-slate-900">
               <button
                 onClick={() => {
                   navigate("/profile");
                   setIsMobileSidebarOpen(false);
                 }}
-                className={`w-full flex items-center justify-between p-2 rounded-xl bg-slate-950 bg-slate-950 border border-slate-800 hover:bg-slate-800 transition cursor-pointer ${ isSidebarCollapsed ? "justify-center" : "" }`}
+                className={`w-full flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-900 hover:bg-slate-100 dark:hover:bg-slate-900 transition cursor-pointer ${ isSidebarCollapsed ? "justify-center" : "" }`}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
                   <div className="h-8 w-8 rounded-lg bg-brand flex items-center justify-center text-slate-100 dark:text-white font-black text-xs uppercase shrink-0">
@@ -313,10 +363,10 @@ const App = () => {
                   </div>
                   {!isSidebarCollapsed && (
                     <div className="flex flex-col text-left leading-none min-w-0 transition-opacity duration-200">
-                      <span className="text-xs font-bold text-slate-200 truncate">
+                      <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
                         {seller?.shopName || "My Store"}
                       </span>
-                      <span className="text-[9px] text-orange-400 font-semibold mt-0.5 truncate">
+                      <span className="text-[9px] text-orange-500 font-semibold mt-0.5 truncate">
                         {seller?.name || "Merchant"}
                       </span>
                     </div>
@@ -327,20 +377,20 @@ const App = () => {
           </aside>
  
           {/* Right Main Panel */}
-          <div className={`flex-1 flex flex-col overflow-hidden bg-slate-50/20 pb-16 sm:pb-0 transition-all duration-300 ${ isSidebarCollapsed ? "lg:pl-20" : "lg:pl-64" }`}>
+          <div className={`flex-1 flex flex-col overflow-hidden bg-slate-50/40 dark:bg-[#0B0F19]/40 pb-16 sm:pb-0 transition-all duration-300 ${ isSidebarCollapsed ? "lg:pl-20" : "lg:pl-64" }`}>
             {/* Top Header */}
-            <header className="h-16 border-b border-slate-200/80 bg-white dark:bg-slate-900 px-4 md:px-6 flex items-center justify-between shrink-0 shadow-sm sticky top-0 z-20">
+            <header className="h-16 border-b border-slate-200/80 dark:border-slate-900 bg-white/70 dark:bg-slate-950/70 backdrop-blur-md px-4 md:px-6 flex items-center justify-between shrink-0 shadow-sm sticky top-0 z-20">
               
               {/* Left Side: Title & Menu toggle */}
               <div className="flex items-center">
                 <button 
                   onClick={() => setIsMobileSidebarOpen(true)}
-                  className="lg:hidden p-2 text-slate-600 hover:text-slate-900 rounded-xl hover:bg-slate-50 transition cursor-pointer mr-2"
+                  className="lg:hidden p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer mr-2"
                   title="Open Navigation"
                 >
                   <Menu size={18} />
                 </button>
-                <h1 className="text-sm font-black text-slate-900 dark:text-slate-100 tracking-tight capitalize hidden sm:block">
+                <h1 className="text-sm font-black text-slate-900 dark:text-slate-100 tracking-tight capitalize hidden sm:block text-left">
                   {activeSubTab.replace("-", " ")} Hub
                 </h1>
               </div>
@@ -351,7 +401,7 @@ const App = () => {
                 <input
                   type="text"
                   placeholder="Search references..."
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-8 pr-3.5 py-1.5 text-xs font-semibold outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 rounded-xl pl-8 pr-3.5 py-1.5 text-xs font-semibold outline-none transition focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                 />
               </div>
 
@@ -360,7 +410,7 @@ const App = () => {
                 {/* Theme Toggle */}
                 <button
                   onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                  className="p-2 text-slate-500 hover:text-slate-850 dark:hover:text-white transition cursor-pointer rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800"
+                  className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-850 dark:hover:text-white transition cursor-pointer rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800"
                   title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
                 >
                   {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
@@ -368,7 +418,7 @@ const App = () => {
 
                 <button
                   onClick={() => navigate("/notifications")}
-                  className="relative p-2 text-slate-500 hover:text-slate-800 transition cursor-pointer rounded-xl hover:bg-slate-50"
+                  className="relative p-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition cursor-pointer rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800"
                   title="Logs Feed"
                 >
                   <Bell size={16} />
@@ -392,20 +442,20 @@ const App = () => {
                             navigate("/profile");
                             setShowDropdown(false);
                           }}
-                          className="w-full text-left px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition cursor-pointer flex items-center gap-2"
+                          className="w-full text-left px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer flex items-center gap-2"
                         >
-                          <User size={14} className="text-slate-400" />
+                          <User size={14} className="text-slate-450 dark:text-slate-500" />
                           <span>Profile Settings</span>
                         </button>
-                        <hr className="border-slate-100 my-1" />
+                        <hr className="border-slate-100 dark:border-slate-800 my-1" />
                         <button
                           onClick={() => {
                             logout();
                             setShowDropdown(false);
                           }}
-                          className="w-full text-left px-4 py-2 text-xs font-bold text-red-600 hover:bg-red-50/50 transition cursor-pointer flex items-center gap-2"
+                          className="w-full text-left px-4 py-2 text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition cursor-pointer flex items-center gap-2"
                         >
-                          <User size={14} className="text-red-500" />
+                          <User size={14} className="text-red-500 dark:text-red-450" />
                           <span>Sign Out</span>
                         </button>
                       </div>

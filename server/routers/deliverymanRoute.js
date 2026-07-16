@@ -23,7 +23,10 @@ import {
   updateDeliveryZones,
   acceptDelivery,
   rejectDelivery,
-  updateDeliveryCoordinates
+  updateDeliveryCoordinates,
+  changePassword,
+  forgotPassword,
+  resetPassword
 } from "../controllers/deliverymanController.js";
 import adminAuth from "../middleware/adminAuth.js";
 import deliverymanAuth from "../middleware/deliverymanAuth.js";
@@ -37,8 +40,10 @@ deliverymanRouter.post("/status", adminAuth, updateDriverStatus);
 deliverymanRouter.get("/complaints-list", adminAuth, adminGetComplaints);
 deliverymanRouter.post("/complaint-reply", adminAuth, adminReplyComplaint);
 
-// Public / Portal Signup
+// Public / Portal Signup & Recovery
 deliverymanRouter.post("/register", registerDeliveryman);
+deliverymanRouter.post("/forgot-password", forgotPassword);
+deliverymanRouter.post("/reset-password", resetPassword);
 
 // Driver Endpoints
 deliverymanRouter.post("/login", loginDeliveryman);
@@ -57,6 +62,7 @@ deliverymanRouter.post("/update-zones", deliverymanAuth, updateDeliveryZones);
 deliverymanRouter.post("/update-coordinates", deliverymanAuth, updateDeliveryCoordinates);
 deliverymanRouter.post("/accept-delivery", deliverymanAuth, acceptDelivery);
 deliverymanRouter.post("/reject-delivery", deliverymanAuth, rejectDelivery);
+deliverymanRouter.post("/change-password", deliverymanAuth, changePassword);
 
 // Return Tasks Endpoints
 deliverymanRouter.get("/returns", deliverymanAuth, getAssignedReturns);

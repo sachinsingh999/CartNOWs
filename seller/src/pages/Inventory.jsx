@@ -82,7 +82,7 @@ const Inventory = ({ token, products = [], fetchProducts }) => {
           <select
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
-            className="border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-xs font-bold bg-white dark:bg-slate-900 text-slate-700 outline-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+            className="border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-xs font-bold bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 outline-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
           >
             {categories.map((c) => (
               <option key={c} value={c}>
@@ -98,7 +98,7 @@ const Inventory = ({ token, products = [], fetchProducts }) => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-100 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/50">
+              <tr className="border-b border-slate-100 dark:border-slate-800 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/50 dark:bg-slate-950/40">
                 <th className="py-3 px-4">Product Details</th>
                 <th className="py-3 px-4">Category</th>
                 <th className="py-3 px-4 text-center">Unit Price</th>
@@ -122,7 +122,7 @@ const Inventory = ({ token, products = [], fetchProducts }) => {
                   return (
                     <tr
                       key={p._id}
-                      className="border-b border-slate-50 text-xs text-slate-700 hover:bg-slate-50/30 transition duration-150"
+                      className="border-b border-slate-100/40 dark:border-slate-900/60 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50/30 dark:hover:bg-slate-950/20 transition duration-150"
                     >
                       {/* Product Detail */}
                       <td className="py-4 px-4 font-bold flex items-center gap-3">
@@ -141,7 +141,7 @@ const Inventory = ({ token, products = [], fetchProducts }) => {
 
                       {/* Category */}
                       <td className="py-4 px-4">
-                        <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-bold text-[10px] uppercase">
+                        <span className="bg-slate-100 dark:bg-slate-950 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded-md font-bold text-[10px] uppercase border border-transparent dark:border-slate-900">
                           {p.category || "Beverages"}
                         </span>
                       </td>
@@ -185,7 +185,7 @@ const Inventory = ({ token, products = [], fetchProducts }) => {
                       {/* Status */}
                       <td className="py-4 px-4 text-center">
                         <span
-                          className={`inline-flex px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border ${ isLow ? "bg-red-50 text-red-600 border-red-100" : "bg-emerald-50 text-emerald-600 border-emerald-100" }`}
+                          className={`inline-flex px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border ${ isLow ? "bg-red-50 dark:bg-red-950/20 text-red-650 dark:text-red-400 border-red-100 dark:border-red-900/50" : "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-450 border-emerald-100 dark:border-emerald-900/50" }`}
                         >
                           {isLow ? "Low Stock" : "Healthy"}
                         </span>
@@ -199,7 +199,7 @@ const Inventory = ({ token, products = [], fetchProducts }) => {
                               setEditingId(p._id);
                               setEditStock(p.stock ?? 15);
                             }}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 hover:bg-slate-100 text-[10px] font-bold text-slate-700 transition cursor-pointer"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-800 text-[10px] font-bold text-slate-700 dark:text-slate-300 transition cursor-pointer"
                           >
                             <Edit2 size={10} />
                             <span>Quick Edit</span>

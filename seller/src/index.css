@@ -3,8 +3,14 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-brand: brand;
-  --color-brand-hover: brand-hover;
+  --color-brand: #f97316;
+  --color-brand-hover: #ea580c;
+
+  --radius-3xl: 12px;
+  --radius-2xl: 8px;
+  --radius-xl: 6px;
+  --radius-lg: 4px;
+  --radius-md: 3px;
 }
 
 * {

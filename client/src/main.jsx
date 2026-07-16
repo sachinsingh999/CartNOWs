@@ -30,13 +30,16 @@ import App from "./App.jsx";
 import { BrowserRouter } from "react-router-dom";
 import { LanguageProvider } from "./context/LanguageContext.jsx";
 import { ComparisonProvider } from "./context/ComparisonContext.jsx";
+import { AuthProvider } from "./context/AuthContext.jsx";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
-    <LanguageProvider>
-      <ComparisonProvider>
-        <App />
-      </ComparisonProvider>
-    </LanguageProvider>
+    <AuthProvider>
+      <LanguageProvider>
+        <ComparisonProvider>
+          <App />
+        </ComparisonProvider>
+      </LanguageProvider>
+    </AuthProvider>
   </BrowserRouter>
 );

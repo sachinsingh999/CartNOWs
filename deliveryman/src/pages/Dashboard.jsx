@@ -485,7 +485,7 @@ const Dashboard = ({
 
   const completedToday = orders.filter(o => o.orderStatus === "Delivered" && new Date(o.updatedAt).toDateString() === new Date().toDateString());
   const completedTodayCount = completedToday.length;
-  const todayEarningsVal = completedTodayCount * 75;
+  const todayEarningsVal = completedToday.reduce((sum, o) => sum + (o.amount || 0), 0);
 
   // Filter orders for the modern unified data table
   const tableFilteredOrders = orders.filter(o => {
@@ -582,6 +582,7 @@ const Dashboard = ({
         <AvailablePoolTab
           filteredAvailableOrders={filteredAvailableOrders}
           claimOrderHandler={claimOrderHandler}
+          driver={driver}
         />
       )}
 
@@ -607,6 +608,7 @@ const Dashboard = ({
           setDeliveryRadius={setDeliveryRadius}
           handleSaveMapArea={handleSaveMapArea}
           mapSaving={mapSaving}
+          token={token}
         />
       )}
 

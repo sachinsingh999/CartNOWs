@@ -1141,7 +1141,7 @@ const OrderCommunication = ({ orderId }) => {
           <div className="flex-1 text-left min-w-0">
             <h5 className="text-xs font-extrabold text-slate-800 dark:text-slate-200 truncate uppercase tracking-wide flex items-center gap-1.5">
               <span>{activeTab === "delivery" ? status.deliverymanName : status.sellerName}</span>
-              <span className="text-[8px] bg-slate-100 dark:bg-slate-900 text-slate-450 dark:text-slate-500 font-bold px-1.5 py-0.5 rounded-md tracking-wider uppercase border border-slate-205 dark:border-slate-800/40">
+              <span className="text-[8px] bg-slate-100 dark:bg-slate-900 text-slate-450 dark:text-slate-500 font-bold px-1.5 py-0.5 rounded-md tracking-wider uppercase border border-slate-200 dark:border-slate-800/40">
                 {activeTab === "delivery" ? "Delivery Executive" : "Support"}
               </span>
             </h5>

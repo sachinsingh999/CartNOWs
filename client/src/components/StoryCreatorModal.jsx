@@ -95,7 +95,7 @@ const StoryCreatorModal = ({
                         className={`relative h-14 w-10 shrink-0 rounded-md border-2 overflow-hidden cursor-pointer transition ${
                           storyActiveIndex === index 
                             ? "border-indigo-600 scale-105" 
-                            : "border-slate-205 hover:border-slate-300 dark:border-slate-800"
+                            : "border-slate-200 hover:border-slate-300 dark:border-slate-800"
                         }`}
                       >
                         {isVideo ? (

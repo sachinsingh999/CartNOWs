@@ -147,15 +147,15 @@ const Returns = ({ token }) => {
   const getStatusBadgeStyle = (status) => {
     switch (status) {
       case "Completed":
-        return "bg-emerald-50 text-emerald-700 border-emerald-100";
+        return "bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900/50";
       case "Out for Pickup":
-        return "bg-indigo-50 text-indigo-700 border-indigo-100";
+        return "bg-indigo-50 text-indigo-700 border-indigo-100 dark:bg-indigo-950/20 dark:text-indigo-400 dark:border-indigo-900/50";
       case "Picked Up":
-        return "bg-amber-50 text-amber-700 border-amber-100";
+        return "bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-950/20 dark:text-amber-450 dark:border-amber-900/50";
       case "Rejected":
-        return "bg-rose-50 text-rose-700 border-rose-200";
+        return "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/20 dark:text-rose-455 dark:border-rose-900/50";
       default:
-        return "bg-blue-50 text-blue-700 border-blue-100";
+        return "bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-950/20 dark:text-blue-400 dark:border-blue-900/50";
     }
   };
 
@@ -196,7 +196,7 @@ const Returns = ({ token }) => {
                   handlePresetChange(preset.id);
                 }
               }}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition duration-150 cursor-pointer ${ datePreset === preset.id ? "bg-slate-900 text-slate-100 dark:text-white shadow-sm" : "text-slate-500 hover:bg-slate-50 border border-slate-100 hover:text-slate-900" }`}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition duration-150 cursor-pointer ${ datePreset === preset.id ? "bg-slate-900 text-slate-100 dark:text-white shadow-sm" : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800 hover:text-slate-900 dark:hover:text-white" }`}
             >
               {preset.label}
             </button>
@@ -234,7 +234,7 @@ const Returns = ({ token }) => {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white dark:bg-slate-900 border border-slate-200/80 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-700">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300">
             <CornerDownLeft size={20} />
           </div>
           <div>
@@ -244,7 +244,7 @@ const Returns = ({ token }) => {
         </div>
 
         <div className="bg-white dark:bg-slate-900 border border-slate-200/80 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
-          <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${pendingRequests > 0 ? "bg-amber-50 text-amber-600 animate-pulse" : "bg-slate-50 text-slate-700"}`}>
+          <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${pendingRequests > 0 ? "bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-450 animate-pulse" : "bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300"}`}>
             <Clock size={20} />
           </div>
           <div>
@@ -254,7 +254,7 @@ const Returns = ({ token }) => {
         </div>
 
         <div className="bg-white dark:bg-slate-900 border border-slate-200/80 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-450">
             <CheckCircle size={20} />
           </div>
           <div>
@@ -308,11 +308,11 @@ const Returns = ({ token }) => {
                         <div>
                           <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 tracking-tight">{request.itemName}</h3>
                           <p className="text-xs font-medium text-slate-400 mt-1">
-                            Order ID: <span className="font-mono text-slate-700">{request.orderId}</span>
+                            Order ID: <span className="font-mono text-slate-700 dark:text-slate-300">{request.orderId}</span>
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="bg-orange-50 text-orange-700 border border-orange-100 rounded-lg px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider">
+                          <span className="bg-orange-50 dark:bg-orange-950/20 text-orange-700 dark:text-orange-400 border border-orange-100 dark:border-orange-900/50 rounded-lg px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider">
                             Type: {request.returnType || "Refund"}
                           </span>
                           <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border self-start ${getStatusBadgeStyle(request.status)}`}>
@@ -322,16 +322,16 @@ const Returns = ({ token }) => {
                       </div>
 
                       <div className="mt-3 flex flex-wrap gap-1.5">
-                        <span className="rounded-lg bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600 uppercase tracking-wider">
+                        <span className="rounded-lg bg-slate-100 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border border-transparent dark:border-slate-850 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
                           Qty {request.quantity}
                         </span>
                         {request.itemSize && (
-                          <span className="rounded-lg bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600 uppercase tracking-wider">
+                          <span className="rounded-lg bg-slate-100 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border border-transparent dark:border-slate-850 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
                             Size {request.itemSize}
                           </span>
                         )}
                         {request.returnType === "Exchange" && request.exchangeSize && (
-                          <span className="rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
+                          <span className="rounded-lg bg-indigo-50 dark:bg-indigo-950/20 text-indigo-700 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
                             Exch Size {request.exchangeSize}
                           </span>
                         )}
@@ -340,11 +340,9 @@ const Returns = ({ token }) => {
                         </span>
                       </div>
                     </div>
-
-                    {/* Reason Feedback */}
-                    <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-4 text-xs space-y-3">
+                    <div className="rounded-xl border border-slate-100 dark:border-slate-850 bg-slate-50/50 dark:bg-slate-950/30 p-4 text-xs space-y-3">
                       <div>
-                        <p className="font-bold text-slate-500 uppercase tracking-wider text-[9px] flex items-center gap-1">
+                        <p className="font-bold text-slate-505 uppercase tracking-wider text-[9px] flex items-center gap-1">
                           <FileText size={11} />
                           Reason for Return
                         </p>
@@ -352,8 +350,8 @@ const Returns = ({ token }) => {
                       </div>
 
                       {request.feedback && (
-                        <div className="pt-2 border-t border-slate-100">
-                          <p className="font-bold text-slate-500 uppercase tracking-wider text-[9px] flex items-center gap-1">
+                        <div className="pt-2 border-t border-slate-100 dark:border-slate-850">
+                          <p className="font-bold text-slate-505 uppercase tracking-wider text-[9px] flex items-center gap-1">
                             <MessageSquare size={11} />
                             Customer Comment
                           </p>
@@ -364,7 +362,7 @@ const Returns = ({ token }) => {
 
                     {/* Admin Obstacles warning / alerts */}
                     {request.adminNote && (
-                      <div className="rounded-xl border border-rose-200 bg-rose-50/30 p-4 text-xs space-y-1">
+                      <div className="rounded-xl border border-rose-200 dark:border-rose-900 bg-rose-50/30 dark:bg-rose-950/10 p-4 text-xs space-y-1">
                         <p className="font-extrabold text-rose-600 uppercase tracking-wider text-[9px] flex items-center gap-1">
                           <ShieldAlert size={12} />
                           Admin Obstacle Report / Warning Note
@@ -374,24 +372,24 @@ const Returns = ({ token }) => {
                     )}
 
                     {request.verificationCode && request.status !== "Completed" && (
-                      <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50/30 p-2.5 text-xs w-fit">
-                        <KeyRound size={14} className="text-amber-600 shrink-0" />
+                      <div className="flex items-center gap-2 rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/30 dark:bg-amber-955/10 p-2.5 text-xs w-fit">
+                        <KeyRound size={14} className="text-amber-605 shrink-0" />
                         <div>
                           <p className="text-[9px] font-black uppercase text-amber-500 tracking-wider">Customer Return Code</p>
-                          <p className="font-mono font-black text-sm tracking-widest text-amber-700 mt-0.5">{request.verificationCode}</p>
+                          <p className="font-mono font-black text-sm tracking-widest text-amber-707 dark:text-amber-400 mt-0.5">{request.verificationCode}</p>
                         </div>
                       </div>
                     )}
                   </div>
 
                   {/* Settings Action Column */}
-                  <div className="space-y-3 pt-4 xl:pt-0 xl:border-l xl:border-slate-100 xl:pl-6 flex flex-col justify-between text-xs">
+                  <div className="space-y-3 pt-4 xl:pt-0 xl:border-l xl:border-slate-100 dark:xl:border-slate-800 xl:pl-6 flex flex-col justify-between text-xs">
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Set Request Status</label>
                       <select
                         value={request.status}
                         onChange={(event) => handleStatusUpdate(request._id, event.target.value)}
-                        className={`w-full border rounded-xl px-3 py-2.5 text-xs font-bold bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none transition ${getStatusBadgeStyle(request.status)} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900`}
+                        className={`w-full border rounded-xl px-3 py-2.5 text-xs font-bold bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-105 outline-none transition ${getStatusBadgeStyle(request.status)} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900`}
                       >
                         <option value="Requested">Requested</option>
                         <option value="Approved">Approved</option>
@@ -407,7 +405,7 @@ const Returns = ({ token }) => {
                       <select
                         value={currentType}
                         onChange={(e) => setTypes(prev => ({ ...prev, [request._id]: e.target.value }))}
-                        className="w-full border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold bg-white dark:bg-slate-900 text-slate-700 outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                        className="w-full border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                       >
                         <option value="Refund">Refund</option>
                         <option value="Replacement">Replacement</option>
@@ -423,7 +421,7 @@ const Returns = ({ token }) => {
                           value={exchangeSizes[request._id] ?? request.exchangeSize ?? ""}
                           onChange={(e) => setExchangeSizes(prev => ({ ...prev, [request._id]: e.target.value }))}
                           placeholder="e.g. XL, M, L"
-                          className="w-full border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold bg-white dark:bg-slate-900 text-slate-700 outline-none"
+                          className="w-full border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 outline-none"
                         />
                       </div>
                     )}
@@ -433,7 +431,7 @@ const Returns = ({ token }) => {
                       <select
                         value={currentDriver}
                         onChange={(e) => setAssignedDrivers(prev => ({ ...prev, [request._id]: e.target.value }))}
-                        className="w-full border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold bg-white dark:bg-slate-900 text-slate-700 outline-none"
+                        className="w-full border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 outline-none"
                       >
                         <option value="">Unassigned</option>
                         {drivers.map(d => (

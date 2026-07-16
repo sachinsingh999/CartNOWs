@@ -3,12 +3,15 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { backendUrl } from "../config";
+import { motion } from "framer-motion";
+import { useAuth } from "../context/AuthContext";
 
 const inputClass =
   "w-full rounded-xl border border-gray-300 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 outline-none transition focus:border-indigo-600 dark:focus:border-indigo-500";
 
 const Signup = () => {
   const navigate = useNavigate();
+  const { setToken: setAuthToken, setRole: setAuthRole } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,6 +36,9 @@ const Signup = () => {
         const receivedToken = response.data.token;
         setToken(receivedToken);
         localStorage.setItem("token", receivedToken);
+        localStorage.setItem("role", "customer");
+        setAuthToken(receivedToken);
+        setAuthRole("customer");
 
         // Merge guest cart items into database cart
         const guestCart = JSON.parse(localStorage.getItem("cart") || "{}");
@@ -63,7 +69,7 @@ const Signup = () => {
             if (currentWishlistRes.data.success) {
               const serverWishlistIds = currentWishlistRes.data.wishlist || [];
               const toMerge = guestWishlist.filter(id => !serverWishlistIds.includes(id));
-              
+
               for (const productId of toMerge) {
                 await axios.post(
                   `${backendUrl}/api/wishlist/toggle`,
@@ -94,9 +100,46 @@ const Signup = () => {
   }, [token, navigate]);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 px-6 py-12 transition-colors duration-200">
-      <div className="mx-auto grid max-w-6xl overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 backdrop-blur-md shadow-sm lg:grid-cols-[440px_1fr]">
-        
+    <div className="min-h-screen bg-slate-50 dark:bg-[#030712] px-6 py-12 transition-colors duration-300 flex items-center justify-center relative overflow-hidden">
+
+      {/* Tech Dotted Grid Background */}
+      <div className="absolute inset-0 bg-[radial-gradient(rgba(99,102,241,0.06)_1px,transparent_1px)] dark:bg-[radial-gradient(rgba(99,102,241,0.12)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none z-0" />
+
+      {/* Central Ambient Aura Glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-indigo-500/[0.04] dark:bg-indigo-500/[0.09] rounded-full blur-[120px] pointer-events-none z-0" />
+
+      {/* Decorative Floating Background Blobs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        <motion.div
+          animate={{
+            x: [0, 40, -20, 0],
+            y: [0, -60, 40, 0],
+            scale: [1, 1.15, 0.9, 1],
+          }}
+          transition={{
+            duration: 15,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          className="absolute -top-40 -left-40 w-96 h-96 rounded-full bg-indigo-500/10 blur-3xl dark:bg-indigo-600/15"
+        />
+        <motion.div
+          animate={{
+            x: [0, -30, 50, 0],
+            y: [0, 50, -30, 0],
+            scale: [1, 0.9, 1.1, 1],
+          }}
+          transition={{
+            duration: 18,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          className="absolute -bottom-40 -right-40 w-96 h-96 rounded-full bg-rose-500/10 blur-3xl dark:bg-pink-600/10"
+        />
+      </div>
+
+      <div className="mx-auto grid max-w-6xl w-full overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 backdrop-blur-md shadow-sm lg:grid-cols-[440px_1fr] z-10">
+
         <div className="flex items-center p-6 sm:p-10 text-left bg-white dark:bg-transparent">
           <div className="w-full">
             <p className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">

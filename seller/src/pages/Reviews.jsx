@@ -87,7 +87,7 @@ const Reviews = ({ token }) => {
                   <div className="space-y-1 text-left">
                     <h4 className="font-extrabold text-slate-900 dark:text-slate-100 text-sm">{r.name}</h4>
                     <p className="text-[10px] text-slate-400">
-                      Product: <strong className="text-slate-600">{r.productName || "Product"}</strong> · {new Date(r.date).toLocaleDateString()}
+                      Product: <strong className="text-slate-600 dark:text-slate-350">{r.productName || "Product"}</strong> · {new Date(r.date).toLocaleDateString()}
                     </p>
                   </div>
                   <div className="flex items-center gap-1">
@@ -101,16 +101,16 @@ const Reviews = ({ token }) => {
                   </div>
                 </div>
 
-                <p className="text-xs text-slate-600 leading-relaxed bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-100/50 text-left">
+                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-955 p-3 rounded-xl border border-slate-100/50 dark:border-slate-800/80 text-left">
                   "{r.comment}"
                 </p>
 
                 {/* Admin reply section */}
                 {r.reply ? (
-                  <div className="flex gap-2.5 text-xs bg-indigo-50/50 text-indigo-900 p-3.5 rounded-xl border border-indigo-100/50 text-left">
-                    <CornerDownRight size={16} className="text-indigo-400 shrink-0 mt-0.5" />
+                  <div className="flex gap-2.5 text-xs bg-indigo-50/50 dark:bg-indigo-950/20 text-indigo-900 dark:text-indigo-300 p-3.5 rounded-xl border border-indigo-100/50 dark:border-indigo-900/40 text-left">
+                    <CornerDownRight size={16} className="text-indigo-400 dark:text-indigo-500 shrink-0 mt-0.5" />
                     <div>
-                      <span className="font-black text-[9px] uppercase tracking-wider text-indigo-500">Your Response:</span>
+                      <span className="font-black text-[9px] uppercase tracking-wider text-indigo-650 dark:text-indigo-400">Your Response:</span>
                       <p className="mt-0.5 leading-relaxed font-semibold text-slate-800 dark:text-slate-100">{r.reply}</p>
                     </div>
                   </div>
@@ -140,11 +140,11 @@ const Reviews = ({ token }) => {
         <div className="bg-white dark:bg-slate-900 border border-slate-200/80 rounded-3xl p-6 shadow-sm space-y-4">
           <h3 className="font-black text-sm text-slate-900 dark:text-slate-100">Score Summary</h3>
           <div className="flex items-center gap-3">
-            <span className="text-4xl font-black text-slate-950">{avg > 0 ? avg.toFixed(1) : "0.0"}</span>
+            <span className="text-4xl font-black text-slate-955 dark:text-white">{avg > 0 ? avg.toFixed(1) : "0.0"}</span>
             <div className="space-y-1">
               <div className="flex items-center gap-0.5">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={15} className={i < Math.round(avg) ? "fill-amber-400 text-amber-400" : "fill-slate-100 text-slate-200"} />
+                  <Star key={i} size={15} className={i < Math.round(avg) ? "fill-amber-400 text-amber-400" : "fill-slate-100 dark:fill-slate-950 text-slate-202 dark:text-slate-800"} />
                 ))}
               </div>
               <p className="text-[10px] text-slate-400 font-bold">Based on {reviews.length} verified reviews</p>

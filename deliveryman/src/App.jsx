@@ -185,10 +185,19 @@ const App = () => {
   }
 
   return (
-    <div className="bg-slate-50 dark:bg-slate-950 min-h-screen flex flex-col antialiased text-slate-900 dark:text-slate-100 pb-16 lg:pb-0 transition-colors duration-200">
+    <div className="bg-slate-50 dark:bg-[#0B0F19] min-h-screen flex flex-col antialiased text-slate-900 dark:text-slate-100 pb-16 lg:pb-0 transition-colors duration-300 relative overflow-hidden">
       <ToastContainer position="top-right" autoClose={3000} theme={theme} />
+      
+      {/* Interactive Background Glow Spots */}
+      <div className="absolute top-[-10%] left-[-10%] h-[500px] w-[500px] rounded-full bg-blue-500/5 dark:bg-indigo-500/10 blur-[130px] pointer-events-none z-0 animate-float" />
+      <div className="absolute bottom-[10%] right-[-10%] h-[600px] w-[600px] rounded-full bg-emerald-500/5 dark:bg-teal-500/8 blur-[150px] pointer-events-none z-0 animate-float-delayed" />
+      <div className="absolute top-[40%] right-[10%] h-[350px] w-[350px] rounded-full bg-indigo-500/5 dark:bg-purple-500/10 blur-[120px] pointer-events-none z-0 animate-float" />
+
+      {/* Cyber/Tech Grid Overlay */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(99,102,241,0.015)_1px,transparent_1px),linear-gradient(to_bottom,rgba(99,102,241,0.015)_1px,transparent_1px)] bg-[size:3.5rem_3.5rem] pointer-events-none z-0 [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
+
       {token === "" ? (
-        <div className="relative">
+        <div className="relative z-10 flex-1 flex flex-col justify-center">
           <Routes>
             <Route path="/" element={<Landing theme={theme} setTheme={setTheme} />} />
             <Route path="/login" element={
@@ -223,7 +232,7 @@ const App = () => {
           </Routes>
         </div>
       ) : (
-        <>
+        <div className="relative z-10 flex-1 flex flex-col min-h-screen">
           {/* Refactored Header / Navbar component */}
           <Navbar
             driver={driver}
@@ -243,8 +252,8 @@ const App = () => {
           />
 
           {/* Main Content */}
-          <main className="flex-1 bg-slate-50 dark:bg-slate-950/40 p-4 md:p-8 transition-colors">
-            <div className="mx-auto max-w-7xl">
+          <main className="flex-1 p-4 md:p-8">
+            <div className="mx-auto max-w-[1600px]">
               <Routes>
                 <Route path="/" element={<Dashboard {...dashboardProps} />} />
                 <Route path="/returns" element={<Dashboard {...dashboardProps} />} />
@@ -257,7 +266,7 @@ const App = () => {
           </main>
 
           {/* Sticky Mobile/Tablet Bottom Navigation Bar */}
-          <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-slate-950 dark:bg-slate-950/95 border-t border-slate-200 dark:border-slate-900 backdrop-blur-lg flex justify-around py-2.5 shadow-2xl lg:hidden transition-colors">
+          <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/80 dark:bg-slate-950/80 border-t border-slate-200 dark:border-slate-900 backdrop-blur-lg flex justify-around py-2.5 shadow-2xl lg:hidden transition-colors">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -277,13 +286,13 @@ const App = () => {
                   </div>
                   <span className="text-[9px] mt-1 uppercase font-black tracking-wider text-[8px]">{tab.label}</span>
                   {isActive && (
-                    <span className="absolute bottom-0 h-0.5 w-6 bg-blue-600 dark:bg-indigo-500 dark:bg-indigo-500 rounded-full" />
+                    <span className="absolute bottom-0 h-0.5 w-6 bg-blue-600 dark:bg-indigo-500 rounded-full" />
                   )}
                 </button>
               );
             })}
           </nav>
-        </>
+        </div>
       )}
     </div>
   );

@@ -791,24 +791,24 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
       </div>
 
       {/* Switcher Tab Layout */}
-      <div className="flex bg-slate-100 dark:bg-slate-900 p-1.5 rounded-2xl w-full max-w-md">
+      <div className="flex bg-slate-100 dark:bg-slate-900 p-1.5 rounded-none w-full max-w-md">
         <button
           onClick={() => setActiveMode("form")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition cursor-pointer ${activeMode === "form" ? "bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-sm border border-slate-200/50 dark:border-white/[0.04]" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300" }`}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-none text-xs font-bold transition cursor-pointer ${activeMode === "form" ? "bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-sm border border-slate-200/50 dark:border-white/[0.04]" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300" }`}
         >
           <FileText size={14} />
           <span>Form Mode</span>
         </button>
         <button
           onClick={() => setActiveMode("ai")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition cursor-pointer ${activeMode === "ai" ? "bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-sm border border-slate-200/50 dark:border-white/[0.04]" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300" }`}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-none text-xs font-bold transition cursor-pointer ${activeMode === "ai" ? "bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-sm border border-slate-200/50 dark:border-white/[0.04]" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300" }`}
         >
           <Sparkles size={14} />
           <span>Smart AI Mode</span>
         </button>
         <button
           onClick={() => setActiveMode("json")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition cursor-pointer ${activeMode === "json" ? "bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-sm border border-slate-200/50 dark:border-white/[0.04]" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300" }`}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-none text-xs font-bold transition cursor-pointer ${activeMode === "json" ? "bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-sm border border-slate-200/50 dark:border-white/[0.04]" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300" }`}
         >
           <Code size={14} />
           <span>JSON Mode</span>
@@ -821,7 +821,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
         <div className="lg:col-span-7 space-y-6">
           {/* Smart AI Mode Textarea Block */}
           {activeMode === "ai" && (
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.08] rounded-2xl p-5 shadow-sm space-y-4">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200/40 dark:border-white/[0.08] rounded-none p-5 shadow-sm space-y-4">
               <div className="flex justify-between items-center border-b border-slate-100 dark:border-white/[0.06] pb-3">
                 <div className="flex items-center gap-2 text-violet-600 dark:text-violet-400 font-extrabold uppercase text-xs tracking-wider">
                   <Sparkles size={14} className="animate-pulse" />
@@ -829,7 +829,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                 </div>
                 <button
                   onClick={pasteExampleText}
-                  className="text-[10px] font-black text-indigo-600 bg-indigo-50 dark:text-indigo-400 dark:bg-slate-950 px-2 py-1 rounded transition hover:bg-indigo-100/50 cursor-pointer"
+                  className="text-[10px] font-black text-indigo-600 bg-indigo-50 dark:text-indigo-400 dark:bg-slate-950 px-2 py-1 rounded-none transition hover:bg-indigo-100/50 cursor-pointer"
                 >
                   Load Example Info
                 </button>
@@ -842,7 +842,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                   value={aiText}
                   onChange={(e) => setAiText(e.target.value)}
                   placeholder="Paste product details here (e.g. descriptions, tags, specifications copied from other websites, brochures, or raw notes)..."
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition resize-y font-sans leading-relaxed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                  className="w-full px-4 py-3 rounded-none border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition resize-y font-sans leading-relaxed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                 />
               </div>
 
@@ -850,7 +850,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                 type="button"
                 onClick={handleAIParseText}
                 disabled={loaders.parseText}
-                className="w-full py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-slate-100 dark:text-white rounded-xl text-xs font-black uppercase tracking-wider transition hover:shadow-lg hover:shadow-violet-600/20 active:scale-98 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="w-full py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-slate-100 dark:text-white rounded-none text-xs font-black uppercase tracking-wider transition hover:shadow-lg hover:shadow-violet-600/20 active:scale-98 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 <Sparkles size={14} className={loaders.parseText ? "animate-spin" : ""} />
                 <span>{loaders.parseText ? "Extracting Structured Product Catalog..." : "AI Parse & Populate"}</span>
@@ -860,7 +860,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
 
           {/* JSON Mode Editor Block */}
           {activeMode === "json" && (
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.08] rounded-2xl p-5 shadow-sm space-y-4">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200/40 dark:border-white/[0.08] rounded-none p-5 shadow-sm space-y-4">
               <div className="flex justify-between items-center border-b border-slate-100 dark:border-white/[0.06] pb-3">
                 <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-extrabold uppercase text-xs tracking-wider">
                   <Code size={14} />
@@ -869,14 +869,14 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setShowJsonGuide(!showJsonGuide)}
-                    className="text-[10px] font-black text-slate-600 bg-slate-100 hover:bg-slate-200/60 dark:text-slate-300 dark:bg-slate-900/60 dark:hover:bg-slate-800/80 px-2.5 py-1 rounded transition flex items-center gap-1 cursor-pointer"
+                    className="text-[10px] font-black text-slate-600 bg-slate-100 hover:bg-slate-200/60 dark:text-slate-300 dark:bg-slate-900/60 dark:hover:bg-slate-800/80 px-2.5 py-1 rounded-none transition flex items-center gap-1 cursor-pointer"
                   >
                     <HelpCircle size={11} />
                     <span>{showJsonGuide ? "Hide Guidelines" : "JSON Guidelines"}</span>
                   </button>
                   <button
                     onClick={pasteExampleJson}
-                    className="text-[10px] font-black text-indigo-600 bg-indigo-50 dark:text-indigo-400 dark:bg-slate-950 px-2 py-1 rounded transition hover:bg-indigo-100/50 cursor-pointer"
+                    className="text-[10px] font-black text-indigo-600 bg-indigo-50 dark:text-indigo-400 dark:bg-slate-950 px-2 py-1 rounded-none transition hover:bg-indigo-100/50 cursor-pointer"
                   >
                     Load Example JSON
                   </button>
@@ -884,7 +884,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
               </div>
 
               {showJsonGuide && (
-                <div className="bg-slate-50 dark:bg-slate-950/40 border border-slate-200/60 dark:border-slate-800 rounded-xl p-4 text-[11px] text-slate-600 dark:text-slate-400 space-y-3 leading-relaxed text-left">
+                <div className="bg-slate-50 dark:bg-slate-950/40 border border-slate-200/60 dark:border-slate-800 rounded-none p-4 text-[11px] text-slate-600 dark:text-slate-400 space-y-3 leading-relaxed text-left">
                   <h4 className="font-extrabold text-slate-800 dark:text-white uppercase tracking-wider text-[10px] flex items-center gap-1">
                     <HelpCircle size={12} className="text-indigo-500" />
                     <span>JSON Schema Rules & Format</span>
@@ -941,7 +941,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                   value={jsonText}
                   onChange={(e) => setJsonText(e.target.value)}
                   placeholder={`{\n  "name": "OPPO Reno 14 5G",\n  "price": 32999\n}`}
-                  className={`w-full px-4 py-3 rounded-xl border dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition font-mono ${jsonError ? "border-red-400" : "border-slate-200 dark:border-white/[0.08]"} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900`}
+                  className={`w-full px-4 py-3 rounded-none border dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition font-mono ${jsonError ? "border-red-400" : "border-slate-200 dark:border-white/[0.08]"} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900`}
                 />
                 {jsonError && (
                   <p className="text-[10px] text-red-500 font-bold mt-1 pl-1">Error: {jsonError}</p>
@@ -952,7 +952,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                 type="button"
                 onClick={handleGenerateProduct}
                 disabled={loaders.enrichJson || !!jsonError}
-                className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-slate-100 dark:text-white rounded-xl text-xs font-black uppercase tracking-wider transition hover:shadow-lg hover:shadow-indigo-600/20 active:scale-98 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-slate-100 dark:text-white rounded-none text-xs font-black uppercase tracking-wider transition hover:shadow-lg hover:shadow-indigo-600/20 active:scale-98 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 <Package size={14} className={loaders.enrichJson ? "animate-spin" : ""} />
                 <span>{loaders.enrichJson ? "Generating Product..." : "Generate Product"}</span>
@@ -961,11 +961,11 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
           )}
 
           {/* Form Mode Inputs (Available always or showing filled fields) */}
-          <form onSubmit={handleCreateProduct} className="space-y-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.08] rounded-2xl p-5 shadow-sm">
+          <form onSubmit={handleCreateProduct} className="space-y-5 bg-white dark:bg-slate-900 border border-slate-200/40 dark:border-white/[0.08] rounded-none p-5 shadow-sm">
             <div className="flex justify-between items-center border-b border-slate-100 dark:border-white/[0.06] pb-3">
               <h3 className="text-sm font-black text-slate-800 dark:text-white tracking-tight">Product Specifications Form</h3>
               {activeMode !== "form" && (
-                <span className="text-[9px] font-black text-violet-600 bg-violet-50 dark:bg-slate-950 px-2 py-0.5 rounded uppercase tracking-wider flex items-center gap-1 animate-pulse">
+                <span className="text-[9px] font-black text-violet-600 bg-violet-50 dark:bg-slate-950 px-2 py-0.5 rounded-none uppercase tracking-wider flex items-center gap-1 animate-pulse">
                   <Sparkles size={10} />
                   AI populated
                 </span>
@@ -982,7 +982,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                     placeholder="Samsung Galaxy S25 Ultra"
                     value={newProduct.name}
                     onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                    className="w-full px-4 py-3 rounded-none border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     required
                   />
                 </div>
@@ -994,7 +994,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                     placeholder="Samsung, Apple, Nike"
                     value={newProduct.brand}
                     onChange={(e) => setNewProduct({ ...newProduct, brand: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                    className="w-full px-4 py-3 rounded-none border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                   />
                 </div>
               </div>
@@ -1018,14 +1018,14 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                       placeholder="e.g. Smart Electronics"
                       value={newProduct.category}
                       onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                      className="w-full px-4 py-3 rounded-none border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                       required
                     />
                   ) : (
                     <select
                       value={newProduct.category}
                       onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value, subCategory: "" })}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                      className="w-full px-4 py-3 rounded-none border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                       required
                     >
                       <option value="">Choose Category</option>
@@ -1053,13 +1053,13 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                       placeholder="e.g. Mobile Phones"
                       value={newProduct.subCategory}
                       onChange={(e) => setNewProduct({ ...newProduct, subCategory: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                      className="w-full px-4 py-3 rounded-none border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     />
                   ) : (
                     <select
                       value={newProduct.subCategory}
                       onChange={(e) => setNewProduct({ ...newProduct, subCategory: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                      className="w-full px-4 py-3 rounded-none border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     >
                       <option value="">Choose Subcategory</option>
                       {subCategoriesList.map((sub, idx) => (
@@ -1080,7 +1080,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                     placeholder="29999.00"
                     value={newProduct.price}
                     onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                    className="w-full px-4 py-3 rounded-none border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     required
                   />
                 </div>
@@ -1092,7 +1092,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                     placeholder="10"
                     value={newProduct.stock}
                     onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                    className="w-full px-4 py-3 rounded-none border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     required
                   />
                 </div>
@@ -1102,7 +1102,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                   <select
                     value={newProduct.audience}
                     onChange={(e) => setNewProduct({ ...newProduct, audience: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                    className="w-full px-4 py-3 rounded-none border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                   >
                     <option value="Unisex">Unisex</option>
                     <option value="Men">Men</option>

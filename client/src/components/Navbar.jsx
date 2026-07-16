@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import {
   ShoppingCart,
   User,
@@ -55,6 +56,7 @@ const DEFAULT_CATEGORIES = [
 ];
 const Navbar = () => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const location = useLocation();
   const { language, changeLanguage, t } = useLanguage();
 
@@ -358,7 +360,7 @@ const Navbar = () => {
 
   /* ── Handlers ── */
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    logout();
     setOpen(false);
     navigate("/login");
   };
