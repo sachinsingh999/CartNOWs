@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import {
   Minus,
@@ -31,6 +31,7 @@ import { CartSkeleton } from "../components/SkeletonLoader";
 
 const Cart = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useLanguage();
   const [cartItems, setCartItems] = useState([]);
   const [pageLoading, setPageLoading] = useState(true);
@@ -479,8 +480,8 @@ const Cart = () => {
   if (cartItems.length === 0 && savedItems.length === 0) {
     return (
       <div className="min-h-[70vh] bg-slate-50 dark:bg-slate-950 px-6 py-20 transition-colors duration-200 flex items-center justify-center">
-        <div className="mx-auto flex max-w-xl flex-col items-center rounded-3xl border border-dashed border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900/40 backdrop-blur-md p-10 text-center shadow-xs">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400">
+        <div className="mx-auto flex max-w-xl flex-col items-center rounded-md border border-dashed border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900/40 backdrop-blur-md p-10 text-center shadow-xs">
+          <div className="flex h-16 w-16 items-center justify-center rounded-md bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400">
             <ShoppingBag className="h-8 w-8" />
           </div>
           <h1 className="mt-6 text-2xl font-black text-slate-900 dark:text-slate-100">{t("cart_empty")}</h1>
@@ -489,7 +490,7 @@ const Cart = () => {
           </p>
           <button
             onClick={() => navigate("/product")}
-            className="mt-6 rounded-xl bg-indigo-600 text-slate-100 dark:text-white px-6 py-3 text-xs font-black uppercase tracking-wider hover:bg-indigo-700 active:scale-95 transition-all cursor-pointer shadow-md shadow-indigo-600/10"
+            className="mt-6 rounded-md bg-indigo-600 text-slate-100 dark:text-white px-6 py-3 text-xs font-black uppercase tracking-wider hover:bg-indigo-700 active:scale-95 transition-all cursor-pointer shadow-md shadow-indigo-600/10"
           >
             {t("continue_shopping")}
           </button>
@@ -528,7 +529,7 @@ const Cart = () => {
   const handleCheckout = () => {
     if (!token) {
       toast.info("Please login to proceed to checkout.");
-      navigate("/login");
+      navigate("/login", { state: { from: location } });
       return;
     }
     navigate("/placeorder", {
@@ -608,7 +609,7 @@ const Cart = () => {
             
             {/* Select All Banner */}
             {cartItems.length > 0 && (
-              <div className="flex items-center justify-between bg-white/70 dark:bg-slate-900/20 backdrop-blur-md border border-slate-200/60 dark:border-slate-800 rounded-xl p-2.5 px-4 shadow-xs text-left">
+              <div className="flex items-center justify-between bg-white/70 dark:bg-slate-900/20 backdrop-blur-md border border-slate-200/60 dark:border-slate-800 rounded-md p-2.5 px-4 shadow-xs text-left">
                 <label className="flex items-center gap-2.5 cursor-pointer text-[11px] font-bold text-slate-700 dark:text-slate-400 select-none">
                   <input
                     type="checkbox"
@@ -640,7 +641,7 @@ const Cart = () => {
                   <div key={`${item.itemId}-${item.size}`} className="w-full">
                     {/* DESKTOP CARD VIEW */}
                     <div
-                      className={`hidden lg:flex items-center gap-3.5 rounded-[20px] border p-4 shadow-sm transition-all duration-350 hover:scale-[1.005] hover:shadow-md w-full ${ item.selected ? "border-indigo-500/80 bg-indigo-50/5 dark:bg-indigo-950/5" : "border-slate-200/70 dark:border-slate-800/80 bg-white dark:bg-slate-900/50 hover:border-slate-300 dark:hover:border-slate-700" }`}
+                      className={`hidden lg:flex items-center gap-3.5 rounded-md border p-4 shadow-sm transition-all duration-350 hover:scale-[1.005] hover:shadow-md w-full ${ item.selected ? "border-transparent bg-amber-50/50 dark:bg-amber-950/20" : "border-slate-200/70 dark:border-slate-800/80 bg-white dark:bg-slate-900/50 hover:border-slate-300 dark:hover:border-slate-700" }`}
                     >
                       {/* Checkbox Selector */}
                       <div className="flex items-center justify-center shrink-0">
@@ -653,7 +654,7 @@ const Cart = () => {
                       </div>
 
                       {/* Product Image Frame */}
-                      <div className="h-28 w-28 flex items-center justify-center rounded-2xl bg-slate-50 dark:bg-slate-950 overflow-hidden border border-slate-100 dark:border-slate-800 p-2 shrink-0 transition-transform duration-300 group-hover:scale-[1.02] shadow-inner">
+                      <div className="h-28 w-28 flex items-center justify-center rounded-md bg-slate-50 dark:bg-slate-950 overflow-hidden border border-slate-100 dark:border-slate-800 p-2 shrink-0 transition-transform duration-300 group-hover:scale-[1.02] shadow-inner">
                         <img
                           src={imageUrl}
                           className="h-full w-full object-contain"
@@ -740,7 +741,7 @@ const Cart = () => {
 
                           {/* Stepper block */}
                           <div className="flex items-center gap-2">
-                            <div className="flex items-center rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 overflow-hidden h-8 shrink-0">
+                            <div className="flex items-center rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 overflow-hidden h-8 shrink-0">
                               <button
                                 onClick={() => updateQty(index, item.qty - 1)}
                                 className="h-full flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition cursor-pointer px-2.5 active:scale-95"
@@ -762,7 +763,7 @@ const Cart = () => {
 
                             <button
                               onClick={() => removeItem(index)}
-                              className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800/60 transition cursor-pointer"
+                              className="p-1.5 text-slate-400 hover:text-red-500 rounded-sm hover:bg-slate-100 dark:hover:bg-slate-800/60 transition cursor-pointer"
                               title="Remove from Cart"
                             >
                               <Trash2 size={15} className="stroke-[2.5]" />
@@ -780,7 +781,7 @@ const Cart = () => {
 
                     {/* MOBILE CARD VIEW */}
                     <div
-                      className={`block lg:hidden rounded-3xl border p-4 shadow-xs transition-all duration-350 bg-white dark:bg-slate-900 ${ item.selected ? "border-indigo-500/80 bg-indigo-50/5 dark:bg-indigo-950/5" : "border-slate-200/70 dark:border-slate-800/80" }`}
+                      className={`block lg:hidden rounded-md border p-4 shadow-xs transition-all duration-350 ${ item.selected ? "border-transparent bg-amber-50/50 dark:bg-amber-950/20" : "border-slate-200/70 dark:border-slate-800/80 bg-white dark:bg-slate-900" }`}
                     >
                       {/* Top Row: Checkbox, Image, Title & Attributes */}
                       <div className="flex gap-3 items-start">
@@ -795,7 +796,7 @@ const Cart = () => {
                         </div>
 
                         {/* Product Image Frame */}
-                        <div className="h-20 w-20 flex items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-950 overflow-hidden border border-slate-100 dark:border-slate-800 p-1.5 shrink-0 shadow-inner">
+                        <div className="h-20 w-20 flex items-center justify-center rounded-md bg-slate-50 dark:bg-slate-950 overflow-hidden border border-slate-100 dark:border-slate-800 p-1.5 shrink-0 shadow-inner">
                           <img
                             src={imageUrl}
                             className="h-full w-full object-contain"
@@ -855,7 +856,7 @@ const Cart = () => {
 
                         {/* Quantity Stepper & Delete */}
                         <div className="flex items-center gap-2">
-                          <div className="flex items-center rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 overflow-hidden h-7 shrink-0">
+                          <div className="flex items-center rounded-sm border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 overflow-hidden h-7 shrink-0">
                             <button
                               onClick={() => updateQty(index, item.qty - 1)}
                               className="h-full flex items-center justify-center text-slate-400 hover:text-slate-600 transition px-2 active:scale-90"
@@ -875,7 +876,7 @@ const Cart = () => {
 
                           <button
                             onClick={() => removeItem(index)}
-                            className="p-1.5 text-slate-400 hover:text-rose-500 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"
+                            className="p-1.5 text-slate-400 hover:text-rose-500 rounded-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"
                             title="Remove"
                           >
                             <Trash2 size={14} className="stroke-[2.5]" />
@@ -916,10 +917,10 @@ const Cart = () => {
 
             {/* Premium Interactive Gift Wrapping Card */}
             {selectedItems.length > 0 && (
-              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 text-left space-y-4 shadow-xs">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md p-5 text-left space-y-4 shadow-xs">
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div className="flex items-center gap-3">
-                    <div className={`h-9 w-9 rounded-xl flex items-center justify-center transition border ${ giftWrap ? "bg-indigo-500/10 text-indigo-500 border-indigo-500/20" : "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700" }`}>
+                    <div className={`h-9 w-9 rounded-md flex items-center justify-center transition border ${ giftWrap ? "bg-indigo-500/10 text-indigo-500 border-indigo-500/20" : "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700" }`}>
                       <Gift size={16} />
                     </div>
                     <div>
@@ -930,7 +931,7 @@ const Cart = () => {
                   <button
                     type="button"
                     onClick={() => setGiftWrap(!giftWrap)}
-                    className={`px-4 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider transition ${ giftWrap ? "bg-indigo-600 text-slate-100 dark:text-white shadow-sm" : "bg-slate-100 dark:bg-slate-800 hover:bg-slate-200/80 text-slate-700 dark:text-slate-300" }`}
+                    className={`px-4 py-1.5 rounded-md text-xs font-black uppercase tracking-wider transition ${ giftWrap ? "bg-indigo-600 text-slate-100 dark:text-white shadow-sm" : "bg-slate-100 dark:bg-slate-800 hover:bg-slate-200/80 text-slate-700 dark:text-slate-300" }`}
                   >
                     {giftWrap ? "Added" : "Add Gift Wrap"}
                   </button>
@@ -944,7 +945,7 @@ const Cart = () => {
                       placeholder="Write your heartfelt message here (e.g., Happy Birthday! Warmest wishes on your special day...)"
                       value={giftMessage}
                       onChange={(e) => setGiftMessage(e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 px-4 py-2.5 text-xs font-medium text-slate-800 dark:text-slate-200 outline-none transition focus:bg-white dark:focus:bg-slate-900 resize-none shadow-inner focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                      className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 px-4 py-2.5 text-xs font-medium text-slate-800 dark:text-slate-200 outline-none transition focus:bg-white dark:focus:bg-slate-900 resize-none shadow-inner focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     />
                   </div>
                 )}
@@ -964,9 +965,9 @@ const Cart = () => {
                   {savedItems.map((item, idx) => (
                     <div
                       key={`saved-${item.itemId}-${item.size}`}
-                      className="group flex gap-3.5 border border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-900/50 p-3.5 rounded-[20px] shadow-xs hover:shadow-sm hover:border-slate-300 dark:hover:border-slate-700 transition"
+                      className="group flex gap-3.5 border border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-900/50 p-3.5 rounded-md shadow-xs hover:shadow-sm hover:border-slate-300 dark:hover:border-slate-700 transition"
                     >
-                      <div className="h-20 w-20 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-xl overflow-hidden p-1 shrink-0 flex items-center justify-center">
+                      <div className="h-20 w-20 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-md overflow-hidden p-1 shrink-0 flex items-center justify-center">
                         <img
                           src={item.product.images?.[0]?.startsWith("http") ? item.product.images[0] : `${backendUrl}/${item.product.images?.[0]}`}
                           className="h-full w-full object-contain"
@@ -1007,7 +1008,7 @@ const Cart = () => {
           {/* Right Side: Order Summary Panel */}
           <div className="lg:col-span-4 lg:sticky lg:top-24 space-y-4">
             
-            <div className="rounded-[20px] border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5.5 shadow-sm text-left space-y-5">
+            <div className="rounded-md border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5.5 shadow-sm text-left space-y-5">
               <div>
                 <h2 className="text-lg font-black text-slate-950 dark:text-white tracking-tight">Order Summary</h2>
                 <p className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest mt-0.5">Review items & checkout</p>
@@ -1036,13 +1037,13 @@ const Cart = () => {
                       value={couponCode}
                       onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                       disabled={couponLoading || appliedCoupon}
-                      className="flex-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 px-3.5 py-2.5 text-xs font-semibold text-slate-950 dark:text-white outline-none transition shadow-inner placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                      className="flex-1 rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 px-3.5 py-2.5 text-xs font-semibold text-slate-950 dark:text-white outline-none transition shadow-inner placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     />
                     {appliedCoupon ? (
                       <button
                         type="button"
                         onClick={handleRemoveCoupon}
-                        className="rounded-xl border border-red-200 hover:bg-red-50 text-red-600 dark:border-red-500 dark:hover:bg-red-500/10 px-4 py-2 text-xs font-black uppercase tracking-wider transition cursor-pointer"
+                        className="rounded-md border border-red-200 hover:bg-red-50 text-red-600 dark:border-red-500 dark:hover:bg-red-500/10 px-4 py-2 text-xs font-black uppercase tracking-wider transition cursor-pointer"
                       >
                         Remove
                       </button>
@@ -1050,7 +1051,7 @@ const Cart = () => {
                       <button
                         type="submit"
                         disabled={couponLoading || !couponCode.trim()}
-                        className="rounded-xl bg-slate-900 dark:bg-indigo-600 text-slate-100 dark:text-white px-4 py-2.5 text-xs font-black uppercase tracking-wider hover:opacity-90 active:scale-95 transition cursor-pointer disabled:opacity-50"
+                        className="rounded-md bg-slate-900 dark:bg-indigo-600 text-slate-100 dark:text-white px-4 py-2.5 text-xs font-black uppercase tracking-wider hover:opacity-90 active:scale-95 transition cursor-pointer disabled:opacity-50"
                       >
                         Apply
                       </button>
@@ -1068,14 +1069,14 @@ const Cart = () => {
 
                 {/* Available Coupons Drawer inside Summary Page */}
                 {couponsDrawerOpen && availableCoupons.length > 0 && (
-                  <div className="animate-scaleUp bg-slate-50/50 dark:bg-slate-950/40 border border-slate-200/50 dark:border-slate-800/80 rounded-xl p-3 space-y-2 mt-2 max-h-48 overflow-y-auto custom-scrollbar">
+                  <div className="animate-scaleUp bg-slate-50/50 dark:bg-slate-950/40 border border-slate-200/50 dark:border-slate-800/80 rounded-md p-3 space-y-2 mt-2 max-h-48 overflow-y-auto custom-scrollbar">
                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-wider mb-1">Available Coupons</p>
                     {availableCoupons.map((coupon) => {
                       const isEligible = total >= coupon.minOrderAmount;
                       return (
                         <div 
                           key={coupon._id} 
-                          className="flex items-center justify-between gap-3 p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs"
+                          className="flex items-center justify-between gap-3 p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm text-xs"
                         >
                           <div className="min-w-0 text-left">
                             <div className="flex items-center gap-1.5">
@@ -1171,7 +1172,7 @@ const Cart = () => {
                 <button
                   disabled={itemCount === 0}
                   onClick={handleCheckout}
-                  className={`w-full rounded-xl h-[56px] text-xs font-black uppercase tracking-wider text-slate-100 dark:text-white flex items-center justify-center gap-2 hover:shadow-lg transition-all active:scale-[0.98] cursor-pointer shadow-md ${ itemCount === 0 ? "bg-slate-300 dark:bg-slate-800 cursor-not-allowed hover:shadow-none" : "bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 hover:shadow-indigo-500/25 shadow-indigo-600/10" }`}
+                  className={`w-full rounded-md h-[56px] text-xs font-black uppercase tracking-wider text-slate-100 dark:text-white flex items-center justify-center gap-2 hover:shadow-lg transition-all active:scale-[0.98] cursor-pointer shadow-md ${ itemCount === 0 ? "bg-slate-300 dark:bg-slate-800 cursor-not-allowed hover:shadow-none" : "bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 hover:shadow-indigo-500/25 shadow-indigo-600/10" }`}
                 >
                   <Lock size={13} className="stroke-[2.5]" />
                   <span>Secure Checkout ({itemCount})</span>
@@ -1181,21 +1182,21 @@ const Cart = () => {
               {/* Trust Badges section */}
               <div className="border-t border-slate-100 dark:border-slate-800/80 pt-4 grid grid-cols-3 gap-2 text-center select-none">
                 <div className="flex flex-col items-center gap-1">
-                  <div className="h-8 w-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center border border-indigo-100/10 shadow-xs">
+                  <div className="h-8 w-8 rounded-sm bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center border border-indigo-100/10 shadow-xs">
                     <ShieldCheck size={16} />
                   </div>
                   <span className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wide">Secure Pay</span>
                 </div>
 
                 <div className="flex flex-col items-center gap-1">
-                  <div className="h-8 w-8 rounded-lg bg-emerald-50 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/10 shadow-xs">
+                  <div className="h-8 w-8 rounded-sm bg-emerald-50 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/10 shadow-xs">
                     <RotateCcw size={16} />
                   </div>
                   <span className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wide">30 Day Return</span>
                 </div>
 
                 <div className="flex flex-col items-center gap-1">
-                  <div className="h-8 w-8 rounded-lg bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-100/10 shadow-xs">
+                  <div className="h-8 w-8 rounded-sm bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-100/10 shadow-xs">
                     <Truck size={16} />
                   </div>
                   <span className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wide">Fast Delivery</span>
@@ -1229,13 +1230,13 @@ const Cart = () => {
                 return (
                   <div 
                     key={prod._id} 
-                    className="w-48 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-3 flex flex-col justify-between shrink-0 shadow-xs snap-start hover:border-indigo-500/50 dark:hover:border-indigo-500/40 hover:scale-[1.01] transition duration-200"
+                    className="w-48 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-md p-3 flex flex-col justify-between shrink-0 shadow-xs snap-start hover:border-indigo-500/50 dark:hover:border-indigo-500/40 hover:scale-[1.01] transition duration-200"
                   >
                     <div>
                       {/* Frame image */}
                       <div 
                         onClick={() => navigate(`/product/${prod._id}`)}
-                        className="h-32 w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 flex items-center justify-center p-1.5 cursor-pointer relative group overflow-hidden"
+                        className="h-32 w-full rounded-md bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 flex items-center justify-center p-1.5 cursor-pointer relative group overflow-hidden"
                       >
                         <img 
                           src={prod.images?.[0]?.startsWith("http") ? prod.images[0] : `${backendUrl}/${prod.images?.[0]}`} 
@@ -1272,7 +1273,7 @@ const Cart = () => {
                       <button
                         type="button"
                         onClick={() => handleAddRecommended(prod)}
-                        className="h-7 px-3 bg-slate-900 hover:bg-slate-900 dark:bg-indigo-600 dark:hover:bg-indigo-500 text-slate-100 dark:text-white rounded-lg text-[9px] font-black uppercase tracking-wider transition active:scale-95 cursor-pointer flex items-center gap-1"
+                        className="h-7 px-3 bg-slate-900 hover:bg-slate-900 dark:bg-indigo-600 dark:hover:bg-indigo-500 text-slate-100 dark:text-white rounded-sm text-[9px] font-black uppercase tracking-wider transition active:scale-95 cursor-pointer flex items-center gap-1"
                       >
                         <Plus size={10} className="stroke-[3]" />
                         <span>Add</span>
@@ -1306,7 +1307,7 @@ const Cart = () => {
         <button
           disabled={itemCount === 0}
           onClick={handleCheckout}
-          className={`px-5 py-3 rounded-xl text-xs font-black uppercase tracking-wider text-slate-100 dark:text-white flex items-center gap-1.5 transition active:scale-95 shadow-md ${ itemCount === 0 ? "bg-slate-300 dark:bg-slate-800 cursor-not-allowed hover:shadow-none" : "bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600" }`}
+          className={`px-5 py-3 rounded-md text-xs font-black uppercase tracking-wider text-slate-100 dark:text-white flex items-center gap-1.5 transition active:scale-95 shadow-md ${ itemCount === 0 ? "bg-slate-300 dark:bg-slate-800 cursor-not-allowed hover:shadow-none" : "bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600" }`}
         >
           <Lock size={12} className="stroke-[2.5]" />
           <span>Checkout ({itemCount})</span>

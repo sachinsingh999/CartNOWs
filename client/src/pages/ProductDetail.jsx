@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { backendUrl } from "../config";
 import Rating from "../components/Rating";
@@ -66,6 +66,7 @@ import { motion, AnimatePresence } from "framer-motion";
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useLanguage();
 
 
@@ -706,7 +707,7 @@ const ProductDetail = () => {
 
     if (!token) {
       toast.warning("Please login to write a review");
-      navigate("/login");
+      navigate("/login", { state: { from: location } });
       return false;
     }
 

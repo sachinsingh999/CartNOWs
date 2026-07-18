@@ -86,7 +86,7 @@ const Wishlist = () => {
         
         {/* Simple Page Header */}
         <div className="flex items-center gap-4 pb-6 border-b border-slate-100 dark:border-slate-800 select-none">
-          <div className="h-12 w-12 bg-pink-500/10 text-pink-500 rounded-2xl flex items-center justify-center border border-pink-500/20 shadow-xs">
+          <div className="h-12 w-12 bg-pink-500/10 text-pink-500 rounded-md flex items-center justify-center border border-pink-500/20 shadow-xs">
             <Heart size={22} className="fill-pink-500 text-pink-500 animate-pulse" />
           </div>
           <div className="text-left space-y-0.5">
@@ -121,7 +121,7 @@ const Wishlist = () => {
               </div>
               <Link
                 to="/product"
-                className="inline-flex items-center gap-2 bg-slate-950 dark:bg-white text-white dark:text-slate-900 font-black text-xs uppercase tracking-widest px-6 py-3.5 rounded-full cursor-pointer no-underline border-none"
+                className="inline-flex items-center gap-2 bg-slate-950 dark:bg-white text-white dark:text-slate-900 font-black text-xs uppercase tracking-widest px-6 py-3.5 rounded-md cursor-pointer no-underline border-none"
               >
                 <span>Browse Products</span>
                 <ArrowRight size={13} />

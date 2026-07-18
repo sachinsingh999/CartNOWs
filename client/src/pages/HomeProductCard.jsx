@@ -203,7 +203,7 @@ const HomeProductCard = ({ product, onQuickView }) => {
 
         {/* Product Image - Contain aspect ratio, no crop, no zoom */}
         {!hasImage || imgError ? (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 text-slate-400 p-4 rounded-xl">
+          <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-955 text-slate-400 p-4 rounded-md">
             <Sparkles size={24} className="text-slate-400 animate-pulse mb-1" />
             <span className="text-[8px] uppercase tracking-widest font-black text-slate-500">No Image</span>
           </div>
@@ -278,7 +278,7 @@ const HomeProductCard = ({ product, onQuickView }) => {
             type="button"
             disabled={isOOS}
             onClick={handleAddToCart}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-[11px] font-extrabold uppercase tracking-wider transition-all duration-200 active:scale-95 cursor-pointer border-none ${isOOS ? "bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-600 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700 text-slate-100 dark:text-white shadow-sm" }`}
+            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-md text-[11px] font-extrabold uppercase tracking-wider transition-all duration-200 active:scale-95 cursor-pointer border-none ${isOOS ? "bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-600 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700 text-slate-100 dark:text-white shadow-sm" }`}
           >
             <ShoppingCart size={13} />
             <span>{isOOS ? "Sold Out" : "Add to Cart"}</span>

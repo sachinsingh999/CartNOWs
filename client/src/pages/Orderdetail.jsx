@@ -298,29 +298,29 @@ const Orderdetail = () => {
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 px-4 sm:px-6 py-12 transition-colors duration-200">
         <div className="max-w-6xl mx-auto space-y-8 animate-pulse text-left">
           <div className="space-y-2">
-            <div className="h-4.5 w-24 bg-slate-200 dark:bg-slate-800 rounded-lg" />
-            <div className="h-10 w-48 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+            <div className="h-4.5 w-24 bg-slate-200 dark:bg-slate-800 rounded-sm" />
+            <div className="h-10 w-48 bg-slate-200 dark:bg-slate-800 rounded-md" />
           </div>
           <div className="space-y-6">
             {[1, 2].map((n) => (
-              <div key={n} className="rounded-2xl border border-slate-200/60 dark:border-slate-800/80 bg-white dark:bg-slate-900/30 p-6 grid grid-cols-1 lg:grid-cols-[200px_1fr_260px] gap-8">
+              <div key={n} className="rounded-md border border-slate-200/60 dark:border-slate-800/80 bg-white dark:bg-slate-900/30 p-6 grid grid-cols-1 lg:grid-cols-[200px_1fr_260px] gap-8">
                 {/* Left col */}
-                <div className="h-44 w-44 rounded-2xl bg-slate-200 dark:bg-slate-800" />
+                <div className="h-44 w-44 rounded-md bg-slate-200 dark:bg-slate-800" />
                 {/* Center col */}
                 <div className="space-y-4">
-                  <div className="h-6 w-3/4 bg-slate-200 dark:bg-slate-800 rounded-lg" />
+                  <div className="h-6 w-3/4 bg-slate-200 dark:bg-slate-800 rounded-sm" />
                   <div className="flex gap-2">
                     <div className="h-6 w-16 bg-slate-200 dark:bg-slate-800 rounded-md" />
                     <div className="h-6 w-20 bg-slate-200 dark:bg-slate-800 rounded-md" />
                     <div className="h-6 w-24 bg-slate-200 dark:bg-slate-800 rounded-md" />
                   </div>
-                  <div className="h-10 w-full bg-slate-200 dark:bg-slate-800 rounded-xl mt-4" />
+                  <div className="h-10 w-full bg-slate-200 dark:bg-slate-800 rounded-md mt-4" />
                 </div>
                 {/* Right col */}
                 <div className="space-y-3">
-                  <div className="h-8 w-24 bg-slate-200 dark:bg-slate-800 rounded-lg self-end" />
-                  <div className="h-12 w-full bg-slate-200 dark:bg-slate-800 rounded-xl" />
-                  <div className="h-12 w-full bg-slate-200 dark:bg-slate-800 rounded-xl" />
+                  <div className="h-8 w-24 bg-slate-200 dark:bg-slate-800 rounded-sm self-end" />
+                  <div className="h-12 w-full bg-slate-200 dark:bg-slate-800 rounded-md" />
+                  <div className="h-12 w-full bg-slate-200 dark:bg-slate-800 rounded-md" />
                 </div>
               </div>
             ))}
@@ -370,7 +370,7 @@ const Orderdetail = () => {
           <div className="flex items-center justify-between h-14 border-b border-slate-200/50 dark:border-slate-800/50 px-1 mb-4">
             <button 
               onClick={() => navigate(-1)} 
-              className="p-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+              className="p-2 rounded-md text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
             >
               <ChevronLeft size={18} />
             </button>
@@ -378,13 +378,13 @@ const Orderdetail = () => {
             <div className="flex items-center gap-2">
               <button 
                 onClick={() => setShowSearchInput(!showSearchInput)}
-                className="p-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                className="p-2 rounded-md text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
               >
                 <Search size={16} />
               </button>
               <button
                 onClick={() => navigate("/cart")}
-                className="p-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition relative cursor-pointer"
+                className="p-2 rounded-md text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition relative cursor-pointer"
               >
                 <ShoppingBag size={16} />
                 <span className="absolute -top-0.5 -right-0.5 h-3.5 w-3.5 bg-orange-500 text-[8px] font-black text-slate-100 dark:text-white rounded-full flex items-center justify-center">
@@ -408,7 +408,7 @@ const Orderdetail = () => {
                   placeholder="Search by product name or order ID..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                  className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                 />
               </motion.div>
             )}
@@ -433,14 +433,14 @@ const Orderdetail = () => {
             <div className="flex items-center gap-3">
               <button 
                 onClick={() => setShowSearchInput(!showSearchInput)}
-                className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-900 dark:hover:bg-slate-800 transition text-slate-700 dark:text-slate-300 cursor-pointer"
+                className="p-2 rounded-md bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-900 dark:hover:bg-slate-800 transition text-slate-700 dark:text-slate-300 cursor-pointer"
                 title="Search Orders"
               >
                 <Search size={16} />
               </button>
               <button
                 onClick={() => navigate("/cart")}
-                className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-900 dark:hover:bg-slate-800 transition text-slate-700 dark:text-slate-300 relative cursor-pointer"
+                className="p-2 rounded-md bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-900 dark:hover:bg-slate-800 transition text-slate-700 dark:text-slate-300 relative cursor-pointer"
                 title="View Cart"
               >
                 <ShoppingBag size={16} />
@@ -465,7 +465,7 @@ const Orderdetail = () => {
                   placeholder="Search by product name or order ID..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-2 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                  className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-2 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                 />
               </motion.div>
             )}
@@ -492,7 +492,7 @@ const Orderdetail = () => {
         </div>
 
         {/* Filter & Sort Bar */}
-        <div className="flex items-center justify-between border border-slate-200/60 dark:border-slate-800/80 bg-white dark:bg-slate-900/30 rounded-2xl p-3 mb-6 shadow-xs">
+        <div className="flex items-center justify-between border border-slate-200/60 dark:border-slate-800/80 bg-white dark:bg-slate-900/30 rounded-md p-3 mb-6 shadow-xs">
           <div className="flex items-center gap-1.5 text-xs font-black text-indigo-600 dark:text-indigo-400 cursor-pointer">
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 8.293A1 1 0 013 7.586V4z" />
@@ -514,8 +514,8 @@ const Orderdetail = () => {
         </div>
 
         {filteredAndSortedOrders.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 p-16 text-center shadow-sm max-w-2xl mx-auto">
-            <div className="mx-auto h-14 w-14 rounded-2xl bg-slate-50 dark:bg-slate-950 flex items-center justify-center border border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 mb-4">
+          <div className="rounded-md border border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 p-16 text-center shadow-sm max-w-2xl mx-auto">
+            <div className="mx-auto h-14 w-14 rounded-md bg-slate-50 dark:bg-slate-950 flex items-center justify-center border border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500 mb-4">
               <PackageCheck className="h-6 w-6" />
             </div>
             <h3 className="text-lg font-bold text-slate-900 dark:text-white">No orders found</h3>
@@ -539,18 +539,18 @@ const Orderdetail = () => {
               >
                 
                 {/* DESKTOP VIEW CARD */}
-                <div className="hidden lg:grid gap-8 lg:grid-cols-[200px_1fr_260px] items-start relative rounded-2xl border p-6 text-left border-slate-200/60 dark:border-slate-800/80 bg-white dark:bg-slate-900/30 hover:shadow-md hover:border-indigo-500/20">
+                <div className="hidden lg:grid gap-8 lg:grid-cols-[200px_1fr_260px] items-start relative rounded-md border p-6 text-left border-slate-200/60 dark:border-slate-800/80 bg-white dark:bg-slate-900/30 hover:shadow-md hover:border-indigo-500/20">
                   
                   {/* Left Column: Premium Product Image Gallery */}
                   <div className="flex flex-col gap-3 shrink-0">
                     <Link
                       to={`/product/${item.productId}`}
-                      className="group/img relative h-48 w-full rounded-2xl border border-slate-200/60 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 overflow-hidden flex items-center justify-center p-3 transition-all duration-300 hover:border-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/5 cursor-pointer"
+                      className="group/img relative h-48 w-full rounded-md border border-slate-200/60 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 overflow-hidden flex items-center justify-center p-3 transition-all duration-300 hover:border-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/5 cursor-pointer"
                     >
                       <img
                         src={imageUrl}
                         alt={item.name}
-                        className="h-full w-full rounded-xl object-contain transition-all duration-500 ease-out group-hover/img:scale-110"
+                        className="h-full w-full rounded-md object-contain transition-all duration-500 ease-out group-hover/img:scale-110"
                       />
                       <div className="absolute inset-0 bg-black/5 dark:bg-white/5 opacity-0 group-hover/img:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-xs">
                         <span className="rounded-full bg-slate-900/90 text-slate-100 dark:text-white font-extrabold text-[10px] uppercase tracking-wider px-3.5 py-1.5 shadow-md">
@@ -561,14 +561,14 @@ const Orderdetail = () => {
                     
                     {/* Product Thumbnail Gallery Simulation */}
                     <div className="flex gap-2">
-                      <div className="h-10 w-10 rounded-lg border border-indigo-500/25 bg-slate-100 dark:bg-slate-950 p-1 flex items-center justify-center shrink-0 cursor-pointer">
+                      <div className="h-10 w-10 rounded-sm border border-indigo-500/25 bg-slate-100 dark:bg-slate-950 p-1 flex items-center justify-center shrink-0 cursor-pointer">
                         <img
                           src={imageUrl}
                           alt="thumbnail"
                           className="h-full w-full object-contain rounded"
                         />
                       </div>
-                      <div className="h-10 w-10 rounded-lg border border-slate-200/60 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 flex items-center justify-center shrink-0 hover:border-slate-300 cursor-pointer transition">
+                      <div className="h-10 w-10 rounded-sm border border-slate-200/60 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 flex items-center justify-center shrink-0 hover:border-slate-300 cursor-pointer transition">
                         <ShoppingBag size={14} className="text-slate-400" />
                       </div>
                     </div>
@@ -589,7 +589,7 @@ const Orderdetail = () => {
                         {getAttributes(item.name, item.size, item.qty).map((chip, idx) => (
                           <span
                             key={idx}
-                            className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100/80 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 border border-slate-200/50 dark:border-slate-700/50 px-2.5 py-1 text-xs font-bold transition duration-200 hover:border-slate-300 dark:hover:border-slate-600"
+                            className="inline-flex items-center gap-1.5 rounded-sm bg-slate-100/80 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 border border-slate-200/50 dark:border-slate-700/50 px-2.5 py-1 text-xs font-bold transition duration-200 hover:border-slate-300 dark:hover:border-slate-600"
                           >
                             <span className="text-slate-400 dark:text-slate-500 font-semibold">{chip.label}:</span>
                             <span>{chip.value}</span>
@@ -599,7 +599,7 @@ const Orderdetail = () => {
                     </div>
 
                     {/* Visual Progress Order Status Timeline */}
-                    <div className="bg-slate-50/50 dark:bg-slate-900/10 border border-slate-200/50 dark:border-slate-800/50 rounded-2xl p-4 space-y-4">
+                    <div className="bg-slate-50/50 dark:bg-slate-900/10 border border-slate-200/50 dark:border-slate-800/50 rounded-md p-4 space-y-4">
                       {item.status === "Cancelled" ? (
                         <div className="flex items-center gap-2 text-rose-600 dark:text-rose-400 text-xs font-bold">
                           <XCircle className="h-4 w-4 shrink-0" />
@@ -654,7 +654,7 @@ const Orderdetail = () => {
 
                           {/* OTP Key widget inside timeline card */}
                           {item.verificationCode && item.status !== "Delivered" && item.status !== "Cancelled" && (
-                            <div className="mt-5 flex items-center justify-between rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 dark:border-amber-500/30 px-3.5 py-2.5">
+                            <div className="mt-5 flex items-center justify-between rounded-md bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 dark:border-amber-500/30 px-3.5 py-2.5">
                               <div className="flex items-center gap-2">
                                 <KeyRound size={14} className="text-amber-500 animate-pulse shrink-0" />
                                 <span className="font-bold text-[10px] uppercase tracking-wider text-amber-600 dark:text-amber-400">Delivery Key:</span>
@@ -665,7 +665,7 @@ const Orderdetail = () => {
                                   navigator.clipboard.writeText(item.verificationCode);
                                   toast.success("Verification code copied!");
                                 }}
-                                className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-lg bg-amber-500 text-slate-100 dark:text-white hover:bg-amber-600 active:scale-95 transition cursor-pointer shadow-sm shadow-amber-500/20"
+                                className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-sm bg-amber-500 text-slate-100 dark:text-white hover:bg-amber-600 active:scale-95 transition cursor-pointer shadow-sm shadow-amber-500/20"
                               >
                                 <Copy size={12} />
                                 <span>Copy</span>
@@ -725,7 +725,7 @@ const Orderdetail = () => {
                       if (inv) {
                         const isCreditNote = inv.orderStatus === "Refunded";
                         return (
-                          <div className="bg-slate-50 dark:bg-slate-900/40 border border-slate-200/60 dark:border-slate-800 rounded-xl p-3.5 space-y-2 text-xs">
+                          <div className="bg-slate-50 dark:bg-slate-900/40 border border-slate-200/60 dark:border-slate-800 rounded-md p-3.5 space-y-2 text-xs">
                             <div className="flex items-center gap-1.5 font-bold text-emerald-600 dark:text-emerald-400">
                               <CheckCircle2 size={13} className="shrink-0 text-emerald-500" />
                               <span className="text-[10px] font-black uppercase tracking-wider">
@@ -740,7 +740,7 @@ const Orderdetail = () => {
                               href={`${backendUrl}/api/invoice/download/${inv._id}?token=${token}`}
                               target="_blank"
                               rel="noreferrer"
-                              className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 transition duration-150 active:scale-95 cursor-pointer"
+                              className="w-full inline-flex items-center justify-center gap-1.5 rounded-sm border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 transition duration-150 active:scale-95 cursor-pointer"
                             >
                               <FileText size={11} className="text-indigo-500" />
                               <span>{isCreditNote ? "Download Credit Note" : "Download PDF"}</span>
@@ -758,7 +758,7 @@ const Orderdetail = () => {
                           onClick={() =>
                             navigate(`/track/${item.orderId}`, { state: { item, returnRequest, initialTab: "return" } })
                           }
-                          className="inline-flex items-center justify-center gap-2 rounded-xl bg-orange-500 hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-500 px-5 py-3 text-xs font-bold uppercase tracking-wider text-slate-100 dark:text-white shadow-md shadow-orange-500/10 hover:shadow-lg transition-all active:scale-95 cursor-pointer"
+                          className="inline-flex items-center justify-center gap-2 rounded-md bg-orange-500 hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-500 px-5 py-3 text-xs font-bold uppercase tracking-wider text-slate-100 dark:text-white shadow-md shadow-orange-500/10 hover:shadow-lg transition-all active:scale-95 cursor-pointer"
                         >
                           <RotateCcw className="h-4 w-4" />
                           <span>{t("track_return")}</span>
@@ -768,7 +768,7 @@ const Orderdetail = () => {
                           onClick={() =>
                             navigate(`/track/${item.orderId}`, { state: { item } })
                           }
-                          className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-[#FF5100] dark:hover:bg-orange-600 px-5 py-3 text-xs font-bold uppercase tracking-wider text-slate-100 dark:text-white shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer"
+                          className="inline-flex items-center justify-center gap-2 rounded-md bg-slate-900 hover:bg-slate-800 dark:bg-[#FF5100] dark:hover:bg-orange-600 px-5 py-3 text-xs font-bold uppercase tracking-wider text-slate-100 dark:text-white shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer"
                         >
                           <Truck className="h-4 w-4" />
                           <span>{t("track_order")}</span>
@@ -778,7 +778,7 @@ const Orderdetail = () => {
                       {canRequestReturn && (
                         <button
                           onClick={() => openReturnModal(item)}
-                          className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 px-5 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all active:scale-95 cursor-pointer animate-pulse"
+                          className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 px-5 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all active:scale-95 cursor-pointer animate-pulse"
                         >
                           <RotateCcw className="h-4 w-4 text-orange-500" />
                           <span>{t("request_return")}</span>
@@ -788,7 +788,7 @@ const Orderdetail = () => {
                       {item.status !== "Delivered" && item.status !== "Cancelled" && (
                         <button
                           onClick={() => handleCancelOrder(item.orderId)}
-                          className="inline-flex items-center justify-center gap-2 rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50/30 dark:bg-rose-950/10 px-5 py-3 text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/20 hover:border-rose-300 dark:hover:border-rose-700 transition-all active:scale-95 cursor-pointer"
+                          className="inline-flex items-center justify-center gap-2 rounded-md border border-rose-200 dark:border-rose-900/50 bg-rose-50/30 dark:bg-rose-950/10 px-5 py-3 text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/20 hover:border-rose-300 dark:hover:border-rose-700 transition-all active:scale-95 cursor-pointer"
                         >
                           <XCircle className="h-4 w-4 text-rose-500" />
                           <span>Cancel Order</span>
@@ -797,7 +797,7 @@ const Orderdetail = () => {
 
                       <button
                         onClick={() => navigate(`/order/${item.orderId}`)}
-                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 px-5 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all active:scale-95 cursor-pointer"
+                        className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 px-5 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all active:scale-95 cursor-pointer"
                       >
                         <ShieldCheck className="h-4 w-4 text-indigo-500" />
                         <span>View Details & Chat</span>
@@ -805,7 +805,7 @@ const Orderdetail = () => {
 
                       <button
                         onClick={() => navigate("/help")}
-                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-indigo-200 dark:border-indigo-900/50 bg-indigo-50/20 dark:bg-indigo-950/10 px-5 py-3 text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-all active:scale-95 cursor-pointer"
+                        className="inline-flex items-center justify-center gap-2 rounded-md border border-indigo-200 dark:border-indigo-900/50 bg-indigo-50/20 dark:bg-indigo-950/10 px-5 py-3 text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-all active:scale-95 cursor-pointer"
                       >
                         <Headset className="h-4 w-4 text-indigo-500" />
                         <span>{t("get_support")}</span>
@@ -815,12 +815,12 @@ const Orderdetail = () => {
                 </div>
 
                 {/* MOBILE VIEW CARD */}
-                <div className="block lg:hidden rounded-2xl border p-4 space-y-4 hover:shadow-md transition relative border-slate-200/60 dark:border-slate-800/80 bg-white dark:bg-slate-900/30">
+                <div className="block lg:hidden rounded-md border p-4 space-y-4 hover:shadow-md transition relative border-slate-200/60 dark:border-slate-800/80 bg-white dark:bg-slate-900/30">
                   <div className="flex items-start">
                     {/* Thumbnail Image */}
                     <Link
                       to={`/product/${item.productId}`}
-                      className="h-16 w-16 sm:h-20 sm:w-20 rounded-xl border border-slate-200/60 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 overflow-hidden flex items-center justify-center p-1.5 shrink-0 cursor-pointer"
+                      className="h-16 w-16 sm:h-20 sm:w-20 rounded-md border border-slate-200/60 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 overflow-hidden flex items-center justify-center p-1.5 shrink-0 cursor-pointer"
                     >
                       <img
                         src={imageUrl}
@@ -892,21 +892,21 @@ const Orderdetail = () => {
                       {item.status === "Cancelled" ? (
                         <button
                           onClick={() => navigate(`/track/${item.orderId}`, { state: { item } })}
-                          className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 text-[10px] font-black uppercase tracking-wider transition cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800"
+                          className="px-3 py-1.5 rounded-sm border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 text-[10px] font-black uppercase tracking-wider transition cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800"
                         >
                           View Details
                         </button>
                       ) : returnRequest ? (
                         <button
                           onClick={() => navigate(`/track/${item.orderId}`, { state: { item, returnRequest, initialTab: "return" } })}
-                          className="px-3 py-1.5 rounded-lg border border-orange-200 dark:border-orange-900 bg-orange-50/50 hover:bg-orange-100/50 text-orange-600 dark:bg-orange-950/30 dark:text-orange-400 text-[10px] font-black uppercase tracking-wider transition cursor-pointer"
+                          className="px-3 py-1.5 rounded-sm border border-orange-200 dark:border-orange-900 bg-orange-50/50 hover:bg-orange-100/50 text-orange-600 dark:bg-orange-950/30 dark:text-orange-400 text-[10px] font-black uppercase tracking-wider transition cursor-pointer"
                         >
                           Track Return
                         </button>
                       ) : (
                         <button
                           onClick={() => navigate(`/track/${item.orderId}`, { state: { item } })}
-                          className="px-3 py-1.5 rounded-lg border border-indigo-100 dark:border-indigo-900/50 bg-indigo-50/30 hover:bg-indigo-50/80 dark:bg-indigo-950/20 dark:hover:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-wider transition cursor-pointer"
+                          className="px-3 py-1.5 rounded-sm border border-indigo-100 dark:border-indigo-900/50 bg-indigo-50/30 hover:bg-indigo-50/80 dark:bg-indigo-950/20 dark:hover:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-wider transition cursor-pointer"
                         >
                           Track Order
                         </button>
@@ -915,7 +915,7 @@ const Orderdetail = () => {
                       {/* Three Dots Button */}
                       <button
                         onClick={() => setOpenActionMenuIndex(openActionMenuIndex === index ? null : index)}
-                        className="h-7 w-7 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition cursor-pointer"
+                        className="h-7 w-7 rounded-sm border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition cursor-pointer"
                       >
                         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                           <circle cx="12" cy="5" r="1.5" fill="currentColor" />
@@ -932,7 +932,7 @@ const Orderdetail = () => {
                             className="fixed inset-0 z-10" 
                             onClick={() => setOpenActionMenuIndex(null)}
                           />
-                          <div className="absolute right-0 bottom-9 z-20 w-44 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-1.5 shadow-xl text-left space-y-0.5">
+                          <div className="absolute right-0 bottom-9 z-20 w-44 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md p-1.5 shadow-xl text-left space-y-0.5">
                             {/* Invoice compiled download */}
                             {(() => {
                               const inv = invoices.find(i => String(i.orderId?._id || i.orderId) === String(item.orderId));
@@ -942,7 +942,7 @@ const Orderdetail = () => {
                                     href={`${backendUrl}/api/invoice/download/${inv._id}?token=${token}`}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="w-full flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+                                    className="w-full flex items-center gap-2 rounded-sm px-2.5 py-1.5 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
                                   >
                                     <FileText size={13} className="text-slate-500" />
                                     <span>Download Invoice</span>
@@ -960,7 +960,7 @@ const Orderdetail = () => {
                                   setOpenActionMenuIndex(null);
                                   openReturnModal(item);
                                 }}
-                                className="w-full flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-left cursor-pointer"
+                                className="w-full flex items-center gap-2 rounded-sm px-2.5 py-1.5 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-left cursor-pointer"
                               >
                                 <RotateCcw size={13} className="text-orange-500" />
                                 <span>Request Return</span>
@@ -975,7 +975,7 @@ const Orderdetail = () => {
                                   setOpenActionMenuIndex(null);
                                   handleCancelOrder(item.orderId);
                                 }}
-                                className="w-full flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[11px] font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-left cursor-pointer"
+                                className="w-full flex items-center gap-2 rounded-sm px-2.5 py-1.5 text-[11px] font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-left cursor-pointer"
                               >
                                 <XCircle size={13} className="text-rose-500" />
                                 <span>Cancel Order</span>
@@ -989,7 +989,7 @@ const Orderdetail = () => {
                                 setOpenActionMenuIndex(null);
                                 navigate(`/order/${item.orderId}`);
                               }}
-                              className="w-full flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-left cursor-pointer"
+                              className="w-full flex items-center gap-2 rounded-sm px-2.5 py-1.5 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-left cursor-pointer"
                             >
                               <ShieldCheck size={13} className="text-indigo-500" />
                               <span>View Details & Chat</span>
@@ -1002,7 +1002,7 @@ const Orderdetail = () => {
                                 setOpenActionMenuIndex(null);
                                 navigate("/help");
                               }}
-                              className="w-full flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-left cursor-pointer"
+                              className="w-full flex items-center gap-2 rounded-sm px-2.5 py-1.5 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-left cursor-pointer"
                             >
                               <Headset size={13} className="text-slate-500" />
                               <span>Get Support</span>
@@ -1020,9 +1020,9 @@ const Orderdetail = () => {
         </div>
 
         {/* Mobile Help Card matching Mock */}
-        <div className="block lg:hidden bg-indigo-50/50 dark:bg-indigo-950/15 border border-indigo-100/50 dark:border-indigo-900/30 rounded-2xl p-4 flex items-center justify-between gap-4 mt-6">
+        <div className="block lg:hidden bg-indigo-50/50 dark:bg-indigo-950/15 border border-indigo-100/50 dark:border-indigo-900/30 rounded-md p-4 flex items-center justify-between gap-4 mt-6">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+            <div className="h-10 w-10 rounded-md bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
               <Headset size={18} />
             </div>
             <div className="text-left">
@@ -1044,7 +1044,7 @@ const Orderdetail = () => {
       {/* Return Request Modal */}
       {selectedReturnItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm px-4">
-          <div className="w-full max-w-xl rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 shadow-2xl text-left scale-100 transition-all duration-300">
+          <div className="w-full max-w-xl rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 shadow-2xl text-left scale-100 transition-all duration-300">
             <div className="flex items-start justify-between gap-4 pb-4 border-b border-slate-200/50 dark:border-slate-800/50">
               <div>
                 <p className="text-[10px] font-black uppercase tracking-widest text-orange-500">
@@ -1057,7 +1057,7 @@ const Orderdetail = () => {
               </div>
               <button
                 onClick={() => setSelectedReturnItem(null)}
-                className="rounded-xl h-9 w-9 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                className="rounded-md h-9 w-9 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -1073,7 +1073,7 @@ const Orderdetail = () => {
                   onChange={(event) =>
                     setReturnForm((current) => ({ ...current, returnType: event.target.value }))
                   }
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 outline-none transition dark: cursor-pointer font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                  className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 outline-none transition dark: cursor-pointer font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                 >
                   <option value="Refund" className="bg-white dark:bg-slate-900">Refund (Money Back)</option>
                   <option value="Replacement" className="bg-white dark:bg-slate-900">Replacement (Same Product)</option>
@@ -1094,7 +1094,7 @@ const Orderdetail = () => {
                       setReturnForm((current) => ({ ...current, exchangeSize: event.target.value }))
                     }
                     placeholder="e.g. XL, M, L"
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 outline-none transition dark: placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                    className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 outline-none transition dark: placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                   />
                 </div>
               )}
@@ -1108,7 +1108,7 @@ const Orderdetail = () => {
                   onChange={(event) =>
                     setReturnForm((current) => ({ ...current, reason: event.target.value }))
                   }
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 outline-none transition dark: cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                  className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 outline-none transition dark: cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                 >
                   <option className="bg-white dark:bg-slate-900">Wrong item delivered</option>
                   <option className="bg-white dark:bg-slate-900">Damaged item</option>
@@ -1129,7 +1129,7 @@ const Orderdetail = () => {
                     setReturnForm((current) => ({ ...current, feedback: event.target.value }))
                   }
                   placeholder="Please share details about why you want to return this product..."
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 outline-none transition dark: placeholder:text-slate-400 dark:placeholder:text-slate-500 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                  className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 outline-none transition dark: placeholder:text-slate-400 dark:placeholder:text-slate-500 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                 />
               </div>
 
@@ -1137,14 +1137,14 @@ const Orderdetail = () => {
                 <button
                   type="button"
                   onClick={() => setSelectedReturnItem(null)}
-                  className="rounded-xl border border-slate-200 dark:border-slate-800 px-5 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 bg-white dark:bg-slate-900 cursor-pointer transition active:scale-95"
+                  className="rounded-md border border-slate-200 dark:border-slate-800 px-5 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 bg-white dark:bg-slate-900 cursor-pointer transition active:scale-95"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submittingReturn}
-                  className="rounded-xl bg-orange-500 hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-500 px-6 py-3 text-xs font-bold uppercase tracking-wider text-slate-100 dark:text-white shadow-md shadow-orange-500/10 hover:shadow-lg disabled:opacity-60 cursor-pointer transition active:scale-95"
+                  className="rounded-md bg-orange-500 hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-500 px-6 py-3 text-xs font-bold uppercase tracking-wider text-slate-100 dark:text-white shadow-md shadow-orange-500/10 hover:shadow-lg disabled:opacity-60 cursor-pointer transition active:scale-95"
                 >
                   {submittingReturn ? "Submitting..." : "Submit Request"}
                 </button>

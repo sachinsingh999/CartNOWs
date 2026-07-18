@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import axios from "axios";
 import io from "socket.io-client";
 import { backendUrl } from "../config";
-import { MessageSquare, Phone, Send, ShieldCheck, X, ChevronDown, ChevronUp, Clock, User, PhoneCall, Volume2, VolumeX, Video, VideoOff, Mic, MicOff, PhoneOff, Paperclip, Lock, MapPin } from "lucide-react";
+import { MessageSquare, Phone, Send, ShieldCheck, X, ChevronDown, ChevronUp, Clock, User, PhoneCall, Volume2, VolumeX, Video, VideoOff, Mic, MicOff, PhoneOff, Paperclip, Lock, MapPin, ChevronLeft } from "lucide-react";
 import { toast } from "react-toastify";
 
 const getUserIdFromToken = (token) => {
@@ -45,6 +45,7 @@ const mergeAndDeduplicate = (existingMessages, newMessages) => {
 
 const OrderCommunication = ({ orderId }) => {
   const [status, setStatus] = useState(null);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [isOpen, setIsOpen] = useState(true);
@@ -1068,20 +1069,107 @@ const OrderCommunication = ({ orderId }) => {
     return null;
   }
 
+  if (!isExpanded) {
+    return (
+      <div className="rounded-md overflow-hidden select-none transition-all duration-350">
+        {/* Blue Header Row */}
+        <div className="bg-[#3b2fc9] dark:bg-indigo-950/80 text-white p-3.5 flex items-center justify-between shadow-2xs">
+          <div className="flex items-center gap-2">
+            <ShieldCheck size={16} className="text-white" />
+            <div className="text-left leading-none">
+              <h4 className="text-[10px] font-black uppercase tracking-wider leading-none text-white">Secure Chat Channel</h4>
+              <p className="text-[8px] text-indigo-200/70 font-semibold mt-1">End-to-end encrypted & secure</p>
+            </div>
+          </div>
+          <span className="inline-flex items-center gap-1 bg-white/10 text-white border border-white/20 px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-450" />
+            Encrypted
+          </span>
+        </div>
+
+        {/* White Body Box */}
+        <div className="bg-white dark:bg-slate-900 border-x border-b border-slate-200 dark:border-slate-800 p-4 rounded-b-md text-left space-y-3 shadow-3xs">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              {/* Avatar circle "T" */}
+              <div className="h-9 w-9 bg-indigo-50 dark:bg-indigo-950/20 text-[#4f46e5] dark:text-indigo-400 font-black flex items-center justify-center rounded-full text-xs uppercase border border-indigo-100/50">
+                {(activeTab === "delivery" ? status.deliverymanName : status.sellerName)?.charAt(0) || "T"}
+              </div>
+              <div className="text-left leading-tight">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-extrabold text-xs text-slate-900 dark:text-white uppercase tracking-wide">
+                    {activeTab === "delivery" ? status.deliverymanName : status.sellerName}
+                  </span>
+                  <span className="text-[7px] bg-slate-100 dark:bg-slate-805 text-slate-450 dark:text-slate-500 font-bold px-1 rounded-sm border border-slate-200 dark:border-slate-800/40">
+                    DELIVERY EXECUTIVE
+                  </span>
+                </div>
+                <div className="flex items-center gap-1 mt-1">
+                  <span className={`h-1.5 w-1.5 rounded-full ${partnerOnline ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`} />
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                    {partnerOnline ? "Active now" : "Offline"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Start Chat Button */}
+            <button
+              onClick={() => setIsExpanded(true)}
+              className="border border-indigo-500 text-indigo-500 hover:bg-indigo-500/5 rounded-md px-3 py-1.5 text-xs font-black flex items-center gap-1.5 transition active:scale-95 cursor-pointer bg-white dark:bg-slate-900 shadow-3xs leading-none"
+            >
+              <MessageSquare size={12} className="stroke-[2.5]" />
+              <span>Start Chat</span>
+            </button>
+          </div>
+
+          {/* Info Alert Row */}
+          <div className="bg-slate-50 dark:bg-slate-950/50 border border-slate-150 dark:border-slate-850 rounded-sm p-3 text-[10px] text-slate-405 font-bold flex items-center justify-between gap-3 select-none">
+            <div className="flex items-center gap-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-slate-350 shrink-0" />
+              <span>Chat with our delivery executive for real-time updates about your order.</span>
+            </div>
+            
+            {/* Cute messaging bubble visual exactly like the mockup */}
+            <div className="h-6 w-8 shrink-0 relative overflow-visible opacity-80">
+              <svg viewBox="0 0 40 30" className="h-full w-full">
+                <rect x="5" y="5" width="22" height="14" rx="3" fill="#6366f1" />
+                <polygon points="10,19 10,24 16,19" fill="#6366f1" />
+                <rect x="15" y="10" width="22" height="14" rx="3" fill="#fdba74" />
+                <polygon points="32,24 32,28 26,24" fill="#fdba74" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="border border-slate-200/50 dark:border-slate-850 rounded-2xl bg-white dark:bg-slate-950 overflow-hidden flex flex-col h-[490px] shadow-lg shadow-slate-100 dark:shadow-none select-none shrink-0 transition-all duration-300">
+    <div className="border border-slate-200/50 dark:border-slate-850 rounded-lg bg-white dark:bg-slate-955 overflow-hidden flex flex-col h-[490px] shadow-lg shadow-slate-100 dark:shadow-none select-none shrink-0 transition-all duration-350">
       
       {/* 1. Header with details & call stub */}
-      <div className="bg-linear-to-r from-indigo-600 via-indigo-700 to-indigo-800 text-white px-4.5 py-3.5 flex justify-between items-center shrink-0 shadow-md shadow-indigo-900/5">
-        <div className="flex items-center gap-2">
-          <ShieldCheck size={18} className={status.locked ? "text-slate-400" : "text-emerald-400 animate-pulse"} />
-          <div className="text-left">
-            <h4 className="text-[11px] font-extrabold uppercase tracking-wider leading-none">
-              {status.locked ? "Chat Channel Closed" : "Secure Chat Channel"}
-            </h4>
-            <p className="text-[9px] text-indigo-200/70 font-medium mt-0.5">
-              {status.locked ? "Archived (Read Only)" : "Encrypted & secure"}
-            </p>
+      <div className="bg-linear-to-r from-indigo-600 via-indigo-700 to-indigo-800 text-white px-4.5 py-3 flex justify-between items-center shrink-0 shadow-md shadow-indigo-900/5">
+        <div className="flex items-center gap-3">
+          {/* Back button */}
+          <button
+            type="button"
+            onClick={() => setIsExpanded(false)}
+            className="p-1 rounded hover:bg-white/10 transition cursor-pointer text-white flex items-center justify-center shrink-0 border-none bg-transparent"
+          >
+            <ChevronLeft size={16} className="stroke-[2.5]" />
+          </button>
+          
+          <div className="flex items-center gap-2">
+            <ShieldCheck size={16} className={status.locked ? "text-slate-400" : "text-emerald-450 animate-pulse"} />
+            <div className="text-left">
+              <h4 className="text-[10px] font-extrabold uppercase tracking-wider leading-none text-white">
+                {status.locked ? "Chat Closed" : "Secure Chat"}
+              </h4>
+              <p className="text-[8px] text-indigo-200/70 font-medium mt-0.5">
+                {status.locked ? "Archived (Read Only)" : "Encrypted & secure"}
+              </p>
+            </div>
           </div>
         </div>
 

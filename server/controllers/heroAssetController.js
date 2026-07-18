@@ -10,28 +10,13 @@ export const getHeroAssets = async (req, res) => {
   try {
     const { admin } = req.query;
 
-    // Optional Cleanup: automatically mark expired slides as inactive
+    // Ensure all existing hero assets have expiresAt cleared so they never auto-expire
     await heroAssetModel.updateMany(
-      {
-        isActive: true,
-        expiresAt: { $lte: new Date() }
-      },
-      {
-        $set: {
-          isActive: false
-        }
-      }
+      { expiresAt: { $ne: null } },
+      { $set: { expiresAt: null } }
     );
 
-    const filter = admin === "true"
-      ? {}
-      : {
-          isActive: true,
-          $or: [
-            { expiresAt: null },
-            { expiresAt: { $gt: new Date() } }
-          ]
-        };
+    const filter = admin === "true" ? {} : { isActive: true };
 
     const assets = await heroAssetModel.find(filter).sort({ order: 1, createdAt: -1 });
     res.json({ success: true, assets });
@@ -92,9 +77,6 @@ export const addHeroAsset = async (req, res) => {
       imageUrl = `/uploads/${req.file.filename}`;
     }
 
-    const tomorrow = new Date();
-    tomorrow.setHours(24, 0, 0, 0); // next midnight
-
     const assetData = {
       name,
       category,
@@ -103,7 +85,7 @@ export const addHeroAsset = async (req, res) => {
       isActive: true,
       publicId,
       folder: "cartnow/banners",
-      expiresAt: tomorrow
+      expiresAt: null
     };
 
     const newAsset = new heroAssetModel(assetData);
@@ -350,15 +332,7 @@ export const updateHeroAsset = async (req, res) => {
       }
     }
 
-    let expiresAt = asset.expiresAt;
     const requestedActive = isActive !== undefined ? (isActive === "true" || isActive === true) : asset.isActive;
-
-    // If a slide transitions from inactive to active:
-    if (!asset.isActive && requestedActive) {
-      const tomorrow = new Date();
-      tomorrow.setHours(24, 0, 0, 0);
-      expiresAt = tomorrow;
-    }
 
     const updatedData = {
       name: name !== undefined ? name : asset.name,
@@ -366,7 +340,7 @@ export const updateHeroAsset = async (req, res) => {
       tagline: tagline !== undefined ? tagline : asset.tagline,
       imageUrl,
       isActive: requestedActive,
-      expiresAt,
+      expiresAt: null,
       publicId,
       folder: "cartnow/banners"
     };

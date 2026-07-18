@@ -1,6 +1,6 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import { backendUrl } from "../config";
 import { 
@@ -21,6 +21,7 @@ const inputClass =
 
 const Signup = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { setToken: setAuthToken, setRole: setAuthRole } = useAuth();
 
   const [name, setName] = useState("");
@@ -224,9 +225,18 @@ const Signup = () => {
 
   useEffect(() => {
     if (token) {
-      navigate("/");
+      const from = location.state?.from;
+      if (from) {
+        const path = typeof from === "string"
+          ? from
+          : `${from.pathname || "/"}${from.search || ""}${from.hash || ""}`;
+        const targetState = typeof from === "object" ? from.state : undefined;
+        navigate(path, { replace: true, state: targetState });
+      } else {
+        navigate("/", { replace: true });
+      }
     }
-  }, [token, navigate]);
+  }, [token, navigate, location.state]);
 
   // Framer Motion Animation Variants
   const containerVariants = {
@@ -439,7 +449,7 @@ const Signup = () => {
             <p className="text-center text-xs text-slate-500 dark:text-slate-400 font-medium">
               Already have an account?
               <button
-                onClick={() => navigate("/login")}
+                onClick={() => navigate("/login", { state: location.state })}
                 className="ml-1 font-bold text-blue-600 dark:text-blue-500 hover:underline cursor-pointer"
               >
                 Sign In

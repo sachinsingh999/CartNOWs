@@ -176,7 +176,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
         } catch (e) { }
         navigate(`/product/${product._id}`);
       }}
-      className="group relative flex flex-col bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-lg overflow-hidden hover:shadow-[0_15px_30px_rgba(0,0,0,0.15)] hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-300 cursor-pointer text-left w-full h-full"
+      className="group relative flex flex-col bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-md overflow-hidden hover:shadow-[0_15px_30px_rgba(0,0,0,0.15)] hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-300 cursor-pointer text-left w-full h-full"
     >
       {/* Image Section */}
       <div className="relative w-full h-[290px] bg-slate-50 dark:bg-slate-950 flex items-center justify-center select-none overflow-hidden">
@@ -314,7 +314,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
           type="button"
           disabled={isOOS}
           onClick={handleAddToCart}
-          className={`sm:hidden mt-2 w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all duration-200 active:scale-95 cursor-pointer border-none select-none z-10 ${isOOS ? "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed" : "bg-[#F43F5E] text-slate-100 dark:text-white shadow-sm shadow-[#F43F5E]/10"}`}
+          className={`sm:hidden mt-2 w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-sm text-[10px] font-black uppercase tracking-wider transition-all duration-200 active:scale-95 cursor-pointer border-none select-none z-10 ${isOOS ? "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed" : "bg-[#F43F5E] text-slate-100 dark:text-white shadow-sm shadow-[#F43F5E]/10"}`}
         >
           <ShoppingCart size={11} className="stroke-[2.5]" />
           <span>{isOOS ? "Sold Out" : "Add to Cart"}</span>

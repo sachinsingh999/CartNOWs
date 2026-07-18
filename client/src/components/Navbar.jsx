@@ -1202,13 +1202,13 @@ const Navbar = () => {
 
                           <div className="space-y-2">
                             <button
-                              onClick={() => { setOpen(false); navigate("/login"); }}
+                              onClick={() => { setOpen(false); navigate("/login", { state: { from: location } }); }}
                               className="w-full py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-center text-xs font-black text-slate-100 dark:text-white shadow-md shadow-orange-500/15 active:scale-95 transition-all cursor-pointer border-none uppercase tracking-wider"
                             >
                               {t("login")}
                             </button>
                             <button
-                              onClick={() => { setOpen(false); navigate("/signup"); }}
+                              onClick={() => { setOpen(false); navigate("/signup", { state: { from: location } }); }}
                               className="w-full py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-center text-xs font-black text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 active:scale-95 transition-all cursor-pointer uppercase tracking-wider"
                             >
                               Create Account
@@ -1438,7 +1438,7 @@ const Navbar = () => {
                     if (token) {
                       navigate("/profile");
                     } else {
-                      navigate("/login");
+                      navigate("/login", { state: { from: { pathname: "/profile" } } });
                     }
                   }}
                   className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all cursor-pointer ${active ? "text-[#F43F5E]" : "text-slate-500 dark:text-slate-400"}`}

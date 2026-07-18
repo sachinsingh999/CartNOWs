@@ -20,12 +20,17 @@ import {
   Eye,
   ArrowUp,
   ArrowDown,
-  Info,
   Archive,
   RotateCcw,
   Sparkles,
-  BarChart2,
-  Lock
+  Lock,
+  X,
+  Sliders,
+  SlidersHorizontal,
+  HelpCircle,
+  AlertTriangle,
+  FileCode,
+  Heart
 } from "lucide-react";
 
 const Categories = ({ token }) => {
@@ -48,7 +53,7 @@ const Categories = ({ token }) => {
   const [viewArchived, setViewArchived] = useState(false);
 
   // Tab state for the customization panel
-  const [panelTab, setPanelTab] = useState("settings"); // "settings", "attributes", "preview_form", "preview_filters"
+  const [panelTab, setPanelTab] = useState("settings"); // "settings", "attributes", "rules", "preview"
 
   // Attribute selection state
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -244,6 +249,10 @@ const Categories = ({ token }) => {
         if (data.success) {
           toast.success("Category updated successfully");
           setEditingId(null);
+          // Update selected category details locally
+          if (selectedCategory && selectedCategory._id === editingId) {
+            setSelectedCategory({ ...selectedCategory, ...payload });
+          }
         } else toast.error(data.message);
       } else {
         const { data } = await axios.post(
@@ -290,6 +299,7 @@ const Categories = ({ token }) => {
     setSeoTitle(cat.seoTitle || "");
     setSeoDescription(cat.seoDescription || "");
     setSeoKeywords(cat.seoKeywords?.join(", ") || "");
+    setPanelTab("settings"); // Switch to settings tab to view edit form
   };
 
   const handleDelete = async (id) => {
@@ -401,7 +411,7 @@ const Categories = ({ token }) => {
         visibleOnSellerForm: newField.visibleOnSellerForm,
         visibleOnAdminForm: newField.visibleOnAdminForm,
         defaultValue: newField.defaultValue,
-        selectOptions: newField.selectOptions,
+        selectOptions: newField.selectOptions ? newField.selectOptions.split(",").map(o => o.trim()) : [],
         validationRules,
         conditionalRules
       };
@@ -554,30 +564,30 @@ const Categories = ({ token }) => {
     if (list.length === 0) return null;
 
     return (
-      <div className={`space-y-1.5 ${level > 0 ? "pl-5 border-l border-slate-100 mt-1" : ""}`}>
+      <div className={`space-y-1.5 ${level > 0 ? "pl-4 border-l border-slate-100 dark:border-slate-800/80 mt-1" : ""}`}>
         {list.map((cat, index) => {
           const isSelected = selectedCategory?._id === cat._id;
           return (
             <div key={cat._id} className="space-y-1">
               <div 
                 onClick={() => handleSelectCategory(cat)}
-                className={`py-2 px-3 rounded-xl flex items-center justify-between gap-4 cursor-pointer transition ${ isSelected ? "bg-orange-500 text-slate-100 dark:text-white shadow-md shadow-orange-500/10" : "hover:bg-slate-50 text-slate-700 bg-white dark:bg-slate-900 border border-slate-100" }`}
+                className={`py-2 px-3 rounded-xl flex items-center justify-between gap-4 cursor-pointer transition-all duration-200 border ${ isSelected ? "bg-orange-500 border-orange-500 text-white shadow-md shadow-orange-500/10" : "hover:bg-slate-50 dark:hover:bg-slate-900 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-350 border-slate-150 dark:border-slate-800/60" }`}
               >
                 <div className="flex items-center gap-2 overflow-hidden">
                   <FolderTree size={14} className={isSelected ? "text-white" : "text-slate-400"} />
                   <span className="text-xs font-bold truncate">{cat.name}</span>
                   {cat.isFeatured && (
-                    <span className={`px-1.5 py-0.2 rounded text-[8px] font-black uppercase tracking-wider ${ isSelected ? "bg-white text-orange-500" : "bg-orange-100 text-orange-600" }`}>
+                    <span className={`px-1.5 py-0.2 rounded text-[8px] font-black uppercase tracking-wider ${ isSelected ? "bg-white text-orange-500" : "bg-orange-100 text-orange-600 dark:bg-orange-550/10 dark:text-orange-400" }`}>
                       Featured
                     </span>
                   )}
-                   {cat.status === "disabled" && (
-                    <span className="px-1.5 py-0.2 rounded text-[8px] font-black uppercase tracking-wider bg-slate-100 text-slate-400">
+                  {cat.status === "disabled" && (
+                    <span className="px-1.5 py-0.2 rounded text-[8px] font-black uppercase tracking-wider bg-slate-150 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
                       Disabled
                     </span>
                   )}
                   {cat.status === "pending" && (
-                    <span className="px-1.5 py-0.2 rounded text-[8px] font-black uppercase tracking-wider bg-amber-500 text-slate-100 dark:text-white animate-pulse">
+                    <span className="px-1.5 py-0.2 rounded text-[8px] font-black uppercase tracking-wider bg-amber-500 text-white animate-pulse">
                       Pending Approval
                     </span>
                   )}
@@ -596,7 +606,7 @@ const Categories = ({ token }) => {
                         }
                       }}
                       title="Approve Category"
-                      className="p-1 rounded bg-emerald-500 hover:bg-emerald-600 text-slate-100 dark:text-white transition flex items-center justify-center cursor-pointer"
+                      className="p-1 rounded bg-emerald-500 hover:bg-emerald-600 text-white transition flex items-center justify-center cursor-pointer border-none"
                     >
                       <Check size={11} className="stroke-[3]" />
                     </button>
@@ -604,27 +614,27 @@ const Categories = ({ token }) => {
                   <button
                     onClick={() => moveCategory(categories.indexOf(cat), -1)}
                     disabled={index === 0}
-                    className={`p-1 rounded hover:bg-slate-100 ${isSelected ? "text-orange-200 hover:text-white" : "text-slate-400 hover:text-slate-800"} disabled:opacity-20`}
+                    className={`p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 ${isSelected ? "text-orange-200 hover:text-white" : "text-slate-400 hover:text-slate-600"} disabled:opacity-20 cursor-pointer border-none`}
                   >
                     <ArrowUp size={11} />
                   </button>
                   <button
                     onClick={() => moveCategory(categories.indexOf(cat), 1)}
                     disabled={index === list.length - 1}
-                    className={`p-1 rounded hover:bg-slate-100 ${isSelected ? "text-orange-200 hover:text-white" : "text-slate-400 hover:text-slate-800"} disabled:opacity-20`}
+                    className={`p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 ${isSelected ? "text-orange-200 hover:text-white" : "text-slate-400 hover:text-slate-600"} disabled:opacity-20 cursor-pointer border-none`}
                   >
                     <ArrowDown size={11} />
                   </button>
                   <button
                     onClick={() => handleDuplicate(cat._id)}
                     title="Clone Category"
-                    className={`p-1 rounded hover:bg-slate-100 ${isSelected ? "text-orange-200 hover:text-white" : "text-slate-400 hover:text-slate-800"}`}
+                    className={`p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 ${isSelected ? "text-orange-200 hover:text-white" : "text-slate-400 hover:text-slate-600"} cursor-pointer border-none`}
                   >
                     <Copy size={11} />
                   </button>
                   <button
                     onClick={() => handleEdit(cat)}
-                    className={`p-1 rounded hover:bg-slate-100 ${isSelected ? "text-orange-200 hover:text-white" : "text-slate-400 hover:text-slate-800"}`}
+                    className={`p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 ${isSelected ? "text-orange-200 hover:text-white" : "text-slate-400 hover:text-slate-600"} cursor-pointer border-none`}
                   >
                     <Edit3 size={11} />
                   </button>
@@ -632,7 +642,7 @@ const Categories = ({ token }) => {
                     <button
                       onClick={() => handleRestore(cat._id)}
                       title="Restore from archive"
-                      className={`p-1 rounded hover:bg-emerald-50 ${isSelected ? "text-white" : "text-emerald-500"}`}
+                      className={`p-1 rounded hover:bg-emerald-50 dark:hover:bg-emerald-500/10 ${isSelected ? "text-white" : "text-emerald-500"} cursor-pointer border-none`}
                     >
                       <RotateCcw size={11} />
                     </button>
@@ -640,14 +650,14 @@ const Categories = ({ token }) => {
                     <button
                       onClick={() => handleArchive(cat._id)}
                       title="Archive Category"
-                      className={`p-1 rounded hover:bg-amber-50 ${isSelected ? "text-white" : "text-amber-500"}`}
+                      className={`p-1 rounded hover:bg-amber-50 dark:hover:bg-amber-500/10 ${isSelected ? "text-white" : "text-amber-500"} cursor-pointer border-none`}
                     >
                       <Archive size={11} />
                     </button>
                   )}
                   <button
                     onClick={() => handleDelete(cat._id)}
-                    className={`p-1 rounded hover:bg-red-50 ${isSelected ? "text-red-200 hover:text-white" : "text-red-400 hover:text-red-500"}`}
+                    className={`p-1 rounded hover:bg-red-50 dark:hover:bg-red-500/10 ${isSelected ? "text-red-200 hover:text-white" : "text-red-400 hover:text-red-500"} cursor-pointer border-none`}
                   >
                     <Trash2 size={11} />
                   </button>
@@ -661,23 +671,44 @@ const Categories = ({ token }) => {
     );
   };
 
+  const tabs = [
+    { id: "settings", label: "General Settings", icon: Settings },
+    { id: "attributes", label: "Dynamic Attributes", icon: Sliders },
+    { id: "rules", label: "Submission Rules", icon: ShieldCheck },
+    { id: "preview", label: "Live Form Preview", icon: Eye }
+  ];
+
   return (
-    <div className="space-y-6 text-left">
-      <div className="flex items-center justify-between gap-4 flex-wrap">
+    <div className="space-y-6 text-left text-slate-800 dark:text-slate-100">
+      
+      {/* Top Title Banner */}
+      <div className="flex items-center justify-between gap-4 flex-wrap pb-4 border-b border-slate-200 dark:border-slate-800/80">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 bg-orange-500 text-slate-100 dark:text-white rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20">
+          <div className="h-10 w-10 bg-orange-500 text-white rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20">
             <Layers size={20} />
           </div>
           <div>
-            <h1 className="text-xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">Category Architect</h1>
-            <p className="text-xs text-slate-400">Build parent/sub taxonomies, dynamic seller forms, custom validation rules, and filter presets.</p>
+            <h1 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">Category Architect</h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Build parent/sub taxonomies, dynamic forms schemas, verification rules, and visual models.</p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           <button
+            onClick={() => {
+              setSelectedCategory(null);
+              resetCategoryForm();
+              setPanelTab("settings");
+            }}
+            className="px-3 py-1.5 rounded-xl bg-slate-900 dark:bg-slate-800 text-white hover:bg-slate-800 text-xs font-black transition flex items-center gap-1.5 cursor-pointer border-none"
+          >
+            <Plus size={13} />
+            <span>New Category</span>
+          </button>
+          
+          <button
             onClick={() => setViewArchived(!viewArchived)}
-            className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${ viewArchived ? "bg-amber-100 border-amber-300 text-amber-800" : "bg-white border-slate-200 dark:border-slate-800 text-slate-600 hover:bg-slate-50" }`}
+            className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition flex items-center gap-1.5 cursor-pointer border-slate-200 dark:border-slate-800 ${ viewArchived ? "bg-amber-100 dark:bg-amber-500/10 border-amber-300 dark:border-amber-500/20 text-amber-800 dark:text-amber-400" : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-850" }`}
           >
             <Archive size={13} />
             <span>{viewArchived ? "Hide Archived" : "Show Archived"}</span>
@@ -685,206 +716,691 @@ const Categories = ({ token }) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         
-        {/* CATEGORY FORM BUILDER */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
-          <h2 className="text-sm font-black text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-1.5">
-            <Sparkles size={14} className="text-orange-500" />
-            <span>{editingId ? "Edit Category Details" : "Create Product Taxonomy"}</span>
-          </h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-1">
-              <div className="flex justify-between items-center mb-1">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Category Name *</label>
-                <button
-                  type="button"
-                  onClick={handleAIFill}
-                  disabled={aiLoading || !name.trim()}
-                  className="text-[9px] font-black uppercase tracking-wider bg-orange-50 text-[#FF5100] hover:bg-orange-100 disabled:opacity-50 border border-orange-100 px-2 py-0.5 rounded transition flex items-center gap-1 cursor-pointer select-none"
-                >
-                  <Sparkles size={10} className={aiLoading ? "animate-spin" : ""} />
-                  <span>{aiLoading ? "AI Filling..." : "AI Auto-Fill"}</span>
-                </button>
-              </div>
-              <input
-                type="text"
-                placeholder="e.g. Electronics, Laptops, Keyboards"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full px-4.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                required
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Parent Category</label>
-                <select
-                  value={parentCategoryId}
-                  onChange={(e) => setParentCategoryId(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-xs outline-none bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                >
-                  <option value="">None (Top-Level)</option>
-                  {categories
-                    .filter(c => c._id !== editingId)
-                    .map(c => (
-                      <option key={c._id} value={c._id}>{c.name}</option>
-                    ))}
-                </select>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Display Order</label>
-                <input
-                  type="number"
-                  placeholder="0"
-                  value={parentCategoryId ? "" : undefined}
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-xs outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Description</label>
-              <textarea
-                placeholder="Short taxonomy summary..."
-                value={description}
-                rows={2}
-                onChange={(e) => setDescription(e.target.value)}
-                className="w-full px-4.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-xs outline-none transition resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Icon Class/Name</label>
-                <input
-                  type="text"
-                  placeholder="e.g. laptop, smartphone"
-                  value={icon}
-                  onChange={(e) => setIcon(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-xs outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Banner Image URL</label>
-                <input
-                  type="text"
-                  placeholder="URL link"
-                  value={bannerImage}
-                  onChange={(e) => setBannerImage(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-xs outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                />
-              </div>
-            </div>
-
-            {/* SEO SECTION */}
-            <div className="border-t border-slate-100 pt-3 space-y-3">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">SEO Metadata Optimizer</span>
-              
-              <div className="space-y-1">
-                <label className="text-[9px] font-bold uppercase tracking-wider text-slate-400">SEO Meta Title</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Shop Premium Laptops Online"
-                  value={seoTitle}
-                  onChange={(e) => setSeoTitle(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-xs outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[9px] font-bold uppercase tracking-wider text-slate-400">SEO Keywords (comma separated)</label>
-                <input
-                  type="text"
-                  placeholder="e.g. laptop, macbook, electronics"
-                  value={seoKeywords}
-                  onChange={(e) => setSeoKeywords(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-xs outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[9px] font-bold uppercase tracking-wider text-slate-400">SEO Meta Description</label>
-                <textarea
-                  placeholder="Meta description for search indexes..."
-                  value={seoDescription}
-                  rows={2}
-                  onChange={(e) => setSeoDescription(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-xs outline-none resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 pt-2">
-              <div className="flex items-center justify-between border border-slate-100 p-2.5 rounded-xl bg-slate-50/50">
-                <span className="text-xs font-bold text-slate-700">Featured</span>
-                <button
-                  type="button"
-                  onClick={() => setIsFeatured(!isFeatured)}
-                  className="text-slate-500 hover:text-slate-800 transition"
-                >
-                  {isFeatured ? <ToggleRight className="text-orange-500" size={24} /> : <ToggleLeft size={24} />}
-                </button>
-              </div>
-
-              <div className="flex items-center justify-between border border-slate-100 p-2.5 rounded-xl bg-slate-50/50">
-                <span className="text-xs font-bold text-slate-700">Active</span>
-                <button
-                  type="button"
-                  onClick={() => setStatus(status === "active" ? "disabled" : "active")}
-                  className="text-slate-500 hover:text-slate-800 transition"
-                >
-                  {status === "active" ? <ToggleRight className="text-orange-500" size={24} /> : <ToggleLeft size={24} />}
-                </button>
-              </div>
-            </div>
-
-            <div className="flex gap-2 pt-2">
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex-1 py-3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-slate-100 dark:text-white rounded-xl text-xs font-black uppercase tracking-wider transition shadow-md hover:shadow-orange-500/20 active:scale-[0.98] disabled:opacity-50 cursor-pointer text-center"
-              >
-                {loading ? "Saving..." : editingId ? "Save Changes" : "Create Category"}
-              </button>
-              {editingId && (
-                <button
-                  type="button"
-                  onClick={resetCategoryForm}
-                  className="px-4 py-3 bg-slate-100 text-slate-600 font-bold text-xs rounded-xl hover:bg-slate-200 transition cursor-pointer"
-                >
-                  Cancel
-                </button>
-              )}
-            </div>
-          </form>
-        </div>
-
-        {/* HIERARCHICAL TREE VIEW */}
-        <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm flex flex-col space-y-4">
-          <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-            <h2 className="text-sm font-black text-slate-800 dark:text-slate-100 tracking-tight">Interactive Taxonomy Tree</h2>
-            <span className="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">
+        {/* LEFT COLUMN: HIERARCHICAL TREE DIRECTORY */}
+        <div className="lg:col-span-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-3xl p-5 shadow-sm space-y-4">
+          <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800/85">
+            <h2 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
+              <FolderTree className="text-orange-500" size={14} />
+              <span>Taxonomy Directory</span>
+            </h2>
+            <span className="text-[9px] font-extrabold bg-slate-100 dark:bg-slate-850 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-full border border-slate-200/50 dark:border-slate-800/30">
               {categories.length} Categories
             </span>
           </div>
 
-          <div className="flex-1 overflow-y-auto max-h-[650px] pr-1 space-y-2">
+          <div className="overflow-y-auto max-h-[680px] pr-1 space-y-1 custom-scrollbar">
             {categories.length === 0 ? (
-              <div className="border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl py-12 text-center space-y-2">
-                <FolderMinus className="mx-auto text-slate-300" size={40} />
-                <p className="text-xs font-bold text-slate-800 dark:text-slate-100">No categories found</p>
-                <p className="text-[11px] text-slate-400">Initialize your taxonomy system by creating a category.</p>
+              <div className="border border-dashed border-slate-200 dark:border-slate-800/80 rounded-2xl py-12 text-center space-y-2">
+                <FolderMinus className="mx-auto text-slate-300 dark:text-slate-700" size={36} />
+                <p className="text-xs font-bold text-slate-800 dark:text-white">No categories found</p>
+                <p className="text-[10px] text-slate-400 max-w-[160px] mx-auto leading-relaxed">Create a taxonomy node using the Add button.</p>
               </div>
             ) : (
               renderCategoryTree(null, 0)
             )}
           </div>
         </div>
-      </div>
 
+        {/* RIGHT COLUMN: WORKSPACE FOR SELECTED CATEGORY */}
+        <div className="lg:col-span-2 space-y-6">
+          
+          {selectedCategory ? (
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-3xl p-6 shadow-sm space-y-6">
+              
+              {/* Workspace Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800/85">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider">Active Workspace</span>
+                    <span className={`h-1.5 w-1.5 rounded-full animate-ping ${selectedCategory.status === 'active' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                  </div>
+                  <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight mt-1">{selectedCategory.name}</h3>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleAITemplateFill}
+                    disabled={aiTemplateLoading}
+                    className="px-3.5 py-2 text-xs font-black uppercase tracking-wider bg-orange-500 hover:bg-orange-600 text-white rounded-xl shadow-md shadow-orange-500/10 transition flex items-center gap-1.5 cursor-pointer border-none"
+                  >
+                    <Sparkles size={13} className={aiTemplateLoading ? "animate-spin" : ""} />
+                    <span>{aiTemplateLoading ? "AI Designing..." : "AI Generate Blueprint"}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Tabs Navigation */}
+              <div className="flex border-b border-slate-100 dark:border-slate-800/60 overflow-x-auto gap-4 scrollbar-none">
+                {tabs.map((tab) => {
+                  const IconComp = tab.icon;
+                  const isActive = panelTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setPanelTab(tab.id)}
+                      className={`flex items-center gap-1.5 pb-3 text-xs font-bold uppercase tracking-wider transition-all relative border-b-2 bg-transparent -mb-[2px] cursor-pointer border-none px-1 py-0.5 ${ isActive ? "border-orange-500 text-orange-500 font-black" : "border-transparent text-slate-400 hover:text-slate-700 dark:hover:text-slate-200" }`}
+                    >
+                      <IconComp size={13} />
+                      <span>{tab.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Tab 1: Settings Form */}
+              {panelTab === "settings" && (
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Category Name *</label>
+                      <button
+                        type="button"
+                        onClick={handleAIFill}
+                        disabled={aiLoading || !name.trim()}
+                        className="text-[9px] font-black uppercase tracking-wider bg-orange-500/10 text-orange-500 dark:text-orange-400 hover:bg-orange-500/15 disabled:opacity-50 border border-orange-500/20 px-2 py-0.5 rounded transition flex items-center gap-1 cursor-pointer select-none"
+                      >
+                        <Sparkles size={10} className={aiLoading ? "animate-spin" : ""} />
+                        <span>{aiLoading ? "AI Structuring..." : "AI Auto-Fill"}</span>
+                      </button>
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="e.g. Mens Wear, Smartphones, Home Decor"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none transition focus:border-blue-500 focus:bg-white dark:focus:bg-slate-950"
+                      required
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Parent Category</label>
+                      <select
+                        value={parentCategoryId}
+                        onChange={(e) => setParentCategoryId(e.target.value)}
+                        className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none transition focus:border-blue-500"
+                      >
+                        <option value="">None (Top-Level Category)</option>
+                        {categories
+                          .filter(c => c._id !== editingId)
+                          .map(c => (
+                            <option key={c._id} value={c._id}>{c.name}</option>
+                          ))}
+                      </select>
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Icon Class/Identifier</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. laptop, shirt, smartphone"
+                        value={icon}
+                        onChange={(e) => setIcon(e.target.value)}
+                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none transition focus:border-blue-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Category Description</label>
+                    <textarea
+                      placeholder="Write a clear taxonomy guideline summary..."
+                      value={description}
+                      rows={3}
+                      onChange={(e) => setDescription(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none transition resize-none focus:border-blue-500"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Category Banner Image URL</label>
+                    <input
+                      type="text"
+                      placeholder="https://images.unsplash.com/example-banner-url"
+                      value={bannerImage}
+                      onChange={(e) => setBannerImage(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none transition focus:border-blue-500"
+                    />
+                  </div>
+
+                  {/* SEO Metadata Card */}
+                  <div className="border border-slate-100 dark:border-slate-800/80 rounded-2xl p-4 bg-slate-50/40 dark:bg-slate-950/20 space-y-4">
+                    <span className="text-[10px] font-black text-slate-450 dark:text-slate-500 uppercase tracking-widest block">SEO Search Metadata</span>
+                    
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-550">SEO Title Meta</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Shop Premium Watches & Accessories Online"
+                        value={seoTitle}
+                        onChange={(e) => setSeoTitle(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none transition focus:border-blue-500"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-550">SEO Keywords (comma separated)</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. watches, luxury watch, buy designer watch"
+                        value={seoKeywords}
+                        onChange={(e) => setSeoKeywords(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none transition focus:border-blue-500"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-550">SEO Description Meta</label>
+                      <textarea
+                        placeholder="Provide search engine summary snippet..."
+                        value={seoDescription}
+                        rows={2}
+                        onChange={(e) => setSeoDescription(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none resize-none transition focus:border-blue-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex items-center justify-between border border-slate-100 dark:border-slate-800/80 p-3 rounded-2xl bg-slate-50/50 dark:bg-slate-950/20">
+                      <span className="text-xs font-bold text-slate-700 dark:text-slate-350">Featured Frontpage</span>
+                      <button
+                        type="button"
+                        onClick={() => setIsFeatured(!isFeatured)}
+                        className="text-slate-500 hover:text-slate-800 transition bg-transparent border-none cursor-pointer"
+                      >
+                        {isFeatured ? <ToggleRight className="text-orange-500" size={24} /> : <ToggleLeft size={24} />}
+                      </button>
+                    </div>
+
+                    <div className="flex items-center justify-between border border-slate-100 dark:border-slate-800/80 p-3 rounded-2xl bg-slate-50/50 dark:bg-slate-950/20">
+                      <span className="text-xs font-bold text-slate-700 dark:text-slate-350">Status Active</span>
+                      <button
+                        type="button"
+                        onClick={() => setStatus(status === "active" ? "disabled" : "active")}
+                        className="text-slate-500 hover:text-slate-800 transition bg-transparent border-none cursor-pointer"
+                      >
+                        {status === "active" ? <ToggleRight className="text-orange-500" size={24} /> : <ToggleLeft size={24} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 pt-2">
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="flex-1 py-3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-xl text-xs font-black uppercase tracking-wider transition shadow-md active:scale-95 disabled:opacity-50 cursor-pointer border-none"
+                    >
+                      {loading ? "Saving..." : editingId ? "Save Category Changes" : "Create Category"}
+                    </button>
+                    {editingId && (
+                      <button
+                        type="button"
+                        onClick={resetCategoryForm}
+                        className="px-4.5 py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-xs rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition cursor-pointer border-none"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                  </div>
+                </form>
+              )}
+
+              {/* Tab 2: Dynamic Attributes Builder */}
+              {panelTab === "attributes" && (
+                <div className="space-y-6">
+                  
+                  {/* Add / Edit Attribute Form */}
+                  <form onSubmit={handleAddOrUpdateField} className="bg-slate-50/40 dark:bg-slate-950/15 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-5 space-y-4">
+                    <h4 className="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-850 pb-2">
+                      <PlusCircle size={14} className="text-orange-500" />
+                      <span>{editingFieldId ? "Modify Attribute field" : "Define Custom Product Attribute"}</span>
+                    </h4>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-bold uppercase tracking-wider text-slate-400">Database field Key *</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. screenResolution, materialType"
+                          value={newField.fieldName}
+                          onChange={(e) => setNewField({ ...newField, fieldName: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none focus:border-blue-500"
+                          required
+                        />
+                      </div>
+                      
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-bold uppercase tracking-wider text-slate-400">Visual Label Name *</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Screen Resolution, Material Type"
+                          value={newField.label}
+                          onChange={(e) => setNewField({ ...newField, label: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none focus:border-blue-500"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-bold uppercase tracking-wider text-slate-400">Field Input Type</label>
+                        <select
+                          value={newField.fieldType}
+                          onChange={(e) => setNewField({ ...newField, fieldType: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none focus:border-blue-500"
+                        >
+                          {fieldTypes.map(t => (
+                            <option key={t} value={t}>{t}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-bold uppercase tracking-wider text-slate-400">Placeholder Text</label>
+                        <input
+                          type="text"
+                          placeholder="Short input cue..."
+                          value={newField.placeholder}
+                          onChange={(e) => setNewField({ ...newField, placeholder: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none focus:border-blue-500"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Options (visible only if type has lists) */}
+                    {(newField.fieldType === "Dropdown" || newField.fieldType === "Multi Select" || newField.fieldType === "Radio Button" || newField.fieldType === "Tags Input") && (
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-bold uppercase tracking-wider text-slate-400">Selectable Options (comma separated)</label>
+                        <input
+                          type="text"
+                          placeholder="Option A, Option B, Option C"
+                          value={newField.selectOptions}
+                          onChange={(e) => setNewField({ ...newField, selectOptions: e.target.value })}
+                          className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none focus:border-blue-500"
+                          required
+                        />
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <div className="flex items-center justify-between border border-slate-100 dark:border-slate-800/80 p-2.5 rounded-xl bg-white dark:bg-slate-950">
+                        <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300">Required</span>
+                        <input
+                          type="checkbox"
+                          checked={newField.isRequired}
+                          onChange={(e) => setNewField({ ...newField, isRequired: e.target.checked })}
+                          className="h-4.5 w-4.5 rounded text-orange-500"
+                        />
+                      </div>
+                      
+                      <div className="flex items-center justify-between border border-slate-100 dark:border-slate-800/80 p-2.5 rounded-xl bg-white dark:bg-slate-950">
+                        <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300">Searchable</span>
+                        <input
+                          type="checkbox"
+                          checked={newField.isSearchable}
+                          onChange={(e) => setNewField({ ...newField, isSearchable: e.target.checked })}
+                          className="h-4.5 w-4.5 rounded text-orange-500"
+                        />
+                      </div>
+                      
+                      <div className="flex items-center justify-between border border-slate-100 dark:border-slate-800/80 p-2.5 rounded-xl bg-white dark:bg-slate-950">
+                        <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300">Filterable</span>
+                        <input
+                          type="checkbox"
+                          checked={newField.isFilterable}
+                          onChange={(e) => setNewField({ ...newField, isFilterable: e.target.checked })}
+                          className="h-4.5 w-4.5 rounded text-orange-500"
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between border border-slate-100 dark:border-slate-800/80 p-2.5 rounded-xl bg-white dark:bg-slate-950">
+                        <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300">Sortable</span>
+                        <input
+                          type="checkbox"
+                          checked={newField.isSortable}
+                          onChange={(e) => setNewField({ ...newField, isSortable: e.target.checked })}
+                          className="h-4.5 w-4.5 rounded text-orange-500"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 justify-end pt-2 border-t border-slate-100 dark:border-slate-850">
+                      <button
+                        type="submit"
+                        className="px-4 py-2 bg-slate-900 dark:bg-slate-850 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer border-none"
+                      >
+                        <Check size={13} />
+                        <span>{editingFieldId ? "Update Attribute" : "Add Attribute"}</span>
+                      </button>
+                      
+                      {(editingFieldId || newField.fieldName) && (
+                        <button
+                          type="button"
+                          onClick={resetAttributeForm}
+                          className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-350 hover:bg-slate-200 text-xs font-bold rounded-xl transition cursor-pointer border-none"
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
+                  </form>
+
+                  {/* Attributes List Table */}
+                  <div className="space-y-3">
+                    <span className="text-[10px] font-black text-slate-450 dark:text-slate-500 uppercase tracking-widest block">Active Schema Attributes</span>
+                    
+                    {templateFields.length === 0 ? (
+                      <div className="border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl py-8 text-center text-slate-400 space-y-1">
+                        <SlidersHorizontal size={24} className="mx-auto" />
+                        <p className="text-xs font-bold">No dynamic fields defined</p>
+                        <p className="text-[10px] text-slate-500">Products in this category will use default catalog schemas.</p>
+                      </div>
+                    ) : (
+                      <div className="border border-slate-150 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm bg-white dark:bg-slate-950">
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-left border-collapse text-xs">
+                            <thead>
+                              <tr className="bg-slate-50 dark:bg-slate-900 border-b border-slate-150 dark:border-slate-800 text-slate-500 dark:text-slate-400 font-bold">
+                                <th className="p-3 pl-4">Key / Label</th>
+                                <th className="p-3">Input Type</th>
+                                <th className="p-3 text-center">Required</th>
+                                <th className="p-3 text-center">Indexes</th>
+                                <th className="p-3 text-right pr-4">Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {templateFields
+                                .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))
+                                .map((field, idx) => (
+                                  <tr key={field._id} className="border-b border-slate-100 dark:border-slate-800/80 text-slate-700 dark:text-slate-300 hover:bg-slate-50/50 dark:hover:bg-slate-900/40 transition">
+                                    <td className="p-3 pl-4">
+                                      <div className="font-bold text-slate-900 dark:text-white leading-normal">{field.label}</div>
+                                      <div className="font-mono text-[9px] text-slate-400 mt-0.5">{field.fieldName}</div>
+                                    </td>
+                                    <td className="p-3 text-slate-500 dark:text-slate-400 font-medium">{field.fieldType}</td>
+                                    <td className="p-3 text-center">
+                                      <span className={`px-2 py-0.5 rounded-md font-bold text-[9px] border ${field.isRequired ? "bg-red-50 text-red-650 border-red-100 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20" : "bg-slate-100 text-slate-500 border-slate-200 dark:bg-slate-850 dark:text-slate-400 dark:border-slate-800"}`}>
+                                        {field.isRequired ? "Yes" : "No"}
+                                      </span>
+                                    </td>
+                                    <td className="p-3 text-center font-medium">
+                                      <div className="flex gap-1 justify-center flex-wrap">
+                                        {field.isSearchable && <span className="px-1.5 py-0.2 rounded text-[8px] font-black uppercase bg-blue-50 text-blue-600 border border-blue-100 dark:bg-blue-550/10 dark:text-blue-400 dark:border-blue-500/25">Search</span>}
+                                        {field.isFilterable && <span className="px-1.5 py-0.2 rounded text-[8px] font-black uppercase bg-indigo-50 text-indigo-600 border border-indigo-100 dark:bg-indigo-550/10 dark:text-indigo-400 dark:border-indigo-500/25">Filter</span>}
+                                        {field.isSortable && <span className="px-1.5 py-0.2 rounded text-[8px] font-black uppercase bg-teal-50 text-teal-600 border border-teal-100 dark:bg-teal-550/10 dark:text-teal-400 dark:border-teal-500/25">Sort</span>}
+                                      </div>
+                                    </td>
+                                    <td className="p-3 text-right pr-4">
+                                      <div className="flex items-center gap-1 justify-end">
+                                        <button
+                                          onClick={() => moveField(idx, -1)}
+                                          disabled={idx === 0}
+                                          className="p-1 rounded text-slate-400 hover:text-slate-800 dark:hover:text-white disabled:opacity-20 cursor-pointer border-none bg-transparent"
+                                        >
+                                          <ArrowUp size={11} />
+                                        </button>
+                                        <button
+                                          onClick={() => moveField(idx, 1)}
+                                          disabled={idx === templateFields.length - 1}
+                                          className="p-1 rounded text-slate-400 hover:text-slate-800 dark:hover:text-white disabled:opacity-20 cursor-pointer border-none bg-transparent"
+                                        >
+                                          <ArrowDown size={11} />
+                                        </button>
+                                        <button
+                                          onClick={() => handleEditField(field)}
+                                          className="p-1 rounded text-slate-400 hover:text-orange-500 cursor-pointer border-none bg-transparent"
+                                        >
+                                          <Edit3 size={11} />
+                                        </button>
+                                        <button
+                                          onClick={() => handleDeleteField(field._id)}
+                                          className="p-1 rounded text-slate-400 hover:text-red-500 cursor-pointer border-none bg-transparent"
+                                        >
+                                          <Trash2 size={11} />
+                                        </button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Tab 3: Submission Rules Settings */}
+              {panelTab === "rules" && (
+                <form onSubmit={handleSaveSettings} className="space-y-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Minimum Product Images</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={catSettings.minImages}
+                        onChange={(e) => setCatSettings({ ...catSettings, minImages: parseInt(e.target.value) || 0 })}
+                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none transition focus:border-blue-500"
+                        required
+                      />
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Maximum Product Images</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={catSettings.maxImages}
+                        onChange={(e) => setCatSettings({ ...catSettings, maxImages: parseInt(e.target.value) || 0 })}
+                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none transition focus:border-blue-500"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between border border-slate-100 dark:border-slate-800/80 p-3 rounded-2xl bg-slate-50/50 dark:bg-slate-950/20">
+                      <div className="space-y-0.5">
+                        <span className="text-xs font-bold text-slate-700 dark:text-slate-350">Supervised Content Moderation</span>
+                        <p className="text-[9px] text-slate-400">Product listings under this category must be checked by moderators before publishing.</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setCatSettings({ ...catSettings, requiresApproval: !catSettings.requiresApproval })}
+                        className="text-slate-500 hover:text-slate-800 transition bg-transparent border-none cursor-pointer"
+                      >
+                        {catSettings.requiresApproval ? <ToggleRight className="text-orange-500" size={24} /> : <ToggleLeft size={24} />}
+                      </button>
+                    </div>
+
+                    <div className="flex items-center justify-between border border-slate-100 dark:border-slate-800/80 p-3 rounded-2xl bg-slate-50/50 dark:bg-slate-950/20">
+                      <div className="space-y-0.5">
+                        <span className="text-xs font-bold text-slate-700 dark:text-slate-350">Real-time Stock Inventory Tracking</span>
+                        <p className="text-[9px] text-slate-400">Enable automated tracking of stock status, low inventory alerts, and dispatch reports.</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setCatSettings({ ...catSettings, inventoryTrackingEnabled: !catSettings.inventoryTrackingEnabled })}
+                        className="text-slate-500 hover:text-slate-800 transition bg-transparent border-none cursor-pointer"
+                      >
+                        {catSettings.inventoryTrackingEnabled ? <ToggleRight className="text-orange-500" size={24} /> : <ToggleLeft size={24} />}
+                      </button>
+                    </div>
+
+                    <div className="flex items-center justify-between border border-slate-100 dark:border-slate-800/80 p-3 rounded-2xl bg-slate-50/50 dark:bg-slate-950/20">
+                      <div className="space-y-0.5">
+                        <span className="text-xs font-bold text-slate-700 dark:text-slate-350">Mandatory SKU Identifiers</span>
+                        <p className="text-[9px] text-slate-400">Require sellers to input unique SKU tags when uploading listings.</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setCatSettings({ ...catSettings, skuRequired: !catSettings.skuRequired })}
+                        className="text-slate-500 hover:text-slate-800 transition bg-transparent border-none cursor-pointer"
+                      >
+                        {catSettings.skuRequired ? <ToggleRight className="text-orange-500" size={24} /> : <ToggleLeft size={24} />}
+                      </button>
+                    </div>
+
+                    <div className="flex items-center justify-between border border-slate-100 dark:border-slate-800/80 p-3 rounded-2xl bg-slate-50/50 dark:bg-slate-950/20">
+                      <div className="space-y-0.5">
+                        <span className="text-xs font-bold text-slate-700 dark:text-slate-350">Platform Barcode Constraints</span>
+                        <p className="text-[9px] text-slate-400">Require UPC, EAN, or ISBN barcode details when adding products.</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setCatSettings({ ...catSettings, barcodeRequired: !catSettings.barcodeRequired })}
+                        className="text-slate-500 hover:text-slate-800 transition bg-transparent border-none cursor-pointer"
+                      >
+                        {catSettings.barcodeRequired ? <ToggleRight className="text-orange-500" size={24} /> : <ToggleLeft size={24} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-3 bg-slate-900 dark:bg-slate-850 hover:bg-slate-800 text-white rounded-xl text-xs font-black uppercase tracking-wider transition shadow-md cursor-pointer border-none"
+                  >
+                    Save Category Submission Settings
+                  </button>
+                </form>
+              )}
+
+              {/* Tab 4: Live Seller Form Preview */}
+              {panelTab === "preview" && (
+                <div className="space-y-6">
+                  <div className="border border-slate-100 dark:border-slate-800/80 rounded-2xl p-4 bg-slate-50/30 dark:bg-slate-950/20 space-y-1">
+                    <span className="text-[10px] font-black text-slate-450 dark:text-slate-500 uppercase tracking-widest block">Interactive Sandbox Preview</span>
+                    <p className="text-[10px] text-slate-400 dark:text-slate-500">This simulates the category-specific dynamic form interface seen by sellers during catalog uploading.</p>
+                  </div>
+
+                  <div className="space-y-4 border border-dashed border-slate-200 dark:border-slate-800 rounded-3xl p-6 bg-white dark:bg-slate-950">
+                    <h5 className="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-850 pb-2">
+                      <PlusCircle size={14} className="text-slate-400" />
+                      <span>Listing Attributes: {selectedCategory.name}</span>
+                    </h5>
+
+                    {templateFields.length === 0 ? (
+                      <div className="py-6 text-center text-slate-400 text-xs italic">
+                        No custom fields configured for this category. Standard fields only.
+                      </div>
+                    ) : (
+                      <div className="space-y-4 text-xs">
+                        {templateFields
+                          .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))
+                          .map((field) => (
+                            <div key={field._id} className="space-y-1 text-left">
+                              <label className="block text-[10px] font-bold text-slate-700 dark:text-slate-350">
+                                {field.label} {field.isRequired && <span className="text-red-500">*</span>}
+                              </label>
+                              
+                              {/* Render Simulated Elements depending on type */}
+                              {field.fieldType === "Text" || field.fieldType === "Email" || field.fieldType === "URL" || field.fieldType === "Phone" ? (
+                                <input
+                                  type="text"
+                                  placeholder={field.placeholder || `Enter ${field.label}...`}
+                                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/20 dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none"
+                                />
+                              ) : field.fieldType === "Text Area" || field.fieldType === "Rich Text Editor" ? (
+                                <textarea
+                                  placeholder={field.placeholder || `Write ${field.label}...`}
+                                  rows={3}
+                                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/20 dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none resize-none"
+                                />
+                              ) : field.fieldType === "Number" || field.fieldType === "Decimal" ? (
+                                <input
+                                  type="number"
+                                  placeholder={field.placeholder || "0"}
+                                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/20 dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none"
+                                />
+                              ) : field.fieldType === "Dropdown" ? (
+                                <select className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/20 dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none">
+                                  <option value="">-- Choose Option --</option>
+                                  {field.selectOptions?.map(o => (
+                                    <option key={o} value={o}>{o}</option>
+                                  ))}
+                                </select>
+                              ) : field.fieldType === "Checkbox" ? (
+                                <div className="flex items-center gap-2 pt-1">
+                                  <input type="checkbox" className="h-4.5 w-4.5 rounded text-orange-500" />
+                                  <span className="text-slate-600 dark:text-slate-400 font-medium">Enable this option</span>
+                                </div>
+                              ) : field.fieldType === "Multi Select" ? (
+                                <div className="space-y-1.5 pt-1 pl-1">
+                                  {field.selectOptions?.map(o => (
+                                    <div key={o} className="flex items-center gap-2">
+                                      <input type="checkbox" className="h-4.5 w-4.5 rounded text-orange-500" />
+                                      <span className="text-slate-650 dark:text-slate-450 font-medium">{o}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : field.fieldType === "Radio Button" ? (
+                                <div className="space-y-1.5 pt-1 pl-1">
+                                  {field.selectOptions?.map(o => (
+                                    <div key={o} className="flex items-center gap-2">
+                                      <input type="radio" name={field.fieldName} className="h-4.5 w-4.5 text-orange-500" />
+                                      <span className="text-slate-650 dark:text-slate-450 font-medium">{o}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : field.fieldType === "Date" || field.fieldType === "Time" || field.fieldType === "Datetime" ? (
+                                <input
+                                  type={field.fieldType === "Date" ? "date" : field.fieldType === "Time" ? "time" : "datetime-local"}
+                                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/20 dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none"
+                                />
+                              ) : field.fieldType === "Color Picker" ? (
+                                <div className="flex items-center gap-2">
+                                  <input type="color" className="h-8 w-12 border-none rounded cursor-pointer" />
+                                  <span className="text-slate-500 font-medium">Select dynamic color value</span>
+                                </div>
+                              ) : field.fieldType.includes("Upload") ? (
+                                <div className="border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl py-6 px-4 text-center hover:bg-slate-50/30 dark:hover:bg-slate-950/20 transition cursor-pointer">
+                                  <SlidersHorizontal size={20} className="mx-auto text-slate-400 mb-1" />
+                                  <span className="text-[10px] font-bold text-slate-500 block">Drag & drop files or click to upload</span>
+                                  {field.validationRules?.maxFileSizeMB && <span className="text-[8px] text-slate-400 block mt-0.5">Max allowed size: {field.validationRules.maxFileSizeMB} MB</span>}
+                                </div>
+                              ) : (
+                                <input
+                                  type="text"
+                                  placeholder={field.placeholder || `Enter ${field.label}...`}
+                                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/20 dark:bg-slate-950 text-slate-850 dark:text-white text-xs outline-none"
+                                />
+                              )}
+
+                              {field.description && (
+                                <p className="text-[9px] text-slate-400 dark:text-slate-500 font-medium leading-normal">{field.description}</p>
+                              )}
+                            </div>
+                          ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-3xl p-12 text-center shadow-sm space-y-4">
+              <div className="h-16 w-16 bg-orange-500/5 text-orange-500 border border-orange-500/10 rounded-2xl flex items-center justify-center mx-auto shadow-inner">
+                <Sliders size={24} />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-wider">No Category Selected</h3>
+                <p className="text-xs text-slate-400 dark:text-slate-500 max-w-[240px] mx-auto leading-relaxed">
+                  Select a category node from the taxonomy directory sidebar to view settings, customize attributes, or manage rules.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
+      </div>
     </div>
   );
 };
