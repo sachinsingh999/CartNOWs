@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import axios from "axios";
 import { backendUrl } from "./config";
 import Lenis from "lenis";
+import { ShoppingBag, Truck, ArrowRight, Sparkles, X } from "lucide-react";
 
 // Modular components (eager loaded)
 import Navbar from "./components/Navbar";
@@ -16,7 +17,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 // Toastify components (eager loaded)
 import { ToastContainer, Slide } from 'react-toastify';
 import { useLocation } from "react-router-dom";
-import { AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Eager loaded page components
 import Home from "./pages/Home";
@@ -57,6 +58,19 @@ const App = () => {
   const [maintenanceSettings, setMaintenanceSettings] = useState(null);
   const [loadingMaintenance, setLoadingMaintenance] = useState(true);
   const [showSplash, setShowSplash] = useState(true);
+  const [showPromo, setShowPromo] = useState(false);
+
+  useEffect(() => {
+    // Show partnership recruitment widget on mount after 1.2s delay to let the site load and render nicely
+    const timer = setTimeout(() => {
+      setShowPromo(true);
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const closePromo = () => {
+    setShowPromo(false);
+  };
 
   const lenisRef = useRef(null);
 
@@ -243,6 +257,88 @@ const App = () => {
 
           {location.pathname !== "/social" && <Footer />}
           <ComparisonTray />
+
+          {/* ──────────────────────────────────────────────────────────
+              GLOBAL PROMO/ADVERTISING PARTNERSHIP WIDGET
+              ────────────────────────────────────────────────────────── */}
+          <AnimatePresence>
+            {showPromo && (
+              <motion.div
+                initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 50, scale: 0.9 }}
+                transition={{ type: "spring", stiffness: 260, damping: 25 }}
+                className="fixed bottom-6 right-6 z-50 max-w-[340px] w-full bg-gradient-to-tr from-indigo-500/40 via-purple-500/40 to-emerald-500/40 p-[1.5px] rounded-[24px] shadow-[0_25px_60px_-10px_rgba(0,0,0,0.6)] select-none"
+              >
+                <div className="bg-slate-950/95 backdrop-blur-xl rounded-[23.5px] p-5 flex flex-col gap-3.5 text-white w-full relative">
+                  {/* Close Button */}
+                  <button
+                    onClick={closePromo}
+                    className="absolute top-4.5 right-4.5 text-slate-400 hover:text-white transition-colors border-none bg-transparent cursor-pointer focus:outline-none"
+                  >
+                    <X size={14} />
+                  </button>
+
+                  {/* Header info */}
+                  <div className="space-y-1 text-left">
+                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[8px] font-black uppercase tracking-wider">
+                      <Sparkles size={8} /> Partnership Hub
+                    </span>
+                    <h3 className="text-sm font-extrabold tracking-tight text-white mt-1.5">Join the CartNow Ecosystem</h3>
+                    <p className="text-[10px] text-slate-400 font-semibold leading-relaxed">
+                      Grow your business or join our logistics fleet today.
+                    </p>
+                  </div>
+
+                  {/* Action Cards Grid */}
+                  <div className="flex flex-col gap-2.5">
+                    {/* Sell Link Card */}
+                    <a
+                      href="https://cartnow-seller.vercel.app/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-3.5 bg-indigo-650/10 hover:bg-indigo-650/20 border border-indigo-500/25 rounded-2xl transition-all duration-200 group cursor-pointer"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="h-7.5 w-7.5 bg-indigo-600 text-white rounded-lg flex items-center justify-center shrink-0">
+                          <ShoppingBag size={14} />
+                        </div>
+                        <div className="text-left leading-none">
+                          <span className="text-[10.5px] font-black block text-white">Become a Seller</span>
+                          <span className="text-[8px] font-semibold text-indigo-300 block mt-0.5">Sell to millions of buyers</span>
+                        </div>
+                      </div>
+                      <ArrowRight size={12} className="text-indigo-400 group-hover:translate-x-1 transition-transform" />
+                    </a>
+
+                    {/* Rider Link Card */}
+                    <a
+                      href="https://cart-now-deliveryagent.vercel.app/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-3.5 bg-emerald-650/10 hover:bg-emerald-650/20 border border-emerald-500/25 rounded-2xl transition-all duration-200 group cursor-pointer"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="h-7.5 w-7.5 bg-emerald-650 text-white rounded-lg flex items-center justify-center shrink-0">
+                          <Truck size={14} />
+                        </div>
+                        <div className="text-left leading-none">
+                          <span className="text-[10.5px] font-black block text-white">Become a Rider</span>
+                          <span className="text-[8px] font-semibold text-emerald-300 block mt-0.5">Earn on flexible shifts</span>
+                        </div>
+                      </div>
+                      <ArrowRight size={12} className="text-emerald-400 group-hover:translate-x-1 transition-transform" />
+                    </a>
+                  </div>
+
+                  {/* Micro details */}
+                  <span className="text-[8px] text-slate-500 font-semibold text-center mt-0.5">
+                    Trusted by 5,000+ active partners globally
+                  </span>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
         </div>
       )}

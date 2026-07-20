@@ -143,11 +143,17 @@ const AiRobotChat = () => {
   ];
 
   return (
-    <div className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-[32px] p-6 shadow-[0_12px_40px_rgba(0,0,0,0.03)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.25)] flex flex-col min-h-[500px] transition-all duration-300 hover:shadow-[0_16px_48px_rgba(99,102,241,0.05)] text-left">
+    <div 
+      style={{ borderRadius: "0px" }}
+      className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-none p-6 shadow-[0_12px_40px_rgba(0,0,0,0.03)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.25)] flex flex-col min-h-[500px] transition-all duration-300 hover:shadow-[0_16px_48px_rgba(99,102,241,0.05)] text-left"
+    >
       {/* Header */}
       <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800/50 text-left">
         <div className="flex items-center gap-3">
-          <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100/50 dark:border-indigo-900/50 shadow-sm">
+          <div 
+            style={{ borderRadius: "0px" }}
+            className="relative flex items-center justify-center w-10 h-10 rounded-none bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100/50 dark:border-indigo-900/50 shadow-sm"
+          >
             <Sparkles className="w-5 h-5 text-indigo-600 dark:text-indigo-400 animate-pulse" />
             <span className="absolute -bottom-0.5 -right-0.5 flex h-2.5 w-2.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -173,7 +179,8 @@ const AiRobotChat = () => {
               }
             ]);
           }}
-          className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-indigo-600 dark:text-slate-500 dark:hover:text-indigo-400 rounded-xl transition-all cursor-pointer"
+          style={{ borderRadius: "0px" }}
+          className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-indigo-600 dark:text-slate-500 dark:hover:text-indigo-400 rounded-none transition-all cursor-pointer border-none bg-transparent"
           title="Reset conversation"
         >
           <RotateCcw size={15} />
@@ -185,7 +192,8 @@ const AiRobotChat = () => {
         ref={chatContainerRef}
         data-lenis-prevent
         onClick={handleMessageClick}
-        className="flex-1 my-4 bg-slate-50/50 dark:bg-slate-950/30 border border-slate-100/80 dark:border-slate-800/40 rounded-2xl p-4 overflow-y-auto max-h-[350px] flex flex-col gap-4 scroll-smooth scrollbar-thin"
+        style={{ borderRadius: "0px" }}
+        className="flex-1 my-4 bg-slate-50/50 dark:bg-slate-955/30 border border-slate-100/80 dark:border-slate-800/40 rounded-none p-4 overflow-y-auto max-h-[350px] flex flex-col gap-4 scroll-smooth scrollbar-thin"
       >
         <AnimatePresence initial={false}>
           {aiChat.map((chat, idx) => (
@@ -197,9 +205,10 @@ const AiRobotChat = () => {
               className={`flex flex-col max-w-[85%] ${chat.role === "bot" ? "self-start text-left" : "self-end text-right"}`}
             >
               <div
-                className={`rounded-[20px] px-3.5 py-2.5 text-xs md:text-sm leading-relaxed shadow-sm transition-all duration-200 ${chat.role === "bot"
-                    ? "bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80 text-slate-800 dark:text-slate-200 rounded-tl-[4px]"
-                    : "bg-gradient-to-tr from-indigo-600 to-indigo-500 text-white rounded-tr-[4px] shadow-[0_4px_12px_rgba(99,102,241,0.2)]"
+                style={{ borderRadius: "0px" }}
+                className={`rounded-none px-3.5 py-2.5 text-xs md:text-sm leading-relaxed shadow-sm transition-all duration-200 ${chat.role === "bot"
+                    ? "bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80 text-slate-800 dark:text-slate-200"
+                    : "bg-gradient-to-tr from-indigo-600 to-indigo-500 text-white shadow-[0_4px_12px_rgba(99,102,241,0.2)]"
                   }`}
                 dangerouslySetInnerHTML={{ __html: formatMessageText(chat.msg) }}
               />
@@ -216,7 +225,10 @@ const AiRobotChat = () => {
               exit={{ opacity: 0 }}
               className="self-start flex flex-col max-w-[85%]"
             >
-              <div className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80 text-slate-800 dark:text-slate-200 rounded-[20px] rounded-tl-[4px] px-4 py-3 shadow-sm">
+              <div 
+                style={{ borderRadius: "0px" }}
+                className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80 text-slate-800 dark:text-slate-200 rounded-none px-4 py-3 shadow-sm"
+              >
                 <div className="flex gap-1.5 items-center justify-center py-1">
                   <span
                     className="w-1.5 h-1.5 bg-indigo-500 dark:bg-indigo-400 rounded-full animate-bounce"
@@ -251,7 +263,8 @@ const AiRobotChat = () => {
               whileTap={{ scale: 0.97 }}
               onClick={() => handleAISend(chip.value)}
               disabled={aiLoading}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] bg-slate-100 hover:bg-indigo-50 dark:bg-slate-800/40 dark:hover:bg-indigo-950/40 border border-slate-200 dark:border-slate-800 text-slate-700 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-350 font-black rounded-xl cursor-pointer transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none"
+              style={{ borderRadius: "0px" }}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] bg-slate-100 hover:bg-indigo-50 dark:bg-slate-800/40 dark:hover:bg-indigo-950/40 border border-slate-200 dark:border-slate-800 text-slate-700 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-350 font-black rounded-none cursor-pointer transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none"
             >
               <IconComponent size={11} className="shrink-0 text-indigo-500 dark:text-indigo-400" />
               <span>{chip.text}</span>
@@ -269,13 +282,15 @@ const AiRobotChat = () => {
           onKeyDown={(e) => e.key === "Enter" && handleAISend()}
           placeholder="Ask AI assistant..."
           disabled={aiLoading}
-          className="w-full border border-slate-200 dark:border-slate-800 rounded-2xl pl-4 pr-12 py-3 text-xs md:text-sm outline-none bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 transition-all duration-200 disabled:opacity-50"
+          style={{ borderRadius: "0px" }}
+          className="w-full border border-slate-200 dark:border-slate-800 rounded-none pl-4 pr-12 py-3 text-xs md:text-sm outline-none bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 transition-all duration-200 disabled:opacity-50"
         />
         <button
           type="button"
           onClick={() => handleAISend()}
           disabled={aiLoading || !aiVal.trim()}
-          className="absolute right-2 top-1.5 h-8 w-8 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 dark:disabled:bg-slate-800/60 text-slate-100 disabled:text-slate-400 dark:disabled:text-slate-550 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-200 active:scale-95 shrink-0 border-none shadow-[0_4px_10px_rgba(99,102,241,0.2)] disabled:shadow-none"
+          style={{ borderRadius: "0px" }}
+          className="absolute right-2 top-1.5 h-8 w-8 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 dark:disabled:bg-slate-800/60 text-slate-100 disabled:text-slate-400 dark:disabled:text-slate-550 rounded-none flex items-center justify-center cursor-pointer transition-all duration-200 active:scale-95 shrink-0 border-none shadow-[0_4px_10px_rgba(99,102,241,0.2)] disabled:shadow-none"
         >
           <Send size={13} />
         </button>

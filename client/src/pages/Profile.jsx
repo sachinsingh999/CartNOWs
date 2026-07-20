@@ -65,6 +65,15 @@ const Profile = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
 
+  const formatCompactNumber = (val) => {
+    if (typeof val !== "number") return val;
+    if (val < 100000) return val.toLocaleString("en-IN");
+    return new Intl.NumberFormat("en-IN", {
+      notation: "compact",
+      maximumFractionDigits: 2
+    }).format(val);
+  };
+
   const [allProducts, setAllProducts] = useState([]);
   const [wishlistIds, setWishlistIds] = useState([]);
   const [coupons, setCoupons] = useState([]);
@@ -260,22 +269,21 @@ const Profile = () => {
   // Fetch initial profile credentials, user orders, products catalog, and active coupons
   useEffect(() => {
     const fetchProfileData = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          navigate("/login");
-          return;
-        }
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
 
-        const [profileRes, ordersRes, productsRes, couponRes] = await Promise.all([
+      // 1. Fetch vital dashboard data first (Profile & Orders)
+      try {
+        const [profileRes, ordersRes] = await Promise.all([
           axios.get(`${backendUrl}/api/user/profile`, {
             headers: { Authorization: `Bearer ${token}` }
           }),
           axios.post(`${backendUrl}/api/order/userOrder`, {}, {
             headers: { Authorization: `Bearer ${token}` }
-          }),
-          cachedGet(`${backendUrl}/api/product/list`),
-          axios.get(`${backendUrl}/api/coupon/list`)
+          })
         ]);
 
         if (profileRes.data.success) {
@@ -301,6 +309,19 @@ const Profile = () => {
           setTotalSpent(spent);
           setActiveShipments(active);
         }
+      } catch (error) {
+        console.error("VITAL PROFILE FETCH ERROR 👉", error);
+      } finally {
+        // Render dashboard immediately
+        setLoading(false);
+      }
+
+      // 2. Fetch large resources in the background (Products list & Coupons list)
+      try {
+        const [productsRes, couponRes] = await Promise.all([
+          cachedGet(`${backendUrl}/api/product/list`),
+          axios.get(`${backendUrl}/api/coupon/list`)
+        ]);
 
         if (productsRes.data?.success) {
           setAllProducts(productsRes.data.products || []);
@@ -310,9 +331,7 @@ const Profile = () => {
           setCoupons((couponRes.data.coupons || []).filter(c => c.status !== "inactive"));
         }
       } catch (error) {
-        console.error("PROFILE FETCH ERROR 👉", error);
-      } finally {
-        setLoading(false);
+        console.error("BACKGROUND PROFILE FETCH ERROR 👉", error);
       }
     };
 
@@ -608,7 +627,7 @@ const Profile = () => {
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase leading-none">TOTAL</span>
-          <span className="text-[13px] font-black text-slate-900 dark:text-white leading-none mt-1">₹{totalSpentValue.toLocaleString("en-IN")}</span>
+          <span className="text-[11px] font-black text-slate-900 dark:text-white leading-none mt-1">₹{formatCompactNumber(totalSpentValue)}</span>
         </div>
       </div>
     );
@@ -652,14 +671,14 @@ const Profile = () => {
         <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8">
           
           {/* LEFT SIDEBAR: PROFILE SUMMARY */}
-          <div className="rounded-[24px] bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 p-5 space-y-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col justify-between">
+          <div className="rounded-md bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 p-5 space-y-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col justify-between">
             <div className="space-y-6">
               {/* User Details */}
               <div className="flex flex-col items-center text-center space-y-3.5">
                 <div className="relative group select-none cursor-pointer">
                   <div
                     onClick={() => setShowAvatarSelector(true)}
-                    className="relative flex h-20 w-20 rounded-full overflow-hidden shadow-xs border border-slate-200 dark:border-slate-800 active:scale-95 transition group"
+                    className="relative flex h-20 w-20 rounded-md overflow-hidden shadow-xs border border-slate-200 dark:border-slate-800 active:scale-95 transition group"
                   >
                     {renderAvatarContent(user.profilePhoto)}
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
@@ -690,7 +709,7 @@ const Profile = () => {
                     <button
                       key={tab.id}
                       onClick={() => setActiveProfileTab(tab.id)}
-                      className={`flex w-full items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-black uppercase tracking-wider transition-all duration-250 relative cursor-pointer group ${isSelected ? "bg-slate-950 dark:bg-orange-500/10 border border-slate-950 dark:border-orange-500/20 text-slate-100 dark:text-white dark:text-orange-400 scale-[1.01]" : "text-slate-500 dark:text-slate-400 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 border border-transparent" }`}
+                      className={`flex w-full items-center justify-between rounded-md px-3.5 py-2.5 text-xs font-black uppercase tracking-wider transition-all duration-250 relative cursor-pointer group ${isSelected ? "bg-slate-950 dark:bg-orange-500/10 border border-slate-950 dark:border-orange-500/20 text-slate-100 dark:text-white dark:text-orange-400 scale-[1.01]" : "text-slate-500 dark:text-slate-400 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 border border-transparent" }`}
                     >
                       <span className="flex items-center gap-2.5">
                         <Icon size={13} className={isSelected ? "text-orange-500" : "text-slate-400 group-hover:text-orange-400 transition-colors"} />
@@ -703,16 +722,16 @@ const Profile = () => {
               </div>
 
               {/* Profile Completion Indicator */}
-              <div className="p-3.5 bg-slate-50/50 dark:bg-slate-950/20 rounded-2xl border border-slate-150 dark:border-slate-800 text-left space-y-1.5">
+              <div className="p-3.5 bg-slate-50/50 dark:bg-slate-950/20 rounded-lg border border-slate-150 dark:border-slate-800 text-left space-y-1.5">
                 <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-wider text-slate-400">
                   <span>Profile Complete</span>
                   <span className="text-orange-500">
                     {user.name && user.email && user.addresses?.length > 0 && user.appReview ? "100%" : user.name && user.email && user.addresses?.length > 0 ? "75%" : "50%"}
                   </span>
                 </div>
-                <div className="w-full h-1 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div className="w-full h-1 bg-slate-200 dark:bg-slate-800 rounded-md overflow-hidden">
                   <div 
-                    className="h-full bg-orange-500 rounded-full animate-pulse" 
+                    className="h-full bg-orange-500 rounded-md animate-pulse" 
                     style={{ width: user.name && user.email && user.addresses?.length > 0 && user.appReview ? "100%" : user.name && user.email && user.addresses?.length > 0 ? "75%" : "50%" }}
                   />
                 </div>
@@ -738,7 +757,7 @@ const Profile = () => {
                       {revealKey ? "Hide" : "Reveal"}
                     </button>
                   </div>
-                  <div className="flex items-center gap-2 bg-slate-100/60 dark:bg-slate-900/60 border border-slate-200/40 dark:border-slate-800/80 p-2 rounded-lg justify-between">
+                  <div className="flex items-center gap-2 bg-slate-100/60 dark:bg-slate-900/60 border border-slate-200/40 dark:border-slate-800/80 p-2 rounded-md justify-between">
                     <span className="font-mono text-[10px] font-black text-slate-700 dark:text-slate-300 tracking-wider pl-1">
                       {revealKey ? user.deliveryVerificationKey : "•••• ••••"}
                     </span>
@@ -757,7 +776,7 @@ const Profile = () => {
             {/* Logout button */}
             <button
               onClick={logoutHandler}
-              className="w-full mt-6 flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 px-3 py-2.5 text-xs font-black uppercase tracking-wider text-red-500 hover:bg-red-500 hover:text-white dark:hover:bg-red-500/10 dark:hover:text-red-400 hover:border-red-500 dark:hover:border-red-500/20 transition-all cursor-pointer shadow-2xs active:scale-[0.98]"
+              className="w-full mt-6 flex items-center justify-center gap-2 rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 px-3 py-2.5 text-xs font-black uppercase tracking-wider text-red-500 hover:bg-red-500 hover:text-white dark:hover:bg-red-500/10 dark:hover:text-red-400 hover:border-red-500 dark:hover:border-red-500/20 transition-all cursor-pointer shadow-2xs active:scale-[0.98]"
             >
               <LogOut size={12} />
               <span>{t("logout")}</span>
@@ -786,7 +805,7 @@ const Profile = () => {
                       <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 font-medium">Here's what's happening with your account today.</p>
                     </div>
                     
-                    <div className="flex items-center gap-3 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80 p-2.5 px-4.5 rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.015)] select-none text-left shrink-0">
+                    <div className="flex items-center gap-3 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80 p-2.5 px-4.5 rounded-lg shadow-[0_2px_12px_rgba(0,0,0,0.015)] select-none text-left shrink-0">
                       <div className="h-8 w-8 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-450 flex items-center justify-center">
                         <ShieldCheck size={16} />
                       </div>
@@ -798,29 +817,29 @@ const Profile = () => {
                   </div>
 
                   {/* Top Stats Overview (6 Columns exactly matching mockups) */}
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-4 w-full">
                     {[
                       { label: "Total Orders", value: orders.length, trend: `${orders.length} placed`, icon: Package, color: "bg-indigo-50 text-indigo-500 dark:bg-indigo-950/20" },
-                      { label: "Total Spent", value: `₹${totalSpent.toLocaleString("en-IN")}`, trend: `₹${(totalSpent * 0.12).toFixed(0)} saved`, icon: DollarSign, color: "bg-amber-50 text-amber-500 dark:bg-amber-955/20" },
-                      { label: "Reward Points", value: Math.floor(totalSpent * 0.5).toLocaleString("en-IN"), trend: `+${Math.floor(totalSpent * 0.05).toFixed(0)} this month`, icon: Sparkles, color: "bg-purple-50 text-purple-500 dark:bg-purple-955/20" },
+                      { label: "Total Spent", value: `₹${formatCompactNumber(totalSpent)}`, trend: `₹${formatCompactNumber(Math.floor(totalSpent * 0.12))} saved`, icon: DollarSign, color: "bg-amber-50 text-amber-500 dark:bg-amber-955/20" },
+                      { label: "Reward Points", value: formatCompactNumber(Math.floor(totalSpent * 0.5)), trend: `+${formatCompactNumber(Math.floor(totalSpent * 0.05))} this month`, icon: Sparkles, color: "bg-purple-50 text-purple-500 dark:bg-purple-955/20" },
                       { label: "Active Deliveries", value: activeShipments, trend: activeShipments > 0 ? "In Transit" : "All Delivered", icon: Truck, color: "bg-blue-50 text-blue-500 dark:bg-blue-955/20" },
                       { label: "Wishlist Items", value: wishlistIds.length, trend: `${wishlistIds.length} items pinned`, icon: Heart, color: "bg-pink-50 text-pink-500 dark:bg-pink-955/20" },
                       { label: "Coupons", value: coupons.length, trend: coupons.length > 0 ? "Available" : "No active coupon", icon: Percent, color: "bg-emerald-50 text-emerald-500 dark:bg-emerald-955/20" }
                     ].map((stat, idx) => {
                       const Icon = stat.icon;
                       return (
-                        <div key={idx} className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 p-4 rounded-2xl flex items-center gap-3 shadow-[0_2px_12px_rgba(0,0,0,0.01)]">
-                          <div className={`h-10 w-10 rounded-xl ${stat.color} flex items-center justify-center shrink-0`}>
+                        <div key={idx} className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 p-4 rounded-md flex items-center gap-3 shadow-[0_2px_12px_rgba(0,0,0,0.01)] min-w-0">
+                          <div className={`h-10 w-10 rounded-md ${stat.color} flex items-center justify-center shrink-0`}>
                             <Icon size={16} />
                           </div>
-                          <div className="text-left space-y-0.5 min-w-0">
-                            <span className="text-[10px] font-bold text-slate-450 dark:text-slate-500 block truncate">
+                          <div className="text-left space-y-0.5 min-w-0 flex-1">
+                            <span className="text-[10px] font-bold text-slate-450 dark:text-slate-550 block truncate">
                               {stat.label}
                             </span>
-                            <h3 className="text-base font-extrabold text-slate-900 dark:text-white leading-none tracking-tight">
+                            <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white leading-none tracking-tight truncate">
                               {stat.value}
                             </h3>
-                            <span className={`text-[8.5px] font-black block truncate ${stat.trend.startsWith("↑") || stat.trend.includes("saved") || stat.trend.includes("+") ? "text-emerald-500" : "text-slate-400"}`}>
+                            <span className={`text-[8.5px] font-black block truncate ${stat.trend.startsWith("↑") || stat.trend.includes("saved") || stat.trend.includes("+") ? "text-emerald-500" : "text-slate-400 dark:text-slate-500"}`}>
                               {stat.trend}
                             </span>
                           </div>
@@ -833,7 +852,7 @@ const Profile = () => {
                   <div className="grid grid-cols-1 xl:grid-cols-[1.5fr_2fr] gap-6 items-start">
                     
                     {/* VIP Member Centerpiece Card */}
-                    <div className="rounded-[24px] bg-[#6366f1] text-white p-6 shadow-[0_15px_30px_-5px_rgba(99,102,241,0.25)] flex flex-col justify-between h-[300px] relative overflow-hidden">
+                    <div className="rounded-md bg-[#6366f1] text-white p-6 shadow-[0_15px_30px_-5px_rgba(99,102,241,0.25)] flex flex-col justify-between h-[300px] relative overflow-hidden">
                       <div className="absolute inset-0 bg-gradient-to-tr from-indigo-700 via-indigo-600 to-purple-600 opacity-90 z-0" />
                       
                       <span className="absolute right-[-40px] bottom-[-20px] text-[200px] font-black text-white/[0.04] uppercase leading-none select-none pointer-events-none z-0">
@@ -873,7 +892,7 @@ const Profile = () => {
                           <span className="font-mono font-black">{progressInfo.progressPercent.toFixed(0)}%</span>
                         </div>
                         <div className="w-full bg-white/20 rounded-full h-1.5 overflow-hidden">
-                          <div className="bg-white h-full rounded-full transition-all duration-500" style={{ width: `${progressInfo.progressPercent}%` }} />
+                          <div className="bg-white h-full rounded-md transition-all duration-500" style={{ width: `${progressInfo.progressPercent}%` }} />
                         </div>
                         <p className="text-[9px] text-white/60 font-semibold tracking-wide">
                           {progressInfo.rewardPreview}
@@ -882,7 +901,7 @@ const Profile = () => {
                     </div>
 
                     {/* Recent Orders List Cards */}
-                    <div className="rounded-[24px] bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 p-5 shadow-[0_2px_12px_rgba(0,0,0,0.015)] h-[300px] flex flex-col justify-between text-left">
+                    <div className="rounded-md bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 p-5 shadow-[0_2px_12px_rgba(0,0,0,0.015)] h-[300px] flex flex-col justify-between text-left">
                       <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
                         <h4 className="text-sm font-black text-[#0B0F19] dark:text-white uppercase tracking-wider">Recent Orders</h4>
                         <button 
@@ -905,8 +924,8 @@ const Profile = () => {
                             const isShipped = status === "shipped" || isDelivered;
 
                             return (
-                              <div key={order._id} className="flex gap-4 items-center justify-between group hover:bg-slate-50/50 dark:hover:bg-slate-950/20 p-2 rounded-2xl transition duration-200">
-                                <div className="h-14 w-14 rounded-xl border border-slate-200/60 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 overflow-hidden flex items-center justify-center p-1.5 shrink-0">
+                              <div key={order._id} className="flex gap-4 items-center justify-between group hover:bg-slate-50/50 dark:hover:bg-slate-950/20 p-2 rounded-lg transition duration-200">
+                                <div className="h-14 w-14 rounded-md border border-slate-200/60 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 overflow-hidden flex items-center justify-center p-1.5 shrink-0">
                                   <img 
                                     src={order.items?.[0]?.image?.startsWith("http") ? order.items[0].image : `${backendUrl}/${order.items?.[0]?.image || ""}`} 
                                     alt="" 
@@ -941,7 +960,7 @@ const Profile = () => {
                                       return (
                                         <span 
                                           key={stepIdx} 
-                                          className={`h-1.5 w-1.5 rounded-full transition-all duration-300 ${stepActive ? "bg-indigo-500" : "bg-slate-200 dark:bg-slate-800"}`} 
+                                          className={`h-1.5 w-1.5 rounded-md transition-all duration-300 ${stepActive ? "bg-indigo-500" : "bg-slate-200 dark:bg-slate-800"}`} 
                                         />
                                       );
                                     })}
@@ -967,7 +986,7 @@ const Profile = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     
                     {/* Column 1: Wallet & Rewards */}
-                    <div className="rounded-lg bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 p-5 shadow-[0_2px_12px_rgba(0,0,0,0.01)] text-left flex flex-col justify-between h-[310px]">
+                    <div className="rounded-md bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 p-5 shadow-[0_2px_12px_rgba(0,0,0,0.01)] text-left flex flex-col justify-between h-[310px]">
                       <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
                         <h4 className="text-sm font-black text-[#0B0F19] dark:text-white uppercase tracking-wider">Wallet & Rewards</h4>
                         <button 
@@ -991,9 +1010,9 @@ const Profile = () => {
                               onClick={() => {
                                 toast.info(`${w.label}: ${w.val} available! 💸`);
                               }}
-                              className="flex items-center gap-3.5 p-3 rounded-2xl border border-slate-150/40 dark:border-slate-800/80 bg-slate-50/20 dark:bg-slate-950/10 hover:border-indigo-500/10 transition duration-200 cursor-pointer"
+                              className="flex items-center gap-3.5 p-3 rounded-lg border border-slate-150/40 dark:border-slate-800/80 bg-slate-50/20 dark:bg-slate-950/10 hover:border-indigo-500/10 transition duration-200 cursor-pointer"
                             >
-                              <div className={`h-9 w-9 rounded-xl ${w.color} flex items-center justify-center shrink-0`}>
+                              <div className={`h-9 w-9 rounded-md ${w.color} flex items-center justify-center shrink-0`}>
                                 <Icon size={16} />
                               </div>
                               <div className="flex-1 min-w-0">
@@ -1008,7 +1027,7 @@ const Profile = () => {
                     </div>
 
                     {/* Column 2: Recent Activity Timeline */}
-                    <div className="rounded-lg bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 p-5 shadow-[0_2px_12px_rgba(0,0,0,0.01)] text-left flex flex-col justify-between h-[310px]">
+                    <div className="rounded-md bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 p-5 shadow-[0_2px_12px_rgba(0,0,0,0.01)] text-left flex flex-col justify-between h-[310px]">
                       <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
                         <h4 className="text-sm font-black text-[#0B0F19] dark:text-white uppercase tracking-wider">Recent Activity</h4>
                         <button 
@@ -1036,10 +1055,10 @@ const Profile = () => {
                     </div>
 
                     {/* Column 3: Spending Overview Category breakdown */}
-                    <div className="rounded-lg bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 p-5 shadow-[0_2px_12px_rgba(0,0,0,0.01)] text-left flex flex-col justify-between h-[310px]">
+                    <div className="rounded-md bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 p-5 shadow-[0_2px_12px_rgba(0,0,0,0.01)] text-left flex flex-col justify-between h-[310px]">
                       <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
                         <h4 className="text-sm font-black text-[#0B0F19] dark:text-white uppercase tracking-wider">Spending Overview</h4>
-                        <select className="text-[9.5px] font-black uppercase text-slate-650 bg-slate-50 dark:bg-slate-950/20 border border-slate-200/50 dark:border-slate-850 px-2 py-1 rounded-md outline-none cursor-pointer">
+                        <select className="text-[9.5px] font-black uppercase text-slate-650 bg-slate-50 dark:bg-slate-950/20 border border-slate-200/50 dark:border-slate-850 px-2 py-1 rounded outline-none cursor-pointer">
                           <option>This Month</option>
                           <option>Last 6 Months</option>
                         </select>
@@ -1049,7 +1068,7 @@ const Profile = () => {
                         <div className="flex justify-between items-center">
                           <div className="text-left space-y-1">
                             <span className="text-[9.5px] font-black uppercase tracking-wider text-slate-400">Total Spending</span>
-                            <h3 className="text-base font-extrabold text-[#0B0F19] dark:text-white leading-none">₹{totalSpent.toLocaleString("en-IN")}</h3>
+                            <h3 className="text-base font-extrabold text-[#0B0F19] dark:text-white leading-none">₹{formatCompactNumber(totalSpent)}</h3>
                             <span className="text-[9px] font-black text-emerald-500 block">
                               {orders.length > 0 ? "↑ 22% vs last month" : "No orders this month"}
                             </span>
@@ -1067,7 +1086,7 @@ const Profile = () => {
                                 <span className="font-semibold">{leg.name}</span>
                               </div>
                               <div className="flex gap-4 font-mono">
-                                <span>₹{leg.amount.toLocaleString("en-IN")}</span>
+                                <span>₹{formatCompactNumber(leg.amount)}</span>
                                 <span className="text-slate-400">{leg.percent}%</span>
                               </div>
                             </div>
@@ -1080,7 +1099,7 @@ const Profile = () => {
 
                   {/* Horizontal Wishlist view is placed directly underneath the bottom layout components */}
                   {wishlistedItems.length > 0 && (
-                    <div className="rounded-[24px] bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 p-5 shadow-[0_2px_12px_rgba(0,0,0,0.01)] text-left space-y-4">
+                    <div className="rounded-md bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 p-5 shadow-[0_2px_12px_rgba(0,0,0,0.01)] text-left space-y-4">
                       <div className="flex justify-between items-center">
                         <div>
                           <h4 className="text-[10px] font-black uppercase tracking-wider text-[#0B0F19] dark:text-white flex items-center gap-1.5">
@@ -1101,14 +1120,14 @@ const Profile = () => {
                         {wishlistedItems.map((prod) => {
                           const img = prod.images?.[0]?.startsWith("http") ? prod.images[0] : `${backendUrl}/${prod.images?.[0]}`;
                           return (
-                            <div key={prod._id} className="w-[180px] rounded-2xl border border-slate-200/40 dark:border-slate-800 bg-white dark:bg-slate-950/45 p-3 shrink-0 space-y-2 text-left hover:shadow-md transition duration-300 relative group/wishitem">
+                            <div key={prod._id} className="w-[180px] rounded-lg border border-slate-200/40 dark:border-slate-800 bg-white dark:bg-slate-950/45 p-3 shrink-0 space-y-2 text-left hover:shadow-md transition duration-300 relative group/wishitem">
                               <button
                                 onClick={() => toggleFavorite(prod)}
                                 className="absolute top-2 right-2 h-6 w-6 rounded-full bg-slate-100 hover:bg-red-500/10 dark:bg-slate-900 flex items-center justify-center text-red-500 transition cursor-pointer border-none z-10"
                               >
                                 <Trash2 size={11} />
                               </button>
-                              <div className="h-24 w-full bg-slate-50 dark:bg-slate-900 rounded-xl overflow-hidden flex items-center justify-center p-2">
+                              <div className="h-24 w-full bg-slate-50 dark:bg-slate-900 rounded-md overflow-hidden flex items-center justify-center p-2">
                                 <img src={img} alt={prod.name} className="h-full w-full object-contain hover:scale-105 transition duration-300" />
                               </div>
                               <h6 className="text-[11px] font-black text-slate-900 dark:text-white leading-tight truncate">{prod.name}</h6>
@@ -1120,7 +1139,7 @@ const Profile = () => {
                               </div>
                               <button
                                 onClick={() => handleAddToCart(prod)}
-                                className="w-full text-[9px] font-black uppercase bg-slate-900 hover:bg-slate-800 dark:bg-orange-600 dark:hover:bg-orange-500 text-white py-1.5 rounded-lg border-none cursor-pointer"
+                                className="w-full text-[9px] font-black uppercase bg-slate-900 hover:bg-slate-800 dark:bg-orange-600 dark:hover:bg-orange-500 text-white py-1.5 rounded-md border-none cursor-pointer"
                               >
                                 Add to Cart
                               </button>
@@ -1150,7 +1169,7 @@ const Profile = () => {
                     </div>
                     <button
                       onClick={() => setShowAddressModal(true)}
-                      className="self-start sm:self-center inline-flex items-center gap-2 rounded-2xl bg-[#6366f1] hover:bg-indigo-700 px-4.5 py-3 text-xs font-black uppercase tracking-wider text-slate-100 dark:text-white shadow-md active:scale-95 transition cursor-pointer border-none"
+                      className="self-start sm:self-center inline-flex items-center gap-2 rounded-lg bg-[#6366f1] hover:bg-indigo-700 px-4.5 py-3 text-xs font-black uppercase tracking-wider text-slate-100 dark:text-white shadow-md active:scale-95 transition cursor-pointer border-none"
                     >
                       <Plus size={14} />
                       <span>Add Address</span>
@@ -1158,7 +1177,7 @@ const Profile = () => {
                   </div>
 
                   {(!user.addresses || user.addresses.length === 0) ? (
-                    <div className="rounded-[24px] border border-dashed border-slate-200 dark:border-slate-800 p-12 text-center bg-white dark:bg-slate-900">
+                    <div className="rounded-md border border-dashed border-slate-200 dark:border-slate-800 p-12 text-center bg-white dark:bg-slate-900">
                       <MapPin size={28} className="mx-auto text-slate-400 mb-3" />
                       <p className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">No saved addresses</p>
                       <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1.5 font-semibold">Your address list is currently empty. Click "Add Address" to populate.</p>
@@ -1168,7 +1187,7 @@ const Profile = () => {
                       {user.addresses.map((addr) => (
                         <div
                           key={addr._id}
-                          className="relative rounded-3xl border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 flex flex-col justify-between group hover:border-[#6366f1]/20 hover:shadow-lg transition-all duration-300"
+                          className="relative rounded-xl border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 flex flex-col justify-between group hover:border-[#6366f1]/20 hover:shadow-lg transition-all duration-300"
                         >
                           <div className="space-y-2 pr-6 text-left break-words">
                             <p className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
@@ -1217,7 +1236,7 @@ const Profile = () => {
                   <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-8">
 
                     {/* Credentials form card */}
-                    <div className="rounded-[24px] border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-6">
+                    <div className="rounded-md border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-6">
                       <h4 className="text-xs font-black uppercase text-slate-900 dark:text-white tracking-wider">Account Credentials</h4>
 
                       <form onSubmit={handleUpdateProfile} className="space-y-5">
@@ -1230,7 +1249,7 @@ const Profile = () => {
                             value={editName}
                             onChange={(e) => setEditName(e.target.value)}
                             placeholder="Display Name"
-                            className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#070A13]/20 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                            className="w-full pl-12 pr-4 py-3.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#070A13]/20 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                           />
                         </div>
 
@@ -1243,7 +1262,7 @@ const Profile = () => {
                             value={editEmail}
                             onChange={(e) => setEditEmail(e.target.value)}
                             placeholder="Email Address"
-                            className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#070A13]/20 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                            className="w-full pl-12 pr-4 py-3.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#070A13]/20 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                           />
                         </div>
 
@@ -1255,7 +1274,7 @@ const Profile = () => {
                             value={editPassword}
                             onChange={(e) => setEditPassword(e.target.value)}
                             placeholder="Update Password (leave blank to keep current)"
-                            className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#070A13]/20 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                            className="w-full pl-12 pr-4 py-3.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#070A13]/20 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                           />
                         </div>
 
@@ -1263,7 +1282,7 @@ const Profile = () => {
                           <button
                             type="submit"
                             disabled={savingProfile}
-                            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#6366f1] hover:bg-indigo-750 text-xs font-black uppercase tracking-wider text-slate-100 dark:text-white px-6 py-3.5 transition active:scale-95 disabled:opacity-50 shadow-md cursor-pointer border-none"
+                            className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#6366f1] hover:bg-indigo-750 text-xs font-black uppercase tracking-wider text-slate-100 dark:text-white px-6 py-3.5 transition active:scale-95 disabled:opacity-50 shadow-md cursor-pointer border-none"
                           >
                             {savingProfile ? (
                               <>
@@ -1279,7 +1298,7 @@ const Profile = () => {
                     </div>
 
                     {/* Preset Avatars & custom upload selection */}
-                    <div className="rounded-[24px] border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-5 flex flex-col justify-between">
+                    <div className="rounded-md border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-5 flex flex-col justify-between">
                       <div>
                         <h4 className="text-xs font-black uppercase text-slate-900 dark:text-white tracking-wider">Luxury Avatar Presets</h4>
                         <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold mt-1">Select a premium gradient design or upload a custom image file.</p>
@@ -1296,11 +1315,11 @@ const Profile = () => {
                                 setSelectedAvatar(avatar.id);
                                 toast.info(`Selected Preset: ${avatar.name} 🎨`);
                               }}
-                              className={`h-11 rounded-xl bg-gradient-to-tr ${avatar.gradient} relative cursor-pointer border ${isSelected ? "border-indigo-500 ring-2 ring-indigo-500/25 scale-102" : "border-white/10" } hover:scale-102 transition`}
+                              className={`h-11 rounded-md bg-gradient-to-tr ${avatar.gradient} relative cursor-pointer border ${isSelected ? "border-indigo-500 ring-2 ring-indigo-500/25 scale-102" : "border-white/10" } hover:scale-102 transition`}
                               title={avatar.name}
                             >
                               {isSelected && (
-                                <span className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-xl">
+                                <span className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-md">
                                   <Check size={14} className="text-slate-100 dark:text-white" />
                                 </span>
                               )}
@@ -1320,14 +1339,14 @@ const Profile = () => {
                         <button
                           type="button"
                           onClick={() => fileInputRef.current.click()}
-                          className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:bg-slate-100/50 dark:hover:bg-slate-900/50 transition cursor-pointer"
+                          className="w-full flex items-center justify-center gap-2 py-3 rounded-lg border border-slate-200 dark:border-slate-800 text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:bg-slate-100/50 dark:hover:bg-slate-900/50 transition cursor-pointer"
                         >
                           <Camera size={13} />
                           <span>Upload Custom File</span>
                         </button>
                         {selectedAvatar && selectedAvatar.startsWith("data:") && (
                           <div className="flex items-center gap-2">
-                            <div className="h-8 w-8 rounded-full overflow-hidden border border-slate-200 dark:border-slate-855 shrink-0">
+                            <div className="h-8 w-8 rounded-md overflow-hidden border border-slate-200 dark:border-slate-855 shrink-0">
                               <img src={selectedAvatar} alt="Upload preview" className="h-full w-full object-cover" />
                             </div>
                             <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">Custom Image Linked</span>
@@ -1344,7 +1363,7 @@ const Profile = () => {
                   </div>
 
                   {/* App rating comment feedback section */}
-                  <div className="rounded-[24px] border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 space-y-6">
+                  <div className="rounded-md border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 space-y-6">
                     <div>
                       <h4 className="text-xs font-black uppercase text-slate-900 dark:text-white tracking-wider">App Experience Feedback</h4>
                       <p className="text-[10.5px] text-slate-400 dark:text-slate-500 font-bold mt-1">
@@ -1387,7 +1406,7 @@ const Profile = () => {
                           rows={4}
                           maxLength={500}
                           placeholder="Share details about checkout speeds, product quality, or virtual fitting room options..."
-                          className="w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-55/30 dark:bg-[#070A13]/40 p-4 text-xs font-semibold outline-none text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-650 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                          className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-55/30 dark:bg-[#070A13]/40 p-4 text-xs font-semibold outline-none text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-650 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                         />
                         <div className="mt-1 flex justify-end text-[9px] text-slate-400 dark:text-slate-550 font-mono">
                           <span>{appComment.length} / 500 characters</span>
@@ -1398,7 +1417,7 @@ const Profile = () => {
                         <button
                           type="submit"
                           disabled={submittingReview || appRating === 0}
-                          className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-950 dark:bg-orange-650 hover:bg-slate-800 dark:hover:bg-orange-500 text-slate-100 dark:text-white text-xs font-black uppercase tracking-wider px-5 py-3 transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-md cursor-pointer border-none"
+                          className="inline-flex items-center justify-center gap-2 rounded-md bg-slate-950 dark:bg-orange-650 hover:bg-slate-800 dark:hover:bg-orange-500 text-slate-100 dark:text-white text-xs font-black uppercase tracking-wider px-5 py-3 transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-md cursor-pointer border-none"
                         >
                           <span>{user.appReview ? "Update Feedback" : "Submit Feedback"}</span>
                         </button>
@@ -1442,7 +1461,7 @@ const Profile = () => {
                     required
                     value={newAddress.firstName}
                     onChange={(e) => setNewAddress({ ...newAddress, firstName: e.target.value })}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                    className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     placeholder="John"
                   />
                 </div>
@@ -1452,7 +1471,7 @@ const Profile = () => {
                     type="text"
                     value={newAddress.lastName}
                     onChange={(e) => setNewAddress({ ...newAddress, lastName: e.target.value })}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                    className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     placeholder="Doe"
                   />
                 </div>
@@ -1466,7 +1485,7 @@ const Profile = () => {
                     required
                     value={newAddress.email}
                     onChange={(e) => setNewAddress({ ...newAddress, email: e.target.value })}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                    className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     placeholder="john@example.com"
                   />
                 </div>
@@ -1477,7 +1496,7 @@ const Profile = () => {
                     required
                     value={newAddress.phone}
                     onChange={(e) => setNewAddress({ ...newAddress, phone: e.target.value })}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                    className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     placeholder="e.g. +91 9988776655"
                   />
                 </div>
@@ -1490,7 +1509,7 @@ const Profile = () => {
                   required
                   value={newAddress.street}
                   onChange={(e) => setNewAddress({ ...newAddress, street: e.target.value })}
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                  className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                   placeholder="Apartment, block, street details"
                 />
               </div>
@@ -1503,7 +1522,7 @@ const Profile = () => {
                     required
                     value={newAddress.city}
                     onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                    className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     placeholder="City"
                   />
                 </div>
@@ -1514,7 +1533,7 @@ const Profile = () => {
                     required
                     value={newAddress.state}
                     onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value })}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                    className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     placeholder="State"
                   />
                 </div>
@@ -1525,7 +1544,7 @@ const Profile = () => {
                     required
                     value={newAddress.country}
                     onChange={(e) => setNewAddress({ ...newAddress, country: e.target.value })}
-                    className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                    className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     placeholder="Country"
                   />
                 </div>
@@ -1535,14 +1554,14 @@ const Profile = () => {
                 <button
                   type="button"
                   onClick={() => setShowAddressModal(false)}
-                  className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer bg-transparent"
+                  className="px-4 py-2 rounded-md border border-slate-200 dark:border-slate-800 text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer bg-transparent"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={adding}
-                  className="px-5 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-xs font-black uppercase tracking-wider text-slate-100 dark:text-white shadow-md active:scale-95 transition cursor-pointer disabled:opacity-50 border-none"
+                  className="px-5 py-2 rounded-md bg-orange-500 hover:bg-orange-600 text-xs font-black uppercase tracking-wider text-slate-100 dark:text-white shadow-md active:scale-95 transition cursor-pointer disabled:opacity-50 border-none"
                 >
                   {adding ? "Saving..." : "Save Address"}
                 </button>

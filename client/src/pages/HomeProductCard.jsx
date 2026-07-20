@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { backendUrl } from "../config";
-import { Star, Eye, ShoppingCart, Heart, BarChart2, Truck, Sparkles, CheckCircle2 } from "lucide-react";
+import { Star, Eye, ShoppingCart, Heart, BarChart2, Truck, Sparkles, CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
 import { useComparison } from "../context/ComparisonContext";
 import { getAverageRating, getReviewCount } from "../utils/productRatings";
 
@@ -104,11 +104,12 @@ const HomeProductCard = ({ product, onQuickView }) => {
   const getSrc = (idx = 0) => {
     const s = images[idx] || images[0];
     if (!s) return "";
-    return s?.startsWith("http") ? s : `${backendUrl}/${s}`;
+    if (s.startsWith("http")) return s;
+    const cleanPath = s.startsWith("/") ? s.slice(1) : s;
+    return `${backendUrl}/${cleanPath}`;
   };
 
   const isOOS = product.stock === 0;
-  const isLowStock = product.stock > 0 && product.stock <= 5;
 
   // Pricing calculations
   const originalVal = product.originalPrice || Math.round(product.price * 1.25);
@@ -149,11 +150,13 @@ const HomeProductCard = ({ product, onQuickView }) => {
   }, [product.location]);
 
   const hasImage = images.length > 0 && getSrc(0) !== "";
+  const showSlider = images.length > 1;
+
+  const prevIdx = (imgIdx - 1 + images.length) % images.length;
+  const nextIdx = (imgIdx + 1) % images.length;
 
   return (
     <div
-      onMouseEnter={() => !imgError && images[1] && setImgIdx(1)}
-      onMouseLeave={() => !imgError && setImgIdx(0)}
       onClick={() => {
         try {
           const list = JSON.parse(localStorage.getItem("recently_viewed") || "[]");
@@ -162,125 +165,180 @@ const HomeProductCard = ({ product, onQuickView }) => {
         } catch (e) { }
         navigate(`/product/${product._id}`);
       }}
-      className="group relative flex flex-col bg-white dark:bg-slate-900 rounded-none border border-slate-100 dark:border-slate-800/80 overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.02)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.06)] transition-all duration-300 ease-out cursor-pointer text-left w-full h-full"
+      className="group relative flex flex-col bg-white dark:bg-slate-900 rounded-md border border-slate-200/80 dark:border-slate-800 overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 cursor-pointer text-left w-full h-full"
     >
-      {/* 300px centered white image container */}
-      <div className="relative w-full h-[280px] bg-white dark:bg-slate-900 flex items-center justify-center p-6 border-b border-slate-50 select-none">
-        
-        {/* Wishlist Button */}
-        <button
-          type="button"
-          onClick={toggleFavorite}
-          className="absolute top-4 right-4 h-9 w-9 bg-white/95 dark:bg-slate-900/95 rounded-full flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.08)] cursor-pointer transition-all duration-200 active:scale-90 z-30 border-none"
-        >
-          <Heart
-            size={16}
-            className={`transition-colors duration-300 ${ isFavorite ? "text-rose-500 fill-rose-500" : "text-slate-600 dark:text-slate-400 hover:text-rose-500" }`}
-          />
-        </button>
+      
+      {/* Category Promo discount header row (Matches top of mockup card) */}
+      <div className="px-4 pt-4 pb-2 text-left select-none">
+        <h2 className="text-[14px] font-extrabold text-slate-900 dark:text-white tracking-tight line-clamp-2 leading-tight">
+          Up to {discountPercent}% off | {product.category ? product.category.charAt(0).toUpperCase() + product.category.slice(1).toLowerCase() : "Products"}, {product.brand || "CartNOW"} & more | CartNOW...
+        </h2>
+      </div>
 
-        {/* Compare Overlay Button */}
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            if (isComparing) {
-              removeFromCompare(product._id);
-            } else {
-              addToCompare(product);
-            }
-          }}
-          className={`absolute top-15 right-4 h-9 w-9 backdrop-blur-md rounded-full flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.08)] z-30 cursor-pointer transition-all duration-200 active:scale-90 ${isComparing ? "bg-indigo-600 border-none text-white" : "bg-white/95 dark:bg-slate-900/95 border-none text-slate-500 dark:text-slate-400 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/20" }`}
-          title="Compare product"
-        >
-          <BarChart2 size={14} className={isComparing ? "stroke-[2.5px]" : ""} />
-        </button>
+      {/* Image Slider container with peek previews on sides (exactly like mockup) */}
+      <div className="relative w-full h-[250px] bg-white dark:bg-slate-900 flex items-center justify-between px-3 select-none overflow-hidden group/slider border-b border-slate-100/50 dark:border-slate-800/50">
 
-        {/* Discount Badge */}
-        <span className="absolute top-4 left-4 px-2.5 py-1 text-[10px] font-black text-slate-100 dark:text-white bg-[#ff3b30] rounded-md z-30 uppercase tracking-wide">
-          -{discountPercent}% OFF
-        </span>
-
-        {/* Product Image - Contain aspect ratio, no crop, no zoom */}
         {!hasImage || imgError ? (
           <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-955 text-slate-400 p-4 rounded-md">
             <Sparkles size={24} className="text-slate-400 animate-pulse mb-1" />
             <span className="text-[8px] uppercase tracking-widest font-black text-slate-500">No Image</span>
           </div>
-        ) : (
-          <img
-            src={getSrc(imgIdx)}
-            alt=""
-            onError={() => setImgError(true)}
-            loading="lazy"
-            className="max-h-full max-w-full object-contain p-2"
-          />
-        )}
+        ) : showSlider ? (
+          <>
+            {/* Left Peek Image Preview with chevron arrow */}
+            <div 
+              onClick={(e) => { e.stopPropagation(); setImgIdx(prevIdx); }}
+              className="w-[14%] h-[180px] opacity-35 hover:opacity-50 transition-all duration-300 flex items-center justify-center shrink-0 border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-md p-1 scale-95 overflow-hidden relative cursor-pointer"
+            >
+              <img src={getSrc(prevIdx)} className="max-h-full max-w-full object-contain" alt="" />
+              <div className="absolute inset-0 bg-black/5 flex items-center justify-end pr-0.5 text-slate-700 dark:text-white">
+                <ChevronLeft className="h-6 w-6 stroke-[2]" />
+              </div>
+            </div>
 
-        {/* Mock/Dynamic slider indicator dots under image */}
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
-          <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
-          <span className="w-1.5 h-1.5 rounded-full bg-slate-200" />
-          <span className="w-1.5 h-1.5 rounded-full bg-slate-200" />
-          <span className="w-1.5 h-1.5 rounded-full bg-slate-200" />
-        </div>
+            {/* Active Center Image Panel */}
+            <div className="w-[66%] h-[210px] z-10 flex items-center justify-center shrink-0 border border-slate-200/80 dark:border-slate-850 bg-white dark:bg-slate-900 rounded-md p-2.5 shadow-sm relative">
+              <img src={getSrc(imgIdx)} className="max-h-full max-w-full object-contain" alt="" onError={() => setImgError(true)} />
+              
+              {/* Wishlist Button Overlay */}
+              <button
+                type="button"
+                onClick={toggleFavorite}
+                className="absolute top-2.5 right-2.5 h-7 w-7 bg-white/95 dark:bg-slate-900/95 rounded-full flex items-center justify-center shadow-xs cursor-pointer transition-all duration-200 active:scale-90 z-30 border-none"
+              >
+                <Heart
+                  size={12}
+                  className={`transition-colors duration-300 ${ isFavorite ? "text-rose-500 fill-rose-500 stroke-none" : "text-slate-500 dark:text-slate-400 hover:text-rose-500" }`}
+                />
+              </button>
+
+              {/* Compare Overlay Button */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (isComparing) {
+                    removeFromCompare(product._id);
+                  } else {
+                    addToCompare(product);
+                  }
+                }}
+                className={`absolute top-10.5 right-2.5 h-7 w-7 backdrop-blur-md rounded-full flex items-center justify-center shadow-xs z-30 cursor-pointer transition-all duration-200 active:scale-90 ${isComparing ? "bg-indigo-600 border-none text-white" : "bg-white/95 dark:bg-slate-900/95 border-none text-slate-500 dark:text-slate-400 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/20" }`}
+                title="Compare product"
+              >
+                <BarChart2 size={12} className={isComparing ? "stroke-[2.5px]" : ""} />
+              </button>
+
+              {/* Dynamic slider indicator dots inside center card */}
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-20">
+                {images.map((_, i) => (
+                  <span 
+                    key={i} 
+                    className={`w-1 h-1 rounded-full transition-all duration-300 ${i === imgIdx ? "bg-indigo-600 w-2.5" : "bg-slate-200"}`} 
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Right Peek Image Preview with chevron arrow */}
+            <div 
+              onClick={(e) => { e.stopPropagation(); setImgIdx(nextIdx); }}
+              className="w-[14%] h-[180px] opacity-35 hover:opacity-50 transition-all duration-300 flex items-center justify-center shrink-0 border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-md p-1 scale-95 overflow-hidden relative cursor-pointer"
+            >
+              <img src={getSrc(nextIdx)} className="max-h-full max-w-full object-contain" alt="" />
+              <div className="absolute inset-0 bg-black/5 flex items-center justify-start pl-0.5 text-slate-700 dark:text-white">
+                <ChevronRight className="h-6 w-6 stroke-[2]" />
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="w-full h-full flex items-center justify-center p-6 bg-white dark:bg-slate-900 relative">
+            <img src={getSrc(0)} className="max-h-full max-w-full object-contain p-2" alt="" onError={() => setImgError(true)} />
+
+            {/* Wishlist Button Overlay */}
+            <button
+              type="button"
+              onClick={toggleFavorite}
+              className="absolute top-3 right-3 h-7 w-7 bg-white/95 dark:bg-slate-900/95 rounded-full flex items-center justify-center shadow-xs cursor-pointer transition-all duration-200 active:scale-90 z-30 border-none"
+            >
+              <Heart
+                size={12}
+                className={`transition-colors duration-300 ${ isFavorite ? "text-rose-500 fill-rose-500 stroke-none" : "text-slate-500 dark:text-slate-400 hover:text-rose-500" }`}
+              />
+            </button>
+
+            {/* Compare Overlay Button */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (isComparing) {
+                  removeFromCompare(product._id);
+                } else {
+                  addToCompare(product);
+                }
+              }}
+              className={`absolute top-11 right-3 h-7 w-7 backdrop-blur-md rounded-full flex items-center justify-center shadow-xs z-30 cursor-pointer transition-all duration-200 active:scale-90 ${isComparing ? "bg-indigo-600 border-none text-white" : "bg-white/95 dark:bg-slate-900/95 border-none text-slate-500 dark:text-slate-400 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/20" }`}
+              title="Compare product"
+            >
+              <BarChart2 size={12} className={isComparing ? "stroke-[2.5px]" : ""} />
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Content */}
-      <div className="flex flex-col flex-1 p-5 gap-2.5 bg-white dark:bg-slate-900">
+      {/* Info Card Content */}
+      <div className="flex flex-col flex-1 p-4 gap-2.5 bg-white dark:bg-slate-900">
         <div className="flex flex-col gap-0.5">
-          <span className="text-[10px] font-black tracking-wider uppercase text-slate-400 dark:text-slate-500">
+          <span className="text-[9px] font-black tracking-wider uppercase text-slate-400 dark:text-slate-500">
             {product.brand || "CartNOW"}
           </span>
-          <h3 className="font-bold text-[14.5px] text-slate-900 dark:text-slate-600 line-clamp-2 min-h-[38px] leading-snug group-hover:text-blue-600 transition-colors duration-200 mt-0.5">
+          <h3 className="font-bold text-[13px] text-slate-800 dark:text-slate-200 line-clamp-2 min-h-[38px] leading-snug group-hover:text-indigo-600 transition-colors duration-200 mt-0.5">
             {product.name}
           </h3>
         </div>
 
-        {/* Rating Row with divider and green Verified badge */}
-        <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-          <Star size={13} className="fill-amber-500 text-amber-500 stroke-none" />
+        {/* Pricing block with superscript 00 decimals (Exactly matches mockup design) */}
+        <div className="flex items-baseline gap-2 select-none leading-none">
+          <div className="flex items-start text-slate-950 dark:text-white leading-none font-sans font-black">
+            <span className="text-[10px] mt-0.5 mr-0.5 font-bold">₹</span>
+            <span className="text-xl tracking-tight leading-none">{Math.floor(product.price)}</span>
+            <span className="text-[10px] mt-0.5 ml-0.5 font-bold">00</span>
+          </div>
+          <div className="text-[10px] text-slate-450 dark:text-slate-500 font-bold flex items-center gap-0.5 leading-none">
+            <span>M.R.P.:</span>
+            <span className="line-through">₹{originalVal.toLocaleString("en-IN")}.00</span>
+          </div>
+        </div>
+
+        {/* Ratings and reviews verified bar */}
+        <div className="flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400">
+          <Star size={11} className="fill-amber-500 text-amber-500 stroke-none" />
           <span className="font-extrabold text-slate-800 dark:text-slate-200">{averageRating.toFixed(1)}</span>
           <span className="text-slate-200 dark:text-slate-800">|</span>
-          <span className="text-slate-500 dark:text-slate-500 font-medium">
-            ({reviewCount || 0} reviews)
-          </span>
-          <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-extrabold ml-auto">
-            <CheckCircle2 size={13} className="fill-emerald-600 text-slate-100 dark:text-white dark:fill-emerald-400 dark:text-slate-900 shrink-0 stroke-[2.5]" />
-            <span className="text-[11px]">Verified</span>
+          <span className="font-semibold">({reviewCount} reviews)</span>
+          
+          <div className="flex items-center gap-0.5 text-emerald-600 dark:text-emerald-400 font-extrabold ml-auto">
+            <CheckCircle2 size={11} className="fill-emerald-600 text-white dark:fill-emerald-400 dark:text-slate-900 shrink-0 stroke-[2.5]" />
+            <span className="text-[9px]">Verified</span>
           </div>
         </div>
 
-        {/* Price Row: main price, original line-through and discount label */}
-        <div className="flex flex-col gap-0.5 mt-1">
-          <span className="text-xl font-black text-slate-900 dark:text-slate-500 tracking-tight">
-            ₹{Number(product.price).toLocaleString("en-IN")}
-          </span>
-          <div className="flex items-center gap-2 text-xs">
-            <span className="text-slate-400 dark:text-slate-500 line-through font-medium">
-              ₹{originalVal.toLocaleString("en-IN")}
-            </span>
-            <span className="text-emerald-500 dark:text-emerald-400 font-extrabold">
-              {discountPercent}% OFF
-            </span>
-          </div>
-        </div>
-
-        {/* Green pill delivery estimate */}
-        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 text-[11px] font-black w-fit mt-1 select-none">
-          <Truck size={13} className="shrink-0" />
+        {/* Shipping Text */}
+        <div className="inline-flex items-center gap-1 text-[10px] font-extrabold text-emerald-600 dark:text-emerald-400 select-none">
+          <Truck size={12} className="shrink-0" />
           <span>{deliveryEstimate}</span>
         </div>
 
-        {/* Side-by-side action buttons: Left Add to Cart, Right Quick View */}
-        <div className="flex items-center gap-3 mt-3 pt-3.5 border-t border-slate-100 dark:border-slate-800/80">
+        {/* Action button triggers */}
+        <div className="flex items-center gap-2 mt-2.5 pt-2.5 border-t border-slate-100 dark:border-slate-800/80">
           <button
             type="button"
             disabled={isOOS}
             onClick={handleAddToCart}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-md text-[11px] font-extrabold uppercase tracking-wider transition-all duration-200 active:scale-95 cursor-pointer border-none ${isOOS ? "bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-600 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700 text-slate-100 dark:text-white shadow-sm" }`}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-sm text-[10px] font-black uppercase tracking-wider transition-all duration-200 active:scale-95 cursor-pointer border-none ${isOOS ? "bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-650 cursor-not-allowed" : "bg-slate-900 dark:bg-indigo-600 text-white hover:bg-slate-800 dark:hover:bg-indigo-500 shadow-3xs"}`}
           >
-            <ShoppingCart size={13} />
+            <ShoppingCart size={11} className="stroke-[2.5]" />
             <span>{isOOS ? "Sold Out" : "Add to Cart"}</span>
           </button>
           
@@ -290,10 +348,10 @@ const HomeProductCard = ({ product, onQuickView }) => {
               e.stopPropagation();
               if (onQuickView) onQuickView(product);
             }}
-            className="h-11 w-11 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center shadow-[0_4px_12px_rgba(0,0,0,0.06)] hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200 cursor-pointer shrink-0 active:scale-95 border border-slate-100 dark:border-slate-800"
+            className="h-8 w-8 bg-slate-50 hover:bg-slate-100 dark:bg-slate-850 dark:hover:bg-slate-800 rounded-sm flex items-center justify-center text-slate-600 dark:text-slate-300 transition duration-150 active:scale-95 border-none cursor-pointer"
             title="Quick View"
           >
-            <Eye size={16} className="text-slate-600 dark:text-slate-300" />
+            <Eye size={12} className="stroke-[2.5]" />
           </button>
         </div>
       </div>

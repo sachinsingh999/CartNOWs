@@ -966,7 +966,7 @@ const Product = () => {
               </button>
             </div>
           ) : loading ? (
-            <div className="grid grid-cols-1 min-[450px]:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 min-[450px]:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
               {Array.from({ length: 8 }).map((_, i) => (
                 <ProductCardSkeleton key={i} />
               ))}
@@ -1020,7 +1020,7 @@ const Product = () => {
               {/* Product Card grid - Animate items stagger entry */}
               <motion.div 
                 layout
-                className="grid grid-cols-1 min-[450px]:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
+                className="grid grid-cols-1 min-[450px]:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6"
               >
                 {productList.map((item) => (
                   <motion.div
@@ -1038,23 +1038,23 @@ const Product = () => {
                 ))}
               </motion.div>
 
-              {/* Sleek Circular Glass Pagination Controls */}
+              {/* Premium Pill & Circle Pagination Controls */}
               {totalPages > 1 && (
-                <div className="flex items-center justify-center gap-2 pt-10 pb-4">
+                <div className="flex items-center justify-center gap-3 pt-10 pb-4 select-none">
                   <button
                     disabled={page === 1}
                     onClick={() => handlePageChange(page - 1)}
-                    className="h-10 px-4 rounded-full border border-slate-200/50 dark:border-slate-800/80 text-xs font-bold text-slate-700 dark:text-slate-300 bg-white/70 dark:bg-slate-900/60 backdrop-blur-md disabled:opacity-40 disabled:cursor-not-allowed hover:bg-indigo-600 hover:text-white hover:border-indigo-600 dark:hover:bg-indigo-600 transition-all duration-200 cursor-pointer shadow-sm active:scale-95 flex items-center justify-center gap-1.5"
+                    className="h-11 px-5 rounded-full bg-[#B4B6F9] dark:bg-[#5659bf] text-white text-[12px] font-black uppercase tracking-wider disabled:opacity-40 disabled:cursor-not-allowed hover:brightness-105 active:scale-95 transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 border-none shadow-xs"
                   >
-                    <ChevronLeft size={14} className="stroke-[2.5px]" />
-                    <span className="hidden sm:inline">Previous</span>
+                    <ChevronLeft size={13} className="stroke-[3px]" />
+                    <span>Previous</span>
                   </button>
 
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-2">
                     {getPageNumbers().map((p, idx) => {
                       if (p === "...") {
                         return (
-                          <span key={`dots-${idx}`} className="px-2 text-slate-400 dark:text-slate-600 font-bold text-sm">
+                          <span key={`dots-${idx}`} className="px-1.5 text-slate-400 dark:text-slate-600 font-bold text-sm">
                             ...
                           </span>
                         );
@@ -1064,7 +1064,11 @@ const Product = () => {
                         <button
                           key={p}
                           onClick={() => handlePageChange(p)}
-                          className={`h-10 w-10 flex items-center justify-center rounded-full text-xs font-black transition-all duration-200 cursor-pointer active:scale-90 shadow-sm border ${ isCurrent ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-slate-100 dark:text-white border-transparent shadow-indigo-500/20" : "border-slate-200/50 dark:border-slate-800/80 text-slate-600 dark:text-slate-400 bg-white/70 dark:bg-slate-900/60 backdrop-blur-md hover:bg-indigo-600 hover:text-white hover:border-indigo-600 dark:hover:bg-indigo-600" }`}
+                          className={`h-11 w-11 flex items-center justify-center rounded-full text-xs font-black transition-all duration-200 cursor-pointer active:scale-90 shadow-sm border ${
+                            isCurrent
+                              ? "bg-[#6c3aed] text-white border-transparent shadow-[0_4px_12px_rgba(108,58,237,0.25)]"
+                              : "border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900 text-[#2C3E50] dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-800"
+                          }`}
                         >
                           {p}
                         </button>
@@ -1075,10 +1079,10 @@ const Product = () => {
                   <button
                     disabled={page === totalPages}
                     onClick={() => handlePageChange(page + 1)}
-                    className="h-10 px-4 rounded-full border border-slate-200/50 dark:border-slate-800/80 text-xs font-bold text-slate-700 dark:text-slate-300 bg-white/70 dark:bg-slate-900/60 backdrop-blur-md disabled:opacity-40 disabled:cursor-not-allowed hover:bg-indigo-600 hover:text-white hover:border-indigo-600 dark:hover:bg-indigo-600 transition-all duration-200 cursor-pointer shadow-sm active:scale-95 flex items-center justify-center gap-1.5"
+                    className="h-11 px-5 rounded-full border border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-900 text-[#2C3E50] dark:text-slate-300 text-[12px] font-black uppercase tracking-wider disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-95 transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 shadow-xs"
                   >
-                    <span className="hidden sm:inline">Next</span>
-                    <ChevronRight size={14} className="stroke-[2.5px]" />
+                    <span>Next</span>
+                    <ChevronRight size={13} className="stroke-[3px]" />
                   </button>
                 </div>
               )}
