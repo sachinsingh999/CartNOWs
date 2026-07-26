@@ -1,11 +1,8 @@
-import React, { useEffect, useState, useMemo, Suspense } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { toast } from "react-toastify";
 import { AnimatePresence, motion } from "framer-motion";
 import { backendUrl } from "../config";
 import { cachedGet } from "../utils/apiCache";
-
-// Import helper component for viewport-based lazy loading
-import LazySection from "../components/LazySection";
 
 // Eagerly loaded modular components (critical above-the-fold content)
 import HomeHero from "../components/Home/HomeHero";
@@ -24,16 +21,6 @@ import SellerSpotlight from "../components/Home/SellerSpotlight";
 import AiRobotChat from "../components/Home/AiRobotChat";
 import CustomerTestimonials from "../components/Home/CustomerTestimonials";
 import BenefitsStrip from "../components/Home/BenefitsStrip";
-
-// Import shared skeletons from SkeletonLoader library
-import {
-  ProductGridSkeleton,
-  BrandsSkeleton,
-  CollectionsSkeleton,
-  DealRowSkeleton,
-  TestimonialSkeleton,
-  BenefitsSkeleton
-} from "../components/SkeletonLoader";
 
 const Home = () => {
   const [loading, setLoading] = useState(true);
@@ -67,6 +54,11 @@ const Home = () => {
       .then(res => {
         if (res.data.success) {
           setHomepageData(res.data);
+          if (res.data.activeDeal) {
+            setActiveDeal(res.data.activeDeal);
+          } else {
+            setActiveDeal(null);
+          }
         }
       })
       .catch((err) => {
@@ -79,17 +71,6 @@ const Home = () => {
       const saved = JSON.parse(localStorage.getItem("wishlist")) || [];
       setWishlist(saved);
     } catch (e) { }
-
-    // Fetch active deal of the day
-    cachedGet(`${backendUrl}/api/dealofday`)
-      .then(res => {
-        if (res.data.success && res.data.deal) {
-          setActiveDeal(res.data.deal);
-        }
-      })
-      .catch((err) => {
-        console.error("Error loading active Deal of the Day:", err);
-      });
   }, []);
 
   useEffect(() => {
@@ -281,7 +262,6 @@ const Home = () => {
         )}
       </AnimatePresence>
 
-      {/* SECTION 2: TOP CATEGORIES (SHOP POPULAR) - Eager Loaded */}
       <motion.section
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -291,151 +271,128 @@ const Home = () => {
       >
         <TopCategories popularCategories={homepageData.popularCategories} />
       </motion.section>
-       {/* SECTION 5: BRANDS + RECOMMENDATIONS - Lazy Loaded */}
-      <Suspense fallback={<BrandsSkeleton />}>
-        <LazySection placeholderHeight="500px">
-          <motion.section
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full px-6 sm:px-12 lg:px-20 py-4 md:py-6 space-y-6 md:space-y-8 select-none will-change-[transform,opacity] transform-gpu"
-          >
-            <div>
-              <ShopByBrands popularBrands={homepageData.popularBrands} />
-            </div>
 
-            <div>
-              <RecommendedProducts
-                recommended={homepageData.recommended}
-                trending={homepageData.trending}
-                topRated={homepageData.topRated}
-                newArrivals={homepageData.newArrivals}
-                onQuickView={setQuickViewProduct}
-                onAddToCart={onAddToCart}
-                onToggleFavorite={onToggleFavorite}
-                wishlist={wishlist}
-              />
-            </div>
-          </motion.section>
-        </LazySection>
-      </Suspense>
+      {/* SECTION 5: BRANDS + RECOMMENDATIONS - Eager Loaded */}
+      <motion.section
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-80px" }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full px-6 sm:px-12 lg:px-20 py-4 md:py-6 space-y-6 md:space-y-8 select-none will-change-[transform,opacity] transform-gpu"
+      >
+        <div>
+          <ShopByBrands popularBrands={homepageData.popularBrands} />
+        </div>
+
+        <div>
+          <RecommendedProducts
+            recommended={homepageData.recommended}
+            trending={homepageData.trending}
+            topRated={homepageData.topRated}
+            newArrivals={homepageData.newArrivals}
+            onQuickView={setQuickViewProduct}
+            onAddToCart={onAddToCart}
+            onToggleFavorite={onToggleFavorite}
+            wishlist={wishlist}
+          />
+        </div>
+      </motion.section>
 
 
-      {/* SECTION 4: FLASH DEALS + TRENDING PRODUCTS - Lazy Loaded */}
-      <Suspense fallback={<ProductGridSkeleton count={4} />}>
-        <LazySection placeholderHeight="600px">
-          <motion.section
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full px-6 sm:px-12 lg:px-20 py-2 will-change-[transform,opacity] transform-gpu"
-          >
-            <FlashDeals
-              deals={(() => {
-                const seen = new Set();
-                const combined = [];
-                [...(homepageData.dealsOfDay || []), ...(homepageData.trending || [])].forEach(p => {
-                  if (p && p._id && !seen.has(p._id.toString())) {
-                    seen.add(p._id.toString());
-                    combined.push(p);
-                  }
-                });
-                return combined;
-              })()}
-              onQuickView={setQuickViewProduct}
-              onAddToCart={onAddToCart}
-              onToggleFavorite={onToggleFavorite}
-              wishlist={wishlist}
-            />
+      {/* SECTION 4: FLASH DEALS + TRENDING PRODUCTS - Eager Loaded */}
+      <motion.section
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-80px" }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full px-6 sm:px-12 lg:px-20 py-2 will-change-[transform,opacity] transform-gpu"
+      >
+        <FlashDeals
+          deals={(() => {
+            const seen = new Set();
+            const combined = [];
+            [...(homepageData.dealsOfDay || []), ...(homepageData.trending || [])].forEach(p => {
+              if (p && p._id && !seen.has(p._id.toString())) {
+                seen.add(p._id.toString());
+                combined.push(p);
+              }
+            });
+            return combined;
+          })()}
+          onQuickView={setQuickViewProduct}
+          onAddToCart={onAddToCart}
+          onToggleFavorite={onToggleFavorite}
+          wishlist={wishlist}
+        />
 
-            <TrendingProducts
-              bestSellers={homepageData.bestSellers}
-              newArrivals={homepageData.newArrivals}
-              mostViewed={homepageData.mostViewed}
-              loading={loading}
-              onQuickView={setQuickViewProduct}
-              onAddToCart={onAddToCart}
-              onToggleFavorite={onToggleFavorite}
-              wishlist={wishlist}
-            />
-          </motion.section>
-        </LazySection>
-      </Suspense>
+        <TrendingProducts
+          bestSellers={homepageData.bestSellers}
+          newArrivals={homepageData.newArrivals}
+          mostViewed={homepageData.mostViewed}
+          loading={loading}
+          onQuickView={setQuickViewProduct}
+          onAddToCart={onAddToCart}
+          onToggleFavorite={onToggleFavorite}
+          wishlist={wishlist}
+        />
+      </motion.section>
 
       
 
-      {/* SECTION 4: SHOP BY COLLECTIONS - Lazy Loaded */}
-      <Suspense fallback={<CollectionsSkeleton />}>
-        <LazySection placeholderHeight="400px">
-          <motion.div
-            className="will-change-[transform,opacity] transform-gpu"
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <ShopByCollections trendingCollections={homepageData.trendingCollections} />
-          </motion.div>
-        </LazySection>
-      </Suspense>
+      {/* SECTION 4: SHOP BY COLLECTIONS - Eager Loaded */}
+      <motion.div
+        className="will-change-[transform,opacity] transform-gpu"
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-80px" }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <ShopByCollections trendingCollections={homepageData.trendingCollections} />
+      </motion.div>
 
 
-      {/* SECTION 5: DEAL OF THE DAY + SELLER SPOTLIGHT + AI CHAT - Lazy Loaded */}
-      <Suspense fallback={<DealRowSkeleton />}>
-        <LazySection placeholderHeight="350px">
-          <motion.section
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full px-6 sm:px-12 lg:px-20 py-2 select-none will-change-[transform,opacity] transform-gpu"
-          >
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-left">
-              <DealOfTheDay 
-                deals={homepageData.dealsOfDay} 
-                activeDeal={activeDeal} 
-                onAddToCart={onAddToCart} 
-              />
+      {/* SECTION 5: DEAL OF THE DAY + SELLER SPOTLIGHT + AI CHAT - Eager Loaded */}
+      <motion.section
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-80px" }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full px-6 sm:px-12 lg:px-20 py-2 select-none will-change-[transform,opacity] transform-gpu"
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-left">
+          <DealOfTheDay 
+            deals={homepageData.dealsOfDay} 
+            activeDeal={activeDeal} 
+            onAddToCart={onAddToCart} 
+          />
 
-              <SellerSpotlight />
+          <SellerSpotlight />
 
-              <AiRobotChat />
-            </div>
-          </motion.section>
-        </LazySection>
-      </Suspense>
+          <AiRobotChat />
+        </div>
+      </motion.section>
 
-      {/* SECTION 6: CUSTOMER TESTIMONIALS - Lazy Loaded */}
-      <Suspense fallback={<TestimonialSkeleton />}>
-        <LazySection placeholderHeight="220px">
-          <motion.div
-            className="will-change-[transform,opacity] transform-gpu"
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <CustomerTestimonials />
-          </motion.div>
-        </LazySection>
-      </Suspense>
+      {/* SECTION 6: CUSTOMER TESTIMONIALS - Eager Loaded */}
+      <motion.div
+        className="will-change-[transform,opacity] transform-gpu"
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-80px" }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <CustomerTestimonials />
+      </motion.div>
 
-      {/* SECTION 3: BENEFITS STRIP - Lazy Loaded */}
-      <Suspense fallback={<BenefitsSkeleton />}>
-        <LazySection placeholderHeight="100px">
-          <motion.div
-            className="will-change-[transform,opacity] transform-gpu"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <BenefitsStrip />
-          </motion.div>
-        </LazySection>
-      </Suspense>
+      {/* SECTION 3: BENEFITS STRIP - Eager Loaded */}
+      <motion.div
+        className="will-change-[transform,opacity] transform-gpu"
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-80px" }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <BenefitsStrip />
+      </motion.div>
 
       {/* QUICK VIEW INTERACTIVE MODAL */}
       <QuickViewModal

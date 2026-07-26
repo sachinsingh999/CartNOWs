@@ -284,6 +284,15 @@ const productSchema = new mongoose.Schema({
   suppressReservedKeysWarning: true
 });
 
+// Production performance indexes for homepage queries
+productSchema.index({ status: 1, isDeleted: 1, createdAt: -1 });
+productSchema.index({ status: 1, isDeleted: 1, totalSold: -1, createdAt: -1 });
+productSchema.index({ status: 1, isDeleted: 1, viewCount: -1, createdAt: -1 });
+productSchema.index({ status: 1, isDeleted: 1, wishlistCount: -1, createdAt: -1 });
+productSchema.index({ status: 1, isDeleted: 1, averageRating: -1, totalReviews: -1 });
+productSchema.index({ status: 1, isDeleted: 1, category: 1 });
+productSchema.index({ status: 1, isDeleted: 1, brand: 1 });
+
 const productModel =
   mongoose.models.product ||
   mongoose.model("product", productSchema);

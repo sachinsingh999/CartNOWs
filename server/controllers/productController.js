@@ -9,6 +9,7 @@ import axios from "axios";
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
 import { formatProductResponse } from "../utils/productFormatter.js";
+import { cacheGet, cacheSet } from "../utils/cache.js";
 
 const addProducts = async (req, res) => {
   try {
@@ -1175,24 +1176,27 @@ const getHomepageData = async (req, res) => {
   try {
     const userId = req.user?._id;
 
-    // Helper to enrich dynamic media in bulk (resolving N+1 query problem)
-    const enrichProductList = async (productsList) => {
-      if (!productsList || productsList.length === 0) return [];
+    // Constrained fields to select for homepage product items
+    const productFields = "_id name description price originalPrice images category brand stock sizes location reviews averageRating totalReviews createdAt viewCount wishlistCount cartCount purchaseCount totalSold status isDeleted";
+
+    // Batch enrich media to avoid N+1 query pattern across 7+ arrays
+    const enrichProductListBulk = async (products) => {
+      const uniqueIds = [...new Set(products.map(p => p._id.toString()))];
+      if (uniqueIds.length === 0) return;
+
       const listingMediaModel = (await import("../models/listingMediaModel.js")).default;
-      
-      const productIds = productsList.map(p => p._id);
-      const allMedia = await listingMediaModel.find({ listingId: { $in: productIds } }).sort({ displayOrder: 1 });
-      
-      // Group media by listingId
+      const allMedia = await listingMediaModel.find({ listingId: { $in: uniqueIds } })
+        .sort({ displayOrder: 1 })
+        .lean();
+
       const mediaMap = {};
       allMedia.forEach(m => {
         const lid = m.listingId.toString();
         if (!mediaMap[lid]) mediaMap[lid] = [];
         mediaMap[lid].push(m);
       });
-      
-      const enriched = productsList.map(item => {
-        const p = item.toObject ? item.toObject() : item;
+
+      products.forEach(p => {
         const media = mediaMap[p._id.toString()] || [];
         p.media = media;
         if (media.length > 0) {
@@ -1202,252 +1206,329 @@ const getHomepageData = async (req, res) => {
             p.images = [coverItem.url, ...media.filter(m => !m.isCover).map(m => m.url)];
           }
         }
-        return formatProductResponse(p);
       });
-      return enriched;
     };
 
-    // Parallelize all independent initial database queries
-    const thresholdDate = new Date();
-    thresholdDate.setDate(thresholdDate.getDate() - 60);
+    const PUBLIC_HOMEPAGE_CACHE_KEY = "public_homepage_data_v2";
+    let publicData = await cacheGet(PUBLIC_HOMEPAGE_CACHE_KEY);
 
-    const newArrivalsPromise = productModel.find({
-      status: "approved",
-      isDeleted: { $ne: true },
-      createdAt: { $gte: thresholdDate }
-    }).sort({ createdAt: -1 }).limit(10);
+    if (!publicData) {
+      // Parallelize all independent queries on cache miss
+      const thresholdDate = new Date();
+      thresholdDate.setDate(thresholdDate.getDate() - 60);
 
-    const trendingPromise = productModel.aggregate([
-      { $match: { status: "approved", isDeleted: { $ne: true } } },
-      {
-        $addFields: {
-          trendingScore: {
-            $add: [
-              { $multiply: [{ $ifNull: ["$viewCount", 0] }, 1] },
-              { $multiply: [{ $ifNull: ["$wishlistCount", 0] }, 3] },
-              { $multiply: [{ $ifNull: ["$cartCount", 0] }, 5] },
-              { $multiply: [{ $ifNull: ["$purchaseCount", 0] }, 10] }
-            ]
-          }
-        }
-      },
-      { $sort: { trendingScore: -1, createdAt: -1 } },
-      { $limit: 10 }
-    ]);
-
-    const bestSellersPromise = productModel.find({
-      status: "approved",
-      isDeleted: { $ne: true }
-    }).sort({ totalSold: -1, createdAt: -1 }).limit(10);
-
-    const mostViewedPromise = productModel.find({
-      status: "approved",
-      isDeleted: { $ne: true }
-    }).sort({ viewCount: -1, createdAt: -1 }).limit(10);
-
-    const mostWishlistedPromise = productModel.find({
-      status: "approved",
-      isDeleted: { $ne: true }
-    }).sort({ wishlistCount: -1, createdAt: -1 }).limit(10);
-
-    // Minimum reviews query
-    const topRatedPromise = productModel.find({
-      status: "approved",
-      isDeleted: { $ne: true },
-      totalReviews: { $gte: 20 }
-    }).sort({ averageRating: -1, totalReviews: -1 }).limit(10);
-
-    // Banners, collections, categories, suggestions
-    const brandModel = (await import("../models/brandModel.js")).default;
-    const popularBrandsPromise = brandModel.aggregate([
-      { $match: { status: "active" } },
-      {
-        $addFields: {
-          brandScore: {
-            $add: [
-              { $ifNull: ["$totalViews", 0] },
-              { $multiply: [{ $ifNull: ["$totalSales", 0] }, 5] }
-            ]
-          }
-        }
-      },
-      { $sort: { brandScore: -1, name: 1 } },
-      { $limit: 10 }
-    ]);
-
-    const collectionModel = (await import("../models/collectionModel.js")).default;
-    const trendingCollectionsPromise = collectionModel.aggregate([
-      { $match: { status: "active" } },
-      {
-        $addFields: {
-          collectionScore: {
-            $add: [
-              { $ifNull: ["$totalViews", 0] },
-              { $ifNull: ["$totalClicks", 0] },
-              { $multiply: [{ $ifNull: ["$totalSales", 0] }, 5] }
-            ]
-          }
-        }
-      },
-      { $sort: { collectionScore: -1, name: 1 } },
-      { $limit: 10 }
-    ]);
-
-    const categoryModel = (await import("../models/categoryModel.js")).default;
-    const popularCategoriesPromise = categoryModel.aggregate([
-      { $match: { status: "active" } },
-      {
-        $addFields: {
-          categoryScore: {
-            $add: [
-              { $ifNull: ["$totalViews", 0] },
-              { $ifNull: ["$totalSearches", 0] },
-              { $multiply: [{ $ifNull: ["$totalSales", 0] }, 5] }
-            ]
-          }
-        }
-      },
-      { $sort: { categoryScore: -1, name: 1 } },
-      { $limit: 10 }
-    ]);
-
-    const searchQueryModel = (await import("../models/searchQueryModel.js")).default;
-    const searchLogsPromise = searchQueryModel.find({})
-      .sort({ count: -1, lastSearched: -1 })
-      .limit(10);
-
-    const dealsPromise = productModel.aggregate([
-      {
-        $match: {
-          status: "approved",
-          isDeleted: { $ne: true },
-          originalPrice: { $gt: 0 },
-          price: { $lt: "$originalPrice" }
-        }
-      },
-      {
-        $addFields: {
-          discountPercent: {
-            $multiply: [
-              { $divide: [{ $subtract: ["$originalPrice", "$price"] }, "$originalPrice"] },
-              100
-            ]
-          }
-        }
-      },
-      { $sort: { discountPercent: -1 } },
-      { $limit: 10 }
-    ]);
-
-    // Resolve all promises concurrently
-    const [
-      newArrivalsRaw,
-      trendingRaw,
-      bestSellersRaw,
-      mostViewedRaw,
-      mostWishlistedRaw,
-      topRatedRaw,
-      popularBrands,
-      trendingCollections,
-      popularCategories,
-      searchLogs,
-      dealsRaw
-    ] = await Promise.all([
-      newArrivalsPromise,
-      trendingPromise,
-      bestSellersPromise,
-      mostViewedPromise,
-      mostWishlistedPromise,
-      topRatedPromise,
-      popularBrandsPromise,
-      trendingCollectionsPromise,
-      popularCategoriesPromise,
-      searchLogsPromise,
-      dealsPromise
-    ]);
-
-    // Backfill top rated if not enough items
-    let topRatedList = topRatedRaw;
-    if (topRatedList.length < 4) {
-      const existingIds = topRatedList.map(p => p._id);
-      const additionalRated = await productModel.find({
+      const newArrivalsPromise = productModel.find({
         status: "approved",
         isDeleted: { $ne: true },
-        _id: { $nin: existingIds }
-      }).sort({ averageRating: -1, totalReviews: -1 }).limit(10 - topRatedList.length);
-      topRatedList = [...topRatedList, ...additionalRated];
-    }
+        createdAt: { $gte: thresholdDate }
+      }).select(productFields).sort({ createdAt: -1 }).limit(10).lean();
 
-    // Backfill new arrivals if not enough items
-    let newArrivalsList = newArrivalsRaw;
-    if (newArrivalsList.length < 4) {
-      newArrivalsList = await productModel.find({
+      const trendingPromise = productModel.aggregate([
+        { $match: { status: "approved", isDeleted: { $ne: true } } },
+        {
+          $addFields: {
+            trendingScore: {
+              $add: [
+                { $multiply: [{ $ifNull: ["$viewCount", 0] }, 1] },
+                { $multiply: [{ $ifNull: ["$wishlistCount", 0] }, 3] },
+                { $multiply: [{ $ifNull: ["$cartCount", 0] }, 5] },
+                { $multiply: [{ $ifNull: ["$purchaseCount", 0] }, 10] }
+              ]
+            }
+          }
+        },
+        { $sort: { trendingScore: -1, createdAt: -1 } },
+        { $limit: 10 },
+        {
+          $project: {
+            _id: 1, name: 1, description: 1, price: 1, originalPrice: 1, images: 1,
+            category: 1, brand: 1, stock: 1, sizes: 1, location: 1, reviews: 1,
+            averageRating: 1, totalReviews: 1, createdAt: 1, viewCount: 1,
+            wishlistCount: 1, cartCount: 1, purchaseCount: 1, totalSold: 1,
+            status: 1, isDeleted: 1
+          }
+        }
+      ]);
+
+      const bestSellersPromise = productModel.find({
         status: "approved",
         isDeleted: { $ne: true }
-      }).sort({ createdAt: -1 }).limit(10);
+      }).select(productFields).sort({ totalSold: -1, createdAt: -1 }).limit(10).lean();
+
+      const mostViewedPromise = productModel.find({
+        status: "approved",
+        isDeleted: { $ne: true }
+      }).select(productFields).sort({ viewCount: -1, createdAt: -1 }).limit(10).lean();
+
+      const mostWishlistedPromise = productModel.find({
+        status: "approved",
+        isDeleted: { $ne: true }
+      }).select(productFields).sort({ wishlistCount: -1, createdAt: -1 }).limit(10).lean();
+
+      const topRatedPromise = productModel.find({
+        status: "approved",
+        isDeleted: { $ne: true },
+        totalReviews: { $gte: 20 }
+      }).select(productFields).sort({ averageRating: -1, totalReviews: -1 }).limit(10).lean();
+
+      const brandModel = (await import("../models/brandModel.js")).default;
+      const popularBrandsPromise = brandModel.aggregate([
+        { $match: { status: "active" } },
+        {
+          $addFields: {
+            brandScore: {
+              $add: [
+                { $ifNull: ["$totalViews", 0] },
+                { $multiply: [{ $ifNull: ["$totalSales", 0] }, 5] }
+              ]
+            }
+          }
+        },
+        { $sort: { brandScore: -1, name: 1 } },
+        { $limit: 10 }
+      ]);
+
+      const collectionModel = (await import("../models/collectionModel.js")).default;
+      const trendingCollectionsPromise = collectionModel.aggregate([
+        { $match: { status: "active" } },
+        {
+          $addFields: {
+            collectionScore: {
+              $add: [
+                { $ifNull: ["$totalViews", 0] },
+                { $ifNull: ["$totalClicks", 0] },
+                { $multiply: [{ $ifNull: ["$totalSales", 0] }, 5] }
+              ]
+            }
+          }
+        },
+        { $sort: { collectionScore: -1, name: 1 } },
+        { $limit: 10 }
+      ]);
+
+      const categoryModel = (await import("../models/categoryModel.js")).default;
+      const popularCategoriesPromise = categoryModel.aggregate([
+        { $match: { status: "active" } },
+        {
+          $addFields: {
+            categoryScore: {
+              $add: [
+                { $ifNull: ["$totalViews", 0] },
+                { $ifNull: ["$totalSearches", 0] },
+                { $multiply: [{ $ifNull: ["$totalSales", 0] }, 5] }
+              ]
+            }
+          }
+        },
+        { $sort: { categoryScore: -1, name: 1 } },
+        { $limit: 10 }
+      ]);
+
+      const searchQueryModel = (await import("../models/searchQueryModel.js")).default;
+      const searchLogsPromise = searchQueryModel.find({})
+        .sort({ count: -1, lastSearched: -1 })
+        .limit(10)
+        .lean();
+
+      const dealsPromise = productModel.aggregate([
+        {
+          $match: {
+            status: "approved",
+            isDeleted: { $ne: true },
+            originalPrice: { $gt: 0 },
+            $expr: { $lt: ["$price", "$originalPrice"] }
+          }
+        },
+        {
+          $addFields: {
+            discountPercent: {
+              $multiply: [
+                { $divide: [{ $subtract: ["$originalPrice", "$price"] }, "$originalPrice"] },
+                100
+              ]
+            }
+          }
+        },
+        { $sort: { discountPercent: -1 } },
+        { $limit: 10 },
+        {
+          $project: {
+            _id: 1, name: 1, description: 1, price: 1, originalPrice: 1, images: 1,
+            category: 1, brand: 1, stock: 1, sizes: 1, location: 1, reviews: 1,
+            averageRating: 1, totalReviews: 1, createdAt: 1, viewCount: 1,
+            wishlistCount: 1, cartCount: 1, purchaseCount: 1, totalSold: 1,
+            status: 1, isDeleted: 1
+          }
+        }
+      ]);
+
+      const dealOfDayModel = (await import("../models/dealOfDayModel.js")).default;
+      const now = new Date();
+      const activeDealPromise = dealOfDayModel.findOne({
+        isActive: true,
+        startDate: { $lte: now },
+        endDate: { $gte: now }
+      }).populate({
+        path: "productId",
+        select: productFields
+      }).lean();
+
+      const [
+        newArrivalsRaw,
+        trendingRaw,
+        bestSellersRaw,
+        mostViewedRaw,
+        mostWishlistedRaw,
+        topRatedRaw,
+        popularBrands,
+        trendingCollections,
+        popularCategories,
+        searchLogs,
+        dealsRaw,
+        activeDealRaw
+      ] = await Promise.all([
+        newArrivalsPromise,
+        trendingPromise,
+        bestSellersPromise,
+        mostViewedPromise,
+        mostWishlistedPromise,
+        topRatedPromise,
+        popularBrandsPromise,
+        trendingCollectionsPromise,
+        popularCategoriesPromise,
+        searchLogsPromise,
+        dealsPromise,
+        activeDealPromise
+      ]);
+
+      // Backfill top rated if not enough items
+      let topRatedList = topRatedRaw;
+      if (topRatedList.length < 4) {
+        const existingIds = topRatedList.map(p => p._id);
+        const additionalRated = await productModel.find({
+          status: "approved",
+          isDeleted: { $ne: true },
+          _id: { $nin: existingIds }
+        }).select(productFields).sort({ averageRating: -1, totalReviews: -1 }).limit(10 - topRatedList.length).lean();
+        topRatedList = [...topRatedList, ...additionalRated];
+      }
+
+      // Backfill new arrivals if not enough items
+      let newArrivalsList = newArrivalsRaw;
+      if (newArrivalsList.length < 4) {
+        newArrivalsList = await productModel.find({
+          status: "approved",
+          isDeleted: { $ne: true }
+        }).select(productFields).sort({ createdAt: -1 }).limit(10).lean();
+      }
+
+      // Consolidate all products across lists to perform media enrichment in a single database call
+      const allProductsToEnrich = [
+        ...newArrivalsList,
+        ...trendingRaw,
+        ...bestSellersRaw,
+        ...mostViewedRaw,
+        ...mostWishlistedRaw,
+        ...topRatedList,
+        ...dealsRaw
+      ];
+      if (activeDealRaw && activeDealRaw.productId) {
+        allProductsToEnrich.push(activeDealRaw.productId);
+      }
+
+      await enrichProductListBulk(allProductsToEnrich);
+
+      const newArrivals = newArrivalsList.map(formatProductResponse);
+      const trending = trendingRaw.map(formatProductResponse);
+      const bestSellers = bestSellersRaw.map(formatProductResponse);
+      const mostViewed = mostViewedRaw.map(formatProductResponse);
+      const mostWishlisted = mostWishlistedRaw.map(formatProductResponse);
+      const topRated = topRatedList.map(formatProductResponse);
+      const dealsOfDay = dealsRaw.map(formatProductResponse);
+
+      let activeDeal = null;
+      if (activeDealRaw && activeDealRaw.productId) {
+        const deal = { ...activeDealRaw };
+        deal.productId = formatProductResponse(deal.productId);
+        activeDeal = deal;
+      }
+
+      const searchSuggestions = searchLogs.map(log => log.query);
+
+      publicData = {
+        newArrivals,
+        trending,
+        bestSellers,
+        mostViewed,
+        mostWishlisted,
+        topRated,
+        dealsOfDay,
+        popularBrands,
+        trendingCollections,
+        popularCategories,
+        searchSuggestions,
+        activeDeal
+      };
+
+      // Set public homepage cache with 5-minute TTL
+      await cacheSet(PUBLIC_HOMEPAGE_CACHE_KEY, publicData, 300);
     }
 
-    // Enrich all product lists concurrently in parallel using the optimized bulk-media utility
-    const [
-      newArrivals,
-      trending,
-      bestSellers,
-      mostViewed,
-      mostWishlisted,
-      topRated,
-      dealsOfDay
-    ] = await Promise.all([
-      enrichProductList(newArrivalsList),
-      enrichProductList(trendingRaw),
-      enrichProductList(bestSellersRaw),
-      enrichProductList(mostViewedRaw),
-      enrichProductList(mostWishlistedRaw),
-      enrichProductList(topRatedList),
-      enrichProductList(dealsRaw)
-    ]);
-
-    // Recently Viewed (User-specific)
+    // Handle user-specific data dynamically
     let recentlyViewed = [];
+    let recommended = [];
+
     if (userId) {
       const recentlyViewedModel = (await import("../models/recentlyViewedModel.js")).default;
       const logs = await recentlyViewedModel.find({ userId })
         .sort({ lastViewed: -1 })
         .limit(10)
-        .populate("productId");
+        .populate({
+          path: "productId",
+          select: productFields
+        })
+        .lean();
       
       const rvProducts = logs
         .map(l => l.productId)
         .filter(p => p && p.status === "approved" && !p.isDeleted);
-      recentlyViewed = await enrichProductList(rvProducts);
-    }
+      
+      if (rvProducts.length > 0) {
+        await enrichProductListBulk(rvProducts);
+        recentlyViewed = rvProducts.map(formatProductResponse);
+      }
 
-    // Recommended For You (User-specific recommendation engine)
-    let recommended = [];
-    if (userId) {
-      const user = await userModel.findById(userId);
+      // User recommendation calculation
+      const user = await userModel.findById(userId).select("wishlistData").lean();
       const categoryFreq = {};
       const brandFreq = {};
 
       if (user?.wishlistData && user.wishlistData.length > 0) {
-        const wishProducts = await productModel.find({ _id: { $in: user.wishlistData } });
+        const wishProducts = await productModel.find({ _id: { $in: user.wishlistData } })
+          .select("category brand")
+          .lean();
         wishProducts.forEach(p => {
           if (p.category) categoryFreq[p.category] = (categoryFreq[p.category] || 0) + 3;
           if (p.brand) brandFreq[p.brand] = (brandFreq[p.brand] || 0) + 3;
         });
       }
 
-      const recentlyViewedModel = (await import("../models/recentlyViewedModel.js")).default;
-      const rvLogs = await recentlyViewedModel.find({ userId }).limit(10).populate("productId");
+      const rvLogs = await recentlyViewedModel.find({ userId }).limit(10).populate({
+        path: "productId",
+        select: "category brand status isDeleted"
+      }).lean();
       rvLogs.forEach(log => {
         const p = log.productId;
-        if (p) {
+        if (p && p.status === "approved" && !p.isDeleted) {
           if (p.category) categoryFreq[p.category] = (categoryFreq[p.category] || 0) + 1;
           if (p.brand) brandFreq[p.brand] = (brandFreq[p.brand] || 0) + 1;
         }
       });
 
       const orderModel = (await import("../models/orderModel.js")).default;
-      const orders = await orderModel.find({ userId, paymentStatus: "paid" });
+      const orders = await orderModel.find({ userId, paymentStatus: "paid" })
+        .select("items")
+        .lean();
       const purchasedIds = [];
       orders.forEach(o => {
         if (o.items) {
@@ -1459,7 +1540,9 @@ const getHomepageData = async (req, res) => {
       });
 
       if (purchasedIds.length > 0) {
-        const purProducts = await productModel.find({ _id: { $in: purchasedIds } });
+        const purProducts = await productModel.find({ _id: { $in: purchasedIds } })
+          .select("category brand")
+          .lean();
         purProducts.forEach(p => {
           if (p.category) categoryFreq[p.category] = (categoryFreq[p.category] || 0) + 5;
           if (p.brand) brandFreq[p.brand] = (brandFreq[p.brand] || 0) + 5;
@@ -1495,36 +1578,28 @@ const getHomepageData = async (req, res) => {
 
       if (topCategory || topBrand) {
         const recList = await productModel.find(recQuery)
+          .select(productFields)
           .sort({ viewCount: -1, totalSold: -1 })
-          .limit(10);
-        recommended = await enrichProductList(recList);
+          .limit(10)
+          .lean();
+        if (recList.length > 0) {
+          await enrichProductListBulk(recList);
+          recommended = recList.map(formatProductResponse);
+        }
       }
     }
 
     if (recommended.length < 4) {
-      // Backfill with trending
       const trendingIds = new Set(recommended.map(p => p._id.toString()));
-      const additional = trending.filter(p => !trendingIds.has(p._id.toString()));
+      const additional = publicData.trending.filter(p => !trendingIds.has(p._id.toString()));
       recommended = [...recommended, ...additional].slice(0, 10);
     }
 
-    const searchSuggestions = searchLogs.map(log => log.query);
-
     res.json({
       success: true,
-      newArrivals,
-      trending,
-      bestSellers,
-      mostViewed,
-      mostWishlisted,
-      topRated,
+      ...publicData,
       recentlyViewed,
-      recommended,
-      dealsOfDay,
-      popularBrands,
-      trendingCollections,
-      popularCategories,
-      searchSuggestions
+      recommended
     });
   } catch (error) {
     console.error("Error fetching homepage data:", error);

@@ -145,13 +145,15 @@ export const likePost = async (req, res) => {
 
     if (existingLike) {
       await postLikeModel.deleteOne({ _id: existingLike._id });
-      await postModel.findByIdAndUpdate(postId, { $inc: { likesCount: -1 } });
-      return res.status(200).json({ success: true, message: "Unliked post.", liked: false });
+      const likesCount = await postLikeModel.countDocuments({ postId });
+      await postModel.findByIdAndUpdate(postId, { likesCount });
+      return res.status(200).json({ success: true, message: "Unliked post.", liked: false, likesCount });
     } else {
       const newLike = new postLikeModel({ postId, userId });
       await newLike.save();
-      await postModel.findByIdAndUpdate(postId, { $inc: { likesCount: 1 } });
-      return res.status(200).json({ success: true, message: "Liked post.", liked: true });
+      const likesCount = await postLikeModel.countDocuments({ postId });
+      await postModel.findByIdAndUpdate(postId, { likesCount });
+      return res.status(200).json({ success: true, message: "Liked post.", liked: true, likesCount });
     }
   } catch (error) {
     console.error("Error liking post:", error);

@@ -36,6 +36,8 @@ const ShopByBrands = ({ popularBrands = [] }) => {
         <img
           src={src}
           alt={brandName}
+          loading="lazy"
+          decoding="async"
           className="h-12 w-auto max-w-[130px] object-contain transform-gpu"
         />
       );

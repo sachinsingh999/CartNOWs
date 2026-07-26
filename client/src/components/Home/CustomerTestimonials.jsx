@@ -4,6 +4,16 @@ import { ChevronLeft, ChevronRight, Star, CheckCircle, ThumbsUp, MessageSquare, 
 import axios from "axios";
 import { backendUrl } from "../../config";
 
+const cleanReviewText = (text) => {
+  if (!text) return "";
+  return text
+    .replace(/^>\s*/, "") // remove leading quote symbol
+    .replace(/\*\*\*/g, "") // remove bold italic asterisks
+    .replace(/\*\*/g, "") // remove bold asterisks
+    .replace(/\*/g, "") // remove italic asterisks
+    .trim();
+};
+
 const TestimonialCard = ({ item, idx, direction }) => {
   const isLeftCard = idx === 0;
   const exitX = isLeftCard
@@ -79,10 +89,11 @@ const TestimonialCard = ({ item, idx, direction }) => {
         boxShadow: "0 25px 50px -12px rgba(59, 130, 246, 0.12)",
         borderColor: "rgba(59, 130, 246, 0.3)"
       }}
-      className="bg-white/85 dark:bg-slate-900/60 border border-slate-200/80 dark:border-white/[0.06] rounded-[24px] p-6 shadow-[0_15px_30px_rgba(0,0,0,0.02)] flex flex-col justify-between text-left h-full min-h-[300px] w-full max-w-[550px] mx-auto transition-all duration-300 relative group overflow-hidden backdrop-blur-xl"
+      transition={{ type: "tween", ease: "easeOut", duration: 0.3 }}
+      className="bg-white/85 dark:bg-slate-900/60 border border-slate-200/80 dark:border-white/[0.06] rounded-[24px] p-6 shadow-[0_15px_30px_rgba(0,0,0,0.02)] flex flex-col justify-between text-left h-full min-h-[300px] w-full max-w-[550px] mx-auto relative group backdrop-blur-xl"
     >
       {/* Glass reflection effect inside card */}
-      <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.01] to-white/[0.04] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.01] to-white/[0.04] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-[24px]" />
 
       <div>
         {/* Header Section */}
@@ -93,8 +104,8 @@ const TestimonialCard = ({ item, idx, direction }) => {
               whileHover={{ scale: 1.05 }}
               className="w-14 h-14 rounded-full overflow-hidden border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 shrink-0 flex items-center justify-center font-bold text-slate-700 dark:text-slate-300 shadow-inner"
             >
-              {item.avt ? (
-                <img src={item.avt} alt={item.name} className="w-full h-full object-cover" />
+              {item.avt && (item.avt.startsWith("http") || item.avt.startsWith("/")) ? (
+                <img src={item.avt} alt={item.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
               ) : (
                 <span className="text-lg">{item.initials || item.name.charAt(0).toUpperCase()}</span>
               )}
@@ -144,7 +155,7 @@ const TestimonialCard = ({ item, idx, direction }) => {
                   key={i}
                   variants={starVariants}
                   whileHover={{ scale: 1.2, rotate: 15 }}
-                  className="transition-transform duration-200"
+                  className=""
                 >
                   <Star
                     size={13}
@@ -162,7 +173,7 @@ const TestimonialCard = ({ item, idx, direction }) => {
             {item.title || "Highly Recommended"}
           </h5>
           <p className="text-[12.5px] text-slate-500 dark:text-slate-400 font-medium leading-relaxed line-clamp-4 select-text">
-            "{item.review}"
+            "{cleanReviewText(item.review)}"
           </p>
         </div>
 
@@ -171,7 +182,7 @@ const TestimonialCard = ({ item, idx, direction }) => {
           <div className="flex items-center gap-3">
             {/* Small product thumbnail */}
             <div className="w-10 h-10 rounded-lg overflow-hidden border border-slate-200/60 dark:border-slate-800 bg-white shrink-0 relative">
-              <img src={item.productThumbnail} alt={item.productName} className="w-full h-full object-cover" />
+              <img src={item.productThumbnail} alt={item.productName} loading="lazy" decoding="async" className="w-full h-full object-cover" />
               
               {/* Product image preview on hover */}
               <div className="absolute inset-0 bg-black/10 opacity-0 group-hover/prod:opacity-100 transition-opacity duration-200 pointer-events-none" />
@@ -195,7 +206,7 @@ const TestimonialCard = ({ item, idx, direction }) => {
           
           {/* Hover large floating image preview tooltip */}
           <div className="absolute bottom-[110%] left-4 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-2 rounded-2xl shadow-xl w-36 h-36 opacity-0 scale-90 group-hover/prod:opacity-100 group-hover/prod:scale-100 pointer-events-none transition-all duration-350 z-30 overflow-hidden">
-            <img src={item.productThumbnail} alt={item.productName} className="w-full h-full object-cover rounded-xl" />
+            <img src={item.productThumbnail} alt={item.productName} loading="lazy" decoding="async" className="w-full h-full object-cover rounded-xl" />
           </div>
         </div>
       </div>
@@ -412,7 +423,7 @@ const CustomerTestimonials = () => {
               testimonials[(testimonialIdx + 1) % testimonials.length]
             ].filter(Boolean).map((item, idx) => (
               <TestimonialCard 
-                key={idx} 
+                key={item.orderNo || idx} 
                 item={item} 
                 idx={idx} 
                 direction={direction} 

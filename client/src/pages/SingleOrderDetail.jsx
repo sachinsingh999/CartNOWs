@@ -141,7 +141,7 @@ const SingleOrderDetail = () => {
           
           {/* ORDER INFORMATION CONTAINER CARD */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md p-5 shadow-3xs">
-            <div className="flex justify-between items-start border-b border-slate-100 dark:border-slate-850 pb-3 mb-5">
+            <div className="flex justify-between items-start border-b border-slate-100 dark:border-slate-800 pb-3 mb-5">
               <div>
                 <p className="text-[9px] font-black uppercase tracking-widest text-[#4f46e5] dark:text-indigo-400">Order Information</p>
                 <h1 className="text-sm font-black text-slate-900 dark:text-white mt-1 flex items-center gap-1.5">
@@ -229,7 +229,7 @@ const SingleOrderDetail = () => {
               <span>Ordered Items ({order.items.length})</span>
             </h2>
 
-            <div className="divide-y divide-slate-100 dark:divide-slate-850">
+            <div className="divide-y divide-slate-100 dark:divide-slate-800">
               {order.items.map((item, idx) => {
                 const imageUrl = item.image?.startsWith("http") ? item.image : `${backendUrl}/${item.image}`;
                 const originalVal = item.originalPrice || Math.round(item.price * 1.25);
@@ -237,7 +237,7 @@ const SingleOrderDetail = () => {
 
                 return (
                   <div key={idx} className="flex gap-4 py-4 first:pt-0 last:pb-0">
-                    <div className="h-16 w-16 rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-955 p-1.5 flex items-center justify-center shrink-0 shadow-2xs">
+                    <div className="h-16 w-16 rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-1.5 flex items-center justify-center shrink-0 shadow-2xs">
                       <img src={imageUrl} alt={item.name} className="h-12 w-12 object-contain bg-white dark:bg-slate-900" />
                     </div>
 
@@ -245,8 +245,8 @@ const SingleOrderDetail = () => {
                       <div>
                         <h4 className="text-xs font-black text-slate-900 dark:text-white line-clamp-1">{item.name}</h4>
                         <div className="flex flex-wrap gap-2 mt-1">
-                          <span className="text-[9px] bg-slate-100 dark:bg-slate-850 px-2 py-0.5 rounded text-slate-500 font-bold">Qty: {item.qty}</span>
-                          <span className="text-[9px] bg-slate-100 dark:bg-slate-850 px-2 py-0.5 rounded text-slate-500 font-bold">Size: {item.size || "Standard"}</span>
+                          <span className="text-[9px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-500 font-bold">Qty: {item.qty}</span>
+                          <span className="text-[9px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-500 font-bold">Size: {item.size || "Standard"}</span>
                         </div>
                       </div>
 
@@ -305,7 +305,7 @@ const SingleOrderDetail = () => {
             </div>
 
             {/* Split calendar details under delivery info */}
-            <div className="border-t border-slate-100 dark:border-slate-850 pt-4 mt-4 grid grid-cols-2 gap-3 text-xs font-semibold text-slate-500">
+            <div className="border-t border-slate-100 dark:border-slate-800 pt-4 mt-4 grid grid-cols-2 gap-3 text-xs font-semibold text-slate-500">
               <div className="space-y-1">
                 <span className="text-[9px] uppercase tracking-wider text-slate-400 flex items-center gap-1">
                   <Calendar size={11} className="text-slate-400" />
@@ -329,7 +329,7 @@ const SingleOrderDetail = () => {
 
           {/* BILL SUMMARY CONTAINER CARD */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md p-5 shadow-3xs text-left space-y-3.5">
-            <h2 className="text-[10px] font-black text-slate-800 dark:text-white uppercase tracking-wider mb-2 flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-850 pb-2">
+            <h2 className="text-[10px] font-black text-slate-800 dark:text-white uppercase tracking-wider mb-2 flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-800 pb-2">
               <FileText size={13} className="text-[#4f46e5]" />
               <span>Bill Summary</span>
             </h2>
@@ -343,7 +343,7 @@ const SingleOrderDetail = () => {
                 <span>Shipping Charges</span>
                 <span className="text-slate-800 dark:text-slate-200 font-bold">₹{shippingFee}</span>
               </div>
-              <div className="border-t border-slate-100 dark:border-slate-850 my-2 pt-2.5 flex justify-between items-baseline">
+              <div className="border-t border-slate-100 dark:border-slate-800 my-2 pt-2.5 flex justify-between items-baseline">
                 <span className="text-[11px] font-black text-slate-800 dark:text-white">Total Bill</span>
                 <span className="text-lg font-black text-slate-900 dark:text-white">₹{order.amount.toLocaleString("en-IN")}</span>
               </div>
@@ -361,7 +361,7 @@ const SingleOrderDetail = () => {
             <div className="grid grid-cols-2 gap-4 text-[9px] font-semibold text-slate-500 dark:text-slate-400">
               {/* Insured Delivery */}
               <div className="flex items-start gap-2.5">
-                <div className="h-7 w-7 rounded bg-slate-50 dark:bg-slate-955 flex items-center justify-center shrink-0 border border-slate-100 dark:border-slate-850 text-blue-500">
+                <div className="h-7 w-7 rounded bg-slate-50 dark:bg-slate-900 flex items-center justify-center shrink-0 border border-slate-100 dark:border-slate-800 text-blue-500">
                   <ShieldCheck size={13} className="stroke-[2.5]" />
                 </div>
                 <div>
@@ -372,7 +372,7 @@ const SingleOrderDetail = () => {
 
               {/* 30-day Returns */}
               <div className="flex items-start gap-2.5">
-                <div className="h-7 w-7 rounded bg-slate-50 dark:bg-slate-955 flex items-center justify-center shrink-0 border border-slate-100 dark:border-slate-850 text-blue-500">
+                <div className="h-7 w-7 rounded bg-slate-50 dark:bg-slate-900 flex items-center justify-center shrink-0 border border-slate-100 dark:border-slate-800 text-blue-500">
                   <Truck size={13} className="stroke-[2.5]" />
                 </div>
                 <div>
@@ -381,9 +381,9 @@ const SingleOrderDetail = () => {
                 </div>
               </div>
 
-              <div className="flex items-start gap-2.5 mt-2 border-t border-slate-50 dark:border-slate-850/50 pt-2.5 col-span-2 grid grid-cols-2">
+              <div className="flex items-start gap-2.5 mt-2 border-t border-slate-50 dark:border-slate-800/50 pt-2.5 col-span-2 grid grid-cols-2">
                 <div className="flex items-start gap-2.5">
-                  <div className="h-7 w-7 rounded bg-slate-50 dark:bg-slate-955 flex items-center justify-center shrink-0 border border-slate-100 dark:border-slate-850 text-blue-500">
+                  <div className="h-7 w-7 rounded bg-slate-50 dark:bg-slate-900 flex items-center justify-center shrink-0 border border-slate-100 dark:border-slate-800 text-blue-500">
                     <Headset size={13} className="stroke-[2.5]" />
                   </div>
                   <div>
@@ -393,7 +393,7 @@ const SingleOrderDetail = () => {
                 </div>
 
                 <div className="flex items-start gap-2.5">
-                  <div className="h-7 w-7 rounded bg-slate-50 dark:bg-slate-955 flex items-center justify-center shrink-0 border border-slate-100 dark:border-slate-850 text-blue-500">
+                  <div className="h-7 w-7 rounded bg-slate-50 dark:bg-slate-900 flex items-center justify-center shrink-0 border border-slate-100 dark:border-slate-800 text-blue-500">
                     <RotateCcw size={13} className="stroke-[2.5]" />
                   </div>
                   <div>

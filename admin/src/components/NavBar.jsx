@@ -103,7 +103,7 @@ const NavBar = ({ setToken, toggleSidebar, isCollapsed, theme, setTheme, token }
         <div className="flex items-center gap-4">
           <button 
             onClick={toggleSidebar}
-            className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.04] transition duration-200 cursor-pointer"
+            className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-white/[0.04] transition duration-200 cursor-pointer"
             title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
           >
             <Menu size={18} />
@@ -129,7 +129,7 @@ const NavBar = ({ setToken, toggleSidebar, isCollapsed, theme, setTheme, token }
             placeholder="Search logs, orders, or catalogs..."
             onClick={() => setIsSearchOpen(true)}
             readOnly
-            className="w-full pl-9 pr-12 py-1.5 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/[0.06] rounded-lg text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 cursor-pointer outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+            className="w-full pl-9 pr-12 py-1.5 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/[0.06] rounded-md text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 cursor-pointer outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
           />
           <span className="absolute right-3 text-[10px] text-slate-400 dark:text-slate-500 font-bold bg-white dark:bg-gray-900 px-1.5 py-0.5 rounded border border-slate-200 dark:border-white/[0.06] select-none font-mono">
             ⌘K
@@ -141,7 +141,7 @@ const NavBar = ({ setToken, toggleSidebar, isCollapsed, theme, setTheme, token }
           {/* Mobile Search Trigger */}
           <button
             onClick={() => setIsSearchOpen(true)}
-            className="md:hidden text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.04] transition duration-200 cursor-pointer"
+            className="md:hidden text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white p-2 rounded-md hover:bg-slate-100 dark:hover:bg-white/[0.04] transition duration-200 cursor-pointer"
           >
             <Search size={16} />
           </button>
@@ -149,7 +149,7 @@ const NavBar = ({ setToken, toggleSidebar, isCollapsed, theme, setTheme, token }
           {/* Theme Toggle Button */}
           <button
             onClick={toggleTheme}
-            className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.04] transition duration-200 cursor-pointer"
+            className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white p-2 rounded-md hover:bg-slate-100 dark:hover:bg-white/[0.04] transition duration-200 cursor-pointer"
             title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
           >
             {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
@@ -157,7 +157,7 @@ const NavBar = ({ setToken, toggleSidebar, isCollapsed, theme, setTheme, token }
 
           <button 
             onClick={() => navigate("/notifications")}
-            className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.04] transition duration-200 cursor-pointer relative"
+            className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white p-2 rounded-md hover:bg-slate-100 dark:hover:bg-white/[0.04] transition duration-200 cursor-pointer relative"
           >
             <Bell size={16} />
             <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 bg-blue-500 rounded-full" />
@@ -167,7 +167,7 @@ const NavBar = ({ setToken, toggleSidebar, isCollapsed, theme, setTheme, token }
           <div className="relative">
             <button
               onClick={() => setShowDropdown(!showDropdown)}
-              className="flex items-center gap-2 px-2.5 py-1.5 bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-white/[0.06] text-slate-900 dark:text-white rounded-lg transition duration-200 cursor-pointer select-none"
+              className="flex items-center gap-2 px-2.5 py-1.5 bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-white/[0.06] text-slate-900 dark:text-white rounded-md transition duration-200 cursor-pointer select-none"
             >
               <div className="h-5.5 w-5.5 rounded-full bg-blue-600 flex items-center justify-center text-slate-100 dark:text-white font-extrabold text-[10px] uppercase shadow-xs">
                 A
@@ -181,7 +181,7 @@ const NavBar = ({ setToken, toggleSidebar, isCollapsed, theme, setTheme, token }
             {showDropdown && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setShowDropdown(false)}></div>
-                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.08] rounded-xl shadow-xl z-50 text-slate-800 dark:text-slate-200 py-1.5 animate-fadeIn">
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.08] rounded-md shadow-xl z-50 text-slate-800 dark:text-slate-200 py-1.5 animate-fadeIn">
                   <div className="px-4 py-1.5 text-[9px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider">
                     Operational Control
                   </div>
@@ -224,7 +224,7 @@ const NavBar = ({ setToken, toggleSidebar, isCollapsed, theme, setTheme, token }
           />
 
           {/* Modal Content */}
-          <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.08] rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[60vh] mx-4 animate-scaleUp">
+          <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.08] rounded-md shadow-2xl overflow-hidden flex flex-col max-h-[60vh] mx-4 animate-scaleUp">
             
             {/* Search Input Box */}
             <div className="flex items-center gap-3 px-4 py-3.5 border-b border-slate-200 dark:border-white/[0.06]">
@@ -242,7 +242,7 @@ const NavBar = ({ setToken, toggleSidebar, isCollapsed, theme, setTheme, token }
               )}
               <button 
                 onClick={() => { setIsSearchOpen(false); setSearchQuery(""); }}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.04] transition cursor-pointer"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-md hover:bg-slate-100 dark:hover:bg-white/[0.04] transition cursor-pointer"
               >
                 <X size={16} />
               </button>
@@ -262,7 +262,7 @@ const NavBar = ({ setToken, toggleSidebar, isCollapsed, theme, setTheme, token }
                         <button
                           key={link.path}
                           onClick={() => handleNavigate(link.path)}
-                          className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-left font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/[0.04] hover:text-slate-900 dark:hover:text-white transition duration-150 cursor-pointer"
+                          className="flex items-center gap-2.5 px-3 py-2 rounded-md text-left font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/[0.04] hover:text-slate-900 dark:hover:text-white transition duration-150 cursor-pointer"
                         >
                           <Icon size={14} className="text-slate-400" />
                           <span>{link.label}</span>
@@ -282,7 +282,7 @@ const NavBar = ({ setToken, toggleSidebar, isCollapsed, theme, setTheme, token }
                       <button
                         key={prod._id}
                         onClick={() => handleNavigate("/list")}
-                        className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-left hover:bg-slate-100 dark:hover:bg-white/[0.04] text-slate-700 dark:text-slate-300 transition duration-150 cursor-pointer"
+                        className="w-full flex items-center justify-between px-3 py-2 rounded-md text-left hover:bg-slate-100 dark:hover:bg-white/[0.04] text-slate-700 dark:text-slate-300 transition duration-150 cursor-pointer"
                       >
                         <div className="flex items-center gap-3">
                           <img src={prod.image?.[0]} alt={prod.name} className="h-6 w-6 rounded-md object-cover bg-slate-50 dark:bg-slate-950" />
@@ -307,7 +307,7 @@ const NavBar = ({ setToken, toggleSidebar, isCollapsed, theme, setTheme, token }
                       <button
                         key={ord._id}
                         onClick={() => handleNavigate("/orders")}
-                        className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-left hover:bg-slate-100 dark:hover:bg-white/[0.04] text-slate-700 dark:text-slate-300 transition duration-150 cursor-pointer"
+                        className="w-full flex items-center justify-between px-3 py-2 rounded-md text-left hover:bg-slate-100 dark:hover:bg-white/[0.04] text-slate-700 dark:text-slate-300 transition duration-150 cursor-pointer"
                       >
                         <div>
                           <p className="font-bold text-slate-900 dark:text-white">#{ord._id.slice(-6).toUpperCase()}</p>

@@ -48,7 +48,7 @@ const Navbar = ({
                 <button
                   key={tab.id}
                   onClick={() => handleTabClick(tab.clickId)}
-                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl font-extrabold text-[10px] uppercase tracking-wider transition-all duration-300 cursor-pointer whitespace-nowrap border ${ isActive ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-slate-100 dark:text-white border-transparent shadow-md shadow-blue-500/10 scale-105" : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/50 dark:hover:text-white border-transparent hover:scale-102" }`}
+                  className={`flex items-center gap-2 px-3.5 py-2 rounded-md font-extrabold text-[10px] uppercase tracking-wider transition-all duration-300 cursor-pointer whitespace-nowrap border ${ isActive ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-slate-100 dark:text-white border-transparent shadow-md shadow-blue-500/10 scale-105" : "text-slate-650 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/50 dark:hover:text-white border-transparent hover:scale-102" }`}
                 >
                   <Icon size={12} className={`stroke-[2.5] ${isActive ? "animate-pulse" : ""}`} />
                   <span>{tab.label}</span>
@@ -64,7 +64,7 @@ const Navbar = ({
         </div>
 
         {/* Middle Section: Integrated Real-Time Metrics (Glassmorphic Card) */}
-        <div className="hidden xl:flex items-center gap-4 bg-slate-50/50 dark:bg-slate-900/40 border border-slate-200/60 dark:border-slate-800/80 rounded-2xl px-4 py-2 hover:border-slate-300 dark:hover:border-slate-700/80 transition-all duration-300">
+        <div className="hidden xl:flex items-center gap-4 bg-slate-50/50 dark:bg-slate-900/40 border border-slate-200/60 dark:border-slate-800/80 rounded-md px-4 py-2 hover:border-slate-300 dark:hover:border-slate-700/80 transition-all duration-300">
           <div className="text-left">
             <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest leading-none">Today's Commission</p>
             <p className="text-xs font-black text-emerald-600 dark:text-emerald-400 mt-1 flex items-center gap-1">
@@ -87,7 +87,7 @@ const Navbar = ({
           <div className="relative">
             <button
               onClick={() => setShowNotifications(!showNotifications)}
-              className="p-2.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-600 hover:text-slate-900 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300 dark:hover:text-white transition-all duration-200 relative cursor-pointer hover:scale-105 active:scale-95 shadow-sm"
+              className="p-2.5 rounded-md bg-slate-100 border border-slate-200 text-slate-600 hover:text-slate-900 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300 dark:hover:text-white transition-all duration-200 relative cursor-pointer hover:scale-105 active:scale-95 shadow-sm"
             >
               <Bell size={13} className={notificationsList.length > 0 ? "animate-bounce" : ""} />
               {notificationsList.length > 0 && (
@@ -98,7 +98,7 @@ const Navbar = ({
             {showNotifications && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)}></div>
-                <div className="absolute right-0 mt-3 w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl z-50 text-slate-800 dark:text-slate-200 p-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="absolute right-0 mt-3 w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md shadow-2xl z-50 text-slate-800 dark:text-slate-200 p-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
                   <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
                     <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">Dispatch Alerts</span>
                     <span className="text-[9px] font-bold text-blue-600 dark:text-blue-400 uppercase bg-blue-500/10 px-2 py-0.5 rounded-md">
@@ -143,7 +143,7 @@ const Navbar = ({
             {showProfileMenu && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setShowProfileMenu(false)}></div>
-                <div className="absolute right-0 mt-3 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl z-50 text-slate-800 dark:text-slate-200 p-2 space-y-1 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="absolute right-0 mt-3 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md shadow-2xl z-50 text-slate-800 dark:text-slate-200 p-2 space-y-1 animate-in fade-in slide-in-from-top-2 duration-200">
                   {/* User Info Header */}
                   <div className="px-3 py-2.5 text-left border-b border-slate-100 dark:border-slate-800">
                     <p className="text-xs font-black text-slate-900 dark:text-white truncate">{driver?.name}</p>
@@ -161,7 +161,7 @@ const Navbar = ({
                         setTheme(theme === "dark" ? "light" : "dark");
                         setShowProfileMenu(false);
                       }}
-                      className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-left text-[11px] font-bold text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white transition cursor-pointer"
+                      className="w-full flex items-center justify-between px-3 py-2 rounded-md text-left text-[11px] font-bold text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white transition cursor-pointer"
                     >
                       <span className="flex items-center gap-2">
                         {theme === "dark" ? <Sun size={13} /> : <Moon size={13} />}
@@ -175,7 +175,7 @@ const Navbar = ({
                         handleTabClick("profile");
                         setShowProfileMenu(false);
                       }}
-                      className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left text-[11px] font-bold text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white transition cursor-pointer"
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-left text-[11px] font-bold text-slate-700 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white transition cursor-pointer"
                     >
                       <User size={13} />
                       <span>My Profile</span>
@@ -187,7 +187,7 @@ const Navbar = ({
                         toast.error("SOS Emergency Alert sent to Dispatch!");
                         setShowProfileMenu(false);
                       }}
-                      className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left text-[11px] font-black text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/20 transition cursor-pointer"
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-left text-[11px] font-black text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/20 transition cursor-pointer"
                     >
                       <ShieldAlert size={13} />
                       <span>Emergency SOS</span>
@@ -202,7 +202,7 @@ const Navbar = ({
                       logout();
                       setShowProfileMenu(false);
                     }}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left text-[11px] font-bold text-rose-600 hover:bg-rose-50 dark:text-rose-500 dark:hover:bg-rose-950/20 transition cursor-pointer"
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-left text-[11px] font-bold text-rose-600 hover:bg-rose-50 dark:text-rose-500 dark:hover:bg-rose-950/20 transition cursor-pointer"
                   >
                     <LogOut size={13} />
                     <span>Sign Out</span>

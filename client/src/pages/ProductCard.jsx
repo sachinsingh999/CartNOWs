@@ -216,15 +216,15 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
               onClick={(e) => { e.stopPropagation(); setImgIdx(prevIdx); }}
               className="w-[14%] h-[180px] opacity-35 hover:opacity-50 transition-all duration-300 flex items-center justify-center shrink-0 border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-md p-1 scale-95 overflow-hidden relative cursor-pointer"
             >
-              <img src={getSrc(prevIdx)} className="max-h-full max-w-full object-contain" alt="" />
+              <img src={getSrc(prevIdx)} className="max-h-full max-w-full object-contain" alt="" loading="lazy" decoding="async" />
               <div className="absolute inset-0 bg-black/5 flex items-center justify-end pr-0.5 text-slate-700 dark:text-white">
                 <ChevronLeft className="h-6 w-6 stroke-[2]" />
               </div>
             </div>
 
             {/* Active Center Image Panel */}
-            <div className="w-[66%] h-[210px] z-10 flex items-center justify-center shrink-0 border border-slate-200/80 dark:border-slate-850 bg-white dark:bg-slate-900 rounded-md p-2.5 shadow-sm relative">
-              <img src={getSrc(imgIdx)} className="max-h-full max-w-full object-contain" alt="" onError={() => setImgError(true)} />
+            <div className="w-[66%] h-[210px] z-10 flex items-center justify-center shrink-0 border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-md p-2.5 shadow-sm relative">
+              <img src={getSrc(imgIdx)} className="max-h-full max-w-full object-contain" alt="" onError={() => setImgError(true)} loading="lazy" decoding="async" />
               
               {/* Wishlist Button Overlay */}
               <button
@@ -271,7 +271,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
               onClick={(e) => { e.stopPropagation(); setImgIdx(nextIdx); }}
               className="w-[14%] h-[180px] opacity-35 hover:opacity-50 transition-all duration-300 flex items-center justify-center shrink-0 border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-md p-1 scale-95 overflow-hidden relative cursor-pointer"
             >
-              <img src={getSrc(nextIdx)} className="max-h-full max-w-full object-contain" alt="" />
+              <img src={getSrc(nextIdx)} className="max-h-full max-w-full object-contain" alt="" loading="lazy" decoding="async" />
               <div className="absolute inset-0 bg-black/5 flex items-center justify-start pl-0.5 text-slate-700 dark:text-white">
                 <ChevronRight className="h-6 w-6 stroke-[2]" />
               </div>
@@ -279,7 +279,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
           </>
         ) : (
           <div className="w-full h-full flex items-center justify-center p-6 bg-white dark:bg-slate-900 relative">
-            <img src={getSrc(0)} className="max-h-full max-w-full object-contain p-2" alt="" onError={() => setImgError(true)} />
+            <img src={getSrc(0)} className="max-h-full max-w-full object-contain p-2" alt="" onError={() => setImgError(true)} loading="lazy" decoding="async" />
 
             {/* Wishlist Button Overlay */}
             <button
@@ -377,7 +377,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
               e.stopPropagation();
               if (onQuickView) onQuickView(product);
             }}
-            className="h-8 w-8 bg-slate-50 hover:bg-slate-100 dark:bg-slate-850 dark:hover:bg-slate-800 rounded-sm flex items-center justify-center text-slate-600 dark:text-slate-300 transition duration-150 active:scale-95 border-none cursor-pointer"
+            className="h-8 w-8 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-sm flex items-center justify-center text-slate-600 dark:text-slate-300 transition duration-150 active:scale-95 border-none cursor-pointer"
             title="Quick View"
           >
             <Eye size={12} className="stroke-[2.5]" />

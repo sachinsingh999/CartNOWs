@@ -1008,7 +1008,9 @@ const SocialFeed = () => {
             return {
               ...p,
               isLiked: response.data.liked,
-              likesCount: p.likesCount + (response.data.liked ? 1 : -1)
+              likesCount: response.data.likesCount !== undefined 
+                ? response.data.likesCount 
+                : Math.max(0, p.likesCount + (response.data.liked ? 1 : -1))
             };
           }
           return p;
@@ -1550,16 +1552,26 @@ const SocialFeed = () => {
                     <div className="p-4 border-t border-slate-100 dark:border-slate-800/80">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-6">
-                          <div className="flex items-center gap-1.5">
-                            <button 
+                          <div className="flex items-center gap-1.5 min-w-[42px]">
+                            <motion.button 
+                              whileTap={{ scale: 0.7 }}
+                              whileHover={{ scale: 1.15 }}
                               onClick={() => handleLike(post._id)}
                               className="flex items-center text-slate-500 dark:text-slate-400 hover:text-rose-500 transition border-none bg-transparent cursor-pointer p-0"
                             >
-                              <Heart 
-                                size={19} 
-                                className={`transition-colors duration-250 ${post.isLiked ? "fill-rose-500 text-rose-500" : "text-slate-450 dark:text-slate-550 hover:text-rose-500"}`} 
-                              />
-                            </button>
+                              <motion.div
+                                key={post.isLiked ? "liked" : "unliked"}
+                                initial={{ scale: 0.7 }}
+                                animate={{ scale: 1 }}
+                                transition={{ type: "spring", stiffness: 450, damping: 12 }}
+                                className="flex items-center justify-center"
+                              >
+                                <Heart 
+                                  size={19} 
+                                  className={`transition-colors duration-250 ${post.isLiked ? "fill-rose-500 text-rose-500" : "text-slate-450 dark:text-slate-550 hover:text-rose-500"}`} 
+                                />
+                              </motion.div>
+                            </motion.button>
                             <span 
                               onClick={() => fetchPostLikes(post._id)}
                               className="text-[11px] font-black text-slate-550 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline cursor-pointer select-none"
@@ -1571,13 +1583,13 @@ const SocialFeed = () => {
 
                           <button 
                             onClick={() => openComments(post)}
-                            className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 hover:text-indigo-500 transition border-none bg-transparent cursor-pointer p-0"
+                            className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 hover:text-indigo-500 transition border-none bg-transparent cursor-pointer p-0 min-w-[42px]"
                           >
                             <MessageCircle size={19} className="text-slate-450 dark:text-slate-550 hover:text-slate-600 dark:hover:text-slate-300" />
                             <span className="text-[11px] font-black text-slate-550 dark:text-slate-400">{post.commentsCount}</span>
                           </button>
 
-                          <button className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 hover:text-indigo-500 transition border-none bg-transparent cursor-pointer p-0">
+                          <button className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 hover:text-indigo-500 transition border-none bg-transparent cursor-pointer p-0 min-w-[40px]">
                             <Send size={15} className="text-slate-450 dark:text-slate-550 hover:text-slate-600" />
                             <span className="text-[11px] font-black text-slate-550 dark:text-slate-400">{post.sharesCount || 0}</span>
                           </button>

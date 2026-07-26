@@ -197,7 +197,7 @@ const HomeProductCard = ({ product, onQuickView }) => {
             </div>
 
             {/* Active Center Image Panel */}
-            <div className="w-[66%] h-[210px] z-10 flex items-center justify-center shrink-0 border border-slate-200/80 dark:border-slate-850 bg-white dark:bg-slate-900 rounded-md p-2.5 shadow-sm relative">
+            <div className="w-[66%] h-[210px] z-10 flex items-center justify-center shrink-0 border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-md p-2.5 shadow-sm relative">
               <img src={getSrc(imgIdx)} className="max-h-full max-w-full object-contain" alt="" onError={() => setImgError(true)} />
               
               {/* Wishlist Button Overlay */}
@@ -348,7 +348,7 @@ const HomeProductCard = ({ product, onQuickView }) => {
               e.stopPropagation();
               if (onQuickView) onQuickView(product);
             }}
-            className="h-8 w-8 bg-slate-50 hover:bg-slate-100 dark:bg-slate-850 dark:hover:bg-slate-800 rounded-sm flex items-center justify-center text-slate-600 dark:text-slate-300 transition duration-150 active:scale-95 border-none cursor-pointer"
+            className="h-8 w-8 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-sm flex items-center justify-center text-slate-600 dark:text-slate-300 transition duration-150 active:scale-95 border-none cursor-pointer"
             title="Quick View"
           >
             <Eye size={12} className="stroke-[2.5]" />

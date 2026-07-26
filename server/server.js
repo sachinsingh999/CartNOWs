@@ -26,6 +26,7 @@ import systemRouter from "./routers/systemRouter.js";
 import communicationRouter from "./routers/communicationRouter.js";
 import { initSocketServer } from "./socket/socketServer.js";
 import postRouter from "./routers/postRouter.js";
+import compression from "compression";
 
 // Validate critical environment variables
 if (!process.env.JWT_SECRET) {
@@ -34,6 +35,10 @@ if (!process.env.JWT_SECRET) {
 
 const app = express();
 const port = process.env.PORT || 4000;
+
+// Enable Brotli/Gzip compression for all text-based responses
+app.use(compression());
+
 connectDb();
 connectCloudinary();
 
@@ -45,7 +50,12 @@ app.use(maintenanceMiddleware);
 //api end point
 app.use('/api/system', systemRouter);
 app.use('/api/user',userRouter);
-app.use('/uploads', express.static('uploads'));
+app.use('/uploads', express.static('uploads', {
+  maxAge: '1d',
+  setHeaders: (res) => {
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+  }
+}));
 
 app.use('/api/product',productRouter);
 app.use('/api/products',productRouter);
@@ -70,7 +80,12 @@ app.use('/api/admin/dealofday', adminDealOfDayRouter);
 import invoiceRouter from "./routers/invoiceRouter.js";
 import path from "path";
 app.use('/api/invoice', invoiceRouter);
-app.use('/invoices', express.static(path.join(process.cwd(), 'public', 'invoices')));
+app.use('/invoices', express.static(path.join(process.cwd(), 'public', 'invoices'), {
+  maxAge: '1d',
+  setHeaders: (res) => {
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+  }
+}));
 app.use('/api/order-communication', communicationRouter);
 app.use('/api/social', postRouter);
 

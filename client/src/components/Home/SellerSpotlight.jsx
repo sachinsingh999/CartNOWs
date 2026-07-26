@@ -17,6 +17,8 @@ const SellerSpotlight = () => {
             <img
               src="https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=120&auto=format&fit=crop&q=80"
               alt="Seller Spotlight"
+              loading="lazy"
+              decoding="async"
               className="w-full h-full object-cover"
             />
           </div>

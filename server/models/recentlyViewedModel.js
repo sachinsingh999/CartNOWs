@@ -22,6 +22,7 @@ const recentlyViewedSchema = new mongoose.Schema(
 
 // Compound index to ensure uniqueness per user-product view pair
 recentlyViewedSchema.index({ userId: 1, productId: 1 }, { unique: true });
+recentlyViewedSchema.index({ userId: 1, lastViewed: -1 });
 
 const recentlyViewedModel =
   mongoose.models.recentlyViewed ||

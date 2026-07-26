@@ -236,6 +236,8 @@ const DealOfTheDay = ({ deals = [], activeDeal = null, onAddToCart }) => {
         <img
           src={finalModelImgUrl}
           alt="Campaign Visual"
+          loading="lazy"
+          decoding="async"
           className="w-full h-full object-contain object-bottom transition-transform duration-500 group-hover:scale-[1.03] select-none pointer-events-none animate-custom-float relative z-0"
           style={{ clipPath: "inset(3px)" }}
         />
@@ -269,6 +271,8 @@ const DealOfTheDay = ({ deals = [], activeDeal = null, onAddToCart }) => {
             <img
               src={finalProductImgUrl}
               alt={dealProduct.name}
+              loading="lazy"
+              decoding="async"
               className="w-7 h-7 object-contain bg-white dark:bg-slate-900 rounded-none p-0.5 border border-slate-200/50"
             />
             <div className="text-[7.5px] font-bold text-slate-100 dark:text-white leading-tight pr-1.5 flex flex-col justify-center text-left">
