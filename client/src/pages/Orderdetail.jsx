@@ -209,7 +209,8 @@ const Orderdetail = () => {
     returnRequests.find(
       (request) =>
         String(request.orderId) === String(item.orderId) &&
-        String(request.productId) === String(item.productId) &&
+        (String(request.productId) === String(item.productId || item._id || item.id) ||
+         (!request.productId && request.itemName === item.name)) &&
         (request.itemSize || "") === (item.size || "")
     );
 
@@ -234,8 +235,8 @@ const Orderdetail = () => {
         `${backendUrl}/api/service/returns/create`,
         {
           orderId: selectedReturnItem.orderId,
-          productId: selectedReturnItem.productId,
-          size: selectedReturnItem.size,
+          productId: selectedReturnItem.productId || selectedReturnItem._id || selectedReturnItem.id,
+          size: selectedReturnItem.size || "",
           reason: returnForm.reason,
           feedback: returnForm.feedback,
           returnType: returnForm.returnType,

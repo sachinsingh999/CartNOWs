@@ -1,5 +1,8 @@
+import mongoose from "mongoose";
 import orderModel from "../models/orderModel.js";
 import userModel from "../models/userModel.js";
+import productModel from "../models/productModel.js";
+import sellerModel from "../models/sellerModel.js";
 import chatRoomModel from "../models/chatRoomModel.js";
 import { autoAssignDeliveryAgent } from "../utils/assignmentHelper.js";
 import Stripe from "stripe";
@@ -9,8 +12,6 @@ import { createNotification } from "../utils/notificationHelper.js";
 import { checkAndGenerateInvoice } from "../utils/invoicePdfGenerator.js";
 import deliveryAssignmentModel from "../models/deliveryAssignmentModel.js";
 import { trackPurchase } from "../utils/analyticsHelper.js";
-
-
 
 // Initialize payment integrations
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY || "sk_test_placeholder";
@@ -60,6 +61,102 @@ const cleanUserCart = async (userId, items) => {
   }
 };
 
+// Helper to dynamically enrich order items with complete seller details
+export const enrichOrdersWithSellerDetails = async (orders) => {
+  if (!orders || !orders.length) return [];
+
+  const productIds = new Set();
+  const sellerIds = new Set();
+
+  orders.forEach((order) => {
+    const items = order.items || [];
+    items.forEach((item) => {
+      const prodId = item.productId || item._id || item.id || item.itemId;
+      if (prodId && mongoose.Types.ObjectId.isValid(prodId)) {
+        productIds.add(prodId.toString());
+      }
+      const sId = item.sellerId || item.seller || item.product?.sellerId;
+      if (sId && mongoose.Types.ObjectId.isValid(sId)) {
+        sellerIds.add(sId.toString());
+      }
+    });
+  });
+
+  const products = await productModel
+    .find({ _id: { $in: Array.from(productIds) } })
+    .select("_id sellerId shopName brand")
+    .lean();
+
+  const productMap = {};
+  products.forEach((p) => {
+    productMap[p._id.toString()] = p;
+    if (p.sellerId && mongoose.Types.ObjectId.isValid(p.sellerId)) {
+      sellerIds.add(p.sellerId.toString());
+    }
+  });
+
+  const sellers = await sellerModel
+    .find({ _id: { $in: Array.from(sellerIds) } })
+    .select("name shopName email phone status commissionRate")
+    .lean();
+
+  const sellerMap = {};
+  sellers.forEach((s) => {
+    sellerMap[s._id.toString()] = s;
+  });
+
+  return orders.map((order) => {
+    const orderObj = typeof order.toObject === "function" ? order.toObject() : { ...order };
+    const orderSellers = [];
+    const seenSellers = new Set();
+
+    orderObj.items = (orderObj.items || []).map((item) => {
+      const prodId = item.productId || item._id || item.id || item.itemId;
+      const prod = prodId ? productMap[prodId.toString()] : null;
+      const sId = item.sellerId || item.seller || prod?.sellerId;
+      const seller = sId ? sellerMap[sId.toString()] : null;
+
+      const sellerInfo = seller
+        ? {
+            _id: seller._id,
+            name: seller.name,
+            shopName: seller.shopName,
+            email: seller.email,
+            phone: seller.phone,
+            status: seller.status,
+            commissionRate: seller.commissionRate,
+          }
+        : {
+            _id: sId || null,
+            name: item.sellerName || "Direct Store",
+            shopName: item.shopName || item.brand || "Platform Store",
+            email: item.sellerEmail || "",
+            phone: item.sellerPhone || "",
+            status: "active",
+            commissionRate: 10,
+          };
+
+      if (sellerInfo._id && !seenSellers.has(sellerInfo._id.toString())) {
+        seenSellers.add(sellerInfo._id.toString());
+        orderSellers.push(sellerInfo);
+      }
+
+      return {
+        ...item,
+        sellerId: sellerInfo._id,
+        sellerDetails: sellerInfo,
+        shopName: sellerInfo.shopName,
+        sellerName: sellerInfo.name,
+        sellerEmail: sellerInfo.email,
+        sellerPhone: sellerInfo.phone,
+      };
+    });
+
+    orderObj.sellers = orderSellers;
+    return orderObj;
+  });
+};
+
 // Auto-create chat room on order placement
 const createChatRoomForOrder = async (order) => {
   try {
@@ -107,11 +204,49 @@ const placeOrder = async (req, res) => {
       });
     }
 
+    // Enrich items with seller details before saving order
+    const enrichedItems = await Promise.all(
+      (items || []).map(async (item) => {
+        const prodId = item.productId || item._id || item.id || item.itemId;
+        let sellerId = item.sellerId || item.product?.sellerId;
+        let shopName = item.shopName;
+        let sellerName = item.sellerName;
+        let sellerEmail = item.sellerEmail;
+        let sellerPhone = item.sellerPhone;
+
+        if (prodId && mongoose.Types.ObjectId.isValid(prodId)) {
+          const prod = await productModel.findById(prodId).lean();
+          if (prod && prod.sellerId) {
+            sellerId = prod.sellerId;
+          }
+        }
+
+        if (sellerId && mongoose.Types.ObjectId.isValid(sellerId)) {
+          const seller = await sellerModel.findById(sellerId).lean();
+          if (seller) {
+            shopName = seller.shopName || shopName;
+            sellerName = seller.name || sellerName;
+            sellerEmail = seller.email || sellerEmail;
+            sellerPhone = seller.phone || sellerPhone;
+          }
+        }
+
+        return {
+          ...item,
+          sellerId: sellerId || null,
+          shopName: shopName || "Direct Store",
+          sellerName: sellerName || "Admin Seller",
+          sellerEmail: sellerEmail || "",
+          sellerPhone: sellerPhone || "",
+        };
+      })
+    );
+
     const verificationCode = null;
 
     const order = await orderModel.create({
       userId: req.user._id,
-      items: items,
+      items: enrichedItems,
       amount,
       address,
       paymentMethod,
@@ -444,7 +579,9 @@ const allOrders = async (req, res) => {
       return orderObj;
     });
 
-    res.json({ success: true, orders: ordersWithAssignments });
+    const enrichedOrders = await enrichOrdersWithSellerDetails(ordersWithAssignments);
+
+    res.json({ success: true, orders: enrichedOrders });
   } catch (error) {
     res.json({ success: false, message: error.message });
   }

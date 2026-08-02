@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { AnimatePresence, motion } from "framer-motion";
 import { backendUrl } from "../config";
@@ -23,6 +24,7 @@ import CustomerTestimonials from "../components/Home/CustomerTestimonials";
 import BenefitsStrip from "../components/Home/BenefitsStrip";
 
 const Home = () => {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [wishlist, setWishlist] = useState([]);
   const [quickViewProduct, setQuickViewProduct] = useState(null);
@@ -163,6 +165,7 @@ const Home = () => {
       localStorage.setItem("cart", JSON.stringify(guestCart));
       window.dispatchEvent(new Event("cartUpdate"));
       toast.success("Added to cart! 🛍️");
+      navigate("/cart");
     } else {
       try {
         const res = await axios.post(
@@ -173,6 +176,7 @@ const Home = () => {
         if (res.data.success) {
           window.dispatchEvent(new Event("cartUpdate"));
           toast.success("Added to cart! 🛍️");
+          navigate("/cart");
         } else {
           toast.error(res.data.message);
         }

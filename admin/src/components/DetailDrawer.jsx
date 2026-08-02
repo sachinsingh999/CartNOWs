@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { 
-  X, MapPin, Phone, KeyRound, AlertTriangle, AlarmClock, UserPlus, CreditCard, ShieldCheck, CheckCircle2, Circle, ArrowUpRight, Activity
+  X, MapPin, Phone, KeyRound, AlertTriangle, AlarmClock, UserPlus, CreditCard, ShieldCheck, CheckCircle2, Circle, ArrowUpRight, Activity, Store, Mail
 } from "lucide-react";
 import { getDeadlineInfo } from "./OrderCard";
 
@@ -212,14 +212,81 @@ const DetailDrawer = ({ order, isOpen, onClose, drivers, onAssign, onStatusUpdat
             <p className="font-bold text-[9px] uppercase tracking-widest text-slate-400 dark:text-slate-500">Items ({order.items.length})</p>
             <div className="bg-slate-50/50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800/80 rounded-xl p-4 space-y-3 font-semibold">
               {order.items.map((item, idx) => (
-                <div key={idx} className="flex justify-between items-start text-xs border-b border-slate-100 dark:border-slate-800/60 last:border-0 pb-2.5 last:pb-0">
-                  <div>
-                    <p className="font-bold text-slate-900 dark:text-slate-200">{item.name}</p>
-                    {item.size && (
-                      <p className="text-[10px] text-slate-400 mt-1">Size: <span className="font-bold text-slate-600 dark:text-slate-300">{item.size}</span></p>
+                <div key={idx} className="border-b border-slate-100 dark:border-slate-800/60 last:border-0 pb-2.5 last:pb-0 space-y-1">
+                  <div className="flex justify-between items-start text-xs">
+                    <div>
+                      <p className="font-bold text-slate-900 dark:text-slate-200">{item.name}</p>
+                      {item.size && (
+                        <p className="text-[10px] text-slate-400 mt-0.5">Size: <span className="font-bold text-slate-600 dark:text-slate-300">{item.size}</span></p>
+                      )}
+                    </div>
+                    <span className="font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap ml-2">Qty {item.qty}</span>
+                  </div>
+                  
+                  {/* Seller badge per item */}
+                  <div className="flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400 pt-0.5">
+                    <Store size={11} className="text-orange-500 shrink-0" />
+                    <span>Store: <strong className="text-slate-800 dark:text-slate-200">{item.shopName || item.sellerDetails?.shopName || "Platform Direct"}</strong></span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Seller Details Section */}
+          <div className="space-y-2">
+            <p className="font-bold text-[9px] uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+              <Store size={11} className="text-orange-500" />
+              <span>Seller / Merchant Details</span>
+            </p>
+            <div className="bg-slate-50/50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800/80 rounded-xl p-4 text-xs space-y-3 font-semibold">
+              {((order.sellers && order.sellers.length > 0)
+                ? order.sellers
+                : (order.items || []).map(i => i.sellerDetails || {
+                    shopName: i.shopName || "Direct Platform Store",
+                    name: i.sellerName || "Admin Seller",
+                    email: i.sellerEmail || "",
+                    phone: i.sellerPhone || ""
+                  })
+              ).map((seller, idx) => (
+                <div key={idx} className="border-b border-slate-100 dark:border-slate-800/60 last:border-0 pb-3 last:pb-0 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-bold text-slate-950 dark:text-white text-sm flex items-center gap-1.5">
+                        <Store size={14} className="text-orange-500 shrink-0" />
+                        {seller.shopName || "Platform Store"}
+                      </p>
+                      <p className="text-[10px] text-slate-400 font-bold mt-0.5">
+                        Merchant: <span className="text-slate-700 dark:text-slate-300 font-extrabold">{seller.name || "Default Seller"}</span>
+                      </p>
+                    </div>
+                    {seller.status && (
+                      <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                        {seller.status}
+                      </span>
                     )}
                   </div>
-                  <span className="font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap ml-2">Qty {item.qty}</span>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] pt-1">
+                    {seller.email && (
+                      <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
+                        <Mail size={12} className="text-slate-400 shrink-0" />
+                        <span className="truncate">{seller.email}</span>
+                      </div>
+                    )}
+                    {seller.phone && (
+                      <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
+                        <Phone size={12} className="text-slate-400 shrink-0" />
+                        <span>{seller.phone}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {seller.commissionRate !== undefined && (
+                    <p className="text-[9px] text-slate-400 font-semibold pt-0.5">
+                      Platform Commission: <span className="text-orange-500 font-extrabold">{seller.commissionRate}%</span>
+                    </p>
+                  )}
                 </div>
               ))}
             </div>

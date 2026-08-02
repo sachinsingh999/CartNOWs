@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useComparison } from "../context/ComparisonContext";
 import { X, ShoppingCart, HelpCircle } from "lucide-react";
 import { backendUrl } from "../config";
@@ -7,6 +8,7 @@ import { toast } from "react-toastify";
 import { getAverageRating } from "../utils/productRatings";
 
 const ComparisonModal = ({ onClose }) => {
+  const navigate = useNavigate();
   const { compareList, removeFromCompare } = useComparison();
   const [addingCart, setAddingCart] = useState({});
   const token = localStorage.getItem("token") || "";
@@ -37,6 +39,9 @@ const ComparisonModal = ({ onClose }) => {
         );
         if (response.data.success) {
           toast.success(`Added ${product.name.split(" ")[0]} to cart!`);
+          window.dispatchEvent(new Event("cartUpdate"));
+          onClose();
+          navigate("/cart");
         } else {
           toast.error(response.data.message || "Failed to add to cart");
         }
@@ -51,8 +56,10 @@ const ComparisonModal = ({ onClose }) => {
         const key = `${product._id}_${chosenSize}`;
         guestCart[key] = (guestCart[key] || 0) + 1;
         localStorage.setItem("cart", JSON.stringify(guestCart));
+        window.dispatchEvent(new Event("cartUpdate"));
         toast.success(`Added ${product.name.split(" ")[0]} to cart!`);
-        window.dispatchEvent(new Event("storage"));
+        onClose();
+        navigate("/cart");
       } catch (err) {
         toast.error("Failed to add to cart");
       } finally {

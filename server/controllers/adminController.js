@@ -19,6 +19,7 @@ import categorySeoModel from "../models/categorySeoModel.js";
 import activityLogModel from "../models/activityLogModel.js";
 import jwt from "jsonwebtoken";
 import deliveryAssignmentModel from "../models/deliveryAssignmentModel.js";
+import { enrichOrdersWithSellerDetails } from "./orderController.js";
 
 // Helper for writing audit logs
 const writeLog = async (req, action, target, details) => {
@@ -563,7 +564,9 @@ export const getAllOrdersAdmin = async (req, res) => {
       return orderObj;
     });
 
-    res.json({ success: true, orders: ordersWithAssignments });
+    const enrichedOrders = await enrichOrdersWithSellerDetails(ordersWithAssignments);
+
+    res.json({ success: true, orders: enrichedOrders });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

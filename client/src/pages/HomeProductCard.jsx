@@ -78,6 +78,7 @@ const HomeProductCard = ({ product, onQuickView }) => {
       localStorage.setItem("cart", JSON.stringify(guestCart));
       window.dispatchEvent(new Event("cartUpdate"));
       toast.success("Added to cart! 🛍️");
+      navigate("/cart");
     } else {
       try {
         const res = await axios.post(
@@ -88,6 +89,7 @@ const HomeProductCard = ({ product, onQuickView }) => {
         if (res.data.success) {
           window.dispatchEvent(new Event("cartUpdate"));
           toast.success("Added to cart! 🛍️");
+          navigate("/cart");
         } else {
           toast.error(res.data.message);
         }

@@ -1156,7 +1156,7 @@ const PlaceOrder = () => {
 
   if (fetchingCart) {
     return (
-      <div className="min-h-screen bg-slate-55/30 dark:bg-slate-955 px-6 pt-6 pb-20 flex items-center justify-center transition-colors duration-200">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 px-6 pt-6 pb-20 flex items-center justify-center transition-colors duration-200">
         <div className="mx-auto max-w-md text-center">
           <Loader2 className="mx-auto h-12 w-12 text-orange-500 animate-spin mb-4" />
           <p className="text-lg font-bold text-slate-900 dark:text-slate-100">Loading Checkout...</p>
@@ -1167,14 +1167,14 @@ const PlaceOrder = () => {
 
   if (products.length === 0) {
     return (
-      <div className="min-h-screen bg-slate-55/30 dark:bg-slate-955 px-6 pt-6 pb-20 flex items-center justify-center transition-colors duration-200">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 px-6 pt-6 pb-20 flex items-center justify-center transition-colors duration-200">
         <div className="mx-auto max-w-md rounded-sm border border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 backdrop-blur-md p-10 text-center shadow-sm">
           <ShoppingCart className="mx-auto h-12 w-12 text-slate-300 dark:text-slate-700 mb-4" />
           <p className="text-lg font-bold text-slate-900 dark:text-slate-100">No products in checkout</p>
-          <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Please add items to your cart first.</p>
+          <p className="text-xs text-slate-400 dark:text-slate-400 mt-1">Please add items to your cart first.</p>
           <button
             onClick={() => navigate("/product")}
-            className="mt-6 rounded-md bg-gradient-to-r from-orange-500 to-amber-500 px-6 py-3 text-xs font-black uppercase tracking-wider text-slate-100 dark:text-white shadow-md shadow-orange-500/10 hover:scale-105 active:scale-95 transition cursor-pointer"
+            className="mt-6 rounded-md bg-gradient-to-r from-orange-500 to-amber-500 px-6 py-3 text-xs font-black uppercase tracking-wider text-white shadow-md shadow-orange-500/10 hover:scale-105 active:scale-95 transition cursor-pointer"
           >
             Browse Products
           </button>
@@ -1184,35 +1184,35 @@ const PlaceOrder = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] dark:bg-slate-955 px-4 sm:px-6 pt-6 pb-16 text-slate-700 dark:text-slate-300 transition-colors duration-200">
+    <div className="min-h-screen bg-[#f8fafc] dark:bg-slate-950 px-4 sm:px-6 pt-6 pb-16 text-slate-700 dark:text-slate-200 transition-colors duration-200">
       <form onSubmit={onSubmitHandler} className="mx-auto max-w-7xl">
         
         {/* CHECKOUT HEADER AREA */}
-        <div className="mb-8 flex flex-col md:flex-row items-center justify-between border-b border-slate-200 dark:border-slate-800/80 pb-6 gap-4">
+        <div className="mb-8 flex flex-col md:flex-row items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-6 gap-4">
           <div className="flex items-center gap-3.5 text-left w-full md:w-auto">
             <button
               type="button"
               onClick={() => navigate(-1)}
-              className="h-9 w-9 flex items-center justify-center rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-650 dark:text-slate-355 hover:bg-slate-50 dark:hover:bg-slate-850 hover:scale-102 active:scale-98 transition shadow-xs"
+              className="h-9 w-9 flex items-center justify-center rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:scale-102 active:scale-98 transition shadow-xs cursor-pointer"
             >
               <ArrowRight className="rotate-180 h-4 w-4 stroke-[2.5]" />
             </button>
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Checkout</h1>
-                <span className="inline-flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-900/40 text-emerald-650 dark:text-emerald-450 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider">
-                  <ShieldCheck size={11} className="text-emerald-555" />
+                <span className="inline-flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider">
+                  <ShieldCheck size={11} className="text-emerald-600 dark:text-emerald-400" />
                   100% Secure Checkout
                 </span>
               </div>
-              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 font-semibold">
+              <p className="text-xs text-slate-400 dark:text-slate-400 mt-1 font-semibold">
                 Complete your purchase by providing your delivery and payment details.
               </p>
             </div>
           </div>
           
           {/* STEPPER TRACKER */}
-          <div className="flex items-center w-full md:w-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-2.5 rounded-sm shadow-xs">
+          <div className="flex items-center w-full md:w-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-2.5 rounded-md shadow-xs">
             {[
               { step: 1, title: "Address", desc: "Select delivery address" },
               { step: 2, title: "Payment", desc: "Choose payment method" },
@@ -1235,18 +1235,18 @@ const PlaceOrder = () => {
                         ? "bg-orange-500 text-white shadow-sm shadow-orange-500/10" 
                         : isCompleted 
                         ? "bg-emerald-500 text-white" 
-                        : "bg-slate-100 dark:bg-slate-950 text-slate-450 dark:text-slate-700"
+                        : "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-400"
                     }`}>
                       {s.step}
                     </div>
                     <div className="hidden sm:block">
-                      <p className={`text-[11px] font-black uppercase tracking-wider leading-none ${isActive ? "text-orange-500 dark:text-orange-405" : "text-slate-500 dark:text-slate-405"}`}>{s.title}</p>
-                      <p className="text-[9px] text-slate-400 dark:text-slate-500 mt-0.5 font-semibold leading-none">{s.desc}</p>
+                      <p className={`text-[11px] font-black uppercase tracking-wider leading-none ${isActive ? "text-orange-500 dark:text-orange-400" : "text-slate-500 dark:text-slate-400"}`}>{s.title}</p>
+                      <p className="text-[9px] text-slate-400 dark:text-slate-400 mt-0.5 font-semibold leading-none">{s.desc}</p>
                     </div>
                   </button>
                   
                   {idx < 2 && (
-                    <div className="h-[2px] w-8 sm:w-12 mx-1 rounded-full bg-slate-100 dark:bg-slate-950">
+                    <div className="h-[2px] w-8 sm:w-12 mx-1 rounded-full bg-slate-100 dark:bg-slate-800">
                       <div 
                         className="h-full bg-orange-500 transition-all duration-300 rounded-full"
                         style={{ width: activeStep > s.step ? "100%" : activeStep === s.step ? "100%" : "0%" }}
@@ -1260,7 +1260,7 @@ const PlaceOrder = () => {
         </div>
 
         {error && (
-          <div className="mb-6 rounded-sm border border-red-200 dark:border-red-900/30 bg-red-50 dark:bg-red-950/20 px-4 py-3 text-xs text-red-700 dark:text-red-400 text-left flex items-center gap-2 shadow-xs">
+          <div className="mb-6 rounded-sm border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-950/40 px-4 py-3 text-xs text-red-700 dark:text-red-300 text-left flex items-center gap-2 shadow-xs">
             <span className="h-1.5 w-1.5 rounded-full bg-red-500 shrink-0" />
             {error}
           </div>
@@ -1286,17 +1286,17 @@ const PlaceOrder = () => {
                       <span className="bg-orange-500 text-white text-[11px] font-black h-5 w-5 rounded flex items-center justify-center">1</span>
                       Select a Delivery Address
                     </h2>
-                    <p className="text-xs text-slate-400 dark:text-slate-550 mt-0.5 font-medium">Choose where you want your order to be delivered</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-400 mt-0.5 font-medium">Choose where you want your order to be delivered</p>
                   </div>
                 </div>
 
-                <hr className="border-slate-100 dark:border-slate-850" />
+                <hr className="border-slate-100 dark:border-slate-800" />
 
                 {/* Addresses Deck */}
                 <div className="space-y-4">
                   {savedAddresses.length > 0 ? (
                     <>
-                      <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">Saved Addresses ({savedAddresses.length})</p>
+                      <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-400">Saved Addresses ({savedAddresses.length})</p>
                       
                       <div className="space-y-3 max-h-[290px] overflow-y-auto pr-1 custom-scrollbar" data-lenis-prevent>
                         {savedAddresses.map((addr, idx) => {
@@ -1305,10 +1305,10 @@ const PlaceOrder = () => {
                             <div
                               key={addr._id}
                               onClick={() => handleSelectAddress(addr)}
-                              className={`flex items-start gap-4 p-4.5 rounded-sm border transition duration-200 cursor-pointer relative ${
+                              className={`flex items-start gap-4 p-4.5 rounded-md border transition duration-200 cursor-pointer relative ${
                                 isSelected 
-                                  ? "border-orange-500 bg-orange-500/[0.01] dark:bg-orange-500/[0.03]" 
-                                  : "border-slate-200 dark:border-slate-800 hover:border-slate-350 dark:hover:border-slate-700 bg-slate-50/10 dark:bg-slate-950/15 hover:bg-slate-50/50 dark:hover:bg-slate-950/20"
+                                  ? "border-orange-500 bg-orange-500/[0.03] dark:bg-orange-500/[0.08]" 
+                                  : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-slate-50 dark:hover:bg-slate-800/70"
                               }`}
                             >
                               
@@ -1319,7 +1319,7 @@ const PlaceOrder = () => {
                                     {isSelected && <div className="h-2.5 w-2.5 rounded-full bg-orange-500" />}
                                   </div>
                                 </div>
-                                <div className={`h-9 w-9 rounded-full flex items-center justify-center ${isSelected ? "bg-orange-500/10 text-orange-500" : "bg-slate-100 dark:bg-slate-950 text-slate-400 dark:text-slate-650"}`}>
+                                <div className={`h-9 w-9 rounded-full flex items-center justify-center ${isSelected ? "bg-orange-500/10 text-orange-500" : "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-400"}`}>
                                   {idx === 0 ? <Home size={16} /> : <Briefcase size={16} />}
                                 </div>
                               </div>
@@ -1329,38 +1329,38 @@ const PlaceOrder = () => {
                                 <div className="flex items-center gap-2">
                                   <span className="font-extrabold text-slate-900 dark:text-white text-[13px]">{addr.firstName} {addr.lastName}</span>
                                   {idx === 0 && (
-                                    <span className="bg-orange-50 dark:bg-orange-950/30 text-orange-500 border border-orange-500/10 text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded">
+                                    <span className="bg-orange-50 dark:bg-orange-950/60 text-orange-600 dark:text-orange-300 border border-orange-200 dark:border-orange-800 text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded">
                                       Default
                                     </span>
                                   )}
                                 </div>
-                                <p className="text-slate-600 dark:text-slate-400 mt-2 font-medium leading-relaxed">
+                                <p className="text-slate-700 dark:text-slate-200 mt-2 font-medium leading-relaxed">
                                   {addr.street}
                                 </p>
-                                <p className="text-slate-400 dark:text-slate-500 mt-0.5 font-semibold">
+                                <p className="text-slate-500 dark:text-slate-400 mt-0.5 font-semibold">
                                   {addr.city}, {addr.state}, {addr.country}
                                 </p>
-                                <div className="mt-2 flex items-center gap-1.5 text-slate-500 dark:text-slate-400 font-bold">
+                                <div className="mt-2 flex items-center gap-1.5 text-slate-600 dark:text-slate-300 font-bold">
                                   <Phone size={12} className="text-slate-400" />
                                   <span>{addr.phone}</span>
                                 </div>
                               </div>
 
                               {/* Actions bottom right */}
-                              <div className="absolute bottom-4 right-4 flex items-center gap-3 text-[10px] text-slate-450">
+                              <div className="absolute bottom-4 right-4 flex items-center gap-3 text-[10px]">
                                 <button
                                   type="button"
                                   onClick={(e) => handleOpenEditModal(addr, e)}
-                                  className="text-blue-500 hover:text-blue-600 hover:underline font-bold flex items-center gap-0.5"
+                                  className="text-blue-500 hover:text-blue-600 hover:underline font-bold flex items-center gap-0.5 cursor-pointer"
                                 >
                                   <Edit size={11} />
                                   Edit
                                 </button>
-                                <span className="text-slate-200 dark:text-slate-850">|</span>
+                                <span className="text-slate-200 dark:text-slate-700">|</span>
                                 <button
                                   type="button"
                                   onClick={(e) => handleDeleteAddress(addr._id, e)}
-                                  className="text-red-500 hover:text-red-655 hover:underline font-bold flex items-center gap-0.5"
+                                  className="text-red-500 hover:text-red-600 hover:underline font-bold flex items-center gap-0.5 cursor-pointer"
                                 >
                                   <Trash2 size={11} />
                                   Delete
@@ -1372,10 +1372,10 @@ const PlaceOrder = () => {
                       </div>
                     </>
                   ) : (
-                    <div className="py-8 text-center border border-dashed border-slate-205 dark:border-slate-800 rounded-sm bg-slate-50/30 dark:bg-slate-950/10 flex flex-col items-center">
-                      <MapPin className="h-8 w-8 text-slate-350 dark:text-slate-650 mb-2.5" />
-                      <p className="text-xs text-slate-550 dark:text-slate-400 font-extrabold">No saved delivery addresses found.</p>
-                      <p className="text-[10px] text-slate-450 mt-0.5">Please add a delivery location to continue.</p>
+                    <div className="py-8 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-sm bg-slate-50/50 dark:bg-slate-800/30 flex flex-col items-center">
+                      <MapPin className="h-8 w-8 text-slate-400 dark:text-slate-600 mb-2.5" />
+                      <p className="text-xs text-slate-600 dark:text-slate-300 font-extrabold">No saved delivery addresses found.</p>
+                      <p className="text-[10px] text-slate-400 mt-0.5">Please add a delivery location to continue.</p>
                     </div>
                   )}
 
@@ -1384,12 +1384,12 @@ const PlaceOrder = () => {
                     <button
                       type="button"
                       onClick={handleOpenAddModal}
-                      className="flex flex-col items-center justify-center p-4 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-transparent rounded-sm text-center group cursor-pointer transition"
+                      className="flex flex-col items-center justify-center p-4 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-slate-50/30 dark:bg-slate-800/40 rounded-md text-center group cursor-pointer transition"
                     >
                       <span className="text-xs font-black text-blue-500 flex items-center gap-1 hover:underline">
                         <Plus size={14} className="stroke-[2.5]" /> Add New Address
                       </span>
-                      <span className="text-[9px] text-slate-405 mt-1 font-semibold">Add a new delivery address</span>
+                      <span className="text-[9px] text-slate-400 dark:text-slate-400 mt-1 font-semibold">Add a new delivery address</span>
                     </button>
 
                     <button
@@ -1400,30 +1400,30 @@ const PlaceOrder = () => {
                           handleAutofillLocation();
                         }, 250);
                       }}
-                      className="flex flex-col items-center justify-center p-4 border border-slate-200 dark:border-slate-850 hover:border-slate-300 dark:hover:border-slate-700 bg-transparent rounded-sm text-center group cursor-pointer transition"
+                      className="flex flex-col items-center justify-center p-4 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-slate-50/30 dark:bg-slate-800/40 rounded-md text-center group cursor-pointer transition"
                     >
                       <span className="text-xs font-black text-blue-500 flex items-center gap-1 hover:underline">
                         <Navigation size={13} className="animate-pulse" /> Use Current Location
                       </span>
-                      <span className="text-[9px] text-slate-405 mt-1 font-semibold">Detect your location automatically</span>
+                      <span className="text-[9px] text-slate-400 dark:text-slate-400 mt-1 font-semibold">Detect your location automatically</span>
                     </button>
                   </div>
                 </div>
 
                 {/* Primary Proceed CTA */}
-                <div className="pt-4 border-t border-slate-100 dark:border-slate-800/80 space-y-3">
+                <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
                   <button
                     type="button"
                     onClick={handleDeliverToAddress}
                     disabled={!selectedAddressId}
-                    className="w-full rounded-sm bg-[#ff6a00] hover:bg-[#e65c00] py-3.5 text-xs font-black text-white uppercase tracking-wider shadow-md hover:shadow-lg active:scale-99 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
+                    className="w-full rounded-md bg-[#ff6a00] hover:bg-[#e65c00] py-3.5 text-xs font-black text-white uppercase tracking-wider shadow-md hover:shadow-lg active:scale-99 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
                   >
                     <ShoppingCart size={14} className="stroke-[2.5]" />
                     <span>Deliver to This Address</span>
                     <ArrowRight size={14} className="stroke-[2.5]" />
                   </button>
-                  <p className="text-[10px] text-slate-400 dark:text-slate-500 text-center flex items-center justify-center gap-1.5 font-semibold">
-                    <Lock size={11} className="text-slate-350" />
+                  <p className="text-[10px] text-slate-400 dark:text-slate-400 text-center flex items-center justify-center gap-1.5 font-semibold">
+                    <Lock size={11} className="text-slate-400" />
                     Your address is safe and secure with us
                   </p>
                 </div>
@@ -1445,11 +1445,11 @@ const PlaceOrder = () => {
                       <span className="bg-orange-500 text-white text-[11px] font-black h-5 w-5 rounded flex items-center justify-center">2</span>
                       Select a Payment Method
                     </h2>
-                    <p className="text-xs text-slate-400 dark:text-slate-550 mt-0.5 font-medium">Choose how you want to pay for your order</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-400 mt-0.5 font-medium">Choose how you want to pay for your order</p>
                   </div>
                 </div>
 
-                <hr className="border-slate-100 dark:border-slate-850" />
+                <hr className="border-slate-100 dark:border-slate-800" />
 
                 {/* Payment grids */}
                 <div className="space-y-3">
@@ -1464,10 +1464,10 @@ const PlaceOrder = () => {
                       <div
                         key={m.id}
                         onClick={() => setMethod(m.id)}
-                        className={`flex items-start gap-4.5 p-4 rounded-sm border transition duration-200 cursor-pointer ${
+                        className={`flex items-start gap-4.5 p-4 rounded-md border transition duration-200 cursor-pointer ${
                           isSelected 
-                            ? "border-orange-500 bg-orange-500/[0.01] dark:bg-orange-500/[0.03]" 
-                            : "border-slate-200 dark:border-slate-800 hover:border-slate-350 dark:hover:border-slate-700 bg-slate-50/10 dark:bg-slate-950/10 hover:bg-slate-50/50 dark:hover:bg-slate-950/20"
+                            ? "border-orange-500 bg-orange-500/[0.03] dark:bg-orange-500/[0.08]" 
+                            : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-slate-50 dark:hover:bg-slate-800/70"
                         }`}
                       >
                         <div className="mt-1 flex items-center gap-3 shrink-0">
@@ -1476,7 +1476,7 @@ const PlaceOrder = () => {
                               {isSelected && <div className="h-2.5 w-2.5 rounded-full bg-orange-500" />}
                             </div>
                           </div>
-                          <div className={`h-9 w-9 rounded-full flex items-center justify-center ${isSelected ? "bg-orange-500/10 text-orange-500" : "bg-slate-100 dark:bg-slate-950 text-slate-400 dark:text-slate-650"}`}>
+                          <div className={`h-9 w-9 rounded-full flex items-center justify-center ${isSelected ? "bg-orange-500/10 text-orange-500" : "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-400"}`}>
                             <Icon size={16} className={m.color} />
                           </div>
                         </div>
@@ -1484,11 +1484,11 @@ const PlaceOrder = () => {
                         <div className="flex-1 text-xs min-w-0 pr-4">
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-extrabold text-slate-900 dark:text-white text-[13px]">{m.title}</span>
-                            <span className="text-[9px] font-black uppercase tracking-wider bg-slate-100 dark:bg-slate-800/60 text-slate-500 px-2 py-0.5 rounded">
+                            <span className="text-[9px] font-black uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-300 px-2 py-0.5 rounded">
                               {m.tag}
                             </span>
                           </div>
-                          <p className="text-slate-400 dark:text-slate-500 mt-1 font-medium leading-relaxed">{m.desc}</p>
+                          <p className="text-slate-400 dark:text-slate-400 mt-1 font-medium leading-relaxed">{m.desc}</p>
                         </div>
                       </div>
                     );
@@ -1496,18 +1496,18 @@ const PlaceOrder = () => {
                 </div>
 
                 {/* Proceed payment button */}
-                <div className="pt-4 border-t border-slate-100 dark:border-slate-805 space-y-3">
+                <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
                   <button
                     type="button"
                     onClick={handleUsePaymentMethod}
                     disabled={!method}
-                    className="w-full rounded-sm bg-[#ff6a00] hover:bg-[#e65c00] py-3.5 text-xs font-black text-white uppercase tracking-wider shadow-md hover:shadow-lg active:scale-99 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
+                    className="w-full rounded-md bg-[#ff6a00] hover:bg-[#e65c00] py-3.5 text-xs font-black text-white uppercase tracking-wider shadow-md hover:shadow-lg active:scale-99 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
                   >
                     <span>Use This Payment Method</span>
                     <ArrowRight size={14} className="stroke-[2.5]" />
                   </button>
-                  <p className="text-[10px] text-slate-400 dark:text-slate-500 text-center flex items-center justify-center gap-1.5 font-semibold">
-                    <Lock size={11} className="text-slate-350" />
+                  <p className="text-[10px] text-slate-400 dark:text-slate-400 text-center flex items-center justify-center gap-1.5 font-semibold">
+                    <Lock size={11} className="text-slate-400" />
                     All payments are processed securely & encrypted
                   </p>
                 </div>
@@ -1529,29 +1529,29 @@ const PlaceOrder = () => {
                       <span className="bg-orange-500 text-white text-[11px] font-black h-5 w-5 rounded flex items-center justify-center">3</span>
                       Review Items and Delivery
                     </h2>
-                    <p className="text-xs text-slate-400 dark:text-slate-555 mt-0.5 font-medium">Please review items and press order confirmation to proceed</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-400 mt-0.5 font-medium">Please review items and press order confirmation to proceed</p>
                   </div>
                 </div>
 
-                <hr className="border-slate-100 dark:border-slate-850" />
+                <hr className="border-slate-100 dark:border-slate-800" />
 
                 {/* Items Stack */}
                 <div className="space-y-3">
                   {products.map((item, i) => (
                     <div
                       key={`${item._id}-${item.size}-${i}`}
-                      className="flex gap-4 rounded-sm border border-slate-150 dark:border-slate-800 bg-slate-50/10 dark:bg-slate-950/10 p-3 text-left hover:border-slate-205 dark:hover:border-slate-800 transition"
+                      className="flex gap-4 rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 p-3 text-left hover:border-slate-300 dark:hover:border-slate-700 transition"
                     >
                       <ProductImage item={item} />
                       <div className="min-w-0 flex-1 text-xs">
                         <p className="font-extrabold text-slate-900 dark:text-white text-[13px] truncate">{item.name}</p>
                         
                         <div className="flex flex-wrap gap-1.5 mt-1">
-                          <span className="text-[9px] font-black uppercase tracking-wider bg-slate-100 dark:bg-slate-800/60 text-slate-500 px-2 py-0.5 rounded">
+                          <span className="text-[9px] font-black uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded">
                             Qty: {item.qty}
                           </span>
                           {item.size && (
-                            <span className="text-[9px] font-black uppercase tracking-wider bg-slate-100 dark:bg-slate-800/60 text-slate-500 px-2 py-0.5 rounded">
+                            <span className="text-[9px] font-black uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded">
                               {item.size.includes(":") ? (
                                 item.size.split(",").map(pair => {
                                   const [k, v] = pair.split(":");
@@ -1564,7 +1564,7 @@ const PlaceOrder = () => {
                           )}
                         </div>
                         
-                        <p className="mt-2 font-extrabold text-slate-955 dark:text-white text-[14px]">
+                        <p className="mt-2 font-extrabold text-slate-900 dark:text-white text-[14px]">
                           ₹{item.price * item.qty}
                         </p>
                       </div>
@@ -1573,8 +1573,8 @@ const PlaceOrder = () => {
                 </div>
 
                 {/* Place order CTA */}
-                <div className="pt-4 border-t border-slate-100 dark:border-slate-805 space-y-4">
-                  <div className="flex items-start gap-2.5 text-[10px] text-slate-405 dark:text-slate-500 leading-relaxed font-semibold">
+                <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-4">
+                  <div className="flex items-start gap-2.5 text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
                     <ShieldCheck className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
                     <span>By placing your order, you agree to CartNOW's terms of use, privacy policies, and return conditions. An invoice will be dispatched upon order authorization.</span>
                   </div>
@@ -1582,7 +1582,7 @@ const PlaceOrder = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full rounded-sm bg-[#ff6a00] hover:bg-[#e65c00] py-3.5 text-xs font-black text-white uppercase tracking-wider shadow-md hover:shadow-lg active:scale-99 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
+                    className="w-full rounded-md bg-[#ff6a00] hover:bg-[#e65c00] py-3.5 text-xs font-black text-white uppercase tracking-wider shadow-md hover:shadow-lg active:scale-99 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
                   >
                     {loading ? (
                       <>
@@ -1609,12 +1609,12 @@ const PlaceOrder = () => {
             {/* Sidebar Card */}
             <aside className="h-fit rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs text-left">
               
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-3 mb-4">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
                 <h3 className="font-extrabold text-slate-900 dark:text-white text-[13px] uppercase tracking-wider flex items-center gap-1.5">
                   <ShoppingCart size={13} className="text-orange-500" />
                   Order Summary
                 </h3>
-                <span className="bg-slate-100 dark:bg-slate-950 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded font-black text-[9px] uppercase tracking-wider shrink-0">
+                <span className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded font-black text-[9px] uppercase tracking-wider shrink-0">
                   {products.reduce((sum, item) => sum + item.qty, 0)} Items
                 </span>
               </div>
@@ -1622,13 +1622,13 @@ const PlaceOrder = () => {
               {/* Items Summary list */}
               <div className="space-y-3 mb-5 max-h-48 overflow-y-auto pr-1 custom-scrollbar" data-lenis-prevent>
                 {products.map((item, i) => (
-                  <div key={`${item._id}-${item.size}-${i}`} className="flex gap-2.5 items-start text-xs border-b border-slate-55 dark:border-slate-850 pb-2.5 last:border-b-0 last:pb-0">
-                    <div className="h-12 w-12 rounded-md bg-slate-50 dark:bg-slate-955 border border-slate-200 dark:border-slate-800 p-1 flex items-center justify-center shrink-0">
+                  <div key={`${item._id}-${item.size}-${i}`} className="flex gap-2.5 items-start text-xs border-b border-slate-100 dark:border-slate-800 pb-2.5 last:border-b-0 last:pb-0">
+                    <div className="h-12 w-12 rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-1 flex items-center justify-center shrink-0">
                       <ProductImage item={item} />
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="font-bold text-slate-900 dark:text-white truncate">{item.name}</p>
-                      <p className="text-[10px] text-slate-400 mt-0.5 font-medium truncate">
+                      <p className="text-[10px] text-slate-400 dark:text-slate-400 mt-0.5 font-medium truncate">
                         {item.size && item.size.includes(":") ? (
                           item.size.split(",").map(pair => {
                             const [k, v] = pair.split(":");
@@ -1638,7 +1638,7 @@ const PlaceOrder = () => {
                           `Size: ${item.size}`
                         )}
                       </p>
-                      <p className="text-[10px] text-slate-400 mt-0.5 font-semibold">Qty: {item.qty}</p>
+                      <p className="text-[10px] text-slate-400 dark:text-slate-400 mt-0.5 font-semibold">Qty: {item.qty}</p>
                     </div>
                     <div className="font-extrabold text-slate-900 dark:text-white shrink-0 text-right">
                       ₹{(item.price * item.qty).toLocaleString("en-IN")}
@@ -1647,40 +1647,40 @@ const PlaceOrder = () => {
                 ))}
               </div>
 
-              <hr className="border-slate-100 dark:border-slate-850 my-4" />
+              <hr className="border-slate-100 dark:border-slate-800 my-4" />
 
               {/* Price Details table */}
               <div className="text-left space-y-2.5 text-xs">
                 
-                <div className="flex justify-between text-slate-500 dark:text-slate-400 font-medium">
+                <div className="flex justify-between text-slate-600 dark:text-slate-300 font-medium">
                   <span>Items Total ({products.reduce((sum, item) => sum + item.qty, 0)}):</span>
                   <span className="font-bold text-slate-900 dark:text-white">₹{subtotal.toLocaleString("en-IN")}</span>
                 </div>
                 
                 {discount > 0 && (
-                  <div className="flex justify-between text-emerald-600 dark:text-emerald-555 font-bold">
+                  <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-bold">
                     <span>Discount:</span>
                     <span>- ₹{discount.toLocaleString("en-IN")}</span>
                   </div>
                 )}
 
                 {giftWrap && (
-                  <div className="flex justify-between text-slate-500 dark:text-slate-400 font-medium">
+                  <div className="flex justify-between text-slate-600 dark:text-slate-300 font-medium">
                     <span>Gift Wrapping:</span>
                     <span className="font-bold text-slate-900 dark:text-white">₹50</span>
                   </div>
                 )}
                 
-                <div className="flex justify-between text-slate-500 dark:text-slate-400 font-medium">
+                <div className="flex justify-between text-slate-600 dark:text-slate-300 font-medium">
                   <span>Delivery:</span>
                   {shipping === 0 ? (
-                    <span className="font-extrabold text-emerald-600 dark:text-emerald-450 uppercase text-[10px]">FREE</span>
+                    <span className="font-extrabold text-emerald-600 dark:text-emerald-400 uppercase text-[10px]">FREE</span>
                   ) : (
                     <span className="font-bold text-slate-900 dark:text-white">₹{shipping}</span>
                   )}
                 </div>
 
-                <div className="flex justify-between text-slate-500 dark:text-slate-400 font-medium items-center">
+                <div className="flex justify-between text-slate-600 dark:text-slate-300 font-medium items-center">
                   <span className="flex items-center gap-1">
                     Platform Fee
                     <span className="text-[10px] cursor-help text-slate-400">ⓘ</span>
@@ -1688,18 +1688,18 @@ const PlaceOrder = () => {
                   <span className="font-bold text-slate-900 dark:text-white">₹{platformFee}</span>
                 </div>
                 
-                <hr className="border-slate-100 dark:border-slate-800/80 my-3" />
+                <hr className="border-slate-100 dark:border-slate-800 my-3" />
 
                 <div className="flex justify-between items-baseline pt-1">
                   <div>
                     <span className="text-sm font-extrabold text-slate-900 dark:text-white">Total Amount</span>
-                    <span className="text-[9px] text-slate-400 dark:text-slate-500 block font-semibold leading-none mt-0.5">(Inclusive of all taxes)</span>
+                    <span className="text-[9px] text-slate-400 dark:text-slate-400 block font-semibold leading-none mt-0.5">(Inclusive of all taxes)</span>
                   </div>
                   <span className="text-xl font-extrabold text-[#f95738] dark:text-[#f95738] tracking-tight">₹{finalTotal.toLocaleString("en-IN")}</span>
                 </div>
               </div>
 
-              <hr className="border-slate-100 dark:border-slate-800/80 my-4.5" />
+              <hr className="border-slate-100 dark:border-slate-800 my-4.5" />
 
               {/* Promo input field */}
               <div className="relative flex gap-2">
@@ -1709,7 +1709,7 @@ const PlaceOrder = () => {
                     value={couponCode}
                     onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                     placeholder="Enter promo code"
-                    className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-2.5 pl-8 text-xs font-bold uppercase tracking-wider outline-none text-slate-900 dark:text-white focus:border-orange-500 transition"
+                    className="w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2.5 pl-8 text-xs font-bold uppercase tracking-wider outline-none text-slate-900 dark:text-white focus:border-orange-500 transition placeholder:text-slate-400 dark:placeholder:text-slate-500"
                   />
                   <div className="absolute left-2.5 top-[12px] text-slate-400">
                     <span className="text-xs">🎫</span>
@@ -1720,7 +1720,7 @@ const PlaceOrder = () => {
                   <button
                     type="button"
                     onClick={handleRemoveCoupon}
-                    className="bg-slate-100 hover:bg-slate-205 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-500 hover:text-slate-700 dark:text-slate-400 font-extrabold text-[10px] uppercase tracking-wider px-3 rounded-md active:scale-95 transition cursor-pointer"
+                    className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-extrabold text-[10px] uppercase tracking-wider px-3 rounded-md active:scale-95 transition cursor-pointer"
                   >
                     Remove
                   </button>
@@ -1729,7 +1729,7 @@ const PlaceOrder = () => {
                     type="button"
                     onClick={handleApplyCoupon}
                     disabled={couponLoading || !couponCode.trim()}
-                    className="bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-855 text-blue-500 font-extrabold border border-slate-200 dark:border-slate-800 text-[10px] uppercase tracking-wider px-4 rounded-md active:scale-95 transition disabled:opacity-50 cursor-pointer"
+                    className="bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-blue-500 font-extrabold border border-slate-200 dark:border-slate-700 text-[10px] uppercase tracking-wider px-4 rounded-md active:scale-95 transition disabled:opacity-50 cursor-pointer"
                   >
                     {couponLoading ? "..." : "Apply"}
                   </button>
@@ -1743,11 +1743,11 @@ const PlaceOrder = () => {
               )}
 
               {/* Secure banner */}
-              <div className="mt-5 flex items-start gap-3 bg-emerald-500/[0.04] dark:bg-emerald-500/[0.08] border border-emerald-500/10 rounded-sm p-4 text-xs text-left leading-relaxed">
-                <ShieldCheck className="h-5 w-5 text-emerald-505 shrink-0 mt-0.5" />
+              <div className="mt-5 flex items-start gap-3 bg-emerald-500/[0.04] dark:bg-emerald-500/[0.12] border border-emerald-500/20 rounded-md p-4 text-xs text-left leading-relaxed">
+                <ShieldCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                 <div>
                   <span className="font-extrabold text-slate-900 dark:text-white">Secure Checkout</span>
-                  <p className="text-[10px] text-slate-400 mt-0.5 font-semibold">SSL Encrypted • 256-bit Security</p>
+                  <p className="text-[10px] text-slate-400 dark:text-slate-400 mt-0.5 font-semibold">SSL Encrypted • 256-bit Security</p>
                 </div>
               </div>
 

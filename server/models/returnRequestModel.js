@@ -90,7 +90,9 @@ returnRequestSchema.pre("save", function (next) {
   if (!this.verificationCode) {
     this.verificationCode = Math.random().toString(36).substring(2, 8).toUpperCase();
   }
-  next();
+  if (typeof next === "function") {
+    next();
+  }
 });
 
 const returnRequestModel =

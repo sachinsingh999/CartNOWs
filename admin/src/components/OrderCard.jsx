@@ -1,5 +1,5 @@
 import React from "react";
-import { User, Calendar, MapPin, Package, Clock, ArrowRight, CheckCircle2 } from "lucide-react";
+import { User, Calendar, MapPin, Package, Clock, ArrowRight, CheckCircle2, Store } from "lucide-react";
 
 const dlIndicatorColor = {
   ok:       "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]",
@@ -37,6 +37,7 @@ const OrderCard = ({ order, drivers, onClick }) => {
   const shortId = order._id.slice(-6).toUpperCase();
   const progress = getStatusProgress(order.orderStatus);
   const assignedDriverName = drivers.find(d => d._id === order.deliverymanId)?.name;
+  const mainShopName = order.items?.[0]?.shopName || order.sellers?.[0]?.shopName || "Platform Store";
 
   return (
     <div
@@ -72,9 +73,15 @@ const OrderCard = ({ order, drivers, onClick }) => {
         </h4>
 
         {/* Item preview */}
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 line-clamp-1 font-medium flex items-center gap-1.5">
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-1 font-medium flex items-center gap-1.5">
           <Package size={12} className="text-slate-400 shrink-0" />
           <span>{order.items.map(i => `${i.name} (x${i.qty})`).join(", ")}</span>
+        </p>
+
+        {/* Seller / Store preview */}
+        <p className="text-[10px] text-slate-400 dark:text-slate-400 mt-1 font-bold flex items-center gap-1.5 truncate">
+          <Store size={10} className="text-orange-500 shrink-0" />
+          <span className="truncate">Store: <strong className="text-slate-700 dark:text-slate-300">{mainShopName}</strong></span>
         </p>
       </div>
 

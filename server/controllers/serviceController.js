@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import helpRequestModel from "../models/helpRequestModel.js";
 import orderModel from "../models/orderModel.js";
 import returnRequestModel from "../models/returnRequestModel.js";
@@ -15,16 +16,24 @@ const createReturnRequest = async (req, res) => {
   try {
     const { orderId, productId, size, reason, feedback, returnType, exchangeSize } = req.body;
 
+    const cleanProductId = productId || req.body._id || req.body.id;
     const cleanReason = sanitizeText(reason);
     const cleanFeedback = sanitizeText(feedback);
     const cleanSize = sanitizeText(size);
     const cleanReturnType = sanitizeText(returnType) || "Refund";
     const cleanExchangeSize = sanitizeText(exchangeSize) || "";
 
-    if (!orderId || !productId || !cleanReason) {
+    if (!orderId || !cleanProductId || !cleanReason) {
       return res.status(400).json({
         success: false,
         message: "Order, product, and reason are required.",
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(orderId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid order ID format.",
       });
     }
 
@@ -40,11 +49,19 @@ const createReturnRequest = async (req, res) => {
       });
     }
 
-    const item = order.items.find(
-      (entry) =>
-        String(entry.productId) === String(productId) &&
-        sanitizeText(entry.size) === cleanSize
-    );
+    const item = order.items.find((entry) => {
+      const entryProdId = String(entry.productId || entry._id || entry.id || "");
+      const targetProdId = String(cleanProductId || "");
+      const entrySize = sanitizeText(entry.size);
+
+      const isProdMatch = entryProdId && targetProdId && entryProdId === targetProdId;
+      if (!isProdMatch) return false;
+
+      if (!entrySize || !cleanSize || entrySize === "N/A" || cleanSize === "N/A") {
+        return true;
+      }
+      return entrySize.toLowerCase() === cleanSize.toLowerCase();
+    });
 
     if (!item) {
       return res.status(404).json({
@@ -53,10 +70,11 @@ const createReturnRequest = async (req, res) => {
       });
     }
 
+    const queryProdId = mongoose.Types.ObjectId.isValid(cleanProductId) ? cleanProductId : null;
     const existingRequest = await returnRequestModel.findOne({
       userId: req.user._id,
       orderId,
-      productId,
+      ...(queryProdId ? { productId: queryProdId } : {}),
       itemSize: cleanSize,
     });
 
@@ -70,12 +88,14 @@ const createReturnRequest = async (req, res) => {
     const createdRequest = await returnRequestModel.create({
       userId: req.user._id,
       orderId,
-      productId,
-      itemName: item.name,
-      itemImage: Array.isArray(item.image) ? item.image[0] : item.image,
+      productId: queryProdId,
+      itemName: item.name || item.title || item.productName || "Returned Item",
+      itemImage: Array.isArray(item.image)
+        ? (item.image[0] || "")
+        : (item.image || (Array.isArray(item.images) ? (item.images[0] || "") : (item.images || ""))),
       itemSize: cleanSize,
-      quantity: Number(item.qty) || 1,
-      amount: (Number(item.price) || 0) * (Number(item.qty) || 1),
+      quantity: Number(item.qty || item.quantity) || 1,
+      amount: (Number(item.price) || 0) * (Number(item.qty || item.quantity) || 1),
       reason: cleanReason,
       feedback: cleanFeedback,
       returnType: cleanReturnType,
@@ -88,6 +108,7 @@ const createReturnRequest = async (req, res) => {
       returnRequest: createdRequest,
     });
   } catch (error) {
+    console.error("Error in createReturnRequest:", error);
     return res.status(500).json({
       success: false,
       message: error.message,

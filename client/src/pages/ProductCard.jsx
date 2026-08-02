@@ -82,10 +82,9 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
       const key = `${product._id}_${size}`;
       guestCart[key] = (guestCart[key] || 0) + 1;
       localStorage.setItem("cart", JSON.stringify(guestCart));
-      setTimeout(() => {
-        window.dispatchEvent(new Event("cartUpdate"));
-      }, 850);
+      window.dispatchEvent(new Event("cartUpdate"));
       toast.success("Added to cart! 🛍️");
+      navigate("/cart");
     } else {
       try {
         const res = await axios.post(
@@ -94,10 +93,9 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
           { headers: { Authorization: `Bearer ${token}` } }
         );
         if (res.data.success) {
-          setTimeout(() => {
-            window.dispatchEvent(new Event("cartUpdate"));
-          }, 850);
+          window.dispatchEvent(new Event("cartUpdate"));
           toast.success("Added to cart! 🛍️");
+          navigate("/cart");
         } else {
           toast.error(res.data.message);
         }
