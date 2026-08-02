@@ -3,11 +3,12 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { backendUrl } from "../config";
-import { Star, Eye, ShoppingCart, Heart, BarChart2, Truck, Sparkles, CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Star, Eye, ShoppingCart, Heart, BarChart2, Truck, Sparkles, CheckCircle2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { useComparison } from "../context/ComparisonContext";
 import { getAverageRating, getReviewCount } from "../utils/productRatings";
 
 const HomeProductCard = ({ product, onQuickView }) => {
+  const [isAdding, setIsAdding] = useState(false);
   const navigate = useNavigate();
   const [imgIdx, setImgIdx] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
@@ -18,6 +19,11 @@ const HomeProductCard = ({ product, onQuickView }) => {
   const isComparing = isInCompare(product._id);
 
   useEffect(() => {
+    setImgError(false);
+    setImgIdx(0);
+  }, [product]);
+
+  useEffect(() => {
     try {
       const list = JSON.parse(localStorage.getItem("wishlist")) || [];
       setIsFavorite(list.includes(product._id));
@@ -25,11 +31,6 @@ const HomeProductCard = ({ product, onQuickView }) => {
       console.error(e);
     }
   }, [product._id]);
-
-  useEffect(() => {
-    setImgError(false);
-    setImgIdx(0);
-  }, [product]);
 
   const toggleFavorite = async (e) => {
     e.stopPropagation();
@@ -66,18 +67,39 @@ const HomeProductCard = ({ product, onQuickView }) => {
   };
 
   const handleAddToCart = async (e) => {
-    e.stopPropagation();
-    if (isOOS) return;
+    if (e && e.stopPropagation) e.stopPropagation();
+    if (isOOS || isAdding) return;
 
     const size = product.sizes?.length ? product.sizes[0] : "standard";
 
+    let guestCart = {};
+    try {
+      guestCart = JSON.parse(localStorage.getItem("cart") || "{}");
+    } catch (err) {}
+
+    const keyPrefix = `${product._id}_`;
+    let alreadyInCart = false;
+    for (const k in guestCart) {
+      if ((k === `${product._id}_${size}` || k.startsWith(keyPrefix)) && guestCart[k] > 0) {
+        alreadyInCart = true;
+        break;
+      }
+    }
+
+    if (alreadyInCart) {
+      toast.info("Product is already in your cart");
+      navigate("/cart");
+      return;
+    }
+
+    setIsAdding(true);
+
     if (!token) {
-      const guestCart = JSON.parse(localStorage.getItem("cart") || "{}");
-      const key = `${product._id}_${size}`;
-      guestCart[key] = (guestCart[key] || 0) + 1;
+      guestCart[`${product._id}_${size}`] = 1;
       localStorage.setItem("cart", JSON.stringify(guestCart));
       window.dispatchEvent(new Event("cartUpdate"));
       toast.success("Added to cart! 🛍️");
+      setIsAdding(false);
       navigate("/cart");
     } else {
       try {
@@ -86,15 +108,21 @@ const HomeProductCard = ({ product, onQuickView }) => {
           { itemId: product._id, size, qty: 1 },
           { headers: { Authorization: `Bearer ${token}` } }
         );
+
         if (res.data.success) {
+          guestCart[`${product._id}_${size}`] = 1;
+          localStorage.setItem("cart", JSON.stringify(guestCart));
           window.dispatchEvent(new Event("cartUpdate"));
           toast.success("Added to cart! 🛍️");
+          setIsAdding(false);
           navigate("/cart");
         } else {
-          toast.error(res.data.message);
+          toast.error(res.data.message || "Failed to add to cart");
+          setIsAdding(false);
         }
       } catch (err) {
-        toast.error("Error adding to cart");
+        toast.error(err.response?.data?.message || "Error adding to cart");
+        setIsAdding(false);
       }
     }
   };
@@ -336,12 +364,21 @@ const HomeProductCard = ({ product, onQuickView }) => {
         <div className="flex items-center gap-2 mt-2.5 pt-2.5 border-t border-slate-100 dark:border-slate-800/80">
           <button
             type="button"
-            disabled={isOOS}
+            disabled={isOOS || isAdding}
             onClick={handleAddToCart}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-sm text-[10px] font-black uppercase tracking-wider transition-all duration-200 active:scale-95 cursor-pointer border-none ${isOOS ? "bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-650 cursor-not-allowed" : "bg-slate-900 dark:bg-indigo-600 text-white hover:bg-slate-800 dark:hover:bg-indigo-500 shadow-3xs"}`}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-sm text-[10px] font-black uppercase tracking-wider transition-all duration-200 active:scale-95 cursor-pointer border-none ${isOOS || isAdding ? "bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 cursor-not-allowed" : "bg-slate-900 dark:bg-indigo-600 text-white hover:bg-slate-800 dark:hover:bg-indigo-500 shadow-3xs"}`}
           >
-            <ShoppingCart size={11} className="stroke-[2.5]" />
-            <span>{isOOS ? "Sold Out" : "Add to Cart"}</span>
+            {isAdding ? (
+              <>
+                <Loader2 size={11} className="animate-spin stroke-[2.5]" />
+                <span>Adding...</span>
+              </>
+            ) : (
+              <>
+                <ShoppingCart size={11} className="stroke-[2.5]" />
+                <span>{isOOS ? "Sold Out" : "Add to Cart"}</span>
+              </>
+            )}
           </button>
           
           <button

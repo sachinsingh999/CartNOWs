@@ -657,6 +657,8 @@ const ProductDetail = () => {
   };
 
   const handleCart = async () => {
+    if (isAdding) return;
+
     if (hasDynamicAttrs) {
       const attrKeys = Object.keys(parsedAttributes);
       const missing = attrKeys.filter(k => !selectedAttributes[k]);
@@ -674,31 +676,65 @@ const ProductDetail = () => {
       ? Object.keys(selectedAttributes).sort().map(k => `${k}:${selectedAttributes[k]}`).join(",")
       : (size || "standard");
 
-    if (!token) {
-      const guestCart = JSON.parse(localStorage.getItem("cart") || "{}");
-      const key = `${product._id}_${cartSize}`;
-      guestCart[key] = (guestCart[key] || 0) + qty;
-      localStorage.setItem("cart", JSON.stringify(guestCart));
-      toast.success("Added to cart!");
+    // 1. Check if product already exists in user's cart
+    let guestCart = {};
+    try {
+      guestCart = JSON.parse(localStorage.getItem("cart") || "{}");
+    } catch (err) {}
+
+    const keyPrefix = `${product._id}_`;
+    let alreadyInCart = false;
+    for (const k in guestCart) {
+      if ((k === `${product._id}_${cartSize}` || k.startsWith(keyPrefix)) && guestCart[k] > 0) {
+        alreadyInCart = true;
+        break;
+      }
+    }
+
+    if (alreadyInCart) {
+      toast.info("Product is already in your cart");
       navigate("/cart");
       return;
     }
 
-    try {
-      await axios.post(
-        `${backendUrl}/api/cart/add`,
-        { 
-          itemId: product._id, 
-          size: cartSize, 
-          qty,
-          selectedAttributes: hasDynamicAttrs ? selectedAttributes : undefined
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      toast.success("Added to cart!");
+    // 2. Lock button & set loading state
+    setIsAdding(true);
+
+    if (!token) {
+      guestCart[`${product._id}_${cartSize}`] = qty || 1;
+      localStorage.setItem("cart", JSON.stringify(guestCart));
+      window.dispatchEvent(new Event("cartUpdate"));
+      toast.success("Added to cart! 🛍️");
+      setIsAdding(false);
       navigate("/cart");
-    } catch (err) {
-      toast.error("Failed to add to cart");
+    } else {
+      try {
+        const res = await axios.post(
+          `${backendUrl}/api/cart/add`,
+          { 
+            itemId: product._id, 
+            size: cartSize, 
+            qty: qty || 1,
+            selectedAttributes: hasDynamicAttrs ? selectedAttributes : undefined
+          },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        if (res.data.success) {
+          guestCart[`${product._id}_${cartSize}`] = qty || 1;
+          localStorage.setItem("cart", JSON.stringify(guestCart));
+          window.dispatchEvent(new Event("cartUpdate"));
+          toast.success("Added to cart! 🛍️");
+          setIsAdding(false);
+          navigate("/cart");
+        } else {
+          toast.error(res.data.message || "Failed to add to cart");
+          setIsAdding(false);
+        }
+      } catch (err) {
+        toast.error(err.response?.data?.message || "Error adding to cart");
+        setIsAdding(false);
+      }
     }
   };
 
@@ -1331,14 +1367,23 @@ const ProductDetail = () => {
             <div className="grid gap-3 pt-2">
               <div className="grid grid-cols-2 gap-3">
                 <motion.button
-                  whileHover={!isPurchaseDisabled ? { scale: 1.02, y: -1 } : {}}
-                  whileTap={!isPurchaseDisabled ? { scale: 0.98 } : {}}
+                  whileHover={!isPurchaseDisabled && !isAdding ? { scale: 1.02, y: -1 } : {}}
+                  whileTap={!isPurchaseDisabled && !isAdding ? { scale: 0.98 } : {}}
                   onClick={handleCart}
-                  disabled={isPurchaseDisabled}
-                  className={`flex items-center justify-center gap-2 rounded-xl py-3 text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${ isPurchaseDisabled ? "bg-slate-100 dark:bg-slate-800 text-slate-300 dark:text-slate-600 border border-slate-200 dark:border-slate-800 cursor-not-allowed opacity-50" : "border-2 border-slate-900 dark:border-slate-100 text-slate-900 dark:text-slate-100 hover:bg-slate-900 hover:text-white dark:hover:bg-slate-100 dark:hover:text-slate-900 hover:shadow-xs" }`}
+                  disabled={isPurchaseDisabled || isAdding}
+                  className={`flex items-center justify-center gap-2 rounded-xl py-3 text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${ isPurchaseDisabled || isAdding ? "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-600 border border-slate-200 dark:border-slate-800 cursor-not-allowed opacity-50" : "border-2 border-slate-900 dark:border-slate-100 text-slate-900 dark:text-slate-100 hover:bg-slate-900 hover:text-white dark:hover:bg-slate-100 dark:hover:text-slate-900 hover:shadow-xs" }`}
                 >
-                  <ShoppingCart size={13} />
-                  <span>Add to Cart</span>
+                  {isAdding ? (
+                    <>
+                      <Loader2 size={13} className="animate-spin" />
+                      <span>Adding...</span>
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingCart size={13} />
+                      <span>Add to Cart</span>
+                    </>
+                  )}
                 </motion.button>
 
                 <motion.button
@@ -1728,10 +1773,17 @@ const ProductDetail = () => {
 
             <button
               onClick={handleCart}
-              disabled={isPurchaseDisabled}
-              className={`px-6 py-3 text-[10px] font-black uppercase tracking-wider rounded-xl transition active:scale-95 shadow-md ${ isPurchaseDisabled ? "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-60" : "bg-slate-950 dark:bg-indigo-600 hover:bg-slate-800 dark:hover:bg-indigo-700 text-slate-100 dark:text-white cursor-pointer" }`}
+              disabled={isPurchaseDisabled || isAdding}
+              className={`px-6 py-3 text-[10px] font-black uppercase tracking-wider rounded-xl transition active:scale-95 shadow-md flex items-center gap-1.5 ${ isPurchaseDisabled || isAdding ? "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-60" : "bg-slate-950 dark:bg-indigo-600 hover:bg-slate-800 dark:hover:bg-indigo-700 text-slate-100 dark:text-white cursor-pointer" }`}
             >
-              Add to Cart
+              {isAdding ? (
+                <>
+                  <Loader2 size={12} className="animate-spin" />
+                  <span>Adding...</span>
+                </>
+              ) : (
+                "Add to Cart"
+              )}
             </button>
             <button
               onClick={handleBuyNow}

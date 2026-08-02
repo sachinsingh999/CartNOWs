@@ -39,9 +39,11 @@ const addToCart = async (req, res) => {
     const cartData = { ...user.cartData };
 
     const key = getCartKey(itemId, size, selectedAttributes);
-    cartData[key] = (cartData[key] || 0) + qty;
+    const addQty = Number(qty) > 0 ? Number(qty) : 1;
+    cartData[key] = (cartData[key] || 0) + addQty;
 
     user.cartData = cartData;
+    user.markModified("cartData");
     await user.save();
 
     // Track cart additions dynamically

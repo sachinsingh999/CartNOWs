@@ -323,35 +323,67 @@ const Discover = () => {
     }
   };
 
+  const [addingIds, setAddingIds] = useState({});
+
   // Add to cart
   const onAddToCart = async (product, qty = 1, size = "Standard") => {
+    if (!product || addingIds[product._id]) return;
     const token = localStorage.getItem("token") || "";
     if (product.stock === 0) return;
 
+    // 1. Check if product already exists in user's cart
+    let guestCart = {};
+    try {
+      guestCart = JSON.parse(localStorage.getItem("cart") || "{}");
+    } catch (err) {}
+
+    const keyPrefix = `${product._id}_`;
+    let alreadyInCart = false;
+    for (const k in guestCart) {
+      if ((k === `${product._id}_${size}` || k.startsWith(keyPrefix)) && guestCart[k] > 0) {
+        alreadyInCart = true;
+        break;
+      }
+    }
+
+    if (alreadyInCart) {
+      toast.info("Product is already in your cart");
+      navigate("/cart");
+      return;
+    }
+
+    // 2. Lock button & set loading state
+    setAddingIds(prev => ({ ...prev, [product._id]: true }));
+
     if (!token) {
-      const guestCart = JSON.parse(localStorage.getItem("cart") || "{}");
-      const key = `${product._id}_${size}`;
-      guestCart[key] = (guestCart[key] || 0) + qty;
+      guestCart[`${product._id}_${size}`] = qty || 1;
       localStorage.setItem("cart", JSON.stringify(guestCart));
       window.dispatchEvent(new Event("cartUpdate"));
       toast.success("Added to cart! 🛍️");
+      setAddingIds(prev => ({ ...prev, [product._id]: false }));
       navigate("/cart");
     } else {
       try {
         const res = await axios.post(
           `${backendUrl}/api/cart/add`,
-          { itemId: product._id, size, qty },
+          { itemId: product._id, size, qty: qty || 1 },
           { headers: { Authorization: `Bearer ${token}` } }
         );
+
         if (res.data.success) {
+          guestCart[`${product._id}_${size}`] = qty || 1;
+          localStorage.setItem("cart", JSON.stringify(guestCart));
           window.dispatchEvent(new Event("cartUpdate"));
           toast.success("Added to cart! 🛍️");
+          setAddingIds(prev => ({ ...prev, [product._id]: false }));
           navigate("/cart");
         } else {
-          toast.error(res.data.message);
+          toast.error(res.data.message || "Failed to add to cart");
+          setAddingIds(prev => ({ ...prev, [product._id]: false }));
         }
       } catch (err) {
-        toast.error("Error adding to cart");
+        toast.error(err.response?.data?.message || "Error adding to cart");
+        setAddingIds(prev => ({ ...prev, [product._id]: false }));
       }
     }
   };

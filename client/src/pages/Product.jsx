@@ -722,37 +722,72 @@ const Product = () => {
     setQuickViewActiveImg(src.startsWith("http") ? src : `${backendUrl}/${src}`);
   };
 
-  const handleQuickViewAddToCart = async () => {
-    if (!quickViewProduct) return;
+  const [isQuickViewAdding, setIsQuickViewAdding] = useState(false);
+
+  const handleQuickViewAddToCart = async (p, size = "standard") => {
+    const prod = p || quickViewProduct;
+    if (!prod || isQuickViewAdding) return;
     const token = localStorage.getItem("token") || "";
+    const chosenSize = size || quickViewSelectedSize || "standard";
+
+    // 1. Check if product already exists in user's cart
+    let guestCart = {};
+    try {
+      guestCart = JSON.parse(localStorage.getItem("cart") || "{}");
+    } catch (err) {}
+
+    const keyPrefix = `${prod._id}_`;
+    let alreadyInCart = false;
+    for (const k in guestCart) {
+      if ((k === `${prod._id}_${chosenSize}` || k.startsWith(keyPrefix)) && guestCart[k] > 0) {
+        alreadyInCart = true;
+        break;
+      }
+    }
+
+    if (alreadyInCart) {
+      toast.info("Product is already in your cart");
+      setQuickViewProduct(null);
+      navigate("/cart");
+      return;
+    }
+
+    // 2. Lock button & set loading state
+    setIsQuickViewAdding(true);
 
     if (!token) {
-      const guestCart = JSON.parse(localStorage.getItem("cart") || "{}");
-      const key = `${quickViewProduct._id}_${quickViewSelectedSize}`;
-      guestCart[key] = (guestCart[key] || 0) + 1;
+      guestCart[`${prod._id}_${chosenSize}`] = 1;
       localStorage.setItem("cart", JSON.stringify(guestCart));
       window.dispatchEvent(new Event("cartUpdate"));
       toast.success("Added to cart! 🛍️");
+      setIsQuickViewAdding(false);
+      setQuickViewProduct(null);
       navigate("/cart");
     } else {
       try {
         const res = await axios.post(
           `${backendUrl}/api/cart/add`,
-          { itemId: quickViewProduct._id, size: quickViewSelectedSize, qty: 1 },
+          { itemId: prod._id, size: chosenSize, qty: 1 },
           { headers: { Authorization: `Bearer ${token}` } }
         );
+
         if (res.data.success) {
+          guestCart[`${prod._id}_${chosenSize}`] = 1;
+          localStorage.setItem("cart", JSON.stringify(guestCart));
           window.dispatchEvent(new Event("cartUpdate"));
           toast.success("Added to cart! 🛍️");
+          setIsQuickViewAdding(false);
+          setQuickViewProduct(null);
           navigate("/cart");
         } else {
-          toast.error(res.data.message);
+          toast.error(res.data.message || "Failed to add to cart");
+          setIsQuickViewAdding(false);
         }
       } catch (err) {
-        toast.error("Error adding to cart");
+        toast.error(err.response?.data?.message || "Error adding to cart");
+        setIsQuickViewAdding(false);
       }
     }
-    setQuickViewProduct(null);
   };
 
   const handleQuickViewBuyNow = async () => {
