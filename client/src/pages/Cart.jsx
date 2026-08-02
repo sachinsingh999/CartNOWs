@@ -142,6 +142,7 @@ const Cart = () => {
       }
 
       setCartItems(items);
+      window.dispatchEvent(new Event("cartUpdate"));
     } catch (error) {
       console.log("CART FETCH ERROR:", error);
     } finally {
@@ -476,6 +477,19 @@ const Cart = () => {
     date.setDate(date.getDate() + 3);
     return date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
   };
+
+  if (pageLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 px-4 sm:px-6 py-6 text-slate-800 dark:text-slate-100">
+        <div className="mx-auto max-w-[1440px] space-y-6">
+          <div className="border-b border-slate-200 dark:border-slate-800/60 pb-4 text-left">
+            <h1 className="text-xl sm:text-2xl font-black text-slate-950 dark:text-white">Shopping Cart</h1>
+          </div>
+          <CartSkeleton />
+        </div>
+      </div>
+    );
+  }
 
   if (cartItems.length === 0 && savedItems.length === 0) {
     return (

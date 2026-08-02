@@ -602,6 +602,9 @@ export const cancelOrderAdmin = async (req, res) => {
   try {
     const { orderId } = req.body;
     const order = await orderModel.findByIdAndUpdate(orderId, { orderStatus: "Cancelled" }, { new: true });
+    if (order) {
+      await orderItemModel.updateMany({ orderId }, { $set: { status: "Cancelled" } });
+    }
     await writeLog(req, "Cancel Order", `Order #${orderId}`, `Order set to Cancelled`);
     res.json({ success: true, message: "Order cancelled successfully", order });
   } catch (error) {
@@ -613,6 +616,9 @@ export const resolveDispute = async (req, res) => {
   try {
     const { orderId, resolution } = req.body;
     const order = await orderModel.findByIdAndUpdate(orderId, { orderStatus: resolution }, { new: true });
+    if (order) {
+      await orderItemModel.updateMany({ orderId }, { $set: { status: resolution } });
+    }
     await writeLog(req, "Resolve Order Dispute", `Order #${orderId}`, `Resolution: ${resolution}`);
     res.json({ success: true, message: "Order dispute resolved", order });
   } catch (error) {
@@ -641,7 +647,7 @@ export const updateReturnStatus = async (req, res) => {
     await returnReq.save();
 
     if (status === "Completed" || status === "Approved") {
-      await orderModel.findByIdAndUpdate(returnReq.orderId, { paymentStatus: "Refunded" });
+      await orderModel.findByIdAndUpdate(returnReq.orderId, { paymentStatus: "refunded" });
     }
 
     await writeLog(req, "Update Return Status", `Return ID: ${requestId}`, `Status set to: ${status}`);
@@ -746,7 +752,7 @@ export const getAuditLogs = async (req, res) => {
 /* ================= ANALYTICS & REPORTS ================= */
 export const getAdminRevenueAnalytics = async (req, res) => {
   try {
-    const orders = await orderModel.find({ paymentStatus: "Paid" });
+    const orders = await orderModel.find({ paymentStatus: { $in: ["paid", "Paid"] } });
     const totalRev = orders.reduce((sum, o) => sum + Number(o.amount || 0), 0);
     res.json({ success: true, totalRevenue: totalRev, orderCount: orders.length });
   } catch (error) {

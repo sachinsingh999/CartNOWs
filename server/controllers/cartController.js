@@ -1,4 +1,6 @@
+import mongoose from "mongoose";
 import userModel from "../models/userModel.js";
+import productModel from "../models/productModel.js";
 import { trackCartAdd } from "../utils/analyticsHelper.js";
 
 // Helper to construct serialized key
@@ -82,9 +84,54 @@ const getUserCart = async (req, res) => {
       });
     }
 
+    const rawCart = user.cartData || {};
+    let cartData = { ...rawCart };
+    let modified = false;
+
+    // Extract unique product IDs
+    const uniqueIds = [];
+    for (const key in cartData) {
+      if (Number(cartData[key]) > 0) {
+        const firstUnderscoreIdx = key.indexOf("_");
+        const itemId = firstUnderscoreIdx !== -1 ? key.substring(0, firstUnderscoreIdx) : key;
+        if (mongoose.Types.ObjectId.isValid(itemId) && !uniqueIds.includes(itemId)) {
+          uniqueIds.push(itemId);
+        }
+      } else {
+        delete cartData[key];
+        modified = true;
+      }
+    }
+
+    // Filter out deleted/non-existent products
+    if (uniqueIds.length > 0) {
+      const existingProducts = await productModel.find({ _id: { $in: uniqueIds } }).select("_id").lean();
+      const existingIdSet = new Set(existingProducts.map((p) => p._id.toString()));
+
+      for (const key in cartData) {
+        const firstUnderscoreIdx = key.indexOf("_");
+        const itemId = firstUnderscoreIdx !== -1 ? key.substring(0, firstUnderscoreIdx) : key;
+        if (!existingIdSet.has(itemId)) {
+          delete cartData[key];
+          modified = true;
+        }
+      }
+    } else {
+      if (Object.keys(cartData).length > 0) {
+        cartData = {};
+        modified = true;
+      }
+    }
+
+    if (modified) {
+      user.cartData = cartData;
+      user.markModified("cartData");
+      await user.save();
+    }
+
     res.json({
       success: true,
-      cartData: user.cartData || {},
+      cartData,
     });
   } catch (error) {
     console.log("GET CART ERROR 👉", error);

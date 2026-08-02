@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import helpRequestModel from "../models/helpRequestModel.js";
 import orderModel from "../models/orderModel.js";
+import orderItemModel from "../models/orderItemModel.js";
 import returnRequestModel from "../models/returnRequestModel.js";
 import userModel from "../models/userModel.js";
 import productModel from "../models/productModel.js";
@@ -8,6 +9,7 @@ import { v2 as cloudinary } from "cloudinary";
 import axios from "axios";
 import fs from "fs";
 import { createNotification } from "../utils/notificationHelper.js";
+import { syncParentOrderStatus } from "../utils/orderStatusHelper.js";
 
 
 const sanitizeText = (value) => (typeof value === "string" ? value.trim() : "");
@@ -101,6 +103,26 @@ const createReturnRequest = async (req, res) => {
       returnType: cleanReturnType,
       exchangeSize: cleanExchangeSize,
     });
+
+    // Update orderItemModel status
+    await orderItemModel.findByIdAndUpdate(item._id, {
+      status: "Return Requested",
+      returnReason: cleanReason,
+      returnedAt: new Date(),
+      refundAmount: createdRequest.amount,
+      refundStatus: "pending",
+    });
+
+    // Sync parent order status
+    await syncParentOrderStatus(orderId);
+
+    // Create user notification
+    await createNotification(
+      req.user._id,
+      orderId,
+      "Return Requested",
+      `Return request received for "${item.name || item.productName || "item"}". We will arrange pickup soon.`
+    );
 
     return res.json({
       success: true,

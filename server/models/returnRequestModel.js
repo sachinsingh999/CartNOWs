@@ -2,20 +2,40 @@ import mongoose from "mongoose";
 
 const returnRequestSchema = new mongoose.Schema(
   {
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "user",
+    requestNumber: {
+      type: String,
       required: true,
+      unique: true,
+      index: true,
     },
     orderId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "order",
       required: true,
+      index: true,
+    },
+    orderItemId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "orderItem",
+      required: true,
+      index: true,
+    },
+    customerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+      required: true,
+      index: true,
+    },
+    sellerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "seller",
+      required: true,
+      index: true,
     },
     productId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "product",
-      default: null,
+      required: true,
     },
     itemName: {
       type: String,
@@ -27,10 +47,10 @@ const returnRequestSchema = new mongoose.Schema(
       default: "",
       trim: true,
     },
-    itemSize: {
-      type: String,
-      default: "",
-      trim: true,
+    variant: {
+      size: { type: String, default: "Standard" },
+      sku: { type: String, default: "" },
+      attributes: { type: Object, default: {} },
     },
     quantity: {
       type: Number,
@@ -42,58 +62,65 @@ const returnRequestSchema = new mongoose.Schema(
       required: true,
       min: 0,
     },
-    reason: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    feedback: {
-      type: String,
-      default: "",
-      trim: true,
-    },
     returnType: {
       type: String,
-      enum: ["Refund", "Replacement", "Exchange"],
+      enum: ["Refund", "Exchange"],
+      required: true,
       default: "Refund",
     },
-    exchangeSize: {
+    exchangeDetails: {
+      requestedSize: { type: String, default: "" },
+      requestedSku: { type: String, default: "" },
+      requestedVariant: { type: Object, default: {} },
+    },
+    returnReason: {
+      type: String,
+      enum: [
+        "Defective/Damaged",
+        "Wrong Item Delivered",
+        "Size Mismatch",
+        "Item Not As Described",
+        "Quality Not Expected",
+        "Changed Mind",
+        "Other",
+      ],
+      required: true,
+    },
+    customerDescription: {
       type: String,
       default: "",
       trim: true,
     },
-    deliverymanId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "deliveryman",
-      default: null,
-    },
+    evidenceImages: [{ type: String }],
+    evidenceVideos: [{ type: String }],
     status: {
       type: String,
-      enum: ["Requested", "Approved", "Rejected", "Out for Pickup", "Picked Up", "Completed"],
-      default: "Requested",
+      enum: ["Pending Approval", "Under Review", "Approved", "Rejected", "Cancelled"],
+      default: "Pending Approval",
+      index: true,
     },
-    adminNote: {
+    sellerNotes: {
       type: String,
       default: "",
       trim: true,
     },
-    verificationCode: {
+    adminNotes: {
       type: String,
+      default: "",
+      trim: true,
+    },
+    reviewedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+      default: null,
+    },
+    reviewedAt: {
+      type: Date,
       default: null,
     },
   },
   { timestamps: true }
 );
-
-// Pre-save hook to generate return verification code if not present
-returnRequestSchema.pre("save", function (next) {
-  if (!this.verificationCode) {
-    this.verificationCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-  }
-  if (typeof next === "function") {
-    next();
-  }
-});
 
 const returnRequestModel =
   mongoose.models.returnRequest ||

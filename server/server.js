@@ -86,8 +86,10 @@ app.use('/invoices', express.static(path.join(process.cwd(), 'public', 'invoices
     res.setHeader('Cache-Control', 'public, max-age=86400');
   }
 }));
+import rmsRouter from "./routers/rmsRouter.js";
 app.use('/api/order-communication', communicationRouter);
 app.use('/api/social', postRouter);
+app.use('/api/rms', rmsRouter);
 
 
 

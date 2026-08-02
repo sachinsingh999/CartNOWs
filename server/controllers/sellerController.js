@@ -989,37 +989,23 @@ export const bulkStockUpdate = async (req, res) => {
 /* ================= ORDER MANAGEMENT ================= */
 export const getAllSellerOrders = async (req, res) => {
   try {
-    const products = await productModel.find({ sellerId: req.seller._id });
-    const productIds = products.map(p => p._id.toString());
-    const allOrders = await orderModel.find({}).populate("deliverymanId", "name phone vehicleType").sort({ createdAt: -1 });
+    const sellerId = req.seller._id;
+    const items = await orderItemModel.find({ sellerId }).sort({ createdAt: -1 }).lean();
     
-    const sellerOrders = allOrders.filter(o => 
-      o.items.some(item => {
-        const itemId = item.productId || item._id;
-        return itemId && productIds.includes(itemId.toString());
-      })
-    );
+    // Group items by orderId
+    const orderIds = Array.from(new Set(items.map(i => i.orderId.toString())));
+    const orders = await orderModel.find({ _id: { $in: orderIds } }).populate("deliverymanId", "name phone vehicleType").sort({ createdAt: -1 }).lean();
 
-    const ordersWithReviews = sellerOrders.map(order => {
-      const orderObj = order.toObject();
-      orderObj.items = orderObj.items.map(item => {
-        const itemId = item.productId || item._id;
-        const matchingProduct = products.find(p => p._id.toString() === itemId?.toString());
-        if (matchingProduct) {
-          const ratings = matchingProduct.reviews.map(r => r.rating);
-          const averageRating = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : 0;
-          return {
-            ...item,
-            reviews: matchingProduct.reviews || [],
-            averageRating: averageRating
-          };
-        }
-        return { ...item, reviews: [], averageRating: 0 };
-      });
-      return orderObj;
+    const ordersWithItems = orders.map(order => {
+      const sellerItems = items.filter(i => i.orderId.toString() === order._id.toString());
+      return {
+        ...order,
+        items: sellerItems,
+        orderItems: sellerItems,
+      };
     });
 
-    res.json({ success: true, orders: ordersWithReviews });
+    res.json({ success: true, orders: ordersWithItems });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -1072,6 +1058,9 @@ export const getSellerOrderDetails = async (req, res) => {
 export const acceptSellerOrder = async (req, res) => {
   try {
     const order = await orderModel.findByIdAndUpdate(req.body.orderId, { orderStatus: "Accepted" }, { new: true });
+    if (order) {
+      await orderItemModel.updateMany({ orderId: order._id }, { $set: { status: "Accepted" } });
+    }
     res.json({ success: true, message: "Order accepted", order });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -1081,6 +1070,9 @@ export const acceptSellerOrder = async (req, res) => {
 export const rejectSellerOrder = async (req, res) => {
   try {
     const order = await orderModel.findByIdAndUpdate(req.body.orderId, { orderStatus: "Rejected" }, { new: true });
+    if (order) {
+      await orderItemModel.updateMany({ orderId: order._id }, { $set: { status: "Rejected" } });
+    }
     res.json({ success: true, message: "Order rejected", order });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -1091,8 +1083,9 @@ export const markReadyForPickup = async (req, res) => {
   try {
     const order = await orderModel.findByIdAndUpdate(req.body.orderId, { orderStatus: "Ready For Pickup" }, { new: true });
     
-    // Trigger Automated Assignment
     if (order) {
+      await orderItemModel.updateMany({ orderId: order._id }, { $set: { status: "Ready For Pickup" } });
+      // Trigger Automated Assignment
       await autoAssignDeliveryAgent(order._id);
     }
 

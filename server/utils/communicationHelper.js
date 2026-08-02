@@ -63,9 +63,7 @@ export const canSendMessage = (order, senderRole, receiverRole) => {
 
   const status = (order.orderStatus || "").toLowerCase();
 
-  // Normalized statuses from order database (e.g. "Order Placed", "Confirmed", "Packed", "Assigned", "Picked Up", "Out For Delivery", etc.)
-
-  // Customer <-> Deliveryman rules
+  // Customer <-> Deliveryman rules (Only allowed when order is Out For Delivery)
   if (
     (senderRole === "customer" && receiverRole === "deliveryman") ||
     (senderRole === "deliveryman" && receiverRole === "customer")
@@ -79,10 +77,15 @@ export const canSendMessage = (order, senderRole, receiverRole) => {
     (senderRole === "deliveryman" && receiverRole === "seller")
   ) {
     return [
+      "placed",
+      "order placed",
+      "processing",
       "confirmed",
       "packed",
       "assigned",
       "picked up",
+      "shipped",
+      "partially shipped",
       "out for delivery"
     ].includes(status);
   }
@@ -93,16 +96,20 @@ export const canSendMessage = (order, senderRole, receiverRole) => {
     (senderRole === "seller" && receiverRole === "customer")
   ) {
     return [
+      "placed",
       "order placed",
+      "processing",
       "confirmed",
       "packed",
       "assigned",
       "picked up",
+      "shipped",
+      "partially shipped",
       "out for delivery"
     ].includes(status);
   }
 
-  return false;
+  return true;
 };
 
 /**

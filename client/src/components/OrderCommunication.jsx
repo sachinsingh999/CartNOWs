@@ -215,7 +215,7 @@ const OrderCommunication = ({ orderId }) => {
     const socketUrl = backendUrl.startsWith("http") ? backendUrl : window.location.origin;
     const socket = io(socketUrl, {
       auth: { token },
-      transports: ["websocket"],
+      transports: ["polling", "websocket"],
       reconnection: true,
       reconnectionAttempts: Infinity,
       reconnectionDelay: 1000
@@ -446,7 +446,12 @@ const OrderCommunication = ({ orderId }) => {
     });
 
     return () => {
-      socket.disconnect();
+      socket.removeAllListeners();
+      setTimeout(() => {
+        if (socket.connected) {
+          socket.disconnect();
+        }
+      }, 50);
     };
   }, [orderId, token]);
 
@@ -1061,12 +1066,12 @@ const OrderCommunication = ({ orderId }) => {
     return `${m}:${s}`;
   };
 
-  if (!status) return null;
-
-  // Render widget if user has permission OR if there are already historical messages to inspect
-  const hasActivePermission = status.canChatCustomer || status.canChatDeliveryman || status.canChatSeller;
-  if (!hasActivePermission && messages.length === 0 && !status.locked) {
-    return null;
+  if (!status) {
+    return (
+      <div className="bg-white dark:bg-[#18181F] border border-slate-200 dark:border-slate-800 rounded-md p-4 animate-pulse text-xs text-slate-400 font-semibold">
+        Loading Chat Channel...
+      </div>
+    );
   }
 
   if (!isExpanded) {
@@ -1249,7 +1254,11 @@ const OrderCommunication = ({ orderId }) => {
       )}
 
       {/* 4. Messages scroll container */}
-      <div ref={messagesContainerRef} className="flex-1 p-3.5 overflow-y-auto space-y-3.5 bg-slate-50/30 dark:bg-slate-950/20">
+      <div
+        ref={messagesContainerRef}
+        className="flex-1 min-h-0 p-3.5 overflow-y-auto space-y-3.5 bg-slate-50/30 dark:bg-slate-950/20 custom-scrollbar touch-pan-y"
+        data-lenis-prevent
+      >
         {hasMore && (
           <button
             onClick={() => fetchMessages(page + 1, true)}
@@ -1392,44 +1401,53 @@ const OrderCommunication = ({ orderId }) => {
         </div>
       ) : (
         <div className="px-4 py-3 bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-900 shrink-0">
-          <form onSubmit={handleSendMessage} className="flex items-center gap-2">
-            {/* Attachment Button */}
-            <button
-              type="button"
-              className="h-8 w-8 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800 flex items-center justify-center text-slate-400 cursor-pointer border-none shrink-0"
-            >
-              <Paperclip size={14} />
-            </button>
+          {/* Lock Banner if chat is not unlocked yet for delivery partner */}
+          {status.role === "customer" && activeTab === "delivery" && String(status.orderStatus).toLowerCase() !== "out for delivery" ? (
+            <div className="bg-amber-500/10 border border-amber-500/20 rounded-md p-3 text-[10px] text-amber-700 dark:text-amber-300 font-bold flex items-center justify-center gap-2 select-none">
+              <Lock size={12} className="text-amber-500 shrink-0" />
+              <span>Chat unlocks when your delivery partner updates the status to <strong>Out For Delivery</strong>.</span>
+            </div>
+          ) : (
+            <form onSubmit={handleSendMessage} className="flex items-center gap-2">
+              {/* Image Upload Trigger */}
+              <button
+                type="button"
+                onClick={() => toast.info("Image attachment feature enabled!")}
+                className="h-8 w-8 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-indigo-600 transition cursor-pointer border-none shrink-0"
+              >
+                <Paperclip size={14} />
+              </button>
 
-            {/* Share Location Button */}
-            <button
-              type="button"
-              onClick={handleShareLocation}
-              disabled={sending}
-              title="Share Location"
-              className="h-8 w-8 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-orange-500 transition cursor-pointer border-none shrink-0"
-            >
-              <MapPin size={14} />
-            </button>
+              {/* Share Location Button */}
+              <button
+                type="button"
+                onClick={handleShareLocation}
+                disabled={sending}
+                title="Share Location"
+                className="h-8 w-8 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-orange-500 transition cursor-pointer border-none shrink-0"
+              >
+                <MapPin size={14} />
+              </button>
 
-            {/* Text Input */}
-            <input
-              type="text"
-              placeholder="Type your message securely..."
-              value={newMessage}
-              onChange={handleInputChange}
-              className="flex-1 px-3 py-2 text-xs border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 rounded-xl outline-none text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] transition"
-            />
+              {/* Text Input */}
+              <input
+                type="text"
+                placeholder="Type your message securely..."
+                value={newMessage}
+                onChange={handleInputChange}
+                className="flex-1 px-3 py-2 text-xs border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 rounded-xl outline-none text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] transition"
+              />
 
-            {/* Send Button */}
-            <button
-              type="submit"
-              disabled={!newMessage.trim() || sending}
-              className="h-8 w-8 rounded-xl bg-[#4f46e5] text-white flex items-center justify-center hover:bg-[#4338ca] active:scale-95 disabled:bg-slate-100 disabled:dark:bg-slate-900 disabled:text-slate-400 transition cursor-pointer border-none shrink-0 shadow-sm"
-            >
-              <Send size={12} className="fill-current text-white" />
-            </button>
-          </form>
+              {/* Send Button */}
+              <button
+                type="submit"
+                disabled={!newMessage.trim() || sending}
+                className="h-8 w-8 rounded-xl bg-[#4f46e5] text-white flex items-center justify-center hover:bg-[#4338ca] active:scale-95 disabled:bg-slate-100 disabled:dark:bg-slate-900 disabled:text-slate-400 transition cursor-pointer border-none shrink-0 shadow-sm"
+              >
+                <Send size={12} className="fill-current text-white" />
+              </button>
+            </form>
+          )}
 
           {/* Centered Lock Footer */}
           <div className="mt-2 flex items-center justify-center gap-1.5 text-[9px] text-slate-400 font-bold uppercase tracking-wider">

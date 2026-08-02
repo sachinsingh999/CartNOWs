@@ -252,7 +252,7 @@ const MyDeliveriesTab = ({
     const socketUrl = backendUrl.startsWith("http") ? backendUrl : window.location.origin;
     const socket = io(socketUrl, {
       auth: { token },
-      transports: ["websocket"],
+      transports: ["polling", "websocket"],
       reconnection: true,
       reconnectionAttempts: Infinity,
       reconnectionDelay: 1000
@@ -487,7 +487,12 @@ const MyDeliveriesTab = ({
     });
 
     return () => {
-      socket.disconnect();
+      socket.removeAllListeners();
+      setTimeout(() => {
+        if (socket.connected) {
+          socket.disconnect();
+        }
+      }, 50);
     };
   }, [nextOrder?._id, token]);
 
@@ -1103,13 +1108,13 @@ const MyDeliveriesTab = ({
       setOtpError("Please enter a valid 6-character code.");
       return;
     }
+    const submittedCode = otpValue.trim();
     setOtpModalOpen(false);
     setOtpValue("");
     setOtpError("");
     
-    // Trigger the verify flow using the parent's verification handler
     if (nextOrder) {
-      setVerifyModal({ open: true, orderId: nextOrder._id, status: "Delivered" });
+      handleStatusChange(nextOrder._id, "Delivered", submittedCode);
     }
   };
 
@@ -1136,7 +1141,7 @@ const MyDeliveriesTab = ({
     } else if (nextOrder.orderStatus === "Picked Up") {
       handleStatusChange(nextOrder._id, "Out for Delivery");
     } else if (nextOrder.orderStatus === "Out for Delivery") {
-      setOtpModalOpen(true);
+      handleStatusChange(nextOrder._id, "Delivered");
     }
   };
 
@@ -2238,7 +2243,11 @@ const MyDeliveriesTab = ({
             </div>
             
             {/* Message Pane */}
-            <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50 dark:bg-slate-900/40">
+            <div
+              ref={messagesContainerRef}
+              className="flex-1 min-h-0 overflow-y-auto p-4 space-y-3 bg-slate-50 dark:bg-slate-900/40 custom-scrollbar touch-pan-y"
+              data-lenis-prevent
+            >
               {chatMessages.map((msg, i) => {
                 const myId = getUserIdFromToken(token);
                 const isMe = myId && String(msg.senderId) === String(myId);

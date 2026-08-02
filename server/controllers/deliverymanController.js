@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import deliverymanModel from "../models/deliverymanModel.js";
 import orderModel from "../models/orderModel.js";
+import orderItemModel from "../models/orderItemModel.js";
 import deliverymanComplaintModel from "../models/deliverymanComplaintModel.js";
 import returnRequestModel from "../models/returnRequestModel.js";
 import productModel from "../models/productModel.js";
@@ -362,26 +363,44 @@ const updateOrderStatus = async (req, res) => {
       return res.json({ success: false, message: "Missing orderId or status" });
     }
 
-    const order = await orderModel.findOne({ _id: orderId, deliverymanId: driverId });
+    let order = await orderModel.findById(orderId);
     if (!order) {
-      return res.json({ success: false, message: "Order not found or not assigned to you" });
+      return res.json({ success: false, message: "Order not found" });
+    }
+
+    // Check assignment fallback if deliverymanId on parent order is not set
+    if (!order.deliverymanId || order.deliverymanId.toString() !== driverId.toString()) {
+      const assignment = await deliveryAssignmentModel.findOne({
+        orderId: order._id,
+        agentId: driverId,
+        status: { $in: ["Assigned", "Accepted", "Picked Up", "Out for Delivery", "Delivered"] }
+      });
+      if (assignment) {
+        order.deliverymanId = driverId;
+        await order.save();
+      } else {
+        return res.json({ success: false, message: "Order not assigned to you" });
+      }
+    }
+
+    // Ensure verificationCode exists on order
+    if (!order.verificationCode) {
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      let code = "";
+      for (let i = 0; i < 6; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      order.verificationCode = code;
+      await order.save();
     }
 
     // ✅ Delivery Verification Gate
     if (status === "Delivered") {
-      if (!verificationCode) {
-        // Generate verification code if not present
-        if (!order.verificationCode) {
-          const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-          let code = "";
-          for (let i = 0; i < 6; i++) {
-            code += chars.charAt(Math.floor(Math.random() * chars.length));
-          }
-          order.verificationCode = code;
-          await order.save();
-        }
+      const cleanInputCode = (verificationCode || "").toString().trim().toUpperCase();
+      const cleanTargetCode = (order.verificationCode || "").toString().trim().toUpperCase();
 
-        // Notify customer about the secret key
+      if (!cleanInputCode) {
+        // Notify customer about secret key
         await createNotification(
           order.userId,
           order._id,
@@ -392,23 +411,23 @@ const updateOrderStatus = async (req, res) => {
         return res.json({
           success: false,
           requiresVerification: true,
-          message: "A secret verification key has been generated on the customer's end. Ask the customer for the key to verify.",
+          message: "A secret verification key is required. Ask the customer for their 6-character code.",
         });
       }
 
-      if (
-        !order.verificationCode ||
-        order.verificationCode.toUpperCase() !== verificationCode.toString().toUpperCase().trim()
-      ) {
+      if (cleanInputCode !== cleanTargetCode) {
         return res.json({
           success: false,
           requiresVerification: true,
-          message: "Invalid verification code. Please ask the customer for their unique delivery code.",
+          message: `Invalid code "${cleanInputCode}". Ask the customer for their 6-character code shown on their order screen.`,
         });
       }
     }
 
     order.orderStatus = status;
+
+    // Sync child order items in orderItemModel
+    await orderItemModel.updateMany({ orderId: order._id }, { $set: { status } });
 
     // Sync status with DeliveryAssignment
     await deliveryAssignmentModel.findOneAndUpdate(
@@ -418,8 +437,8 @@ const updateOrderStatus = async (req, res) => {
 
     // If delivered, toggle payment status if COD and update agent stats
     if (status === "Delivered") {
-      if (order.paymentMethod.toLowerCase() === "cod") {
-        order.paymentStatus = "Paid";
+      if (order.paymentMethod && order.paymentMethod.toLowerCase() === "cod") {
+        order.paymentStatus = "paid";
       }
 
       await deliverymanModel.findByIdAndUpdate(driverId, {

@@ -73,21 +73,17 @@ const Returns = ({ token }) => {
         requestId,
         status,
         adminNote: notes[requestId] ?? request?.adminNote ?? "",
-        returnType: types[requestId] ?? request?.returnType ?? "Refund",
-        exchangeSize: exchangeSizes[requestId] ?? request?.exchangeSize ?? "",
-        deliverymanId: assignedDrivers[requestId] !== undefined 
-          ? assignedDrivers[requestId] 
-          : (request?.deliverymanId ?? "")
+        sellerNotes: notes[requestId] ?? request?.adminNote ?? "",
       };
 
       const response = await axios.post(
-        `${backendUrl}/api/service/returns/admin/status`,
+        `${backendUrl}/api/rms/request/review`,
         payload,
-        { headers: { token } }
+        { headers: { token, admin_token: token } }
       );
 
       if (response.data.success) {
-        toast.success("Return request updated.");
+        toast.success(`Return request ${status.toLowerCase()} and Return Order (RMA) created.`);
         fetchReturns();
       } else {
         toast.error(response.data.message);

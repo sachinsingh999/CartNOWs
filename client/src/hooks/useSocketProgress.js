@@ -12,7 +12,7 @@ const useSocketProgress = (userId) => {
 
     // Establish Socket.io connection
     const socket = io(backendUrl, {
-      transports: ["websocket"]
+      transports: ["polling", "websocket"]
     });
     socketRef.current = socket;
 

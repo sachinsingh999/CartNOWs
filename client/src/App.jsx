@@ -47,6 +47,7 @@ const Brands = React.lazy(() => import("./pages/Brands"));
 const MobileShowcase = React.lazy(() => import("./pages/MobileShowcase"));
 const SocialFeed = React.lazy(() => import("./pages/SocialFeed"));
 const SassHome = React.lazy(() => import("./pages/SassHome"));
+const RMADetail = React.lazy(() => import("./pages/RMADetail"));
 
 // Auth guards and role dashboards
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -247,6 +248,7 @@ const App = () => {
                         <Route path="/verify" element={<Verify />} />
                         <Route path="/order-confirmed/:orderId" element={<OrderConfirmed />} />
                         <Route path="/wishlist" element={<Wishlist />} />
+                        <Route path="/rma/:rmaId" element={<RMADetail />} />
                       </Route>
 
                       <Route path="*" element={<NotFound />} />

@@ -172,13 +172,12 @@ const Dashboard = ({
   // Updates status of a return task
   const updateReturnStatusHandler = async (requestId, status, verificationCode = undefined) => {
     try {
-      const payload = { requestId, status };
-      if (verificationCode !== undefined) payload.verificationCode = verificationCode;
+      const payload = { rmaId: requestId, status, verificationCode };
 
       const response = await axios.post(
-        `${backendUrl}/api/deliveryman/update-return`,
+        `${backendUrl}/api/rms/rma/verify-pickup`,
         payload,
-        { headers: { token } }
+        { headers: { token, deliveryman_token: token } }
       );
 
       if (response.data.success) {
@@ -186,28 +185,34 @@ const Dashboard = ({
         fetchData();
         return { success: true };
       } else {
-        if (!response.data.requiresVerification) {
-          toast.error(response.data.message);
-        }
-        return { success: false, requiresVerification: response.data.requiresVerification, message: response.data.message };
+        toast.error(response.data.message);
+        return { success: false, message: response.data.message };
       }
     } catch (error) {
       console.log(error);
-      toast.error(error.message);
+      toast.error(error.response?.data?.message || error.message);
       return { success: false };
     }
   };
 
-  // Called when driver picks a status from the dropdown
-  const handleStatusChange = async (orderId, newStatus) => {
+  // Called when driver picks a status or clicks complete delivery
+  const handleStatusChange = async (orderId, newStatus, verificationCode = undefined) => {
     if (newStatus === "Delivered") {
-      setLoading(true);
-      const result = await updateStatusHandler(orderId, newStatus);
-      setLoading(false);
-      if (result && result.requiresVerification) {
+      if (verificationCode) {
+        setVerifyLoading(true);
+        const result = await updateStatusHandler(orderId, newStatus, verificationCode);
+        setVerifyLoading(false);
+        if (result?.success) {
+          setVerifyModal({ open: false, orderId: null, status: null });
+          setVerifyCode("");
+          setVerifyError("");
+        } else {
+          setVerifyError(result?.message || "Invalid code. Ask customer for their 6-character code.");
+        }
+      } else {
         setVerifyModal({ open: true, orderId, status: newStatus });
         setVerifyCode("");
-        setVerifyError(result.message);
+        setVerifyError("");
       }
     } else {
       await updateStatusHandler(orderId, newStatus);
