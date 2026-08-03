@@ -73,6 +73,7 @@ const ProductDetail = () => {
   const [product, setProduct] = useState(null);
   const [mainImg, setMainImg] = useState("");
   const [qty, setQty] = useState(1);
+  const [isAdding, setIsAdding] = useState(false);
   const [reviewLoading, setReviewLoading] = useState(false);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [activeTab, setActiveTab] = useState("description");
