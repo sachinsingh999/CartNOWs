@@ -101,7 +101,7 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
       name: "Elite Audio Series",
       category: "Electronics",
       tagline: "Wireless Sound Performance With Acoustic Fidelity",
-      scaleClass: "scale-[0.85] sm:scale-[0.9] lg:scale-[0.95]"
+      scaleClass: "scale-[1.0] sm:scale-[1.05] lg:scale-[1.08]"
     }
   ];
 
@@ -111,28 +111,28 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
       name: "Tech Special Campaign",
       category: "Super Deals",
       tagline: "Get Up To 50% Off On Premium Tech & Gadgets",
-      scaleClass: "scale-[1.0] sm:scale-[1.05] lg:scale-[1.12]"
+      scaleClass: "scale-[1.0] sm:scale-[1.05] lg:scale-[1.08]"
     },
     {
       imageUrl: heroSlide2,
       name: "Organic Glow Collection",
       category: "Skin Care",
       tagline: "Revitalize Your Skin With Natural Mineral Science",
-      scaleClass: "scale-[1.0] sm:scale-[1.05] lg:scale-[1.12]"
+      scaleClass: "scale-[1.0] sm:scale-[1.05] lg:scale-[1.08]"
     },
     {
       imageUrl: heroSlide3,
       name: "Chrono Luxury Watch",
       category: "Accessories",
       tagline: "Precision Swiss Movements Meets Obsidian Craftsmanship",
-      scaleClass: "scale-[1.0] sm:scale-[1.05] lg:scale-[1.12]"
+      scaleClass: "scale-[1.0] sm:scale-[1.05] lg:scale-[1.08]"
     },
     {
       imageUrl: heroSlide4,
       name: "Elite Audio Series",
       category: "Electronics",
       tagline: "Wireless Sound Performance With Acoustic Fidelity",
-      scaleClass: "scale-[0.85] sm:scale-[0.9] lg:scale-[0.95]"
+      scaleClass: "scale-[1.0] sm:scale-[1.05] lg:scale-[1.08]"
     }
   ];
 
@@ -197,13 +197,7 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
           const response = await cachedGet(`${backendUrl}/api/system/hero-assets`);
           if (response.data?.success && response.data?.assets?.length > 0) {
             const mapped = response.data.assets.map(asset => {
-              let scaleClass = "scale-[1.0] sm:scale-[1.05] lg:scale-[1.12]";
-              const cat = (asset.category || "").toLowerCase();
-              if (cat.includes("electronics") || cat.includes("beauty")) {
-                scaleClass = "scale-[0.85] sm:scale-[0.9] lg:scale-[0.95]";
-              } else if (cat.includes("accessories")) {
-                scaleClass = "scale-[0.9] sm:scale-[0.95] lg:scale-[1.02]";
-              }
+              const scaleClass = "scale-[1.0] sm:scale-[1.05] lg:scale-[1.08]";
               return {
                 imageUrl: asset.imageUrl.startsWith("http") ? asset.imageUrl : `${backendUrl}${asset.imageUrl}`,
                 name: asset.name,
@@ -315,19 +309,19 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
   const textItemVariants = useMemo(() => ({
     hidden: { 
       opacity: 0, 
-      y: shouldReduceMotion ? 0 : 15 
+      y: 0 
     },
     visible: { 
       opacity: 1, 
       y: 0,
-      transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] }
+      transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] }
     },
     exit: { 
       opacity: 0, 
-      y: shouldReduceMotion ? 0 : -8,
-      transition: { duration: 0.25, ease: "easeIn" }
+      y: 0,
+      transition: { duration: 0.2, ease: "easeIn" }
     }
-  }), [shouldReduceMotion]);
+  }), []);
 
   const handleModelClick = (categoryName) => {
     if (!categoryName) {
@@ -422,7 +416,7 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
       {/* Top Announcement Bar */}
       <div 
         onClick={() => navigate("/products")}
-        className="w-full bg-[#0B0F19] dark:bg-[#070A13] border-b border-slate-800/60 py-2.5 px-4 sm:px-8 lg:px-12 flex items-center justify-between text-slate-100 dark:text-white cursor-pointer hover:bg-slate-900/60 transition duration-300 overflow-hidden relative z-20"
+        className="w-full bg-[#0B0F19] dark:bg-[#070A13] border-b border-slate-800/60 py-2.5 px-6 sm:px-12 lg:px-20 flex items-center justify-between text-slate-100 dark:text-white cursor-pointer hover:bg-slate-900/60 transition duration-300 overflow-hidden relative z-20"
       >
         <div className="flex items-center gap-2 shrink-0">
           <span className="w-2 h-2 rounded-full bg-[#ff3f6c] animate-pulse" />
@@ -468,7 +462,7 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
           className="relative overflow-visible bg-slate-50 dark:bg-slate-950 text-[#0F172A] dark:text-slate-100 flex items-center justify-center py-16 md:py-24 select-none w-full min-h-[480px] sm:min-h-[550px] lg:min-h-[620px] z-10"
         >
           {/* Main Slider Wrapper */}
-          <div className="max-w-7xl mx-auto px-6 sm:px-12 lg:px-20 w-full flex flex-col items-center justify-center relative overflow-visible">
+          <div className="w-full px-6 sm:px-12 lg:px-20 flex flex-col items-center justify-center relative overflow-visible">
             
             {/* Banner Main Card */}
             <div className="relative w-full h-[360px] md:h-[400px] rounded-none overflow-visible shadow-2xl border border-slate-200/50 dark:border-white/10 text-slate-100 dark:text-white">
@@ -725,13 +719,27 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
           <div className="absolute bottom-[20%] left-[10%] w-[350px] h-[350px] bg-rose-500/[0.03] dark:bg-rose-500/[0.05] rounded-full blur-[120px] pointer-events-none z-0" />
 
           {/* Balanced 50/50 Composition Grid */}
-          <div className="max-w-7xl mx-auto px-6 sm:px-12 lg:px-20 w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center z-10 relative">
+          <div className="w-full px-6 sm:px-12 lg:px-20 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center z-10 relative">
 
             {/* Left Side Content Area */}
             <div className="flex flex-col space-y-5 lg:space-y-6 text-left max-w-xl mx-auto lg:mx-0 items-start z-10 relative">
               
-              {/* Dynamic Headline with reveal animation */}
-              <div className="min-h-[140px] md:min-h-[180px] lg:min-h-[220px] flex flex-col justify-center w-full">
+              {/* Fixed Social proof rating header */}
+              <div className="flex items-center gap-2 flex-wrap select-none">
+                <div className="flex gap-0.5 text-amber-500">
+                  <Star size={11} className="fill-amber-400 text-amber-400" />
+                  <Star size={11} className="fill-amber-400 text-amber-400" />
+                  <Star size={11} className="fill-amber-400 text-amber-400" />
+                  <Star size={11} className="fill-amber-400 text-amber-400" />
+                  <Star size={11} className="fill-amber-400 text-amber-400" />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  4.9★ rating (45k+ buyers)
+                </span>
+              </div>
+
+              {/* Dynamic Headline with fixed container height to prevent any layout shift below */}
+              <div className="h-[170px] sm:h-[190px] lg:h-[210px] w-full relative">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={slideIdx}
@@ -739,46 +747,31 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
                     initial="hidden"
                     animate="visible"
                     exit="exit"
-                    className="space-y-3"
+                    className="absolute inset-0 flex flex-col justify-start space-y-2.5"
                   >
-                    {/* Social proof rating */}
-                    <motion.div variants={textItemVariants} className="flex items-center gap-2 flex-wrap select-none">
-                      <div className="flex gap-0.5 text-amber-500">
-                        <Star size={11} className="fill-amber-400 text-amber-400" />
-                        <Star size={11} className="fill-amber-400 text-amber-400" />
-                        <Star size={11} className="fill-amber-400 text-amber-400" />
-                        <Star size={11} className="fill-amber-400 text-amber-400" />
-                        <Star size={11} className="fill-amber-400 text-amber-400" />
-                      </div>
-                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        4.9★ rating (45k+ buyers)
-                      </span>
-                    </motion.div>
-
                     <motion.span variants={textItemVariants} className="text-[9px] sm:text-[10px] font-black text-indigo-500 dark:text-indigo-400 uppercase tracking-widest block select-none">
                       {currentSlide.category}
                     </motion.span>
 
                     <motion.h1 
                       variants={textItemVariants}
-                      className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-extrabold leading-[1.05] tracking-tight text-slate-900 dark:text-white"
+                      className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-extrabold leading-[1.05] tracking-tight text-slate-900 dark:text-white line-clamp-2"
                     >
                       {currentSlide.name}
                     </motion.h1>
 
-                    <motion.p variants={textItemVariants} className="text-[11.5px] sm:text-base text-slate-500 dark:text-slate-400 leading-relaxed font-semibold mt-1 sm:mt-2">
+                    <motion.p variants={textItemVariants} className="text-[11.5px] sm:text-base text-slate-500 dark:text-slate-400 leading-relaxed font-semibold mt-0.5 line-clamp-2">
                       {currentSlide.tagline}
                     </motion.p>
                   </motion.div>
                 </AnimatePresence>
               </div>
 
-              {/* Premium Offer/Coupon Card */}
+              {/* Premium Offer/Coupon Card (Fixed position) */}
               <motion.div 
                 onClick={copyCoupon}
-                initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 10 }}
+                initial={{ opacity: 1, y: 0 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                 whileHover={shouldReduceMotion ? {} : { scale: 1.02, y: -1, boxShadow: "0 8px 20px rgba(0,0,0,0.05)" }}
                 whileTap={{ scale: 0.99 }}
                 className="flex items-center gap-3.5 bg-slate-900/5 dark:bg-slate-900/40 border border-amber-500/20 dark:border-amber-500/10 rounded-2xl px-4 py-3 select-none w-full sm:w-fit text-left hover:border-amber-500/40 transition duration-300 shadow-md cursor-pointer relative group/coupon overflow-hidden"
@@ -809,11 +802,10 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
                 </button>
               </motion.div>
 
-              {/* Action CTAs with magnetic hover scales */}
+              {/* Action CTAs with magnetic hover scales (Fixed position) */}
               <motion.div 
-                initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 10 }}
+                initial={{ opacity: 1, y: 0 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                 className="flex flex-wrap gap-4 items-center w-full"
               >
                 <motion.button
@@ -837,33 +829,10 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
                 </motion.button>
               </motion.div>
 
-              {/* Category count pills */}
+              {/* Slide Navigation Dots (Fixed position) */}
               <motion.div 
-                initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                className="flex flex-wrap items-center gap-2 pt-1 z-10 w-full justify-start select-none"
-              >
-                <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 mr-1">Popular Categories:</span>
-                {["Men", "Women", "Kids", "Sneakers", "Electronics", "Beauty"].map((tag) => (
-                  <motion.button
-                    key={tag}
-                    whileHover={shouldReduceMotion ? {} : { scale: 1.04, y: -1, boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => handleModelClick(tag)}
-                    className="text-[10.5px] font-bold px-3 py-1.5 rounded-full bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/40 dark:border-slate-800/80 transition-all duration-300 cursor-pointer flex items-center gap-1.5 shadow-sm"
-                  >
-                    <span>{tag}</span>
-                    <span className="text-[8.5px] opacity-50 font-mono">({categoryCounts[tag]})</span>
-                  </motion.button>
-                ))}
-              </motion.div>
-
-              {/* Slide Navigation Dots */}
-              <motion.div 
-                initial={{ opacity: 0 }}
+                initial={{ opacity: 1 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.7, duration: 0.5 }}
                 className="flex items-center justify-start gap-2.5 pt-2 select-none"
               >
                 {activeSlides.map((_, i) => (
@@ -890,11 +859,10 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
                 ))}
               </motion.div>
 
-              {/* Trust badges */}
+              {/* Trust badges (Fixed position) */}
               <motion.div 
-                initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 10 }}
+                initial={{ opacity: 1, y: 0 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                 className="grid grid-cols-2 gap-x-4 gap-y-2.5 text-[9px] font-black uppercase tracking-[0.15em] text-slate-400 dark:text-slate-600 pt-5 border-t border-slate-200/40 dark:border-slate-800/80 sm:flex sm:flex-wrap sm:items-center sm:gap-x-6 sm:gap-y-3 select-none"
               >
                 <div className="flex items-center gap-2 hover:text-slate-900 dark:hover:text-slate-300 transition-colors duration-250">
@@ -930,7 +898,7 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
               <div className="absolute w-[75%] h-[75%] max-w-[380px] max-h-[380px] rounded-full bg-[#3B82F6]/[0.02] dark:bg-indigo-500/[0.03] blur-[30px] z-0" />
 
               {/* Cross-fading Slideshow Container with Parallax and Float */}
-              <AnimatePresence>
+              <AnimatePresence mode="wait">
                 {activeSlides.map((slide, idx) => {
                   if (idx !== slideIdx) return null;
                   return (
@@ -938,20 +906,17 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
                       key={idx}
                       initial={{ 
                         opacity: 0, 
-                        scale: shouldReduceMotion ? 1 : 0.97, 
-                        y: shouldReduceMotion ? 0 : 12 
+                        scale: shouldReduceMotion ? 1 : 0.97
                       }}
                       animate={{ 
                         opacity: 1, 
-                        scale: 1, 
-                        y: 0 
+                        scale: 1
                       }}
                       exit={{ 
                         opacity: 0, 
-                        scale: shouldReduceMotion ? 1 : 1.02, 
-                        y: shouldReduceMotion ? 0 : -8 
+                        scale: shouldReduceMotion ? 1 : 1.02
                       }}
-                      transition={shouldReduceMotion ? { duration: 0.3 } : { duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
+                      transition={shouldReduceMotion ? { duration: 0.3 } : { duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                       className="absolute inset-0 w-full h-full flex items-end justify-center overflow-visible"
                     >
                       {/* Floating Model Container (shifted by mouse parallax) */}
@@ -987,66 +952,66 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
                           />
                         </motion.div>
                       </motion.div>
-
-                      {/* Glassmorphic AI recommendation snippet floating on left */}
-                      <motion.div
-                        animate={{
-                          x: shouldReduceMotion ? -15 : mousePosition.x * 1.4 - 15,
-                          y: shouldReduceMotion ? -20 : mousePosition.y * 1.4 - 20
-                        }}
-                        transition={{ type: "spring", stiffness: 100, damping: 20 }}
-                        className="absolute top-[22%] left-[-15px] bg-white/20 dark:bg-slate-900/60 backdrop-blur-xl border border-white/30 dark:border-white/[0.08] px-3.5 py-2.5 rounded-2xl shadow-xl max-w-[170px] text-left hidden sm:block z-20 pointer-events-none"
-                      >
-                        <div className="flex items-center gap-1.5 mb-1 text-[8.5px] font-black uppercase text-indigo-600 dark:text-indigo-400">
-                          <Sparkles size={11} className="fill-indigo-500/20" />
-                          <span>AI Choice</span>
-                        </div>
-                        <span className="text-[10px] font-bold text-slate-700 dark:text-slate-200 leading-tight block">
-                          Matches trending seasonal aesthetics
-                        </span>
-                      </motion.div>
-
-                      {/* Glassmorphic review snippet floating on right */}
-                      <motion.div
-                        animate={{
-                          x: shouldReduceMotion ? 15 : mousePosition.x * 1.3 + 15,
-                          y: shouldReduceMotion ? 20 : mousePosition.y * 1.3 + 20
-                        }}
-                        transition={{ type: "spring", stiffness: 100, damping: 20 }}
-                        className="absolute top-[38%] right-[-15px] bg-white/20 dark:bg-slate-900/60 backdrop-blur-xl border border-white/30 dark:border-white/[0.08] p-3.5 rounded-2xl shadow-xl max-w-[175px] text-left hidden lg:block z-20 pointer-events-none"
-                      >
-                        <p className="text-[9.5px] text-slate-600 dark:text-slate-300 font-semibold italic leading-relaxed">
-                          "Premium build quality. Fits absolutely perfectly."
-                        </p>
-                        <span className="text-[9px] font-black text-amber-500 dark:text-amber-400 mt-1.5 block">
-                          ★ 4.9 Aarav S.
-                        </span>
-                      </motion.div>
-
-                      {/* Popularity Meter floating at bottom-right */}
-                      <motion.div
-                        animate={{
-                          x: shouldReduceMotion ? 10 : mousePosition.x * 1.1 + 10,
-                          y: shouldReduceMotion ? 10 : mousePosition.y * 1.1 + 10
-                        }}
-                        transition={{ type: "spring", stiffness: 100, damping: 20 }}
-                        className="absolute bottom-[10%] right-[5%] bg-white/20 dark:bg-slate-900/60 backdrop-blur-xl border border-white/30 dark:border-white/[0.08] p-3 rounded-2xl shadow-xl w-36 text-left hidden sm:block z-20 pointer-events-none"
-                      >
-                        <div className="flex justify-between items-center text-[8px] font-black uppercase text-slate-400 dark:text-slate-500 mb-1">
-                          <span>Demand</span>
-                          <span className="text-orange-500">97% High</span>
-                        </div>
-                        <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-                          <div className="w-[97%] h-full bg-gradient-to-r from-orange-400 to-red-500 rounded-full" />
-                        </div>
-                        <span className="text-[8.5px] font-bold text-slate-500 dark:text-slate-400 mt-1 block">
-                          12k+ items sold this week
-                        </span>
-                      </motion.div>
                     </motion.div>
                   );
                 })}
               </AnimatePresence>
+
+              {/* Fixed Glassmorphic AI recommendation snippet floating on left */}
+              <motion.div
+                animate={{
+                  x: shouldReduceMotion ? -15 : mousePosition.x * 1.4 - 15,
+                  y: shouldReduceMotion ? -20 : mousePosition.y * 1.4 - 20
+                }}
+                transition={{ type: "spring", stiffness: 100, damping: 20 }}
+                className="absolute top-[22%] left-[-15px] bg-white/20 dark:bg-slate-900/60 backdrop-blur-xl border border-white/30 dark:border-white/[0.08] px-3.5 py-2.5 rounded-2xl shadow-xl max-w-[170px] text-left hidden sm:block z-20 pointer-events-none"
+              >
+                <div className="flex items-center gap-1.5 mb-1 text-[8.5px] font-black uppercase text-indigo-600 dark:text-indigo-400">
+                  <Sparkles size={11} className="fill-indigo-500/20" />
+                  <span>AI Choice</span>
+                </div>
+                <span className="text-[10px] font-bold text-slate-700 dark:text-slate-200 leading-tight block">
+                  Matches trending seasonal aesthetics
+                </span>
+              </motion.div>
+
+              {/* Fixed Glassmorphic review snippet floating on right */}
+              <motion.div
+                animate={{
+                  x: shouldReduceMotion ? 15 : mousePosition.x * 1.3 + 15,
+                  y: shouldReduceMotion ? 20 : mousePosition.y * 1.3 + 20
+                }}
+                transition={{ type: "spring", stiffness: 100, damping: 20 }}
+                className="absolute top-[38%] right-[-15px] bg-white/20 dark:bg-slate-900/60 backdrop-blur-xl border border-white/30 dark:border-white/[0.08] p-3.5 rounded-2xl shadow-xl max-w-[175px] text-left hidden lg:block z-20 pointer-events-none"
+              >
+                <p className="text-[9.5px] text-slate-600 dark:text-slate-300 font-semibold italic leading-relaxed">
+                  "Premium build quality. Fits absolutely perfectly."
+                </p>
+                <span className="text-[9px] font-black text-amber-500 dark:text-amber-400 mt-1.5 block">
+                  ★ 4.9 Aarav S.
+                </span>
+              </motion.div>
+
+              {/* Fixed Popularity Meter floating at bottom-right */}
+              <motion.div
+                animate={{
+                  x: shouldReduceMotion ? 10 : mousePosition.x * 1.1 + 10,
+                  y: shouldReduceMotion ? 10 : mousePosition.y * 1.1 + 10
+                }}
+                transition={{ type: "spring", stiffness: 100, damping: 20 }}
+                className="absolute bottom-[10%] right-[5%] bg-white/20 dark:bg-slate-900/60 backdrop-blur-xl border border-white/30 dark:border-white/[0.08] p-3 rounded-2xl shadow-xl w-36 text-left hidden sm:block z-20 pointer-events-none"
+              >
+                <div className="flex justify-between items-center text-[8px] font-black uppercase text-slate-400 dark:text-slate-500 mb-1">
+                  <span>Demand</span>
+                  <span className="text-orange-500">97% High</span>
+                </div>
+                <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                  <div className="w-[97%] h-full bg-gradient-to-r from-orange-400 to-red-500 rounded-full" />
+                </div>
+                <span className="text-[8.5px] font-bold text-slate-500 dark:text-slate-400 mt-1 block">
+                  12k+ items sold this week
+                </span>
+              </motion.div>
             </div>
 
           </div>

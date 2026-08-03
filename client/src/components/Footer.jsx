@@ -30,16 +30,16 @@ const Footer = () => {
   };
 
   return (
-    <footer className="relative bg-gradient-to-b from-[#0b0f19] to-[#030712] text-gray-300 overflow-hidden border-t border-slate-900">
+    <footer className="relative bg-[#09090B] text-gray-300 overflow-hidden border-t border-[#242A3B]">
       {/* Subtle background glow */}
-      <div className="absolute left-1/2 top-0 -translate-x-1/2 w-full max-w-7xl h-[1px] bg-gradient-to-r from-transparent via-orange-500/25 to-transparent" />
+      <div className="absolute left-1/2 top-0 -translate-x-1/2 w-full max-w-7xl h-[1px] bg-gradient-to-r from-transparent via-[#2D3550] to-transparent" />
       
       {/* ── Value Props Section ── */}
-      <div className="border-b border-slate-900 bg-slate-950/20 py-4 sm:py-5">
+      <div className="border-b border-[#242A3B] bg-[#0F1117] py-4 sm:py-5">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 grid grid-cols-3 sm:grid-cols-3 gap-3 sm:gap-6 text-center sm:text-left">
           {/* Prop 1 */}
           <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-3 transition-all duration-300 hover:translate-y-[-1px]">
-            <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg bg-orange-500/10 text-orange-400">
+            <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg bg-[#151823] border border-[#242A3B] text-orange-400">
               <svg className="h-4.5 w-4.5 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
               </svg>
@@ -51,7 +51,7 @@ const Footer = () => {
           </div>
           {/* Prop 2 */}
           <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-3 transition-all duration-300 hover:translate-y-[-1px]">
-            <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg bg-orange-500/10 text-orange-400">
+            <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg bg-[#151823] border border-[#242A3B] text-orange-400">
               <svg className="h-4.5 w-4.5 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
@@ -63,7 +63,7 @@ const Footer = () => {
           </div>
           {/* Prop 3 */}
           <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-3 transition-all duration-300 hover:translate-y-[-1px]">
-            <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg bg-orange-500/10 text-orange-400">
+            <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg bg-[#151823] border border-[#242A3B] text-orange-400">
               <svg className="h-4.5 w-4.5 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.5" />
               </svg>
@@ -103,7 +103,7 @@ const Footer = () => {
                   href={s.path}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-800/40 border border-slate-700/50 text-gray-400 transition hover:bg-orange-500 hover:text-white hover:border-orange-500 hover:-translate-y-0.5 duration-300"
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-[#1B2030] border border-[#242A3B] text-gray-400 transition hover:bg-[#242A3B] hover:text-white hover:border-[#2D3550] hover:-translate-y-0.5 duration-300"
                   aria-label={s.name}
                 >
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -115,7 +115,7 @@ const Footer = () => {
           </div>
 
           {/* Customer Support */}
-          <div className="border-b border-slate-900/60 md:border-b-0 pb-3 md:pb-0">
+          <div className="border-b border-[#242A3B] md:border-b-0 pb-3 md:pb-0">
             <button
               type="button"
               onClick={() => toggleSection("support")}
@@ -156,7 +156,7 @@ const Footer = () => {
           </div>
 
           {/* Seller Program */}
-          <div className="border-b border-slate-900/60 md:border-b-0 pb-3 md:pb-0">
+          <div className="border-b border-[#242A3B] md:border-b-0 pb-3 md:pb-0">
             <button
               type="button"
               onClick={() => toggleSection("sellers")}
@@ -192,7 +192,7 @@ const Footer = () => {
           </div>
 
           {/* Company & Legal */}
-          <div className="border-b border-slate-900/60 md:border-b-0 pb-3 md:pb-0">
+          <div className="border-b border-[#242A3B] md:border-b-0 pb-3 md:pb-0">
             <button
               type="button"
               onClick={() => toggleSection("company")}
@@ -240,7 +240,7 @@ const Footer = () => {
                 placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-full border border-slate-700/60 bg-slate-900/40 pl-4 pr-24 py-2 text-xs text-slate-100 dark:text-white outline-none placeholder:text-gray-500 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                className="w-full rounded-full border border-[#242A3B] bg-[#151823] pl-4 pr-24 py-2 text-xs text-slate-100 dark:text-white outline-none placeholder:text-gray-500 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-[#2D3550]"
               />
               <button
                 type="submit"
@@ -256,7 +256,7 @@ const Footer = () => {
         </div>
 
         {/* ── Divider ── */}
-        <hr className="mt-10 border-slate-900" />
+        <hr className="mt-10 border-[#242A3B]" />
 
         {/* ── Footer Bottom Bar ── */}
         <div className="mt-6 flex flex-col-reverse items-center justify-between gap-4 sm:flex-row">
@@ -274,7 +274,7 @@ const Footer = () => {
             {["VISA", "MC", "STRIPE", "RZP"].map((badge) => (
               <div
                 key={badge}
-                className="flex h-6 w-10 items-center justify-center rounded bg-slate-950 border border-slate-900 text-gray-500 text-[9px] font-bold select-none tracking-wide hover:text-slate-300 hover:border-slate-700 transition-colors duration-200"
+                className="flex h-6 w-10 items-center justify-center rounded bg-[#1B2030] border border-[#242A3B] text-slate-400 text-[9px] font-bold select-none tracking-wide hover:text-slate-200 hover:border-[#2D3550] transition-colors duration-200"
               >
                 {badge}
               </div>
@@ -284,7 +284,7 @@ const Footer = () => {
           {/* Scroll to Top */}
           <button
             onClick={scrollToTop}
-            className="group flex h-8 w-8 items-center justify-center rounded-full bg-slate-800/30 border border-slate-700/60 text-gray-400 transition hover:bg-slate-800 hover:text-orange-400 hover:border-orange-500/40 hover:-translate-y-0.5 duration-250 cursor-pointer"
+            className="group flex h-8 w-8 items-center justify-center rounded-full bg-[#1B2030] border border-[#242A3B] text-gray-400 transition hover:bg-[#242A3B] hover:text-orange-400 hover:border-[#2D3550] hover:-translate-y-0.5 duration-250 cursor-pointer"
             title="Back to Top"
           >
             <svg className="h-4 w-4 group-hover:animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">

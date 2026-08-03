@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Star, CheckCircle, ThumbsUp, MessageSquare, ShieldCheck } from "lucide-react";
+import { ChevronLeft, ChevronRight, Star, CheckCircle, ThumbsUp, ShieldCheck } from "lucide-react";
 import axios from "axios";
 import { backendUrl } from "../../config";
 
@@ -69,15 +69,15 @@ const TestimonialCard = ({ item, idx, direction }) => {
     <motion.div
       variants={{
         hidden: { opacity: 0, scale: 0.95, x: 0 },
-        visible: { 
-          opacity: 1, 
-          scale: 1, 
+        visible: {
+          opacity: 1,
+          scale: 1,
           x: 0,
-          transition: { duration: 0.6, ease: [0.645, 0.045, 0.355, 1] } 
+          transition: { duration: 0.6, ease: [0.645, 0.045, 0.355, 1] }
         },
-        exit: { 
-          opacity: 0, 
-          scale: 0.9, 
+        exit: {
+          opacity: 0,
+          scale: 0.9,
           x: exitX,
           rotate: exitRotate,
           boxShadow: "0 30px 60px -15px rgba(0,0,0,0.15)",
@@ -85,31 +85,27 @@ const TestimonialCard = ({ item, idx, direction }) => {
         }
       }}
       whileHover={{
-        y: -8,
-        boxShadow: "0 25px 50px -12px rgba(59, 130, 246, 0.12)",
-        borderColor: "rgba(59, 130, 246, 0.3)"
+        boxShadow: "0 20px 40px -10px rgba(45, 53, 80, 0.25)",
+        borderColor: "#2D3550"
       }}
       transition={{ type: "tween", ease: "easeOut", duration: 0.3 }}
-      className="bg-white/85 dark:bg-slate-900/60 border border-slate-200/80 dark:border-white/[0.06] rounded-[24px] p-6 shadow-[0_15px_30px_rgba(0,0,0,0.02)] flex flex-col justify-between text-left h-full min-h-[300px] w-full max-w-[550px] mx-auto relative group backdrop-blur-xl"
+      className="bg-white/85 dark:bg-[#151823] border border-slate-200/80 dark:border-[#242A3B] rounded-lg p-6 shadow-[0_15px_30px_rgba(0,0,0,0.02)] flex flex-col justify-between text-left h-full min-h-[300px] w-full max-w-none relative group backdrop-blur-xl transition-colors duration-300"
     >
       {/* Glass reflection effect inside card */}
-      <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.01] to-white/[0.04] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-[24px]" />
+      <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.01] to-white/[0.04] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-lg" />
 
       <div>
         {/* Header Section */}
         <div className="flex items-start justify-between gap-4 mb-4">
           <div className="flex items-center gap-3.5">
-            {/* Customer avatar (56px circular) */}
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              className="w-14 h-14 rounded-full overflow-hidden border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 shrink-0 flex items-center justify-center font-bold text-slate-700 dark:text-slate-300 shadow-inner"
-            >
+            {/* Customer avatar */}
+            <div className="w-14 h-14 rounded-md overflow-hidden border border-slate-100 dark:border-[#242A3B] bg-slate-50 dark:bg-[#1B2030] shrink-0 flex items-center justify-center font-bold text-slate-700 dark:text-slate-300 shadow-inner">
               {item.avt && (item.avt.startsWith("http") || item.avt.startsWith("/")) ? (
                 <img src={item.avt} alt={item.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
               ) : (
                 <span className="text-lg">{item.initials || item.name.charAt(0).toUpperCase()}</span>
               )}
-            </motion.div>
+            </div>
 
             <div className="leading-tight">
               <div className="flex items-center gap-1.5 flex-wrap">
@@ -118,23 +114,23 @@ const TestimonialCard = ({ item, idx, direction }) => {
                 </h4>
                 {/* Country flag */}
                 {item.flag && <span className="text-sm select-none" title={`Verified purchase from ${item.flag}`}>{item.flag}</span>}
-                
+
                 {/* Top Reviewer badge */}
                 {item.topReviewer && (
-                  <span className="px-1.5 py-0.5 rounded bg-blue-500/10 border border-blue-500/25 text-[8px] text-blue-500 dark:text-blue-400 font-bold uppercase tracking-wider scale-95 select-none">
+                  <span className="px-1.5 py-0.5 rounded-sm bg-blue-500/10 dark:bg-[#1B2030] border border-blue-500/25 dark:border-[#2D3550] text-[8px] text-blue-500 dark:text-blue-400 font-bold uppercase tracking-wider scale-95 select-none">
                     Top Reviewer
                   </span>
                 )}
               </div>
-              
+
               <div className="flex items-center gap-2 mt-1">
-                {/* Animated Verified Buyer badge with green checkmark */}
+                {/* Animated Verified User badge with green checkmark */}
                 <motion.span
                   variants={badgeVariants}
-                  className="flex items-center gap-1 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide bg-emerald-500/10 dark:bg-emerald-500/5 px-2 py-0.5 rounded-full border border-emerald-500/20"
+                  className="flex items-center gap-1 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide bg-emerald-500/10 dark:bg-[#1B2030] px-2 py-0.5 rounded-md border border-emerald-500/20 dark:border-[#242A3B]"
                 >
                   <CheckCircle size={9} className="fill-emerald-500 stroke-white dark:stroke-slate-950 scale-110" />
-                  <span>Verified Buyer</span>
+                  <span>Verified User</span>
                 </motion.span>
                 <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500">
                   {item.date}
@@ -154,7 +150,6 @@ const TestimonialCard = ({ item, idx, direction }) => {
                 <motion.div
                   key={i}
                   variants={starVariants}
-                  whileHover={{ scale: 1.2, rotate: 15 }}
                   className=""
                 >
                   <Star
@@ -169,45 +164,12 @@ const TestimonialCard = ({ item, idx, direction }) => {
 
         {/* Review Content */}
         <div className="mb-4">
-          <h5 className="font-extrabold text-[13.5px] text-slate-800 dark:text-slate-100 mb-1.5 tracking-tight">
+          <h5 className="font-extrabold text-[14px] text-slate-800 dark:text-slate-100 mb-2 tracking-tight">
             {item.title || "Highly Recommended"}
           </h5>
-          <p className="text-[12.5px] text-slate-500 dark:text-slate-400 font-medium leading-relaxed line-clamp-4 select-text">
+          <p className="text-[13px] text-slate-600 dark:text-slate-300 font-medium leading-relaxed line-clamp-4 select-text">
             "{cleanReviewText(item.review)}"
           </p>
-        </div>
-
-        {/* Product Information Section */}
-        <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50/50 dark:bg-slate-950/20 border border-slate-100 dark:border-white/[0.03] mb-4 group/prod relative">
-          <div className="flex items-center gap-3">
-            {/* Small product thumbnail */}
-            <div className="w-10 h-10 rounded-lg overflow-hidden border border-slate-200/60 dark:border-slate-800 bg-white shrink-0 relative">
-              <img src={item.productThumbnail} alt={item.productName} loading="lazy" decoding="async" className="w-full h-full object-cover" />
-              
-              {/* Product image preview on hover */}
-              <div className="absolute inset-0 bg-black/10 opacity-0 group-hover/prod:opacity-100 transition-opacity duration-200 pointer-events-none" />
-            </div>
-            
-            <div className="leading-tight text-left">
-              <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">
-                {item.category}
-              </span>
-              <span className="font-bold text-[11.5px] text-slate-700 dark:text-slate-300 block truncate max-w-[180px] sm:max-w-[220px]">
-                {item.productName}
-              </span>
-            </div>
-          </div>
-
-          <div className="text-right">
-            <span className="text-[9.5px] font-bold text-slate-400 dark:text-slate-600 block">
-              {item.orderNo || "#CN-0000"}
-            </span>
-          </div>
-          
-          {/* Hover large floating image preview tooltip */}
-          <div className="absolute bottom-[110%] left-4 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-2 rounded-2xl shadow-xl w-36 h-36 opacity-0 scale-90 group-hover/prod:opacity-100 group-hover/prod:scale-100 pointer-events-none transition-all duration-350 z-30 overflow-hidden">
-            <img src={item.productThumbnail} alt={item.productName} loading="lazy" decoding="async" className="w-full h-full object-cover rounded-xl" />
-          </div>
         </div>
       </div>
 
@@ -219,27 +181,20 @@ const TestimonialCard = ({ item, idx, direction }) => {
             {/* Helpful button with count */}
             <button
               onClick={handleHelpful}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-all duration-200 select-none cursor-pointer ${
-                hasClickedHelpful
-                  ? "bg-blue-500/10 border-blue-500/30 text-blue-500 dark:text-blue-400"
-                  : "bg-transparent border-slate-200/80 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400"
-              }`}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md border transition-all duration-200 select-none cursor-pointer ${hasClickedHelpful
+                  ? "bg-blue-500/10 dark:bg-[#2D3550] border-blue-500/30 dark:border-[#2D3550] text-blue-500 dark:text-blue-300"
+                  : "bg-transparent border-slate-200/80 dark:border-[#242A3B] hover:bg-slate-50 dark:hover:bg-[#242A3B] text-slate-500 dark:text-slate-400"
+                }`}
             >
               <ThumbsUp size={11} className={hasClickedHelpful ? "fill-blue-500" : ""} />
-              <span>Helpful ({helpfulCount})</span>
-            </button>
-
-            {/* Reply Button */}
-            <button className="hover:text-slate-700 dark:hover:text-slate-300 flex items-center gap-1 cursor-pointer select-none">
-              <MessageSquare size={11} />
-              <span>Reply</span>
+              <span>Helpful{helpfulCount > 0 ? ` (${helpfulCount})` : ""}</span>
             </button>
           </div>
 
           <div className="flex items-center gap-1 select-none">
             <ShieldCheck size={12} className="text-emerald-500" />
             <span className="text-[9.5px] uppercase tracking-wider font-extrabold text-emerald-600 dark:text-emerald-500">
-              Verified Purchase
+              Verified User
             </span>
           </div>
         </div>
@@ -267,7 +222,7 @@ const CustomerTestimonials = () => {
       productName: "Premium Cotton Joggers v2",
       category: "Apparel",
       orderNo: "#CN-9821A",
-      helpfulCount: 14
+      helpfulCount: 0
     },
     {
       name: "Priya Patel",
@@ -282,7 +237,7 @@ const CustomerTestimonials = () => {
       productName: "Speed Athletic Sneakers",
       category: "Footwear",
       orderNo: "#CN-4412B",
-      helpfulCount: 28
+      helpfulCount: 0
     },
     {
       name: "Rohan Das",
@@ -297,7 +252,7 @@ const CustomerTestimonials = () => {
       productName: "TrueWireless Earbuds Pro",
       category: "Electronics",
       orderNo: "#CN-7761C",
-      helpfulCount: 9
+      helpfulCount: 0
     },
     {
       name: "Sneha Reddy",
@@ -312,7 +267,7 @@ const CustomerTestimonials = () => {
       productName: "Winter Parka Coat Extreme",
       category: "Outerwear",
       orderNo: "#CN-2190D",
-      helpfulCount: 31
+      helpfulCount: 0
     }
   ];
 
@@ -337,7 +292,7 @@ const CustomerTestimonials = () => {
             productName: rev.productName || "CartNow Select Item",
             category: rev.category || "E-Commerce",
             orderNo: rev.orderId || `#CN-${Math.floor(1000 + Math.random() * 9000)}X`,
-            helpfulCount: rev.helpfulCount || Math.floor(Math.random() * 15)
+            helpfulCount: rev.helpfulCount || 0
           }));
           setTestimonials([...backendTestimonials, ...defaultTestimonials]);
         }
@@ -363,7 +318,7 @@ const CustomerTestimonials = () => {
   };
 
   return (
-    <section className="w-full px-6 sm:px-12 lg:px-20 py-2 select-none overflow-hidden">
+    <section className="w-full px-6 sm:px-12 lg:px-20 py-4 select-none overflow-hidden bg-transparent dark:bg-[#09090B]">
       {/* Star Shimmer Animation CSS style */}
       <style>{`
         @keyframes star-shimmer {
@@ -390,18 +345,16 @@ const CustomerTestimonials = () => {
           <button
             onClick={handlePrevTestimonial}
             disabled={isAnimating}
-            className={`h-9 w-9 rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-center text-slate-600 dark:text-slate-400 shadow-sm transition duration-300 ${
-              isAnimating ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
-            }`}
+            className={`h-9 w-9 rounded-md border border-slate-200 dark:border-[#242A3B] bg-white dark:bg-[#1B2030] flex items-center justify-center text-slate-600 dark:text-slate-300 shadow-sm transition duration-300 ${isAnimating ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50 dark:hover:bg-[#242A3B] cursor-pointer"
+              }`}
           >
             <ChevronLeft size={18} />
           </button>
           <button
             onClick={handleNextTestimonial}
             disabled={isAnimating}
-            className={`h-9 w-9 rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-center text-slate-600 dark:text-slate-400 shadow-sm transition duration-300 ${
-              isAnimating ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
-            }`}
+            className={`h-9 w-9 rounded-md border border-slate-200 dark:border-[#242A3B] bg-white dark:bg-[#1B2030] flex items-center justify-center text-slate-600 dark:text-slate-300 shadow-sm transition duration-300 ${isAnimating ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50 dark:hover:bg-[#242A3B] cursor-pointer"
+              }`}
           >
             <ChevronRight size={18} />
           </button>
@@ -416,17 +369,17 @@ const CustomerTestimonials = () => {
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch"
+            className="w-full grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 items-stretch"
           >
             {[
               testimonials[testimonialIdx],
               testimonials[(testimonialIdx + 1) % testimonials.length]
             ].filter(Boolean).map((item, idx) => (
-              <TestimonialCard 
-                key={item.orderNo || idx} 
-                item={item} 
-                idx={idx} 
-                direction={direction} 
+              <TestimonialCard
+                key={item.orderNo || idx}
+                item={item}
+                idx={idx}
+                direction={direction}
               />
             ))}
           </motion.div>
@@ -445,9 +398,8 @@ const CustomerTestimonials = () => {
               setDirection(i > testimonialIdx ? "next" : "prev");
               setTestimonialIdx(i);
             }}
-            className={`h-2 rounded-full transition-all duration-300 ${
-              isAnimating ? "cursor-not-allowed opacity-50" : "cursor-pointer"
-            } ${testimonialIdx === i ? "w-6 bg-blue-600 dark:bg-blue-500" : "w-2 bg-slate-200 dark:bg-slate-800"}`}
+            className={`h-2 rounded-sm transition-all duration-300 ${isAnimating ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+              } ${testimonialIdx === i ? "w-6 bg-blue-600 dark:bg-[#2D3550]" : "w-2 bg-slate-200 dark:bg-[#1B2030]"}`}
           />
         ))}
       </div>

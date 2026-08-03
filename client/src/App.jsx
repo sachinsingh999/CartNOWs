@@ -257,7 +257,7 @@ const App = () => {
             </ErrorBoundary>
           </main>
 
-          {location.pathname !== "/social" && <Footer />}
+          {!["/login", "/signup", "/register", "/social"].includes(location.pathname.toLowerCase()) && <Footer />}
           <ComparisonTray />
 
           {/* ──────────────────────────────────────────────────────────
