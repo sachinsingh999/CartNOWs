@@ -20,7 +20,8 @@ import {
   ChevronRight,
   RotateCcw,
   Sun,
-  Moon
+  Moon,
+  PanelLeft
 } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import axios from "axios";
@@ -268,205 +269,188 @@ const App = () => {
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       ) : (
-        <div className="flex flex-1 h-[100dvh] overflow-hidden relative">
+        <div className="flex flex-col h-screen overflow-hidden relative bg-slate-50 dark:bg-slate-950">
           
-          {/* Mobile Overlay backdrop */}
-          <div 
-            className={`fixed inset-0 z-40 bg-slate-950/45 backdrop-blur-xs transition-opacity lg:hidden ${ isMobileSidebarOpen ? "opacity-100 visible" : "opacity-0 invisible pointer-events-none" }`}
-            onClick={() => setIsMobileSidebarOpen(false)}
-          />
+          {/* Top Full-Width Header / Navigation Bar */}
+          <header className="h-16 border-b border-slate-200 dark:border-slate-900 bg-white dark:bg-slate-950 px-4 md:px-6 flex items-center justify-between shrink-0 shadow-xs z-40 relative">
+            
+            {/* Left Side: Brand Logo & Navigation Title */}
+            <div className="flex items-center gap-3">
+              {/* Mobile Drawer Toggle */}
+              <button 
+                onClick={() => setIsMobileSidebarOpen(true)}
+                className="lg:hidden p-1.5 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                title="Open Navigation"
+              >
+                <Menu size={18} />
+              </button>
 
-          {/* Left Sidebar */}
-          <aside 
-            className={`fixed inset-y-0 left-0 z-35 bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-900 flex flex-col justify-between text-slate-600 dark:text-slate-300 shrink-0 transform transition-all duration-300 ease-in-out lg:translate-x-0 ${ isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0" } ${isSidebarCollapsed ? "lg:w-20" : "lg:w-64"} w-64 overscroll-y-contain`}
-          >
-            <div className="p-4 lg:p-6 space-y-6 flex-1 flex flex-col min-h-0">
-              
-              {/* Logo Section */}
-              <div className="flex items-center gap-3">
-                <div className="h-9 w-9 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 flex items-center justify-center shrink-0">
-                  <Logo variant="icon" className="h-full w-full p-1 text-slate-800 dark:text-white" />
+              {/* Navbar Brand Logo */}
+              <div 
+                onClick={() => navigate("/")}
+                className="flex items-center gap-2.5 cursor-pointer group select-none"
+              >
+                <div className="h-9 w-9 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-500 shrink-0 group-hover:scale-105 transition-transform duration-200 shadow-xs">
+                  <Logo variant="icon" className="h-full w-full p-1 text-orange-600 dark:text-orange-400" />
                 </div>
-                {!isSidebarCollapsed && (
-                  <div className="flex flex-col text-left leading-none transition-opacity duration-200">
-                    <span className="text-sm font-extrabold text-slate-900 dark:text-white tracking-tight">CartNOW</span>
-                    <span className="text-[10px] text-orange-500 font-black uppercase tracking-wider mt-0.5">Seller Hub</span>
-                  </div>
+                <div className="flex flex-col text-left leading-none">
+                  <span className="text-sm font-black text-slate-900 dark:text-white tracking-tight">CartNOW</span>
+                  <span className="text-[9px] font-black text-orange-500 uppercase tracking-widest mt-0.5">Seller Hub</span>
+                </div>
+              </div>
+
+              <div className="h-4 w-px bg-slate-200 dark:bg-slate-800 mx-1 hidden sm:block" />
+
+              <h1 className="text-xs font-black text-slate-500 dark:text-slate-400 tracking-wider uppercase hidden sm:block text-left">
+                {activeSubTab.replace("-", " ")}
+              </h1>
+            </div>
+
+            {/* Center: Search */}
+            <div className="relative w-48 sm:w-72">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search references..."
+                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 rounded-xl pl-8 pr-3.5 py-1.5 text-xs font-semibold outline-none transition focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+              />
+            </div>
+
+            {/* Right: Actions */}
+            <div className="flex items-center gap-3 font-semibold">
+              {/* Theme Toggle */}
+              <button
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-850 dark:hover:text-white transition cursor-pointer rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800"
+                title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              >
+                {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+              </button>
+
+              <button
+                onClick={() => navigate("/notifications")}
+                className="relative p-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition cursor-pointer rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800"
+                title="Logs Feed"
+              >
+                <Bell size={16} />
+                <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-brand" />
+              </button>
+
+              <div className="relative">
+                <button
+                  onClick={() => setShowDropdown(!showDropdown)}
+                  className="flex h-8 w-8 rounded-xl bg-slate-900 border border-slate-800 items-center justify-center text-slate-100 dark:text-white font-black text-xs uppercase cursor-pointer hover:bg-slate-800 transition shadow-xs"
+                >
+                  {seller?.name ? seller.name[0] : "M"}
+                </button>
+
+                {showDropdown && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setShowDropdown(false)}></div>
+                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-lg z-50 text-slate-800 dark:text-slate-100 py-1.5 animate-fadeIn">
+                      <button
+                        onClick={() => {
+                          navigate("/profile");
+                          setShowDropdown(false);
+                        }}
+                        className="w-full text-left px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer flex items-center gap-2"
+                      >
+                        <User size={14} className="text-slate-450 dark:text-slate-500" />
+                        <span>Profile Settings</span>
+                      </button>
+                      <hr className="border-slate-100 dark:border-slate-800 my-1" />
+                      <button
+                        onClick={() => {
+                          logout();
+                          setShowDropdown(false);
+                        }}
+                        className="w-full text-left px-4 py-2 text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition cursor-pointer flex items-center gap-2"
+                      >
+                        <User size={14} className="text-red-500 dark:text-red-450" />
+                        <span>Sign Out</span>
+                      </button>
+                    </div>
+                  </>
                 )}
+              </div>
+            </div>
+          </header>
+
+          {/* Main Body Below Navbar */}
+          <div className="flex flex-1 h-[calc(100vh-64px)] overflow-hidden relative">
+            
+            {/* Mobile Overlay backdrop */}
+            <div 
+              className={`fixed inset-0 top-16 z-30 bg-slate-950/45 backdrop-blur-xs transition-opacity lg:hidden ${ isMobileSidebarOpen ? "opacity-100 visible" : "opacity-0 invisible pointer-events-none" }`}
+              onClick={() => setIsMobileSidebarOpen(false)}
+            />
+
+            {/* Left Sidebar Under Navbar */}
+            <aside 
+              className={`fixed top-16 bottom-0 left-0 z-30 bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-900 flex flex-col justify-between text-slate-600 dark:text-slate-300 shrink-0 transform transition-all duration-300 ease-in-out lg:static ${ isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0" } ${isSidebarCollapsed ? "lg:w-20" : "lg:w-64"} w-64 overscroll-y-contain overflow-hidden h-full`}
+            >
+              <div className={`p-3 ${isSidebarCollapsed ? "lg:px-3 lg:py-4" : "lg:p-4"} space-y-4 flex-1 flex flex-col min-h-0`}>
                 
-                {/* Collapse / Expand Toggle for Desktop */}
-                <button 
-                  onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} 
-                  className="hidden lg:flex h-6 w-6 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition shadow-sm ml-auto cursor-pointer"
+                {/* Nav Links */}
+                <nav className="space-y-1 flex-1 overflow-y-auto pr-1 custom-scrollbar overscroll-y-contain">
+                  {[
+                    { label: "Dashboard", path: "/", icon: BarChart3, tab: "dashboard" },
+                    { label: "Products", path: "/products", icon: Layers, tab: "products" },
+                    { label: "Add Product", path: "/add-product", icon: PlusCircle, tab: "add-product" },
+                    { label: "Orders", path: "/orders", icon: ShoppingBag, tab: "orders" },
+                    { label: "Inventory", path: "/inventory", icon: Package, tab: "inventory" },
+                    { label: "Revenue", path: "/revenue", icon: DollarSign, tab: "revenue" },
+                    { label: "Analytics", path: "/analytics", icon: TrendingUp, tab: "analytics" },
+                    { label: "Invoices", path: "/invoices", icon: FileText, tab: "invoices" },
+                    { label: "Reviews", path: "/reviews", icon: MessageSquare, tab: "reviews" },
+                    { label: "Returns", path: "/returns", icon: RotateCcw, tab: "returns" },
+                    { label: "Notifications", path: "/notifications", icon: Bell, tab: "notifications" },
+                    { label: "Settings", path: "/profile", icon: Settings, tab: "settings" },
+                  ].map((item) => {
+                    const Icon = item.icon;
+                    const isActive = activeSubTab === item.tab;
+                    return (
+                      <button
+                        key={item.label}
+                        onClick={() => {
+                          navigate(item.path);
+                          setIsMobileSidebarOpen(false);
+                        }}
+                        title={isSidebarCollapsed ? item.label : undefined}
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all duration-300 ease-in-out cursor-pointer ${ isActive ? "bg-brand text-white shadow-md shadow-orange-600/25" : "hover:bg-slate-100 dark:hover:bg-slate-900/60 hover:text-slate-900 dark:hover:text-white text-slate-500 dark:text-slate-400" }`}
+                      >
+                        <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                          <Icon size={16} className="transition-transform duration-300" />
+                        </div>
+                        <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ease-in-out ${isSidebarCollapsed ? "max-w-0 opacity-0 translate-x-[-10px] pointer-events-none" : "max-w-xs opacity-100 translate-x-0"}`}>
+                          {item.label}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </nav>
+              </div>
+
+              {/* Bottom Collapse/Expand Toggle */}
+              <div className="p-3 border-t border-slate-200 dark:border-slate-900">
+                <button
+                  type="button"
+                  onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                  className="hidden lg:flex w-full items-center gap-3 py-2.5 px-3 bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-bold transition-all duration-300 cursor-pointer border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden"
                   title={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
                 >
-                  {isSidebarCollapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
-                </button>
- 
-                {/* Close Drawer Button for Mobile */}
-                <button
-                  onClick={() => setIsMobileSidebarOpen(false)}
-                  className="lg:hidden p-1.5 text-slate-400 hover:text-white rounded-lg transition ml-auto cursor-pointer"
-                >
-                  <X size={16} />
-                </button>
-              </div>
- 
-              {/* Nav Links */}
-              <nav className="space-y-1 flex-1 overflow-y-auto pr-1 custom-scrollbar overscroll-y-contain">
-                {[
-                  { label: "Dashboard", path: "/", icon: BarChart3, tab: "dashboard" },
-                  { label: "Products", path: "/products", icon: Layers, tab: "products" },
-                  { label: "Add Product", path: "/add-product", icon: PlusCircle, tab: "add-product" },
-                  { label: "Orders", path: "/orders", icon: ShoppingBag, tab: "orders" },
-                  { label: "Inventory", path: "/inventory", icon: Package, tab: "inventory" },
-                  { label: "Revenue", path: "/revenue", icon: DollarSign, tab: "revenue" },
-                  { label: "Analytics", path: "/analytics", icon: TrendingUp, tab: "analytics" },
-                  {label: "Invoices", path: "/invoices", icon: FileText, tab: "invoices"},
-                  {label: "Reviews", path: "/reviews", icon: MessageSquare, tab: "reviews"},
-                  {label: "Returns", path: "/returns", icon: RotateCcw, tab: "returns"},
-                  {label: "Notifications", path: "/notifications", icon: Bell, tab: "notifications"},
-                  {label: "Settings", path: "/profile", icon: Settings, tab: "settings"},
-                ].map((item) => {
-                  const Icon = item.icon;
-                  const isActive = activeSubTab === item.tab;
-                  return (
-                    <button
-                      key={item.label}
-                      onClick={() => {
-                        navigate(item.path);
-                        setIsMobileSidebarOpen(false);
-                      }}
-                      title={isSidebarCollapsed ? item.label : undefined}
-                      className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer ${ isActive ? "bg-brand text-white shadow-md shadow-orange-600/25" : "hover:bg-slate-100 dark:hover:bg-slate-900/60 hover:text-slate-900 dark:hover:text-white text-slate-500 dark:text-slate-400" } ${isSidebarCollapsed ? "justify-center" : ""}`}
-                    >
-                      <Icon size={14} className="shrink-0" />
-                      {!isSidebarCollapsed && <span className="truncate">{item.label}</span>}
-                    </button>
-                  );
-                })}
-              </nav>
-            </div>
- 
-            {/* Bottom Profile / Quick Info */}
-            <div className="p-4 border-t border-slate-200 dark:border-slate-900">
-              <button
-                onClick={() => {
-                  navigate("/profile");
-                  setIsMobileSidebarOpen(false);
-                }}
-                className={`w-full flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-900 hover:bg-slate-100 dark:hover:bg-slate-900 transition cursor-pointer ${ isSidebarCollapsed ? "justify-center" : "" }`}
-              >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="h-8 w-8 rounded-lg bg-brand flex items-center justify-center text-slate-100 dark:text-white font-black text-xs uppercase shrink-0">
-                    {seller?.name ? seller.name[0] : "M"}
+                  <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                    <ChevronLeft size={16} className={`transition-transform duration-300 ${isSidebarCollapsed ? "rotate-180 text-orange-500" : "rotate-0"}`} />
                   </div>
-                  {!isSidebarCollapsed && (
-                    <div className="flex flex-col text-left leading-none min-w-0 transition-opacity duration-200">
-                      <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
-                        {seller?.shopName || "My Store"}
-                      </span>
-                      <span className="text-[9px] text-orange-500 font-semibold mt-0.5 truncate">
-                        {seller?.name || "Merchant"}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </button>
-            </div>
-          </aside>
- 
-          {/* Right Main Panel */}
-          <div className={`flex-1 flex flex-col overflow-hidden bg-slate-50/40 dark:bg-[#0B0F19]/40 pb-16 sm:pb-0 transition-all duration-300 ${ isSidebarCollapsed ? "lg:pl-20" : "lg:pl-64" }`}>
-            {/* Top Header */}
-            <header className="h-16 border-b border-slate-200/80 dark:border-slate-900 bg-white/70 dark:bg-slate-950/70 backdrop-blur-md px-4 md:px-6 flex items-center justify-between shrink-0 shadow-sm sticky top-0 z-20">
-              
-              {/* Left Side: Title & Menu toggle */}
-              <div className="flex items-center">
-                <button 
-                  onClick={() => setIsMobileSidebarOpen(true)}
-                  className="lg:hidden p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer mr-2"
-                  title="Open Navigation"
-                >
-                  <Menu size={18} />
+                  <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ease-in-out ${isSidebarCollapsed ? "max-w-0 opacity-0 translate-x-[-10px] pointer-events-none" : "max-w-xs opacity-100 translate-x-0"}`}>
+                    Collapse Sidebar
+                  </span>
                 </button>
-                <h1 className="text-sm font-black text-slate-900 dark:text-slate-100 tracking-tight capitalize hidden sm:block text-left">
-                  {activeSubTab.replace("-", " ")} Hub
-                </h1>
               </div>
+            </aside>
 
-              {/* Center: Search */}
-              <div className="relative w-48 sm:w-72">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Search references..."
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 rounded-xl pl-8 pr-3.5 py-1.5 text-xs font-semibold outline-none transition focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                />
-              </div>
-
-              {/* Right: Actions */}
-              <div className="flex items-center gap-3 font-semibold">
-                {/* Theme Toggle */}
-                <button
-                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                  className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-850 dark:hover:text-white transition cursor-pointer rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800"
-                  title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
-                >
-                  {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
-                </button>
-
-                <button
-                  onClick={() => navigate("/notifications")}
-                  className="relative p-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition cursor-pointer rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800"
-                  title="Logs Feed"
-                >
-                  <Bell size={16} />
-                  <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-brand" />
-                </button>
-
-                <div className="relative">
-                  <button
-                    onClick={() => setShowDropdown(!showDropdown)}
-                    className="flex h-8 w-8 rounded-xl bg-slate-900 border border-slate-800 items-center justify-center text-slate-100 dark:text-white font-black text-xs uppercase cursor-pointer hover:bg-slate-800 transition shadow-sm"
-                  >
-                    {seller?.name ? seller.name[0] : "M"}
-                  </button>
-
-                  {showDropdown && (
-                    <>
-                      <div className="fixed inset-0 z-40" onClick={() => setShowDropdown(false)}></div>
-                      <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-lg z-50 text-slate-800 dark:text-slate-100 py-1.5 animate-fadeIn">
-                        <button
-                          onClick={() => {
-                            navigate("/profile");
-                            setShowDropdown(false);
-                          }}
-                          className="w-full text-left px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer flex items-center gap-2"
-                        >
-                          <User size={14} className="text-slate-450 dark:text-slate-500" />
-                          <span>Profile Settings</span>
-                        </button>
-                        <hr className="border-slate-100 dark:border-slate-800 my-1" />
-                        <button
-                          onClick={() => {
-                            logout();
-                            setShowDropdown(false);
-                          }}
-                          className="w-full text-left px-4 py-2 text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition cursor-pointer flex items-center gap-2"
-                        >
-                          <User size={14} className="text-red-500 dark:text-red-450" />
-                          <span>Sign Out</span>
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-            </header>
-
-            {/* Main scrollable section */}
-            <main className="flex-1 overflow-y-auto p-4 md:p-8">
+            {/* Right Main Content */}
+            <main className="flex-1 min-w-0 overflow-y-auto custom-scrollbar bg-slate-50 dark:bg-slate-950 pb-16 sm:pb-0 p-4 md:p-8">
               <div className="mx-auto w-full max-w-[1600px]">
                 <Routes>
                   <Route 
@@ -549,7 +533,7 @@ const App = () => {
                   <Route 
                     path="/reviews" 
                     element={
-                      <Reviews token={token} />
+                      <Reviews token={token} products={products} />
                     } 
                   />
                   <Route 

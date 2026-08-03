@@ -31,6 +31,7 @@ import {
   ShieldCheck,
   Eye,
   MessageSquare,
+  RefreshCw,
 } from "lucide-react";
 import { backendUrl } from "../config";
 import { useLanguage } from "../context/LanguageContext";
@@ -154,11 +155,9 @@ const Orderdetail = () => {
           const itemSt = item.status || "Placed";
           const topSt = order.orderStatus || "Placed";
 
-          let effectiveStatus = itemSt;
-          if (["return pending", "return requested", "returned", "cancelled"].includes(itemSt.toLowerCase())) {
-            effectiveStatus = itemSt;
-          } else if (["delivered", "cancelled", "return pending"].includes(topSt.toLowerCase())) {
-            effectiveStatus = topSt;
+          let effectiveStatus = topSt || itemSt || "Placed";
+          if (itemSt && itemSt.toLowerCase() === "cancelled") {
+            effectiveStatus = "Cancelled";
           }
 
           return {
@@ -545,54 +544,84 @@ const Orderdetail = () => {
           </AnimatePresence>
         </div>
 
-        {/* Tabs Bar */}
-        <div className="flex overflow-x-auto scrollbar-none mb-4">
-          {["All", "Processing", "Shipped", "Delivered", "Cancelled"].map((tab) => {
-            const isActive = selectedTab === tab;
-            return (
-              <button
-                key={tab}
-                onClick={() => {
-                  setSelectedTab(tab);
-                  setOpenActionMenuIndex(null);
-                }}
-                className={`py-3 px-4 text-xs font-black whitespace-nowrap transition-all duration-200 border-b-2 outline-none cursor-pointer ${ isActive ? "border-[#4F7CFF] dark:border-indigo-500 text-[#4F7CFF] dark:text-indigo-400" : "border-transparent text-[#4B5563] hover:text-[#121217] dark:text-[#8E8EA0] dark:hover:text-[#CFCFD8]" }`}
-              >
-                <span>{tab}</span>
-              </button>
-            );
-          })}
-        </div>
+        {/* Combined Status Tabs, Filter & Sort Bar */}
+        <div className="flex flex-wrap items-center justify-between bg-white dark:bg-[#111118] border border-slate-200 dark:border-slate-800/80 rounded-xl px-3 py-2 mb-6 shadow-xs gap-3">
+          {/* Left: Status Tabs with Live Order Count Badges */}
+          <div className="flex items-center overflow-x-auto scrollbar-none gap-1 py-0.5">
+            {["All", "Processing", "Shipped", "Delivered", "Cancelled"].map((tab) => {
+              const isActive = selectedTab === tab;
+              const count = orderData.filter((item) => {
+                if (tab === "All") return true;
+                const s = String(item.status || "").toLowerCase();
+                if (tab === "Processing") return ["placed", "order placed", "confirmed", "packed", "processing"].includes(s);
+                if (tab === "Shipped") return ["shipped", "out for delivery"].includes(s);
+                if (tab === "Delivered") return s === "delivered" || s === "completed";
+                if (tab === "Cancelled") return s === "cancelled";
+                return true;
+              }).length;
 
-        {/* Filter & Sort Bar */}
-        <div className="flex items-center justify-between bg-[#FFFFFF] dark:bg-[#111118] rounded-none p-3 mb-6 shadow-xs">
-          <div className="flex items-center gap-1.5 text-xs font-black text-[#4F7CFF] dark:text-indigo-400 cursor-pointer">
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 8.293A1 1 0 013 7.586V4z" />
-            </svg>
-            <span>Filter</span>
+              return (
+                <button
+                  key={tab}
+                  onClick={() => {
+                    setSelectedTab(tab);
+                    setOpenActionMenuIndex(null);
+                  }}
+                  className={`py-1.5 px-3 text-xs font-black whitespace-nowrap rounded-lg transition-all duration-200 outline-none cursor-pointer flex items-center gap-1.5 ${
+                    isActive
+                      ? "bg-[#4F7CFF] text-white shadow-xs"
+                      : "text-[#4B5563] hover:text-[#121217] dark:text-[#8E8EA0] dark:hover:text-[#CFCFD8] hover:bg-slate-100 dark:hover:bg-slate-800/60"
+                  }`}
+                >
+                  <span>{tab}</span>
+                  <span className={`px-1.5 py-0.2 rounded-full text-[9px] font-black ${
+                    isActive ? "bg-white/20 text-white" : "bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+                  }`}>
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
           </div>
-          <button 
-            onClick={() => {
-              setSortOrder(prev => prev === "latest" ? "oldest" : "latest");
-              toast.info(`Sorted by ${sortOrder === "latest" ? "Oldest First" : "Latest First"} 🔄`);
-            }}
-            className="flex items-center gap-1.5 text-xs font-black text-[#4B5563] dark:text-[#CFCFD8] hover:text-[#4F7CFF] transition cursor-pointer"
-          >
-            <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-            </svg>
-            <span>Sort</span>
-          </button>
+
+          {/* Right: Filter & Sort Actions */}
+          <div className="flex items-center gap-3 shrink-0 py-0.5 pl-2 border-l border-slate-100 dark:border-slate-800">
+            <div className="flex items-center gap-1.5 text-xs font-black text-[#4F7CFF] dark:text-indigo-400 cursor-pointer">
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 8.293A1 1 0 013 7.586V4z" />
+              </svg>
+              <span>Filter</span>
+            </div>
+            <button 
+              onClick={() => {
+                setSortOrder(prev => prev === "latest" ? "oldest" : "latest");
+                toast.info(`Sorted by ${sortOrder === "latest" ? "Oldest First" : "Latest First"} 🔄`);
+              }}
+              className="flex items-center gap-1.5 text-xs font-black text-[#4B5563] dark:text-[#CFCFD8] hover:text-[#4F7CFF] transition cursor-pointer bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-3 py-1.5 rounded-lg"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+              </svg>
+              <span>Sort ({sortOrder === "latest" ? "Latest" : "Oldest"})</span>
+            </button>
+          </div>
         </div>
 
         {filteredAndSortedOrders.length === 0 && (
-          <div className="rounded-md bg-[#FFFFFF] dark:bg-[#18181F] p-16 text-center shadow-sm max-w-2xl mx-auto">
-            <div className="mx-auto h-14 w-14 rounded-full bg-[#F1F3F7] dark:bg-[#20202A] flex items-center justify-center text-[#7A7D89] dark:text-[#8E8EA0] mb-4">
+          <div className="rounded-md bg-[#FFFFFF] dark:bg-[#18181F] p-12 text-center shadow-sm max-w-2xl mx-auto space-y-3">
+            <div className="mx-auto h-14 w-14 rounded-full bg-[#F1F3F7] dark:bg-[#20202A] flex items-center justify-center text-[#7A7D89] dark:text-[#8E8EA0]">
               <PackageCheck className="h-6 w-6" />
             </div>
-            <h3 className="text-lg font-bold text-[#121217] dark:text-[#FFFFFF]">No orders found</h3>
-            <p className="mt-2 text-sm text-[#4B5563] dark:text-[#8E8EA0]">No order matches the current status tab filters or search queries.</p>
+            <h3 className="text-lg font-bold text-[#121217] dark:text-[#FFFFFF]">No orders under "{selectedTab}" tab</h3>
+            <p className="text-xs text-[#4B5563] dark:text-[#8E8EA0]">You currently have 0 orders in the {selectedTab} status category.</p>
+            {selectedTab !== "All" && (
+              <button
+                onClick={() => setSelectedTab("All")}
+                className="mt-2 px-4 py-2 bg-[#4F7CFF] hover:bg-indigo-600 text-white font-bold text-xs rounded-lg transition cursor-pointer"
+              >
+                View All Orders ({orderData.length})
+              </button>
+            )}
           </div>
         )}
 

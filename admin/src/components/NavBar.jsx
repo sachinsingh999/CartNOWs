@@ -111,12 +111,15 @@ const NavBar = ({ setToken, toggleSidebar, isCollapsed, theme, setTheme, token }
 
           <div 
             onClick={() => navigate("/")} 
-            className="flex items-center cursor-pointer select-none group"
+            className="flex items-center gap-2.5 cursor-pointer select-none group"
             title="Go to Dashboard"
           >
-            <div className="flex flex-col leading-none">
-              <span className="text-sm font-black text-slate-900 dark:text-white tracking-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition duration-200">CartNOW</span>
-              <span className="text-[9px] text-blue-700 dark:text-blue-400 font-extrabold uppercase tracking-widest mt-0.5">Control Center</span>
+            <div className="h-8 w-8 rounded-lg bg-blue-600/10 dark:bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0 group-hover:scale-105 transition-transform duration-200">
+              <Logo variant="icon" className="h-full w-full p-1 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div className="flex flex-col leading-none text-left">
+              <span className="text-xs font-black text-slate-900 dark:text-white tracking-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition duration-200">CartNOW</span>
+              <span className="text-[8px] text-blue-600 dark:text-blue-400 font-extrabold uppercase tracking-widest mt-0.5">Control Center</span>
             </div>
           </div>
         </div>
@@ -285,7 +288,17 @@ const NavBar = ({ setToken, toggleSidebar, isCollapsed, theme, setTheme, token }
                         className="w-full flex items-center justify-between px-3 py-2 rounded-md text-left hover:bg-slate-100 dark:hover:bg-white/[0.04] text-slate-700 dark:text-slate-300 transition duration-150 cursor-pointer"
                       >
                         <div className="flex items-center gap-3">
-                          <img src={prod.image?.[0]} alt={prod.name} className="h-6 w-6 rounded-md object-cover bg-slate-50 dark:bg-slate-950" />
+                          {prod.images?.[0] ? (
+                            <img
+                              src={prod.images[0].startsWith('http') ? prod.images[0] : `${backendUrl}/${prod.images[0]}`}
+                              alt={prod.name}
+                              className="h-6 w-6 rounded-md object-cover bg-slate-50 dark:bg-slate-950 border border-slate-200/50 dark:border-slate-800"
+                            />
+                          ) : (
+                            <div className="h-6 w-6 rounded-md bg-slate-100 dark:bg-slate-800 border border-slate-200/50 dark:border-slate-800 flex items-center justify-center text-slate-400">
+                              <Box size={12} />
+                            </div>
+                          )}
                           <div>
                             <p className="font-bold text-slate-900 dark:text-white leading-tight">{prod.name}</p>
                             <p className="text-[10px] text-slate-400 mt-0.5">{prod.category || "General"}</p>

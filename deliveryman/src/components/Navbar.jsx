@@ -21,7 +21,7 @@ const Navbar = ({
   logout
 }) => {
   return (
-    <header className="w-full bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 sticky top-0 z-30 shadow-sm transition-all duration-300">
+    <header className="w-full bg-white/95 dark:bg-gray-900/95 backdrop-blur-md sticky top-0 z-30 shadow-xs transition-all duration-300">
       <div className="w-full max-w-[1600px] mx-auto px-4 md:px-6 py-3 flex items-center justify-between gap-6">
         
         {/* Left Section: Logo & Compact Navigation Tabs */}
@@ -36,8 +36,6 @@ const Navbar = ({
               <span className="text-[9px] text-blue-500 dark:text-blue-400 font-extrabold uppercase mt-0.5 tracking-wider">Courier</span>
             </div>
           </div>
-
-          <div className="hidden lg:block w-[1px] h-6 bg-slate-200 dark:bg-slate-800" />
 
           {/* Desktop Navigation Tabs */}
           <div className="hidden lg:flex items-center gap-1">

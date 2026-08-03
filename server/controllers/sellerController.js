@@ -1,6 +1,8 @@
+import mongoose from "mongoose";
 import sellerModel from "../models/sellerModel.js";
 import productModel from "../models/productModel.js";
 import orderModel from "../models/orderModel.js";
+import orderItemModel from "../models/orderItemModel.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { v2 as cloudinary } from "cloudinary";
@@ -247,7 +249,7 @@ export const getSellerDashboardStats = async (req, res) => {
     // Find orders where items contain this seller's products
     const allOrders = await orderModel.find({}).sort({ createdAt: -1 });
     const sellerOrders = allOrders.filter(o => 
-      o.items.some(item => {
+      (o.items || []).some(item => {
         const itemId = item.productId || item._id;
         return itemId && productIds.includes(itemId.toString());
       })
@@ -627,8 +629,8 @@ export const createProduct = async (req, res) => {
       }
       return {
         sku: v.sku || "",
-        price: Number(v.price) || Number(price),
-        stock: Number(v.stock) || 0,
+        price: (v.price !== undefined && v.price !== null && !isNaN(Number(v.price))) ? Number(v.price) : Number(price),
+        stock: (v.stock !== undefined && v.stock !== null && !isNaN(Number(v.stock))) ? Number(v.stock) : 0,
         images: vImages,
         barcode: v.barcode || "",
         availability: v.availability !== undefined ? !!v.availability : true,
@@ -990,23 +992,101 @@ export const bulkStockUpdate = async (req, res) => {
 export const getAllSellerOrders = async (req, res) => {
   try {
     const sellerId = req.seller._id;
-    const items = await orderItemModel.find({ sellerId }).sort({ createdAt: -1 }).lean();
-    
-    // Group items by orderId
-    const orderIds = Array.from(new Set(items.map(i => i.orderId.toString())));
-    const orders = await orderModel.find({ _id: { $in: orderIds } }).populate("deliverymanId", "name phone vehicleType").sort({ createdAt: -1 }).lean();
 
-    const ordersWithItems = orders.map(order => {
-      const sellerItems = items.filter(i => i.orderId.toString() === order._id.toString());
+    // Get seller's products to match against productIds and map product details
+    const sellerProducts = await productModel.find({ sellerId }).lean();
+    const sellerProductMap = {};
+    const sellerProductIds = [];
+    sellerProducts.forEach(p => {
+      if (p && p._id && mongoose.Types.ObjectId.isValid(p._id.toString())) {
+        const idStr = p._id.toString();
+        sellerProductIds.push(idStr);
+        sellerProductMap[idStr] = p;
+      }
+    });
+
+    // 1. Fetch matching order items from orderItemModel
+    const itemConditions = [
+      { sellerId: sellerId },
+      { sellerId: sellerId.toString() }
+    ];
+    if (sellerProductIds.length > 0) {
+      itemConditions.push({ productId: { $in: sellerProductIds } });
+    }
+
+    const items = await orderItemModel.find({ $or: itemConditions }).sort({ createdAt: -1 }).lean();
+
+    // Safely collect valid ObjectId strings for orders
+    const orderItemOrderIds = items
+      .filter(i => i && i.orderId)
+      .map(i => i.orderId.toString())
+      .filter(id => mongoose.Types.ObjectId.isValid(id));
+
+    // 2. Build safe $or conditions for direct orders
+    const orderConditions = [
+      { "items.sellerId": sellerId },
+      { "items.sellerId": sellerId.toString() }
+    ];
+    if (sellerProductIds.length > 0) {
+      orderConditions.push({ "items.productId": { $in: sellerProductIds } });
+    }
+    if (orderItemOrderIds.length > 0) {
+      orderConditions.push({ _id: { $in: orderItemOrderIds } });
+    }
+
+    const directOrders = await orderModel.find({ $or: orderConditions })
+      .populate("deliverymanId", "name phone vehicleType")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const ordersWithItems = directOrders.map(order => {
+      const orderIdStr = order._id.toString();
+      let sellerItems = items.filter(i => i && i.orderId && i.orderId.toString() === orderIdStr);
+      
+      // Fallback: If orderItemModel didn't have entries, extract seller items from order.items directly
+      if (!sellerItems || sellerItems.length === 0) {
+        sellerItems = (order.items || []).filter(item => {
+          const itemSellerId = item.sellerId?.toString();
+          const itemProdId = (item.productId || item._id)?.toString();
+          return itemSellerId === sellerId.toString() || (itemProdId && sellerProductIds.includes(itemProdId));
+        });
+      }
+
+      // Normalize item fields so frontend gets image, name, price, qty reliably
+      const normalizedItems = sellerItems.map(item => {
+        const prodIdStr = (item.productId || item._id)?.toString();
+        const matchingProduct = prodIdStr ? sellerProductMap[prodIdStr] : null;
+
+        const name = item.productName || item.name || item.title || item.product?.name || matchingProduct?.name || "Product Item";
+        const image = item.productImage || item.image || item.images?.[0] || item.product?.images?.[0] || matchingProduct?.images?.[0] || "";
+        const price = Number(item.unitPrice || item.finalPrice || item.price || matchingProduct?.price || 0);
+        const qty = Number(item.quantity || item.qty || 1);
+
+        return {
+          ...item,
+          name,
+          productName: name,
+          image,
+          productImage: image,
+          images: image ? [image] : (matchingProduct?.images || []),
+          price,
+          unitPrice: price,
+          qty,
+          quantity: qty,
+          totalPrice: price * qty,
+        };
+      });
+
       return {
         ...order,
-        items: sellerItems,
-        orderItems: sellerItems,
+        items: normalizedItems,
+        orderItems: normalizedItems,
       };
     });
 
     res.json({ success: true, orders: ordersWithItems });
   } catch (error) {
+    console.error("Error in getAllSellerOrders:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };

@@ -178,99 +178,127 @@ const Returns = ({ token }) => {
         </p>
       </div>
 
-      {/* Date Filter Bar */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm">
-        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-          <span className="text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider mr-2 flex items-center gap-1.5">
-            <Calendar size={14} className="text-slate-400" /> Filter Date:
-          </span>
+      {/* ── Single Consolidated Container: Header, Stats, Date & Search Bar ── */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-4 shadow-xs space-y-3.5 shrink-0">
+        
+        {/* Top: Header Row */}
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-2.5">
+            <div className="h-8 w-8 bg-rose-600 dark:bg-rose-500/10 text-white dark:text-rose-400 rounded-lg flex items-center justify-center border border-rose-500/10 shadow-xs shrink-0">
+              <RotateCcw size={16} />
+            </div>
+            <div>
+              <h1 className="text-base font-black text-slate-900 dark:text-white tracking-tight">Return Management & RMA Operations</h1>
+              <p className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider mt-0.5">Handle product returns, refund pickups, and replacement/exchange agent assignments</p>
+            </div>
+          </div>
+
+          <button
+            onClick={() => {
+              fetchReturns();
+              fetchDrivers();
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-lg text-xs font-bold transition active:scale-95 cursor-pointer shadow-xs"
+          >
+            <RotateCcw size={12} />
+            <span>Refresh RMA</span>
+          </button>
+        </div>
+
+        {/* Middle: Return Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {[
-            { id: "all", label: "All Time" },
-            { id: "today", label: "Today" },
-            { id: "week", label: "Last 7 Days" },
-            { id: "month", label: "This Month" },
-            { id: "custom", label: "Custom Range" }
-          ].map((preset) => (
-            <button
-              key={preset.id}
-              type="button"
-              onClick={() => {
-                if (preset.id === "custom") {
-                  setDatePreset("custom");
-                } else {
-                  handlePresetChange(preset.id);
-                }
-              }}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition duration-150 cursor-pointer ${ datePreset === preset.id ? "bg-slate-900 text-slate-100 dark:bg-blue-600 dark:text-white shadow-sm" : "text-slate-500 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-100 dark:border-slate-800 hover:text-slate-900 dark:hover:text-white" }`}
-            >
-              {preset.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Custom Date Range Picker */}
-        {datePreset === "custom" && (
-          <div className="flex items-center gap-2 w-full md:w-auto">
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 px-3 py-2 text-xs font-bold text-slate-800 dark:text-slate-100 outline-none transition focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-            />
-            <span className="text-xs text-slate-400 font-bold">to</span>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800 px-3 py-2 text-xs font-bold text-slate-800 dark:text-slate-100 outline-none transition focus:bg-white dark:focus:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-            />
-            {(startDate || endDate) && (
-              <button
-                type="button"
-                onClick={() => handlePresetChange("all")}
-                className="px-2 py-1.5 text-xs font-bold text-slate-400 hover:text-slate-900 dark:hover:text-white transition cursor-pointer"
+            { label: "Total Returns", val: totalReturns, sub: "Historical claims logged", icon: CornerDownLeft, color: "text-blue-500 bg-blue-500/10" },
+            { label: "Pending Requested", val: pendingRequests, sub: "Awaiting review", icon: Clock, color: pendingRequests > 0 ? "text-amber-500 bg-amber-500/10" : "text-slate-400 bg-slate-500/10" },
+            { label: "Completed Jobs", val: completedRequests, sub: "Refunded / Exchanged", icon: CheckCircle, color: "text-emerald-500 bg-emerald-500/10" }
+          ].map((card, idx) => {
+            const Icon = card.icon;
+            return (
+              <div
+                key={idx}
+                className="p-3 rounded-xl border bg-slate-50/70 dark:bg-slate-950/40 border-slate-200/60 dark:border-slate-800 flex items-center justify-between group relative overflow-hidden"
               >
-                Reset
+                <div className="space-y-1 relative z-10 text-left">
+                  <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                    {card.label}
+                  </span>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-lg font-black tracking-tight text-slate-900 dark:text-white">{card.val}</span>
+                  </div>
+                  <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 block">
+                    {card.sub}
+                  </span>
+                </div>
+                <div className={`p-2 rounded-lg border ${card.color} border-slate-200/50 dark:border-slate-800 transition-transform duration-200 group-hover:scale-105 relative z-10`}>
+                  <Icon size={14} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Bottom: Date Preset Filters & Custom Inputs */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-0.5 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex flex-wrap items-center gap-1">
+            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mr-1.5">
+              Period:
+            </span>
+            {[
+              { id: "all", label: "All Time" },
+              { id: "today", label: "Today" },
+              { id: "week", label: "Last 7 Days" },
+              { id: "month", label: "This Month" },
+              { id: "custom", label: "Custom" }
+            ].map((preset) => (
+              <button
+                key={preset.id}
+                type="button"
+                onClick={() => {
+                  if (preset.id === "custom") {
+                    setDatePreset("custom");
+                  } else {
+                    handlePresetChange(preset.id);
+                  }
+                }}
+                className={`px-2.5 py-1 rounded-md text-[9px] font-extrabold uppercase tracking-wider transition-all duration-200 cursor-pointer ${
+                  datePreset === preset.id
+                    ? "bg-slate-900 dark:bg-rose-600 text-white shadow-xs"
+                    : "bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                }`}
+              >
+                {preset.label}
               </button>
-            )}
+            ))}
           </div>
-        )}
-      </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Total Returns */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200">
-            <CornerDownLeft size={20} />
-          </div>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-400">Total Returns</p>
-            <p className="text-lg font-bold text-slate-900 dark:text-slate-100 mt-0.5">{totalReturns}</p>
-          </div>
+          {datePreset === "custom" && (
+            <div className="flex items-center gap-2">
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-2.5 py-1 text-[11px] font-semibold text-slate-800 dark:text-white outline-none"
+              />
+              <span className="text-[10px] text-slate-400 font-bold uppercase">to</span>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-2.5 py-1 text-[11px] font-semibold text-slate-800 dark:text-white outline-none"
+              />
+              {(startDate || endDate) && (
+                <button
+                  type="button"
+                  onClick={() => handlePresetChange("all")}
+                  className="text-[9px] font-extrabold text-rose-500 hover:underline uppercase"
+                >
+                  Reset
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* Pending Requests */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
-          <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${pendingRequests > 0 ? "bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 animate-pulse" : "bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200"}`}>
-            <Clock size={20} />
-          </div>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-400">Requested</p>
-            <p className="text-lg font-bold text-slate-900 dark:text-slate-100 mt-0.5">{pendingRequests}</p>
-          </div>
-        </div>
-
-        {/* Completed Requests */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
-            <CheckCircle size={20} />
-          </div>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-400">Completed Jobs</p>
-            <p className="text-lg font-bold text-slate-900 dark:text-slate-100 mt-0.5">{completedRequests}</p>
-          </div>
-        </div>
       </div>
 
       {/* Return Requests List */}

@@ -112,21 +112,21 @@ const OrderConfirmed = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#f8fafc] dark:bg-slate-955 flex flex-col items-center justify-center transition-colors duration-200">
-        <Loader2 className="h-10 w-10 animate-spin text-orange-500 mb-4" />
-        <p className="text-sm font-semibold text-slate-505 dark:text-slate-400">Generating order receipt...</p>
+      <div className="min-h-screen bg-[#f8fafc] dark:bg-slate-950 flex flex-col items-center justify-center transition-colors duration-200">
+        <Loader2 className="h-10 w-10 animate-spin text-indigo-500 mb-4" />
+        <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">Generating order receipt...</p>
       </div>
     );
   }
 
   if (!order) {
     return (
-      <div className="min-h-screen bg-[#f8fafc] dark:bg-slate-955 flex flex-col items-center justify-center px-4 transition-colors duration-200">
-        <HelpCircle size={48} className="text-slate-405 dark:text-slate-500 animate-bounce" />
+      <div className="min-h-screen bg-[#f8fafc] dark:bg-slate-950 flex flex-col items-center justify-center px-4 transition-colors duration-200">
+        <HelpCircle size={48} className="text-slate-400 dark:text-slate-500 animate-bounce" />
         <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 mt-4">Order receipt not found.</p>
         <button
           onClick={() => navigate("/product")}
-          className="mt-4 rounded-md bg-[#ff6a00] hover:bg-[#e65c00] px-5 py-2.5 text-xs font-bold text-white transition hover:bg-slate-800 dark:hover:bg-orange-500 cursor-pointer"
+          className="mt-4 rounded-md bg-indigo-600 hover:bg-indigo-700 px-5 py-2.5 text-xs font-bold text-white transition cursor-pointer"
         >
           Browse Store
         </button>
@@ -154,185 +154,194 @@ const OrderConfirmed = () => {
   const isDelivered = order.orderStatus === "Delivered";
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] dark:bg-slate-955 px-4 sm:px-6 pt-5 pb-8 text-slate-755 dark:text-slate-300 transition-colors duration-200 flex flex-col justify-start">
-      <div className="mx-auto max-w-5xl w-full space-y-4">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 px-4 sm:px-6 lg:px-8 py-6 text-left select-none transition-colors duration-200 text-slate-800 dark:text-slate-100">
+      <div className="max-w-7xl mx-auto space-y-4">
         
-        {/* SUCCESS HERO BANNER (REPLICATING THE TOP PANEL OF THE MOCKUP IMAGE) */}
-        <div className="relative overflow-hidden rounded-md bg-emerald-500/[0.015] dark:bg-emerald-500/[0.04] border border-emerald-500/10 p-5 flex flex-col md:flex-row items-center justify-between gap-4 shadow-3xs">
+        {/* ── SUCCESS HERO BANNER (Full-width header panel) ── */}
+        <div className="relative overflow-hidden rounded-md bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 p-5 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xs">
           <div className="flex items-center gap-4 text-left">
-            {/* Confetti-style success circle */}
-            <div className="relative flex h-14 w-14 items-center justify-center shrink-0">
-              <span className="absolute h-full w-full rounded-full bg-emerald-500/10 animate-ping opacity-75" />
-              <div className="relative flex h-11 w-11 items-center justify-center rounded-full bg-emerald-500 text-white shadow-sm">
-                <Check size={20} className="stroke-[3.5]" />
+            {/* Success Icon */}
+            <div className="relative flex h-12 w-12 items-center justify-center shrink-0">
+              <span className="absolute h-full w-full rounded-full bg-emerald-500/20 animate-ping opacity-75" />
+              <div className="relative flex h-10 w-10 items-center justify-center rounded-md bg-emerald-600 text-white shadow-xs">
+                <Check size={20} className="stroke-[3]" />
               </div>
-              {/* Mini Confetti shapes */}
-              <div className="absolute top-1 left-1 text-[8px] animate-bounce">🎉</div>
-              <div className="absolute bottom-1 right-1 text-[8px] animate-pulse">✨</div>
             </div>
             
             <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Order Confirmed!</h1>
-                <span className="inline-flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-250/15 text-emerald-600 dark:text-emerald-450 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider">
+              <div className="flex items-center gap-2.5">
+                <h1 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-tight">Order Confirmed!</h1>
+                <span className="inline-flex items-center gap-1.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 rounded-sm text-[10px] font-black uppercase tracking-wider">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                   Confirmed
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1 font-semibold leading-relaxed">
-                Thank you for your purchase. A receipt email has been sent to{" "}
-                <span className="font-extrabold text-slate-800 dark:text-slate-200">{order.address?.email || "sachin@gmail.com"}</span>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-semibold leading-relaxed">
+                Thank you for your purchase! Digital receipt & tax invoice available for{" "}
+                <span className="font-extrabold text-slate-900 dark:text-white">{order.address?.email || "customer@cartnow.com"}</span>
               </p>
             </div>
           </div>
 
-          {/* EST Delivery and Order ID cards */}
+          {/* EST Delivery and Order ID Cards */}
           <div className="flex flex-wrap items-center gap-3 shrink-0">
-            {/* Est Delivery card */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md px-3 py-2 flex items-center gap-2.5 w-36 shadow-3xs text-left">
-              <div className="h-7 w-7 rounded-sm bg-blue-500/5 dark:bg-blue-500/10 flex items-center justify-center text-blue-500 shrink-0">
-                <Calendar size={13} className="stroke-[2.5]" />
+            {/* Est Delivery Card */}
+            <div className="bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 rounded-md px-3.5 py-2 flex items-center gap-2.5 min-w-[140px] shadow-xs text-left">
+              <div className="h-7 w-7 rounded-sm bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+                <Calendar size={14} className="stroke-[2.5]" />
               </div>
               <div>
-                <span className="text-[8px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 block leading-none">Est. Delivery</span>
-                <span className="text-[11px] font-black text-slate-900 dark:text-white block mt-1">{expectedDeliveryStr}</span>
+                <span className="text-[9px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 block leading-none">Est. Delivery</span>
+                <span className="text-xs font-black text-slate-900 dark:text-white block mt-1">{expectedDeliveryStr}</span>
               </div>
             </div>
 
-            {/* Order ID card */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md px-3 py-2 flex items-center gap-2.5 w-36 shadow-3xs text-left">
-              <div className="h-7 w-7 rounded-sm bg-blue-500/5 dark:bg-blue-500/10 flex items-center justify-center text-blue-500 shrink-0">
-                <FileText size={13} className="stroke-[2.5]" />
+            {/* Order ID Card */}
+            <div className="bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 rounded-md px-3.5 py-2 flex items-center gap-2.5 min-w-[140px] shadow-xs text-left">
+              <div className="h-7 w-7 rounded-sm bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+                <FileText size={14} className="stroke-[2.5]" />
               </div>
               <div className="min-w-0 flex-1">
-                <span className="text-[8px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 block leading-none">Order ID</span>
-                <span className="text-[11px] font-black text-slate-900 dark:text-white block mt-1 truncate">{orderId.substring(orderId.length - 8)}</span>
+                <span className="text-[9px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 block leading-none">Order ID</span>
+                <span className="text-xs font-black text-slate-900 dark:text-white block mt-1 truncate font-mono">#{String(order.orderNumber || orderId).slice(-8).toUpperCase()}</span>
               </div>
               <button
                 onClick={handleCopyId}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition shrink-0 cursor-pointer"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition shrink-0 cursor-pointer"
                 title="Copy Order ID"
               >
-                {copied ? <Check size={11} className="text-emerald-500" /> : <Copy size={11} />}
+                {copied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
               </button>
             </div>
           </div>
         </div>
 
-        {/* DOUBLE COLUMN GRID LAYOUT */}
-        <div className="grid gap-4 lg:grid-cols-[1fr_360px] items-stretch">
+        {/* ── 2-COLUMN FULL-WIDTH GRID LAYOUT (Equal height stretch) ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
           
-          {/* LEFT COLUMN: Items purchased container card & CTA actions */}
-          <div className="space-y-4 flex flex-col justify-between">
+          {/* LEFT COLUMN: Items Purchased & Quick Action Buttons (7 Cols) */}
+          <div className="lg:col-span-7 flex flex-col justify-between space-y-4">
             
-            {/* PURCHASED ITEMS CONTAINER */}
-            <div className="flex-1 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-3xs space-y-4 text-left">
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-850 pb-2">
-                <h3 className="text-[10px] uppercase tracking-wider text-slate-805 dark:text-white font-black">
-                  Items Purchased ({order.items?.length || 0})
-                </h3>
-                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold flex items-center gap-1.5">
-                  <Calendar size={11} className="text-slate-400" />
-                  {orderDateStr}
-                </span>
-              </div>
-              
-              {/* Scrollable list constraint */}
-              <div 
-                className="space-y-4 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar" 
-                data-lenis-prevent
-              >
-                {order.items?.map((item, idx) => (
-                  <div
-                    key={`${item.productId || item.name}-${item.size}-${idx}`}
-                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-50 dark:border-slate-850/80 pb-4 last:border-0 last:pb-0"
-                  >
-                    <div className="flex gap-3 text-left">
-                      <div className="h-16 w-16 rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-955 p-1.5 flex items-center justify-center shrink-0 shadow-2xs">
-                        <img
-                          src={item.image?.startsWith("http") ? item.image : `${backendUrl}/${item.image}`}
-                          alt={item.name}
-                          className="h-12 w-12 rounded-sm object-contain bg-white dark:bg-slate-900"
-                        />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="font-extrabold text-xs text-slate-900 dark:text-white leading-snug truncate max-w-[200px] sm:max-w-xs">{item.name}</p>
-                        <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-semibold leading-none">
-                          Qty: {item.qty} • Size: {item.size}
-                        </p>
+            {/* Purchased Items Card (Stretches flex-1) */}
+            <div className="flex-1 flex flex-col justify-between rounded-md border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 p-5 shadow-xs space-y-4 text-left">
+              <div>
+                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
+                  <h3 className="text-xs uppercase tracking-wider text-slate-900 dark:text-white font-black">
+                    Items Purchased ({order.items?.length || 0})
+                  </h3>
+                  <span className="text-xs text-slate-400 dark:text-slate-500 font-bold flex items-center gap-1.5">
+                    <Calendar size={13} className="text-slate-400" />
+                    {orderDateStr}
+                  </span>
+                </div>
+                
+                {/* Items List */}
+                <div className="space-y-4 max-h-[380px] overflow-y-auto pr-1 custom-scrollbar">
+                  {order.items?.map((item, idx) => {
+                    const imgUrl = Array.isArray(item.image)
+                      ? item.image[0]
+                      : (item.image || item.productImage || "");
+                    const finalSrc = imgUrl.startsWith("http") || imgUrl.startsWith("data:")
+                      ? imgUrl
+                      : `${backendUrl}/${imgUrl.replace(/^\//, '')}`;
+
+                    return (
+                      <div
+                        key={`${item.productId || item.name}-${item.size}-${idx}`}
+                        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 dark:border-slate-800/80 pb-4 last:border-0 last:pb-0"
+                      >
+                        <div className="flex gap-3.5 text-left items-center min-w-0">
+                          <div className="h-16 w-16 rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-1 flex items-center justify-center shrink-0 shadow-xs">
+                            <img
+                              src={finalSrc}
+                              alt={item.name}
+                              className="h-14 w-14 rounded-sm object-contain bg-white dark:bg-slate-900"
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = "https://placehold.co/100x100?text=Product";
+                              }}
+                            />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-white leading-snug truncate">{item.name}</p>
+                            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1 font-semibold">
+                              Qty: {item.qty} • Size: {item.size}
+                            </p>
+                            
+                            {/* Warranty Badge */}
+                            <div className="mt-2">
+                              <span className="inline-flex items-center gap-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[9px] font-bold px-2 py-0.5 rounded-sm">
+                                <ShieldCheck size={11} className="text-emerald-500" />
+                                1 Year Warranty Included
+                              </span>
+                            </div>
+                          </div>
+                        </div>
                         
-                        {/* Warranty badge exactly as depicted in the mockup */}
-                        <div className="mt-2.5">
-                          <span className="inline-flex items-center gap-1 bg-emerald-500/[0.04] dark:bg-emerald-500/[0.08] text-emerald-650 border border-emerald-500/10 text-[9px] font-bold px-2 py-0.5 rounded">
-                            <ShieldCheck size={10} className="text-emerald-500" />
-                            1 Year Warranty
-                          </span>
+                        {/* Price and Track Order Button */}
+                        <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 shrink-0 border-t sm:border-0 border-slate-100 dark:border-slate-800 pt-2 sm:pt-0">
+                          <span className="font-black text-sm text-slate-900 dark:text-white">₹{(item.price * item.qty).toLocaleString("en-IN")}</span>
+                          
+                          <button
+                            onClick={() =>
+                              navigate(`/track/${order._id}`, {
+                                state: {
+                                  item: {
+                                    ...item,
+                                    orderId: order._id,
+                                    status: order.orderStatus,
+                                    paymentMethod: order.paymentMethod,
+                                    price: item.price,
+                                  },
+                                },
+                              })
+                            }
+                            className="inline-flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-sm text-[10px] font-black uppercase tracking-wider transition cursor-pointer"
+                          >
+                            <span>Track Order</span>
+                            <ChevronRight size={11} className="stroke-[2.5]" />
+                          </button>
                         </div>
                       </div>
-                    </div>
-                    
-                    {/* Price and Tracking button aligned side by side on right */}
-                    <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 self-stretch sm:self-auto shrink-0 border-t border-slate-50 sm:border-0 pt-2 sm:pt-0">
-                      <span className="font-black text-sm text-slate-900 dark:text-white">₹{(item.price * item.qty).toLocaleString("en-IN")}</span>
-                      
-                      <button
-                        onClick={() =>
-                          navigate(`/track/${order._id}`, {
-                            state: {
-                              item: {
-                                ...item,
-                                orderId: order._id,
-                                status: order.orderStatus,
-                                paymentMethod: order.paymentMethod,
-                                price: item.price,
-                              },
-                            },
-                          })
-                        }
-                        className="inline-flex items-center gap-1 border border-orange-500 hover:bg-orange-500/5 text-orange-500 px-3 py-1.5 rounded text-[10px] font-black uppercase tracking-wider transition cursor-pointer active:scale-95 animate-none"
-                      >
-                        <span>Track Order</span>
-                        <ChevronRight size={10} className="stroke-[2.5]" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
-            {/* ACTION QUICK BUTTONS (AS DESIGNED IN THE MOCKUP) */}
-            <div className="flex gap-4 mt-1 shrink-0">
+            {/* Quick Actions Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={() => navigate(`/order/${orderId}`)}
-                className="flex-1 rounded-md bg-[#ff6a00] hover:bg-[#e65c00] py-3.5 text-xs font-black text-white uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-sm active:scale-98 transition cursor-pointer"
+                className="flex-1 rounded-md bg-indigo-600 hover:bg-indigo-700 py-3.5 text-xs font-black text-white uppercase tracking-wider flex items-center justify-center gap-2 shadow-xs transition cursor-pointer"
               >
-                <MessageSquare size={13} className="stroke-[2.5]" />
-                <span>View Details & Chat</span>
-                <ArrowRight size={13} className="stroke-[2.5]" />
+                <MessageSquare size={14} className="stroke-[2.5]" />
+                <span>View Details & Support</span>
+                <ArrowRight size={14} className="stroke-[2.5]" />
               </button>
               
               <button
                 onClick={() => navigate("/product")}
-                className="flex-1 rounded-md border border-slate-205 dark:border-slate-800 bg-white dark:bg-slate-900 py-3.5 text-xs font-black text-slate-700 dark:text-slate-300 flex items-center justify-center gap-1.5 shadow-3xs hover:bg-slate-50 dark:hover:bg-slate-850 active:scale-98 transition cursor-pointer"
+                className="flex-1 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-3.5 text-xs font-black text-slate-700 dark:text-slate-200 flex items-center justify-center gap-2 shadow-xs hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"
               >
-                <ShoppingBag size={13} className="stroke-[2.5]" />
+                <ShoppingBag size={14} className="stroke-[2.5]" />
                 <span>Continue Shopping</span>
               </button>
             </div>
 
           </div>
 
-          {/* RIGHT COLUMN: Consolidated receipt split panel */}
-          <div className="space-y-4">
+          {/* RIGHT COLUMN: Receipt Summary & Guarantee Cards (5 Cols) */}
+          <div className="lg:col-span-5 flex flex-col justify-between space-y-4">
             
-            {/* CONSOLIDATED BILLING & DETAILS CARD */}
-            <div className="rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-3xs space-y-4 text-left">
+            {/* Consolidated Billing Card */}
+            <div className="rounded-md border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 p-5 shadow-xs space-y-4 text-left">
               
               {/* Receipt Summary */}
-              <div className="space-y-2.5 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                <h3 className="text-[9px] uppercase tracking-wider text-slate-400 dark:text-slate-550 font-black border-b border-slate-100 dark:border-slate-850 pb-2 mb-2 flex items-center gap-1.5">
-                  <FileText size={12} className="text-orange-500 stroke-[2.5]" />
-                  Receipt Summary
+              <div className="space-y-2.5 text-xs font-semibold text-slate-600 dark:text-slate-300">
+                <h3 className="text-xs uppercase tracking-wider text-slate-900 dark:text-white font-black border-b border-slate-100 dark:border-slate-800 pb-2.5 mb-3 flex items-center gap-2">
+                  <FileText size={14} className="text-indigo-600 dark:text-indigo-400 stroke-[2.5]" />
+                  <span>Receipt Summary</span>
                 </h3>
                 
                 <div className="flex justify-between">
@@ -341,7 +350,7 @@ const OrderConfirmed = () => {
                 </div>
                 
                 {discount > 0 && (
-                  <div className="flex justify-between text-emerald-600 font-bold">
+                  <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-bold">
                     <span>Discount</span>
                     <span>- ₹{discount.toLocaleString("en-IN")}</span>
                   </div>
@@ -350,7 +359,7 @@ const OrderConfirmed = () => {
                 <div className="flex justify-between">
                   <span>Delivery</span>
                   {shippingFee === 0 ? (
-                    <span className="text-emerald-650 font-black text-[9px] uppercase tracking-wider">FREE</span>
+                    <span className="text-emerald-600 dark:text-emerald-400 font-black text-[10px] uppercase tracking-wider">FREE</span>
                   ) : (
                     <span className="text-slate-900 dark:text-white font-extrabold">₹{shippingFee}</span>
                   )}
@@ -361,49 +370,41 @@ const OrderConfirmed = () => {
                   <span className="text-slate-900 dark:text-white font-extrabold">₹{platformFee}</span>
                 </div>
                 
-                <div className="border-t border-slate-100 dark:border-slate-850 my-2 pt-2.5 flex justify-between items-baseline">
+                <div className="border-t border-slate-100 dark:border-slate-800 my-2 pt-3 flex justify-between items-baseline">
                   <div>
-                    <span className="text-[11px] font-black text-slate-905 dark:text-white">Total Paid</span>
-                    <span className="text-[8px] text-slate-400 block font-semibold leading-none mt-0.5">(All Taxes Included)</span>
+                    <span className="text-xs font-black text-slate-900 dark:text-white">Total Amount Paid</span>
+                    <span className="text-[9px] text-slate-400 block font-semibold leading-none mt-0.5">(Taxes included)</span>
                   </div>
-                  <span className="text-base font-black text-[#ff6a00] tracking-tight">₹{order.amount.toLocaleString("en-IN")}</span>
+                  <span className="text-lg font-black text-indigo-600 dark:text-indigo-400 tracking-tight">₹{order.amount.toLocaleString("en-IN")}</span>
                 </div>
               </div>
 
               {/* Delivery Address & Payment Method Split view */}
-              <div className="border-t border-slate-100 dark:border-slate-850 pt-3.5 space-y-3.5">
-                <div className="grid grid-cols-2 gap-3 text-[10px]">
+              <div className="border-t border-slate-100 dark:border-slate-800 pt-3.5">
+                <div className="grid grid-cols-2 gap-3 text-xs">
                   
-                  {/* Shipping Address split view */}
-                  <div className="space-y-1 text-[9px]">
-                    <span className="font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1 mb-1.5">
-                      <MapPin size={10} className="text-slate-400" />
-                      Deliver to
+                  {/* Shipping Address */}
+                  <div className="space-y-1">
+                    <span className="font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1 mb-1.5 text-[9px]">
+                      <MapPin size={11} className="text-slate-400" />
+                      Deliver To
                     </span>
-                    <div className="text-slate-600 dark:text-slate-400 font-semibold leading-tight space-y-0.5 text-[9px]">
+                    <div className="text-slate-600 dark:text-slate-300 font-medium leading-tight space-y-0.5 text-[11px]">
                       <p className="font-extrabold text-slate-900 dark:text-white truncate max-w-[130px]">{order.address?.firstName} {order.address?.lastName}</p>
                       <p className="truncate max-w-[130px]">{order.address?.street}</p>
                       <p className="truncate max-w-[130px]">{order.address?.city}, {order.address?.state}</p>
-                      <button 
-                        type="button" 
-                        onClick={() => navigate(`/order/${orderId}`)}
-                        className="text-blue-500 hover:text-blue-650 hover:underline font-extrabold mt-1 block flex items-center gap-0.5"
-                      >
-                        <span>View Address</span>
-                        <ChevronRight size={8} />
-                      </button>
                     </div>
                   </div>
 
-                  {/* Payment split view */}
-                  <div className="space-y-1 text-[9px]">
-                    <span className="font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1 mb-1.5">
-                      <CreditCard size={10} className="text-slate-400" />
+                  {/* Payment Method */}
+                  <div className="space-y-1">
+                    <span className="font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1 mb-1.5 text-[9px]">
+                      <CreditCard size={11} className="text-slate-400" />
                       Payment
                     </span>
-                    <div className="text-slate-605 dark:text-slate-400 font-semibold leading-tight text-[9px]">
+                    <div className="text-slate-600 dark:text-slate-300 font-medium leading-tight text-[11px]">
                       <p className="font-extrabold text-slate-900 dark:text-white capitalize">{order.paymentMethod === "cod" ? "Cash On Delivery" : order.paymentMethod}</p>
-                      <span className={`inline-block mt-1 px-1.5 py-0.5 rounded-sm text-[8px] font-black uppercase tracking-wide border ${ order.paymentStatus === "paid" ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-100 dark:border-emerald-900/50 text-emerald-700 dark:text-emerald-450" : "bg-orange-55 dark:bg-orange-950/30 border-orange-100 dark:border-orange-900/50 text-orange-600 dark:text-orange-450" }`}>
+                      <span className={`inline-block mt-1 px-2 py-0.5 rounded-sm text-[9px] font-black uppercase tracking-wide border ${ order.paymentStatus === "paid" ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400" : "bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400" }`}>
                         {order.paymentStatus === "paid" ? "Paid" : "Pending"}
                       </span>
                     </div>
@@ -413,33 +414,31 @@ const OrderConfirmed = () => {
               </div>
             </div>
 
-            {/* GURANTEED PURCHASE TRUST CONTAINER */}
-            <div className="rounded-md border border-slate-205 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-3xs text-left">
-              <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-                <ShieldCheck size={15} className="text-emerald-500 shrink-0 stroke-[2.5]" />
-                <span className="text-[10px] font-black text-slate-905 dark:text-white uppercase tracking-wider">Guaranteed Purchase</span>
+            {/* Guaranteed Purchase Trust Banner */}
+            <div className="rounded-md border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 p-4 shadow-xs text-left space-y-3">
+              <div className="flex items-center gap-2 text-slate-900 dark:text-white">
+                <ShieldCheck size={16} className="text-emerald-500 shrink-0 stroke-[2.5]" />
+                <span className="text-xs font-black uppercase tracking-wider">Guaranteed Purchase</span>
               </div>
               
-              <div className="grid grid-cols-2 gap-4 text-[9px] font-semibold text-slate-505 dark:text-slate-400 mt-3 pt-1">
-                {/* Insured Delivery */}
-                <div className="flex items-start gap-2.5">
-                  <div className="h-7 w-7 rounded bg-slate-50 dark:bg-slate-955 flex items-center justify-center shrink-0 border border-slate-100 dark:border-slate-850">
+              <div className="grid grid-cols-2 gap-3 text-[10px] font-semibold text-slate-500 dark:text-slate-400 pt-1">
+                <div className="flex items-start gap-2">
+                  <div className="h-7 w-7 rounded-sm bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 border border-slate-200/80 dark:border-slate-800/80">
                     <Truck size={13} className="text-slate-500 stroke-[2.5]" />
                   </div>
                   <div>
-                    <span className="font-black text-slate-900 dark:text-white block">Insured Delivery</span>
-                    <span className="text-slate-400 block mt-0.5 leading-tight font-semibold">Your order is safe and insured</span>
+                    <span className="font-black text-slate-900 dark:text-white block">Insured Logistics</span>
+                    <span className="text-slate-400 block mt-0.5 leading-tight">100% safe & insured package delivery</span>
                   </div>
                 </div>
 
-                {/* 30-day Returns */}
-                <div className="flex items-start gap-2.5">
-                  <div className="h-7 w-7 rounded bg-slate-50 dark:bg-slate-955 flex items-center justify-center shrink-0 border border-slate-100 dark:border-slate-850">
+                <div className="flex items-start gap-2">
+                  <div className="h-7 w-7 rounded-sm bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 border border-slate-200/80 dark:border-slate-800/80">
                     <RotateCcw size={13} className="text-slate-500 stroke-[2.5]" />
                   </div>
                   <div>
                     <span className="font-black text-slate-900 dark:text-white block">30-Day Returns</span>
-                    <span className="text-slate-400 block mt-0.5 leading-tight font-semibold">Easy returns within 30 days</span>
+                    <span className="text-slate-400 block mt-0.5 leading-tight">Easy returns within 30 days</span>
                   </div>
                 </div>
               </div>
@@ -447,41 +446,6 @@ const OrderConfirmed = () => {
 
           </div>
 
-        </div>
-
-        {/* BOTTOM THANKS CARD WITH CUSTOM ILLUSTRATED BAG (MATCHING MOCKUP ACCENTS) */}
-        <div className="relative overflow-hidden rounded-md bg-amber-500/[0.015] dark:bg-amber-500/[0.03] border border-amber-500/5 p-4 flex items-center justify-between shadow-3xs w-full text-left gap-4">
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-full bg-amber-500/10 flex items-center justify-center shrink-0 text-amber-500">
-              <span className="text-base">👑</span>
-            </div>
-            <div>
-              <h4 className="text-xs font-black text-slate-900 dark:text-white">Thanks for shopping with us!</h4>
-              <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold leading-none mt-1">
-                We appreciate your trust and look forward to serving you again.
-              </p>
-            </div>
-          </div>
-
-          {/* Cute custom shopping bag vector from mockup */}
-          <div className="relative h-12 w-14 shrink-0 overflow-visible hidden sm:block">
-            {/* Inline SVG rendering exactly the mockup's illustrated shopping bag */}
-            <svg viewBox="0 0 100 100" className="h-full w-full">
-              {/* Confetti details */}
-              <circle cx="15" cy="20" r="3" fill="#f43f5e" className="animate-pulse" />
-              <circle cx="85" cy="25" r="2.5" fill="#eab308" className="animate-ping" />
-              <rect x="25" y="10" width="3" height="3" fill="#a855f7" transform="rotate(45)" />
-              
-              {/* Bag Body */}
-              <path d="M30 40 L70 40 L75 90 L25 90 Z" fill="#fed7aa" />
-              
-              {/* Heart logo */}
-              <path d="M50 70 C45 65 42 62 42 58 C42 55 45 52 48 52 C50 52 52 54 53 56 C54 54 56 52 58 52 C61 52 64 55 64 58 C64 62 61 65 56 70 Z" fill="#ef4444" />
-              
-              {/* Handles */}
-              <path d="M40 40 C40 25 60 25 60 40" fill="none" stroke="#fdba74" strokeWidth="4" />
-            </svg>
-          </div>
         </div>
 
       </div>

@@ -86,150 +86,158 @@ const Profile = ({ token, seller, setSeller }) => {
   };
 
   return (
-    <div className="space-y-8 animate-fadeIn">
-      {/* Top Header */}
-      <div className="border-b border-slate-200 dark:border-slate-800 pb-4">
-        <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">Merchant Account</h2>
-        <p className="text-xs text-slate-400 mt-1">Configure your public store details, contact settings, and security controls.</p>
+    <div className="space-y-4 animate-fadeIn text-slate-800 dark:text-slate-100">
+      
+      {/* ── Single Consolidated Container: Header Row & Overview ── */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-4 shadow-xs space-y-3.5 shrink-0">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-2.5">
+            <div className="h-8 w-8 bg-orange-500/10 text-orange-500 rounded-lg flex items-center justify-center border border-orange-500/20 shadow-xs shrink-0">
+              <Store size={16} />
+            </div>
+            <div>
+              <h1 className="text-base font-black text-slate-900 dark:text-white tracking-tight">Merchant Account & Store Settings</h1>
+              <p className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider mt-0.5">Configure public storefront identity, contact parameters, and security credentials</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+              <ShieldCheck size={12} />
+              Verified Storefront
+            </span>
+          </div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
         
-        {/* Left Column: Glowing Store Card & Account Details */}
-        <div className="lg:col-span-1 space-y-6">
-          <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 border border-slate-900 rounded-3xl p-6 text-slate-100 dark:text-white shadow-xl relative overflow-hidden">
-            <div className="absolute top-[-20%] right-[-20%] w-40 h-40 rounded-full bg-orange-500/10 blur-2xl pointer-events-none"></div>
-            
-            <div className="flex flex-col items-center text-center space-y-4 pt-4">
-              <div className="h-16 w-16 rounded-2xl bg-orange-500 flex items-center justify-center text-slate-100 dark:text-white text-2xl font-black shadow-lg shadow-orange-600/20">
+        {/* Left Column: Merchant Card & Info Panel */}
+        <div className="lg:col-span-1 space-y-4">
+          <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 border border-slate-800 rounded-2xl p-5 text-white shadow-xs relative overflow-hidden text-left space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="h-12 w-12 rounded-xl bg-orange-500 text-white flex items-center justify-center text-xl font-black shadow-xs shrink-0">
                 {profileForm.shopName ? profileForm.shopName[0].toUpperCase() : "S"}
               </div>
-              <div>
-                <h3 className="font-extrabold text-base tracking-tight">{profileForm.shopName}</h3>
-                <span className="text-[10px] text-orange-400 font-bold uppercase tracking-wider mt-1.5 inline-block bg-orange-500/10 px-2.5 py-0.5 rounded-full border border-orange-500/20">
-                  Merchant Tier
+              <div className="min-w-0">
+                <h3 className="font-black text-sm text-white tracking-tight truncate">{profileForm.shopName || "My Merchant Store"}</h3>
+                <span className="text-[9px] font-black text-orange-400 uppercase tracking-widest block mt-0.5">
+                  Verified Merchant Tier
                 </span>
               </div>
             </div>
 
-            <div className="mt-8 space-y-4 text-xs border-t border-slate-800 pt-6">
+            <div className="border-t border-slate-800 pt-3 space-y-2.5 text-xs">
               <div className="flex justify-between items-center">
-                <span className="text-slate-400">Account Owner</span>
-                <span className="font-bold text-slate-200">{profileForm.name}</span>
+                <span className="text-slate-400">Account Owner:</span>
+                <span className="font-extrabold text-white">{profileForm.name}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-slate-400">Verification</span>
-                <span className="text-emerald-400 font-bold flex items-center gap-1">
-                  <ShieldCheck size={12} />
-                  Verified Merchant
+                <span className="text-slate-400">Commission Rate:</span>
+                <span className="font-extrabold text-orange-400 flex items-center gap-1">
+                  <Percent size={11} />
+                  {seller?.commissionRate || 10}%
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-slate-400">Commission Tier</span>
-                <span className="font-bold text-orange-400 flex items-center gap-1">
-                  <Percent size={12} />
-                  {seller?.commissionRate || 10}% commission
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-slate-400">Current Balance</span>
-                <span className="font-extrabold text-slate-100 flex items-center gap-1">
-                  <Wallet size={12} className="text-slate-400" />
-                  ${seller?.balance !== undefined ? seller.balance.toFixed(2) : "0.00"}
+                <span className="text-slate-400">Current Balance:</span>
+                <span className="font-black text-white flex items-center gap-1">
+                  <Wallet size={11} className="text-emerald-400" />
+                  ₹{seller?.balance !== undefined ? seller.balance.toLocaleString("en-IN", { minimumFractionDigits: 2 }) : "0.00"}
                 </span>
               </div>
             </div>
           </div>
 
           {/* Quick Info Tip */}
-          <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200/60 rounded-3xl p-6 space-y-3">
-            <h4 className="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-wider flex items-center gap-1.5">
-              <Sparkles size={14} className="text-orange-500" />
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-4 shadow-xs space-y-2 text-left">
+            <h4 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
+              <Sparkles size={13} className="text-orange-500" />
               <span>Merchant Guidelines</span>
             </h4>
-            <p className="text-[11px] text-slate-500 leading-relaxed">
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
               Updates to your Shop Name will reflect instantly across all customer product listings. Keep your email and phone configurations active to receive order notifications.
             </p>
           </div>
         </div>
 
         {/* Right Columns: Forms */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-4">
           
           {/* Shop Details form */}
-          <form onSubmit={handleProfileSubmit} className="bg-white dark:bg-slate-900 border border-slate-200/80 rounded-3xl p-6 md:p-8 shadow-sm space-y-6">
-            <div>
-              <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-100 tracking-tight flex items-center gap-2">
-                <Store size={16} className="text-orange-500" />
+          <form onSubmit={handleProfileSubmit} className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-4 shadow-xs space-y-4 text-left">
+            <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
+              <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
+                <Store size={14} className="text-orange-500" />
                 <span>Shop Parameters</span>
               </h3>
-              <p className="text-xs text-slate-400 mt-0.5">Manage store details, contact phone, and account credentials.</p>
+              <p className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider mt-0.5">Manage store parameters, phone contact, and owner details</p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
-                  <Mail size={12} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider flex items-center gap-1">
+                  <Mail size={11} />
                   <span>Email (Read-only)</span>
                 </label>
                 <input
                   type="email"
                   value={profileForm.email}
                   disabled
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-400 text-sm outline-none cursor-not-allowed"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-400 text-xs font-semibold outline-none cursor-not-allowed"
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
-                  <User size={12} />
+              <div className="space-y-1">
+                <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider flex items-center gap-1">
+                  <User size={11} />
                   <span>Owner Name</span>
                 </label>
                 <input
                   type="text"
                   value={profileForm.name}
                   onChange={(e) => setProfileForm(prev => ({ ...prev, name: e.target.value }))}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-white text-xs font-semibold outline-none transition focus:ring-1 focus:ring-orange-500"
                   required
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
-                  <Store size={12} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider flex items-center gap-1">
+                  <Store size={11} />
                   <span>Shop Name</span>
                 </label>
                 <input
                   type="text"
                   value={profileForm.shopName}
                   onChange={(e) => setProfileForm(prev => ({ ...prev, shopName: e.target.value }))}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-white text-xs font-semibold outline-none transition focus:ring-1 focus:ring-orange-500"
                   required
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
-                  <Phone size={12} />
+              <div className="space-y-1">
+                <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider flex items-center gap-1">
+                  <Phone size={11} />
                   <span>Contact Number</span>
                 </label>
                 <input
                   type="text"
                   value={profileForm.phone}
                   onChange={(e) => setProfileForm(prev => ({ ...prev, phone: e.target.value }))}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-white text-xs font-semibold outline-none transition focus:ring-1 focus:ring-orange-500"
                   required
                 />
               </div>
             </div>
 
-            <div className="flex justify-end pt-3 border-t border-slate-50">
+            <div className="flex justify-end pt-2 border-t border-slate-100 dark:border-slate-800">
               <button
                 type="submit"
                 disabled={profileSaving}
-                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-slate-100 dark:text-white font-bold text-xs uppercase tracking-wider transition active:scale-95 shadow-sm cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-black text-xs uppercase tracking-wider transition active:scale-95 cursor-pointer shadow-xs"
               >
                 {profileSaving ? "Saving..." : "Save Configuration"}
               </button>
@@ -237,44 +245,44 @@ const Profile = ({ token, seller, setSeller }) => {
           </form>
 
           {/* Change Password form */}
-          <form onSubmit={handlePasswordSubmit} className="bg-white dark:bg-slate-900 border border-slate-200/80 rounded-3xl p-6 md:p-8 shadow-sm space-y-6">
-            <div>
-              <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-100 tracking-tight flex items-center gap-2">
-                <Lock size={16} className="text-slate-800 dark:text-slate-100" />
+          <form onSubmit={handlePasswordSubmit} className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-4 shadow-xs space-y-4 text-left">
+            <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
+              <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
+                <Lock size={14} className="text-slate-800 dark:text-white" />
                 <span>Security Settings</span>
               </h3>
-              <p className="text-xs text-slate-400 mt-0.5">Regularly update your password to protect your store transactions.</p>
+              <p className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider mt-0.5">Regularly update your password to protect store access credentials</p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Current Password</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Current Password</label>
                 <input
                   type="password"
                   value={passwordForm.currentPassword}
                   onChange={(e) => setPasswordForm(prev => ({ ...prev, currentPassword: e.target.value }))}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-white text-xs font-semibold outline-none transition focus:ring-1 focus:ring-slate-700"
                   required
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">New Password</label>
+              <div className="space-y-1">
+                <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">New Password</label>
                 <input
                   type="password"
                   value={passwordForm.newPassword}
                   onChange={(e) => setPasswordForm(prev => ({ ...prev, newPassword: e.target.value }))}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-white text-xs font-semibold outline-none transition focus:ring-1 focus:ring-slate-700"
                   required
                 />
               </div>
             </div>
 
-            <div className="flex justify-end pt-3 border-t border-slate-50">
+            <div className="flex justify-end pt-2 border-t border-slate-100 dark:border-slate-800">
               <button
                 type="submit"
                 disabled={passwordSaving}
-                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 disabled:bg-slate-700 text-slate-100 dark:text-white font-bold text-xs uppercase tracking-wider transition active:scale-95 shadow-sm cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 disabled:bg-slate-700 text-white font-black text-xs uppercase tracking-wider transition active:scale-95 cursor-pointer shadow-xs"
               >
                 {passwordSaving ? "Updating..." : "Update Security Code"}
               </button>

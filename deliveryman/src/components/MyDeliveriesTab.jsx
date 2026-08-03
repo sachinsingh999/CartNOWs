@@ -1180,17 +1180,17 @@ const MyDeliveriesTab = ({
         .glass-panel {
           background: rgba(255, 255, 255, 0.85);
           backdrop-filter: blur(8px);
-          border: 1px border-slate-200;
+          border: none;
         }
         .dark .glass-panel {
           background: rgba(17, 24, 39, 0.85);
           backdrop-filter: blur(8px);
-          border: 1px border-slate-800/80;
+          border: none;
         }
       `}</style>
 
       {/* SECTION 1: SMART HEADER */}
-      <div className="glass-panel border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-5 shadow-xl transition-all duration-300 relative overflow-hidden">
+      <div className="glass-panel rounded-3xl p-5 shadow-xs transition-all duration-300 relative overflow-hidden">
         {/* Decorative backdrop glow */}
         <div className="absolute top-0 right-0 h-40 w-40 bg-indigo-500/5 dark:bg-indigo-500/10 rounded-full blur-2xl pointer-events-none" />
         
@@ -1221,7 +1221,7 @@ const MyDeliveriesTab = ({
           </div>
 
           {/* Metrics summary */}
-          <div className="flex flex-wrap items-center justify-around gap-6 bg-slate-50/50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/80 rounded-2xl px-5 py-3 w-full md:w-auto">
+          <div className="flex flex-wrap items-center justify-around gap-6 bg-slate-50/50 dark:bg-slate-900/40 rounded-2xl px-5 py-3 w-full md:w-auto">
             <div className="text-center">
               <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Earnings Today</p>
               <p className="text-lg font-black text-emerald-600 dark:text-emerald-400 mt-1.5">₹{todayEarningsVal}</p>
@@ -1337,7 +1337,7 @@ const MyDeliveriesTab = ({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         
         {/* SECTION 2: PRIMARY DELIVERY COMMAND CENTER */}
-        <div className="lg:col-span-7 flex flex-col justify-between glass-panel border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-6 shadow-xl relative overflow-hidden">
+        <div className="lg:col-span-7 flex flex-col justify-between glass-panel rounded-3xl p-6 shadow-xs relative overflow-hidden">
           <div className="absolute top-0 left-0 h-40 w-40 bg-blue-500/5 dark:bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
           
           <div className="relative z-10 flex-1 flex flex-col justify-between gap-6">
@@ -1541,7 +1541,7 @@ const MyDeliveriesTab = ({
         <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
           
           {/* Card: Completed */}
-          <div className="glass-panel border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-4.5 shadow-sm relative overflow-hidden hover:border-slate-300 dark:hover:border-slate-700/80 transition duration-200">
+          <div className="glass-panel rounded-2xl p-4.5 shadow-xs relative overflow-hidden transition duration-200">
             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Jobs Done</p>
             <div className="flex items-baseline gap-1 mt-2.5">
               <span className="text-xl font-black text-slate-900 dark:text-white">{completedTodayCount}</span>
@@ -1557,7 +1557,7 @@ const MyDeliveriesTab = ({
           </div>
 
           {/* Card: Active */}
-          <div className="glass-panel border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-4.5 shadow-sm relative overflow-hidden hover:border-slate-300 dark:hover:border-slate-700/80 transition duration-200">
+          <div className="glass-panel rounded-2xl p-4.5 shadow-xs relative overflow-hidden transition duration-200">
             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Ongoing</p>
             <div className="flex items-baseline gap-1 mt-2.5">
               <span className="text-xl font-black text-slate-900 dark:text-white">
@@ -1575,7 +1575,7 @@ const MyDeliveriesTab = ({
           </div>
 
           {/* Card: Today Earnings */}
-          <div className="glass-panel border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-4.5 shadow-sm relative overflow-hidden hover:border-slate-300 dark:hover:border-slate-700/80 transition duration-200">
+          <div className="glass-panel rounded-2xl p-4.5 shadow-xs relative overflow-hidden transition duration-200">
             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Earnings</p>
             <div className="flex items-baseline gap-1 mt-2.5">
               <span className="text-xl font-black text-emerald-600 dark:text-emerald-400">₹{todayEarningsVal}</span>
@@ -1591,7 +1591,7 @@ const MyDeliveriesTab = ({
           </div>
 
           {/* Card: COD cash collected */}
-          <div className="glass-panel border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-4.5 shadow-sm relative overflow-hidden hover:border-slate-300 dark:hover:border-slate-700/80 transition duration-200">
+          <div className="glass-panel rounded-2xl p-4.5 shadow-xs relative overflow-hidden transition duration-200">
             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">COD Collected</p>
             <div className="flex items-baseline gap-1 mt-2.5">
               <span className="text-xl font-black text-amber-600 dark:text-amber-400">₹{stats.cashCollected?.toFixed(0) || "0"}</span>
@@ -1607,7 +1607,7 @@ const MyDeliveriesTab = ({
           </div>
 
           {/* Card: Success Rate */}
-          <div className="glass-panel border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-4.5 shadow-sm relative overflow-hidden hover:border-slate-300 dark:hover:border-slate-700/80 transition duration-200">
+          <div className="glass-panel rounded-2xl p-4.5 shadow-xs relative overflow-hidden transition duration-200">
             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Success Rate</p>
             <div className="flex items-baseline gap-1 mt-2.5">
               <span className="text-xl font-black text-slate-900 dark:text-white">98.6%</span>
@@ -1623,7 +1623,7 @@ const MyDeliveriesTab = ({
           </div>
 
           {/* Card: Avg Delivery Time */}
-          <div className="glass-panel border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-4.5 shadow-sm relative overflow-hidden hover:border-slate-300 dark:hover:border-slate-700/80 transition duration-200">
+          <div className="glass-panel rounded-2xl p-4.5 shadow-xs relative overflow-hidden transition duration-200">
             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Avg Speed</p>
             <div className="flex items-baseline gap-1 mt-2.5">
               <span className="text-xl font-black text-slate-900 dark:text-white">22 mins</span>
@@ -1645,7 +1645,7 @@ const MyDeliveriesTab = ({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* SECTION 6: ROUTE OPTIMIZATION PANEL */}
-        <div className="lg:col-span-4 glass-panel border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-5 shadow-xl flex flex-col justify-between">
+        <div className="lg:col-span-4 glass-panel rounded-3xl p-5 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60 pb-3 mb-4">
               <h4 className="font-extrabold text-xs text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
@@ -1712,7 +1712,7 @@ const MyDeliveriesTab = ({
         </div>
 
         {/* SECTION 9: PERFORMANCE DASHBOARD */}
-        <div className="lg:col-span-8 glass-panel border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-5 shadow-xl flex flex-col justify-between">
+        <div className="lg:col-span-8 glass-panel rounded-3xl p-5 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60 pb-3 mb-4">
               <h4 className="font-extrabold text-xs text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">

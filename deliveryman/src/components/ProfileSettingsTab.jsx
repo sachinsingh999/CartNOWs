@@ -278,7 +278,7 @@ const ProfileSettingsTab = ({
       {/* Left Column: Driver Agent Profile Summary & Credentials */}
       <div className="space-y-6">
         {/* Profile Card */}
-        <div className="bg-white dark:bg-gray-900 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-6 shadow-sm relative overflow-hidden group transition-all duration-300">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-xs relative overflow-hidden group transition-all duration-300">
           <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 to-indigo-600" />
           
           <div className="flex flex-col items-center text-center space-y-4 pt-3 pb-5 border-b border-slate-100 dark:border-slate-800/85">
@@ -338,7 +338,7 @@ const ProfileSettingsTab = ({
         </div>
 
         {/* Change / Reset Password Security Options */}
-        <div className="bg-white dark:bg-gray-900 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-5.5 shadow-sm space-y-4">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-5.5 shadow-xs space-y-4">
           <div className="flex items-start gap-3">
             <Lock size={16} className="text-slate-500 shrink-0 mt-0.5" />
             <div>
@@ -440,7 +440,7 @@ const ProfileSettingsTab = ({
         </div>
 
         {/* Driver Preferences Card */}
-        <div className="bg-white dark:bg-gray-900 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm space-y-4">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-5 shadow-xs space-y-4">
           <div className="flex items-start gap-3">
             <Settings size={16} className="text-slate-500 shrink-0 mt-0.5" />
             <div>
@@ -499,7 +499,7 @@ const ProfileSettingsTab = ({
       </div>
  
       {/* Right Column: Interactive Sector Map Settings */}
-      <div className="bg-white dark:bg-gray-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-5 hover:shadow-md transition-all duration-300">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-xs space-y-5 hover:shadow-sm transition-all duration-300">
         <div className="border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
             <div className="h-8 w-8 rounded-xl bg-blue-500/10 dark:bg-blue-500/20 text-blue-500 dark:text-blue-400 flex items-center justify-center shrink-0">

@@ -533,116 +533,121 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
 
   return (
     <div className="space-y-6 animate-fadeIn pb-24 sm:pb-8">
-      {/* Top Header */}
-      <div className="flex items-center justify-between border-b border-slate-200/40 dark:border-slate-800/40 pb-4">
-        <div>
-          <h2 className="text-xl md:text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">Product Catalog</h2>
-          <p className="text-xs text-slate-400 mt-0.5">Manage details, stocks, pricing, and visual representations.</p>
-        </div>
-        <button
-          onClick={() => navigate("/add-product")}
-          className="hidden sm:flex items-center gap-1.5 px-4.5 py-2.5 bg-brand hover:bg-orange-600 text-slate-100 dark:text-white rounded-none text-xs font-black uppercase tracking-wider transition active:scale-95 shadow-md shadow-orange-600/10 cursor-pointer"
-        >
-          <Plus size={14} />
-          <span>Add Product</span>
-        </button>
-      </div>
-
-      {/* Mini Stats Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-md border border-slate-200/30 dark:border-slate-800/40 rounded-none p-4.5 flex items-center justify-between shadow-xs">
+      {/* Single Consolidated Product Catalog Control Panel */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 shadow-xs space-y-6">
+        {/* 1. Header & Add Product Action */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
           <div>
-            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Active Listings</span>
-            <h4 className="text-base font-black text-slate-800 dark:text-slate-100 mt-0.5">{products.length} Items</h4>
+            <h2 className="text-xl md:text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">Product Catalog</h2>
+            <p className="text-xs text-slate-400 mt-0.5">Manage details, stocks, pricing, and visual representations.</p>
           </div>
-          <div className="h-8 w-8 rounded-none bg-indigo-500/10 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-500 dark:text-indigo-400 border border-indigo-500/20">
-            <Package size={16} />
-          </div>
-        </div>
-
-        <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-md border border-slate-200/30 dark:border-slate-800/40 rounded-none p-4.5 flex items-center justify-between shadow-xs">
-          <div>
-            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Inventory Capital</span>
-            <h4 className="text-base font-black text-slate-800 dark:text-slate-100 mt-0.5">₹{totalValue.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</h4>
-          </div>
-          <div className="h-8 w-8 rounded-none bg-emerald-500/10 dark:bg-emerald-500/20 flex items-center justify-center text-emerald-500 dark:text-emerald-400 border border-emerald-500/20">
-            <DollarSign size={16} />
-          </div>
-        </div>
-
-        <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-md border border-slate-200/30 dark:border-slate-800/40 rounded-none p-4.5 flex items-center justify-between shadow-xs">
-          <div>
-            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Low Stock Warnings</span>
-            <h4 className="text-base font-black text-slate-800 dark:text-slate-100 mt-0.5">{lowStockCount} Products</h4>
-          </div>
-          <div className="h-8 w-8 rounded-none bg-red-50/80 dark:bg-red-950/20 flex items-center justify-center text-red-500 dark:text-red-400 border border-red-100 dark:border-red-900/50">
-            <AlertTriangle size={16} />
-          </div>
-        </div>
-      </div>      {/* Search and Filters Bar */}
-      <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-md border border-slate-200/30 dark:border-slate-800/40 rounded-none p-4 shadow-sm flex flex-col md:flex-row gap-3 items-center">
-        <div className="relative w-full md:flex-1">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search products by title, details..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-none border border-slate-200 dark:border-slate-800 bg-white/40 dark:bg-slate-950/20 text-slate-800 dark:text-slate-100 text-sm outline-none transition font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-          />
-        </div>
-        
-        {/* Desktop Controls (Inline) */}
-        <div className="hidden md:flex items-center gap-3 shrink-0">
-          <select
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-            className="px-3 py-2.5 rounded-none border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs outline-none transition bg-white dark:bg-slate-950 font-bold cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+          <button
+            onClick={() => navigate("/add-product")}
+            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-xl text-xs font-extrabold uppercase tracking-wider transition-all duration-200 shadow-md shadow-orange-500/20 active:scale-95 cursor-pointer shrink-0"
           >
-            <option value="All">All Categories</option>
-            {categories.filter(c => c !== "All").map(cat => (
-              <option key={cat} value={cat}>{cat}</option>
-            ))}
-          </select>
+            <Plus size={16} />
+            <span>Add Product</span>
+          </button>
+        </div>
 
-          <select
-            value={stockFilter}
-            onChange={(e) => setStockFilter(e.target.value)}
-            className="px-3 py-2.5 rounded-none border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs outline-none transition bg-white dark:bg-slate-950 font-bold cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-          >
-            <option value="All">All Stocks</option>
-            <option value="Healthy">Healthy Stock</option>
-            <option value="Low Stock">Low Stock</option>
-            <option value="Out of Stock">Out of Stock</option>
-          </select>
+        {/* 2. Mini Stats Metrics Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800 rounded-xl p-4 flex items-center justify-between transition-all hover:border-slate-300 dark:hover:border-slate-700">
+            <div>
+              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Active Listings</span>
+              <h4 className="text-base font-black text-slate-900 dark:text-slate-100 mt-0.5">{products.length} Items</h4>
+            </div>
+            <div className="h-9 w-9 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500 border border-orange-500/20">
+              <Package size={17} />
+            </div>
+          </div>
 
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="px-3 py-2.5 rounded-none border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs outline-none transition bg-white dark:bg-slate-950 font-bold cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-          >
-            <option value="name-asc">Sort: A-Z</option>
-            <option value="price-asc">Price: Low to High</option>
-            <option value="price-desc">Price: High to Low</option>
-            <option value="stock-asc">Stock: Low to High</option>
-            <option value="stock-desc">Stock: High to Low</option>
-          </select>
+          <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800 rounded-xl p-4 flex items-center justify-between transition-all hover:border-slate-300 dark:hover:border-slate-700">
+            <div>
+              <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Inventory Capital</span>
+              <h4 className="text-base font-black text-slate-900 dark:text-slate-100 mt-0.5">₹{totalValue.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</h4>
+            </div>
+            <div className="h-9 w-9 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20">
+              <DollarSign size={17} />
+            </div>
+          </div>
 
-          {(searchQuery || categoryFilter !== "All" || stockFilter !== "All" || sortBy !== "name-asc") && (
-            <button
-              onClick={handleClearFilters}
-              className="text-xs font-bold text-brand hover:text-orange-600 transition cursor-pointer"
+          <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800 rounded-xl p-4 flex items-center justify-between transition-all hover:border-slate-300 dark:hover:border-slate-700">
+            <div>
+              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Low Stock Warnings</span>
+              <h4 className="text-base font-black text-slate-900 dark:text-slate-100 mt-0.5">{lowStockCount} Products</h4>
+            </div>
+            <div className="h-9 w-9 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500 border border-red-500/20">
+              <AlertTriangle size={17} />
+            </div>
+          </div>
+        </div>
+
+        {/* 3. Search and Filters Row */}
+        <div className="flex flex-col md:flex-row gap-3 items-center pt-1">
+          <div className="relative w-full md:flex-1">
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search products by title, details..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 text-sm outline-none transition font-semibold focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+            />
+          </div>
+          
+          {/* Desktop Controls (Inline) */}
+          <div className="hidden md:flex items-center gap-3 shrink-0">
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs outline-none transition bg-slate-50 dark:bg-slate-950 font-bold cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-900"
             >
-              Clear
-            </button>
-          )}
+              <option value="All">All Categories</option>
+              {categories.filter(c => c !== "All").map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+
+            <select
+              value={stockFilter}
+              onChange={(e) => setStockFilter(e.target.value)}
+              className="px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs outline-none transition bg-slate-50 dark:bg-slate-950 font-bold cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-900"
+            >
+              <option value="All">All Stocks</option>
+              <option value="Healthy">Healthy Stock</option>
+              <option value="Low Stock">Low Stock</option>
+              <option value="Out of Stock">Out of Stock</option>
+            </select>
+
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs outline-none transition bg-slate-50 dark:bg-slate-950 font-bold cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-900"
+            >
+              <option value="name-asc">Sort: A-Z</option>
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
+              <option value="stock-asc">Stock: Low to High</option>
+              <option value="stock-desc">Stock: High to Low</option>
+            </select>
+
+            {(searchQuery || categoryFilter !== "All" || stockFilter !== "All" || sortBy !== "name-asc") && (
+              <button
+                onClick={handleClearFilters}
+                className="text-xs font-bold text-orange-500 hover:text-orange-600 transition cursor-pointer px-2"
+              >
+                Clear
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Mobile controls toggle */}
-        <div className="flex md:hidden w-full gap-2 shrink-0">
+        <div className="flex md:hidden w-full gap-2 shrink-0 pt-1">
           <button
             onClick={() => setIsFilterDrawerOpen(true)}
-            className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-extrabold text-slate-700 dark:text-slate-300 rounded-none transition cursor-pointer"
+            className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 hover:bg-slate-100 text-xs font-extrabold text-slate-700 dark:text-slate-300 rounded-xl transition cursor-pointer"
           >
             <SlidersHorizontal size={14} />
             <span>Filters Drawer</span>
@@ -650,7 +655,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
           {(searchQuery || categoryFilter !== "All" || stockFilter !== "All" || sortBy !== "name-asc") && (
             <button
               onClick={handleClearFilters}
-              className="px-4 py-2.5 border border-brand/20 bg-orange-50/50 dark:bg-orange-950/20 text-xs font-extrabold text-brand rounded-none transition cursor-pointer"
+              className="px-4 py-2.5 border border-orange-500/20 bg-orange-50 dark:bg-orange-950/20 text-xs font-extrabold text-orange-500 rounded-xl transition cursor-pointer"
             >
               Reset
             </button>

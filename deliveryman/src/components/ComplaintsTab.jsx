@@ -11,15 +11,15 @@ const ComplaintsTab = ({
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start">
       
       {/* List */}
-      <div className="space-y-4 bg-white dark:bg-gray-900 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-5.5 shadow-sm">
-        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+      <div className="space-y-4 bg-white dark:bg-gray-900 border border-slate-200/60 dark:border-slate-800/60 rounded-2xl p-5.5 shadow-xs">
+        <div className="flex items-center justify-between pb-2">
           <div className="flex items-center gap-2">
             <div className="h-7 w-7 rounded-lg bg-rose-500/10 dark:bg-rose-500/20 text-rose-500 flex items-center justify-center">
               <FileText size={13} />
             </div>
             <h3 className="font-extrabold text-sm text-slate-900 dark:text-white">Your Logged Disputes</h3>
           </div>
-          <span className="bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 text-[8px] font-black px-2 py-0.5 rounded border border-slate-200 dark:border-slate-800 uppercase tracking-wider">
+          <span className="bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 text-[8px] font-black px-2.5 py-1 rounded-lg uppercase tracking-wider">
             {filteredComplaints.length} Total Logs
           </span>
         </div>
@@ -32,20 +32,20 @@ const ComplaintsTab = ({
         ) : (
           <div className="space-y-3.5">
             {filteredComplaints.map((c) => (
-              <div key={c._id} className="border border-slate-200 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-950/20 rounded-xl p-4.5 space-y-3 text-xs hover:border-slate-300 dark:hover:border-slate-700 transition duration-150">
+              <div key={c._id} className="bg-slate-50 dark:bg-slate-950/40 rounded-xl p-4.5 space-y-3 text-xs hover:bg-slate-100/80 dark:hover:bg-slate-900/60 transition duration-150">
                 <div className="flex justify-between items-start gap-3">
                   <div>
                     <p className="font-black text-slate-900 dark:text-white text-xs">{c.subject}</p>
                     <p className="text-[9px] text-slate-400 dark:text-slate-500 mt-1 font-bold">Category: {c.category}</p>
                   </div>
-                  <span className={`px-2 py-0.5 rounded-md font-black text-[8px] uppercase tracking-wider border shrink-0 ${ c.status === "Resolved" ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20" }`}>
+                  <span className={`px-2.5 py-1 rounded-lg font-black text-[8px] uppercase tracking-wider shrink-0 ${ c.status === "Resolved" ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "bg-amber-500/10 text-amber-600 dark:text-amber-400" }`}>
                     {c.status}
                   </span>
                 </div>
-                <p className="text-slate-600 dark:text-slate-400 leading-relaxed font-semibold bg-slate-100/50 dark:bg-slate-900/40 p-3 rounded-lg border border-slate-200/50 dark:border-slate-800/60">{c.description}</p>
+                <p className="text-slate-600 dark:text-slate-400 leading-relaxed font-semibold bg-white/60 dark:bg-slate-900/60 p-3 rounded-lg">{c.description}</p>
                 
                 {c.adminReply && (
-                  <div className="bg-blue-500/5 dark:bg-blue-950/20 border border-blue-200/50 dark:border-blue-900/40 p-3.5 rounded-xl text-blue-700 dark:text-blue-300 flex items-start gap-2.5">
+                  <div className="bg-blue-500/10 dark:bg-blue-950/40 p-3.5 rounded-xl text-blue-700 dark:text-blue-300 flex items-start gap-2.5">
                     <CheckCircle size={14} className="shrink-0 text-blue-500 mt-0.5" />
                     <div>
                       <p className="font-black text-[9px] uppercase tracking-widest leading-none mb-1">Admin Reply Note</p>
@@ -60,8 +60,8 @@ const ComplaintsTab = ({
       </div>
 
       {/* Form */}
-      <form onSubmit={handleComplaintSubmit} className="bg-white dark:bg-gray-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4.5 hover:shadow-md transition-all duration-300">
-        <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
+      <form onSubmit={handleComplaintSubmit} className="bg-white dark:bg-gray-900 border border-slate-200/60 dark:border-slate-800/60 rounded-2xl p-5 shadow-xs space-y-4.5 hover:shadow-sm transition-all duration-300">
+        <div className="flex items-center gap-2 pb-2">
           <AlertTriangle size={15} className="text-blue-500" />
           <h3 className="font-extrabold text-sm text-slate-900 dark:text-white">Log Dispatch Issue</h3>
         </div>

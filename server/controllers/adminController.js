@@ -742,8 +742,85 @@ export const sendAnnouncement = async (req, res) => {
 /* ================= AUDIT LOGS ================= */
 export const getAuditLogs = async (req, res) => {
   try {
-    const logs = await auditLogModel.find({}).sort({ createdAt: -1 }).limit(100);
-    res.json({ success: true, logs });
+    const [auditLogs, activityLogs, recentOrders, recentProducts] = await Promise.all([
+      auditLogModel.find({}).sort({ createdAt: -1 }).limit(100).lean(),
+      activityLogModel.find({}).sort({ createdAt: -1 }).limit(100).lean(),
+      orderModel.find({}).sort({ createdAt: -1 }).limit(50).lean(),
+      productModel.find({}).sort({ createdAt: -1 }).limit(50).lean()
+    ]);
+
+    const formattedLogs = [];
+
+    // 1. Process explicit audit logs (Admin actions)
+    for (const log of auditLogs) {
+      formattedLogs.push({
+        _id: String(log._id),
+        role: "Admin",
+        actor: log.adminEmail || "System Admin",
+        action: log.action || "Admin Event",
+        target: log.target || "N/A",
+        details: log.details || "Administrative event logged",
+        createdAt: log.createdAt
+      });
+    }
+
+    // 2. Process activity logs
+    for (const act of activityLogs) {
+      formattedLogs.push({
+        _id: String(act._id),
+        role: act.actorRole ? (act.actorRole.charAt(0).toUpperCase() + act.actorRole.slice(1)) : "User",
+        actor: act.actorId ? String(act.actorId) : "User",
+        action: act.action || "User Activity",
+        target: act.targetId ? `${act.targetType || "Object"} #${String(act.targetId).slice(-6).toUpperCase()}` : "N/A",
+        details: act.details || "Activity recorded",
+        createdAt: act.createdAt
+      });
+    }
+
+    // 3. Synthesize customer order placements & deliveryman updates
+    for (const o of recentOrders) {
+      const customerEmail = o.address?.email || (o.address?.firstName ? `${o.address.firstName} ${o.address.lastName || ""}` : `Customer (${o.address?.phone || "Order"})`);
+      formattedLogs.push({
+        _id: `ord_${o._id}`,
+        role: "Customer",
+        actor: customerEmail,
+        action: "Placed Order",
+        target: `Order #${String(o._id).slice(-6).toUpperCase()}`,
+        details: `Amount: ₹${o.amount} | Items: ${o.items?.length || 0} | Payment: ${o.paymentMethod || "COD"} | Status: ${o.orderStatus}`,
+        createdAt: o.createdAt
+      });
+
+      if (o.assignedDriverName || o.assignedDriverId || o.orderStatus === "Out For Delivery" || o.orderStatus === "Delivered") {
+        formattedLogs.push({
+          _id: `drv_${o._id}`,
+          role: "Deliveryman",
+          actor: o.assignedDriverName || "Courier Partner",
+          action: `Shipment ${o.orderStatus}`,
+          target: `Order #${String(o._id).slice(-6).toUpperCase()}`,
+          details: `Destination: ${o.address?.city || "Sector Zone"}, ${o.address?.state || ""}`,
+          createdAt: o.updatedAt || o.createdAt
+        });
+      }
+    }
+
+    // 4. Synthesize seller product listings
+    for (const p of recentProducts) {
+      formattedLogs.push({
+        _id: `prd_${p._id}`,
+        role: "Seller",
+        actor: p.sellerId ? `Seller #${String(p.sellerId).slice(-6).toUpperCase()}` : "Merchant Partner",
+        action: "Listed Product",
+        target: p.name || "Product Item",
+        details: `Category: ${p.category || "General"} | Price: ₹${p.price} | Stock: ${p.stock || 0}`,
+        createdAt: p.createdAt
+      });
+    }
+
+    // Sort all events by createdAt descending and deduplicate
+    formattedLogs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const uniqueLogs = formattedLogs.slice(0, 150);
+
+    res.json({ success: true, logs: uniqueLogs });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

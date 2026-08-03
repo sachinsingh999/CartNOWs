@@ -43,8 +43,6 @@ const SingleOrderDetail = () => {
   const [submittingCancel, setSubmittingCancel] = useState(false);
   const token = localStorage.getItem("token") || "";
 
-  const [returnRequests, setReturnRequests] = useState([]);
-
   const fetchOrderDetails = async (isSilent = false) => {
     if (!token) {
       if (!isSilent) {
@@ -55,18 +53,9 @@ const SingleOrderDetail = () => {
     }
     try {
       if (!isSilent) setLoading(true);
-      const [orderRes, reqRes] = await Promise.all([
-        axios.get(`${backendUrl}/api/order/${orderId}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        axios.get(`${backendUrl}/api/rms/request/my-requests`, {
-          headers: { Authorization: `Bearer ${token}` }
-        }).catch(() => ({ data: { success: false, requests: [] } }))
-      ]);
-
-      if (reqRes && reqRes.data && reqRes.data.success) {
-        setReturnRequests(reqRes.data.requests || []);
-      }
+      const orderRes = await axios.get(`${backendUrl}/api/order/${orderId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
 
       if (orderRes.data.success) {
         setOrder(orderRes.data.order);
@@ -178,26 +167,6 @@ const SingleOrderDetail = () => {
     }
   };
 
-  const handleReturnItem = async (orderItemId) => {
-    const reason = window.prompt("Please enter a reason for returning this item:", "Product not as expected");
-    if (!reason) return;
-    try {
-      const res = await axios.post(
-        `${backendUrl}/api/order/return-item`,
-        { orderItemId, reason },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      if (res.data.success) {
-        toast.success(res.data.message || "Return request submitted");
-        fetchOrderDetails();
-      } else {
-        toast.error(res.data.message || "Failed to submit return request");
-      }
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Error submitting return request");
-    }
-  };
-
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 px-4 py-8 sm:px-6 lg:px-8 text-slate-900 dark:text-slate-100 transition-colors duration-200">
       <div className="mx-auto max-w-7xl space-y-6">
@@ -218,9 +187,7 @@ const SingleOrderDetail = () => {
                   Order #{String(order.orderNumber || order._id).slice(-8).toUpperCase()}
                 </h1>
                 <span className={`px-2.5 py-0.5 rounded-sm text-[10px] font-black uppercase tracking-wider ${
-                  (order.orderStatus || "").toLowerCase() === "return pending"
-                    ? "bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/50"
-                    : (order.orderStatus || "").toLowerCase() === "delivered"
+                  (order.orderStatus || "").toLowerCase() === "delivered"
                     ? "bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/50"
                     : (order.orderStatus || "").toLowerCase() === "cancelled"
                     ? "bg-rose-100 dark:bg-rose-950/50 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50"
@@ -340,10 +307,6 @@ const SingleOrderDetail = () => {
                 else if (currentStep === 2) statusText = "Your order has been shipped and is in transit.";
                 else if (currentStep === 3) statusText = "Your order is Out for Delivery today!";
                 else if (currentStep >= 4) statusText = "Your order has been delivered successfully.";
-                
-                if ((order.orderStatus || "").toLowerCase() === "return pending") {
-                  statusText = "Return request submitted. Awaiting merchant / admin review.";
-                }
 
                 return (
                   <div className="bg-indigo-500/[0.04] border border-indigo-500/10 rounded-sm p-3 text-xs text-slate-600 dark:text-slate-300 font-medium text-left flex items-center gap-2.5 mt-5">
@@ -369,17 +332,8 @@ const SingleOrderDetail = () => {
                 const itemQty = item.quantity || item.qty || 1;
                 const unitPrice = item.unitPrice || item.price;
                 const originalVal = item.originalPrice || Math.round(unitPrice * 1.25);
-                const hasActiveReturnReq = returnRequests.some(
-                  (r) =>
-                    (String(r.orderId) === String(order._id) || String(r.orderId) === String(order.orderId)) &&
-                    (String(r.orderItemId) === String(item._id || item.orderItemId || item.id) ||
-                     String(r.productId) === String(item.productId || item._id || item.id) ||
-                     (r.itemName && r.itemName === itemTitle)) &&
-                    r.status !== "Cancelled"
-                );
-
                 const rawStatus = item.status || order.orderStatus || "Confirmed";
-                const itemStatus = hasActiveReturnReq ? "Return Pending" : rawStatus;
+                const itemStatus = rawStatus;
                 const isShippedOrBeyond = ["shipped", "out for delivery", "delivered"].includes(itemStatus.toLowerCase());
                 const isDelivered = itemStatus.toLowerCase() === "delivered";
                 const isCancelled = itemStatus.toLowerCase() === "cancelled";
@@ -467,21 +421,6 @@ const SingleOrderDetail = () => {
                           <span className="px-3 py-1.5 rounded bg-rose-100 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50 text-[10px] font-black uppercase tracking-wider">
                             Cancelled
                           </span>
-                        )}
-
-                        {["return pending", "return requested"].includes((itemStatus || "").toLowerCase()) && (
-                          <span className="px-3 py-1.5 rounded-sm bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/50 text-[10px] font-black uppercase tracking-wider">
-                            Return Pending
-                          </span>
-                        )}
-
-                        {isDelivered && !["return pending", "return requested", "returned", "return approved"].includes((itemStatus || "").toLowerCase()) && (
-                          <button
-                            onClick={() => handleReturnItem(item._id || item.orderItemId)}
-                            className="px-3 py-1.5 rounded bg-amber-50 dark:bg-amber-950/20 text-amber-600 border border-amber-200 dark:border-amber-900 text-[10px] font-black uppercase tracking-wider hover:bg-amber-100 transition cursor-pointer"
-                          >
-                            Return Item
-                          </button>
                         )}
 
                         <button

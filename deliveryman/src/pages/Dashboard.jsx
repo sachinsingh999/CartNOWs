@@ -463,12 +463,35 @@ const Dashboard = ({
     });
   };
 
+  const isReturnOrder = (o) => {
+    if (!o) return false;
+    if (o.isReturn || o.isReturnOrder || o.orderType === "return" || o.type === "return" || o.rmaId || o.rmaNumber) return true;
+    const status = String(o.orderStatus || o.status || "").toLowerCase();
+    return status.includes("return") || status.includes("pickup");
+  };
+
+  const deliveryOrders = orders.filter(o => !isReturnOrder(o));
+  const returnOrdersFromMain = orders.filter(o => isReturnOrder(o)).map(o => ({
+    _id: o._id,
+    returnType: o.returnType || "Return",
+    itemSize: o.itemSize || o.size || "—",
+    exchangeSize: o.exchangeSize,
+    itemName: o.itemName || o.productName || o.orderItems?.[0]?.productName || ("Order #" + String(o._id).slice(-6)),
+    quantity: o.quantity || o.orderItems?.[0]?.quantity || 1,
+    amount: o.amount,
+    status: o.orderStatus || o.status || "Approved",
+    orderAddress: o.orderAddress || o.address,
+    reason: o.returnReason || o.reason || "Return pickup task"
+  }));
+
+  const combinedReturnTasks = [...returnTasks, ...returnOrdersFromMain];
+
   const filteredAvailableOrders = filterByDate(availableOrders);
-  const filteredReturnTasks = filterByDate(returnTasks);
+  const filteredReturnTasks = filterByDate(combinedReturnTasks);
   const filteredComplaints = filterByDate(complaints);
 
-  const pendingAcceptance = orders.filter((o) => o.assignmentStatus === "Assigned");
-  const activeOngoing = orders.filter((o) => o.assignmentStatus !== "Assigned" && o.orderStatus !== "Delivered" && o.orderStatus !== "Cancelled");
+  const pendingAcceptance = deliveryOrders.filter((o) => o.assignmentStatus === "Assigned");
+  const activeOngoing = deliveryOrders.filter((o) => o.assignmentStatus !== "Assigned" && o.orderStatus !== "Delivered" && o.orderStatus !== "Cancelled");
   const nextOrder = activeOngoing[0]; // Priority next order
 
   const getStatusBadgeStyle = (status) => {
@@ -488,12 +511,12 @@ const Dashboard = ({
     }
   };
 
-  const completedToday = orders.filter(o => o.orderStatus === "Delivered" && new Date(o.updatedAt).toDateString() === new Date().toDateString());
+  const completedToday = deliveryOrders.filter(o => o.orderStatus === "Delivered" && new Date(o.updatedAt).toDateString() === new Date().toDateString());
   const completedTodayCount = completedToday.length;
   const todayEarningsVal = completedToday.reduce((sum, o) => sum + (o.amount || 0), 0);
 
   // Filter orders for the modern unified data table
-  const tableFilteredOrders = orders.filter(o => {
+  const tableFilteredOrders = deliveryOrders.filter(o => {
     // Search query matches customer name or order ID
     const nameMatch = `${o.address?.firstName || ""} ${o.address?.lastName || ""}`.toLowerCase().includes(searchQuery.toLowerCase());
     const idMatch = o._id.toLowerCase().includes(searchQuery.toLowerCase());
@@ -545,7 +568,7 @@ const Dashboard = ({
           token={token}
           driver={driver}
           stats={stats}
-          orders={orders}
+          orders={deliveryOrders}
           nextOrder={nextOrder}
           pendingAcceptance={pendingAcceptance}
           handleAcceptAssignment={handleAcceptAssignment}

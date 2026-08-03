@@ -1,5 +1,5 @@
 import React from "react";
-import { ShoppingBag } from "lucide-react";
+import { ShoppingBag, Package } from "lucide-react";
 
 const Orders = ({ orders = [] }) => {
   return (
@@ -39,45 +39,53 @@ const Orders = ({ orders = [] }) => {
               {/* Order Items */}
               <div className="space-y-3">
                 <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Items Ordered</div>
-                <div className="space-y-2">
-                  {order.items?.map((item, index) => (
-                    <div key={index} className="space-y-2 bg-slate-50/50 dark:bg-slate-950/30 p-3 rounded-lg border border-slate-100 dark:border-slate-805">
-                      <div className="flex justify-between items-center text-xs text-slate-700 dark:text-slate-300 font-medium">
-                        <div>
-                          <span className="text-slate-800 dark:text-slate-100 font-bold">{item.name}</span>
-                          {item.qty && <span className="text-slate-400 dark:text-slate-500 ml-1.5">x {item.qty}</span>}
-                        </div>
-                        <span className="font-extrabold text-slate-900 dark:text-slate-100">₹{(item.price * (item.qty || 1)).toFixed(2)}</span>
-                      </div>
-                      
-                      {/* Product Rating & Reviews summary */}
-                      {item.averageRating > 0 && (
-                        <div className="border-t border-slate-200/50 dark:border-slate-800/60 pt-2 space-y-1.5">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-[10px] uppercase font-bold text-slate-400">Product Rating:</span>
-                            <div className="flex items-center text-amber-500 gap-0.5">
-                              {[...Array(5)].map((_, i) => (
-                                <span key={i} className={i < Math.round(item.averageRating) ? "★" : "☆"} />
-                              ))}
-                            </div>
-                            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold">({item.averageRating.toFixed(1)} / 5)</span>
-                          </div>
+                <div className="space-y-2.5">
+                  {order.items?.map((item, index) => {
+                    const itemName = item.name || item.productName || item.title || "Product Item";
+                    const itemImg = item.image || item.productImage || item.images?.[0] || "";
+                    const itemQty = Number(item.qty || item.quantity || 1);
+                    const itemPrice = Number(item.price || item.unitPrice || item.finalPrice || 0);
+                    const itemTotal = itemPrice * itemQty;
 
-                          {/* Reviews List */}
-                          {item.reviews && item.reviews.length > 0 && (
-                            <div className="space-y-1 pl-2 border-l border-orange-500/30">
-                              {item.reviews.slice(0, 2).map((rev, rIdx) => (
-                                <div key={rIdx} className="text-[10px] text-slate-600 dark:text-slate-400">
-                                  <span className="font-bold text-slate-700 dark:text-slate-300">{rev.name}:</span> "{rev.comment}"
-                                  <span className="text-amber-550 dark:text-amber-450 font-semibold ml-1">({rev.rating}★)</span>
-                                </div>
-                              ))}
+                    return (
+                      <div key={index} className="flex items-center justify-between gap-4 bg-slate-50 dark:bg-slate-950 p-3.5 rounded-xl border border-slate-200/60 dark:border-slate-800">
+                        <div className="flex items-center gap-3 min-w-0">
+                          {/* Product Thumbnail Image */}
+                          <div className="h-12 w-12 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
+                            {itemImg ? (
+                              <img src={itemImg} alt={itemName} className="h-full w-full object-contain" />
+                            ) : (
+                              <Package size={18} className="text-slate-400" />
+                            )}
+                          </div>
+                          
+                          {/* Product Details */}
+                          <div className="min-w-0 text-left">
+                            <span className="text-xs font-bold text-slate-900 dark:text-slate-100 block truncate max-w-md">
+                              {itemName}
+                            </span>
+                            <div className="flex flex-wrap items-center gap-2 mt-0.5 text-[10px] text-slate-400">
+                              <span>Qty: <strong className="text-slate-700 dark:text-slate-300 font-bold">{itemQty}</strong></span>
+                              <span>•</span>
+                              <span>Unit Price: <strong className="text-slate-700 dark:text-slate-300 font-bold">₹{itemPrice.toFixed(2)}</strong></span>
+                              {item.size && (
+                                <>
+                                  <span>•</span>
+                                  <span className="bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 rounded text-[9px] font-bold text-slate-600 dark:text-slate-300 uppercase">Size: {item.size}</span>
+                                </>
+                              )}
                             </div>
-                          )}
+                          </div>
                         </div>
-                      )}
-                    </div>
-                  ))}
+
+                        {/* Item Total Price */}
+                        <div className="text-right shrink-0">
+                          <span className="text-xs font-black text-slate-900 dark:text-slate-100 block">₹{itemTotal.toFixed(2)}</span>
+                          <span className="text-[9px] text-slate-400 block mt-0.5">₹{itemPrice.toFixed(2)} × {itemQty}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 

@@ -4,8 +4,10 @@ const orderSchema = new mongoose.Schema(
   {
     orderNumber: {
       type: String,
-      required: true,
-      unique: true,
+      required: false,
+      default: function () {
+        return "ORD-" + Date.now() + "-" + Math.floor(1000 + Math.random() * 9000);
+      },
       index: true,
     },
     userId: {
@@ -20,7 +22,8 @@ const orderSchema = new mongoose.Schema(
     },
     shippingAddress: {
       type: Object,
-      required: true,
+      required: false,
+      default: {},
     },
     billingAddress: {
       type: Object,

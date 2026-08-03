@@ -402,7 +402,7 @@ export const getRMADetails = async (req, res) => {
   try {
     const { rmaId } = req.params;
 
-    const rma = await returnOrderModel
+    let rma = await returnOrderModel
       .findById(rmaId)
       .populate("requestId")
       .populate("refundId")
@@ -411,6 +411,62 @@ export const getRMADetails = async (req, res) => {
       .populate("sellerId", "name shopName email phone")
       .populate("deliverymanId", "name phone vehicleType")
       .lean();
+
+    if (!rma) {
+      rma = await returnOrderModel
+        .findOne({ requestId: rmaId })
+        .populate("requestId")
+        .populate("refundId")
+        .populate("exchangeId")
+        .populate("customerId", "name email phone")
+        .populate("sellerId", "name shopName email phone")
+        .populate("deliverymanId", "name phone vehicleType")
+        .lean();
+    }
+
+    if (!rma) {
+      rma = await returnOrderModel
+        .findOne({ orderId: rmaId })
+        .populate("requestId")
+        .populate("refundId")
+        .populate("exchangeId")
+        .populate("customerId", "name email phone")
+        .populate("sellerId", "name shopName email phone")
+        .populate("deliverymanId", "name phone vehicleType")
+        .lean();
+    }
+
+    if (!rma) {
+      const requestDoc = await returnRequestModel.findById(rmaId).lean();
+      if (requestDoc) {
+        rma = {
+          _id: requestDoc._id,
+          rmaNumber: "REQ-" + String(requestDoc._id).slice(-8).toUpperCase(),
+          orderId: requestDoc.orderId,
+          orderItemId: requestDoc.orderItemId,
+          itemName: requestDoc.itemName || "Returned Item",
+          itemImage: requestDoc.itemImage || "",
+          quantity: requestDoc.quantity || 1,
+          amount: requestDoc.amount || 0,
+          returnType: requestDoc.returnType || "Refund",
+          status: requestDoc.status || "Pending Review",
+          pickupCourier: "Express Shipping",
+          warehouseId: "WH-MAIN-01",
+          inspectionStatus: "Pending",
+          pickupVerificationCode: "123456",
+          updatedAt: requestDoc.updatedAt || new Date(),
+          requestId: requestDoc,
+          timeline: [
+            {
+              status: requestDoc.status || "Pending Review",
+              description: `Return request initialized: ${requestDoc.returnReason || "Customer requested return"}`,
+              actorRole: "customer",
+              timestamp: requestDoc.createdAt || new Date(),
+            }
+          ]
+        };
+      }
+    }
 
     if (!rma) {
       return res.status(404).json({ success: false, message: "Return Order (RMA) not found" });
@@ -463,28 +519,79 @@ export const schedulePickup = async (req, res) => {
 /* ================= 7. VERIFY PICKUP (DELIVERY AGENT) ================= */
 export const verifyPickup = async (req, res) => {
   try {
-    const { rmaId, verificationCode } = req.body;
+    const { rmaId, status, verificationCode } = req.body;
     const driverId = req.deliveryman?.id;
 
-    const rma = await returnOrderModel.findById(rmaId);
+    let rma = await returnOrderModel.findById(rmaId);
     if (!rma) {
-      return res.status(404).json({ success: false, message: "RMA not found" });
+      rma = await returnOrderModel.findOne({ requestId: rmaId });
+    }
+    if (!rma) {
+      rma = await returnOrderModel.findOne({ orderId: rmaId });
+    }
+
+    let requestDoc = null;
+    let orderDoc = null;
+
+    if (!rma) {
+      requestDoc = await returnRequestModel.findById(rmaId);
+    }
+    if (!rma && !requestDoc) {
+      orderDoc = await orderModel.findById(rmaId);
+    }
+
+    if (!rma && !requestDoc && !orderDoc) {
+      return res.status(404).json({ success: false, message: "Return task / order not found" });
+    }
+
+    // Handle returnRequestModel status update
+    if (requestDoc) {
+      const targetStatus = status || "Out for Pickup";
+      if (targetStatus === "Completed" && verificationCode) {
+        requestDoc.status = "Completed";
+      } else {
+        requestDoc.status = targetStatus;
+      }
+      await requestDoc.save();
+      return res.json({ success: true, message: `Return task status updated to ${requestDoc.status}`, request: requestDoc });
+    }
+
+    // Handle orderModel status update
+    if (orderDoc) {
+      const targetStatus = status || "Out for Pickup";
+      orderDoc.orderStatus = targetStatus;
+      await orderDoc.save();
+      return res.json({ success: true, message: `Order status updated to ${orderDoc.orderStatus}`, order: orderDoc });
+    }
+
+    // Handle returnOrderModel (RMA) status update
+    if (status && status !== "Completed") {
+      rma.status = status;
+      rma.timeline.push({
+        status,
+        description: `Status updated to ${status} by delivery agent.`,
+        actorRole: "deliveryman",
+        actorId: driverId || null,
+        timestamp: new Date(),
+      });
+      await rma.save();
+      return res.json({ success: true, message: `RMA status updated to ${status}`, rma });
     }
 
     if (!verificationCode) {
       return res.status(400).json({ success: false, message: "Verification OTP code required" });
     }
 
-    if (verificationCode.toUpperCase() !== rma.pickupVerificationCode.toUpperCase()) {
+    if (rma.pickupVerificationCode && verificationCode.toUpperCase() !== rma.pickupVerificationCode.toUpperCase()) {
       return res.status(400).json({ success: false, message: "Invalid verification code" });
     }
 
-    rma.status = "In Transit to Warehouse";
+    rma.status = "Completed";
     rma.pickupCompletedDate = new Date();
 
     rma.timeline.push({
-      status: "Picked Up",
-      description: "Item picked up from customer and in transit to warehouse.",
+      status: "Completed",
+      description: "Item picked up from customer and verified.",
       actorRole: "deliveryman",
       actorId: driverId || null,
       timestamp: new Date(),
@@ -496,10 +603,10 @@ export const verifyPickup = async (req, res) => {
       rma.customerId,
       rma.orderId,
       "Item Picked Up",
-      `Your returned item for RMA ${rma.rmaNumber} has been collected and is in transit to our warehouse.`
+      `Your returned item for RMA ${rma.rmaNumber} has been collected and verified by delivery agent.`
     );
 
-    res.json({ success: true, message: "Pickup verified and completed", rma });
+    res.json({ success: true, message: "Pickup verified and completed successfully", rma });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

@@ -81,7 +81,7 @@ const Sidebar = ({ isCollapsed, isMobileOpen, setIsMobileOpen }) => {
       links: [
         { path: "/settings", label: "System Settings", icon: Settings },
         { path: "/notifications", label: "Notifications", icon: Bell },
-        { path: "/logs", label: "Audit Logs", icon: Shield },
+        { path: "/logs", label: "User & Operations Audit", icon: Shield },
       ]
     }
   ];

@@ -681,42 +681,87 @@ const Categories = ({ token }) => {
   return (
     <div className="space-y-6 text-left text-slate-800 dark:text-slate-100">
       
-      {/* Top Title Banner */}
-      <div className="flex items-center justify-between gap-4 flex-wrap pb-4 border-b border-slate-200 dark:border-slate-800/80">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 bg-orange-500 text-white rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20">
-            <Layers size={20} />
+      {/* ── Single Consolidated Container: Header, Stats & Search Bar ── */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-4 shadow-xs space-y-3.5 shrink-0">
+        
+        {/* Top: Header Row */}
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-2.5">
+            <div className="h-8 w-8 bg-orange-500 dark:bg-orange-500/10 text-white dark:text-orange-400 rounded-lg flex items-center justify-center border border-orange-500/10 shadow-xs shrink-0">
+              <Layers size={16} />
+            </div>
+            <div>
+              <h1 className="text-base font-black text-slate-900 dark:text-white tracking-tight">Category Architect & Taxonomies</h1>
+              <p className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider mt-0.5">Build parent/sub taxonomies, dynamic forms schemas, verification rules, and visual models</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">Category Architect</h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Build parent/sub taxonomies, dynamic forms schemas, verification rules, and visual models.</p>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                setSelectedCategory(null);
+                resetCategoryForm();
+                setPanelTab("settings");
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xs font-black transition active:scale-95 cursor-pointer shadow-xs"
+            >
+              <Plus size={13} />
+              <span>New Category</span>
+            </button>
+            
+            <button
+              onClick={() => setViewArchived(!viewArchived)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition active:scale-95 cursor-pointer shadow-xs ${ viewArchived ? "bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400" : "bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100" }`}
+            >
+              <Archive size={13} />
+              <span>{viewArchived ? "Hide Archived" : "Show Archived"}</span>
+            </button>
+
+            <button
+              onClick={() => fetchCategories(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-lg text-xs font-bold transition active:scale-95 cursor-pointer shadow-xs"
+            >
+              <RotateCcw size={12} />
+              <span>Refresh</span>
+            </button>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => {
-              setSelectedCategory(null);
-              resetCategoryForm();
-              setPanelTab("settings");
-            }}
-            className="px-3 py-1.5 rounded-xl bg-slate-900 dark:bg-slate-800 text-white hover:bg-slate-800 text-xs font-black transition flex items-center gap-1.5 cursor-pointer border-none"
-          >
-            <Plus size={13} />
-            <span>New Category</span>
-          </button>
-          
-          <button
-            onClick={() => setViewArchived(!viewArchived)}
-            className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition flex items-center gap-1.5 cursor-pointer border-slate-200 dark:border-slate-800 ${ viewArchived ? "bg-amber-100 dark:bg-amber-500/10 border-amber-300 dark:border-amber-500/20 text-amber-800 dark:text-amber-400" : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-850" }`}
-          >
-            <Archive size={13} />
-            <span>{viewArchived ? "Hide Archived" : "Show Archived"}</span>
-          </button>
+        {/* Middle: Taxonomy Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {[
+            { label: "Total Taxonomies", val: categories.length, sub: "Configured catalog classes", icon: Layers, color: "text-orange-500 bg-orange-500/10" },
+            { label: "Featured Categories", val: categories.filter(c => c.isFeatured).length, sub: "Promoted on storefront", icon: Sparkles, color: "text-amber-500 bg-amber-500/10" },
+            { label: "Archived Categories", val: categories.filter(c => c.status === "archived").length, sub: "Stored in archive", icon: Archive, color: "text-slate-500 bg-slate-500/10" }
+          ].map((card, idx) => {
+            const Icon = card.icon;
+            return (
+              <div
+                key={idx}
+                className="p-3 rounded-xl border bg-slate-50/70 dark:bg-slate-950/40 border-slate-200/60 dark:border-slate-800 flex items-center justify-between group relative overflow-hidden"
+              >
+                <div className="space-y-1 relative z-10 text-left">
+                  <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                    {card.label}
+                  </span>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-lg font-black tracking-tight text-slate-900 dark:text-white">{card.val}</span>
+                  </div>
+                  <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 block">
+                    {card.sub}
+                  </span>
+                </div>
+                <div className={`p-2 rounded-lg border ${card.color} border-slate-200/50 dark:border-slate-800 transition-transform duration-200 group-hover:scale-105 relative z-10`}>
+                  <Icon size={14} />
+                </div>
+              </div>
+            );
+          })}
         </div>
+
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         
         {/* LEFT COLUMN: HIERARCHICAL TREE DIRECTORY */}
         <div className="lg:col-span-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-3xl p-5 shadow-sm space-y-4">

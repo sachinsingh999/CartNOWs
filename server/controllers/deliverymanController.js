@@ -328,9 +328,15 @@ const claimOrder = async (req, res) => {
       });
     }
 
-    // Bind driver and set status
+    // Bind driver and set status with fallback fields
     order.deliverymanId = driverId;
     order.orderStatus = "Out for Delivery";
+    if (!order.shippingAddress || Object.keys(order.shippingAddress).length === 0) {
+      order.shippingAddress = order.address || {};
+    }
+    if (!order.orderNumber) {
+      order.orderNumber = "ORD-" + order._id.toString().slice(-8).toUpperCase();
+    }
     await order.save();
 
     // Trigger notification to customer
@@ -368,6 +374,15 @@ const updateOrderStatus = async (req, res) => {
       return res.json({ success: false, message: "Order not found" });
     }
 
+    const ensureOrderValidFields = (ord) => {
+      if (!ord.shippingAddress || Object.keys(ord.shippingAddress).length === 0) {
+        ord.shippingAddress = ord.address || {};
+      }
+      if (!ord.orderNumber) {
+        ord.orderNumber = "ORD-" + (ord._id ? ord._id.toString().slice(-8).toUpperCase() : Date.now());
+      }
+    };
+
     // Check assignment fallback if deliverymanId on parent order is not set
     if (!order.deliverymanId || order.deliverymanId.toString() !== driverId.toString()) {
       const assignment = await deliveryAssignmentModel.findOne({
@@ -377,6 +392,7 @@ const updateOrderStatus = async (req, res) => {
       });
       if (assignment) {
         order.deliverymanId = driverId;
+        ensureOrderValidFields(order);
         await order.save();
       } else {
         return res.json({ success: false, message: "Order not assigned to you" });
@@ -391,6 +407,7 @@ const updateOrderStatus = async (req, res) => {
         code += chars.charAt(Math.floor(Math.random() * chars.length));
       }
       order.verificationCode = code;
+      ensureOrderValidFields(order);
       await order.save();
     }
 

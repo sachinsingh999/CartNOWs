@@ -21,7 +21,17 @@ import {
   Globe,
   RefreshCw,
   Search,
-  Check
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Copy,
+  Sliders,
+  Zap,
+  X,
+  EyeOff,
+  Loader2,
+  CheckCircle2,
+  PartyPopper
 } from "lucide-react";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -58,26 +68,57 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
   const [productAttributes, setProductAttributes] = useState([]);
   const [productVariants, setProductVariants] = useState([]);
 
-  // Auto-Variant Generator logic
+  // Auto-Variant Generator logic: Applies across ALL attributes & specifications
   useEffect(() => {
-    const activeAttrs = productAttributes.filter(
-      attr => attr.name.trim() &&
-        attr.displayType === "variant" &&
-        attr.values &&
-        attr.values.trim()
-    );
-    if (activeAttrs.length === 0) {
-      setProductVariants([]);
-      return;
-    }
-
     const attrMap = {};
-    activeAttrs.forEach(attr => {
-      attrMap[attr.name.trim()] = attr.values
+
+    // 1. Gather from productAttributes (Dynamic Attributes)
+    productAttributes.forEach(attr => {
+      const name = attr.name ? attr.name.trim() : "";
+      if (!name || attr.displayType === "hidden") return;
+
+      const rawVal = (attr.values && attr.values.trim()) 
+        ? attr.values 
+        : ((attr.value && typeof attr.value === "string") ? attr.value.trim() : "");
+
+      if (!rawVal) return;
+
+      const parsedVals = rawVal
         .split(",")
         .map(v => v.trim())
         .filter(Boolean);
+
+      if (parsedVals.length > 0) {
+        attrMap[name] = parsedVals;
+      }
     });
+
+    // 2. Gather from customAttributes (Technical Specifications)
+    customAttributes.forEach(spec => {
+      const name = spec.key ? spec.key.trim() : "";
+      if (!name || attrMap[name]) return;
+      const rawVal = spec.value ? String(spec.value).trim() : "";
+      if (!rawVal) return;
+
+      const parsedVals = rawVal
+        .split(",")
+        .map(v => v.trim())
+        .filter(Boolean);
+
+      if (parsedVals.length > 0) {
+        attrMap[name] = parsedVals;
+      }
+    });
+
+    // 3. Gather from sizes field if entered
+    if (newProduct.sizes && typeof newProduct.sizes === "string" && newProduct.sizes.trim()) {
+      if (!attrMap["Size"] && !attrMap["size"]) {
+        const parsedSizes = newProduct.sizes.split(",").map(v => v.trim()).filter(Boolean);
+        if (parsedSizes.length > 0) {
+          attrMap["Size"] = parsedSizes;
+        }
+      }
+    }
 
     const attrKeys = Object.keys(attrMap);
     if (attrKeys.length === 0) {
@@ -100,19 +141,23 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
     generate(0, {});
 
     const basePrice = parseFloat(newProduct.price) || 0;
-    const baseStock = parseInt(newProduct.stock) || 0;
+    const hasExplicitStock = newProduct.stock !== "" && newProduct.stock !== undefined && !isNaN(parseInt(newProduct.stock));
+    const baseStock = hasExplicitStock ? parseInt(newProduct.stock) : (basePrice > 0 ? 10 : 0);
     const baseSku = newProduct.sku || (newProduct.name ? newProduct.name.substring(0, 5).toUpperCase() : "PROD");
 
     const newVariants = combinations.map((comb, idx) => {
       const existing = productVariants.find(v => {
-        return attrKeys.every(k => v.attributes[k] === comb[k]);
+        return attrKeys.every(k => v.attributes && v.attributes[k] === comb[k]);
       });
 
       const comboSuffix = Object.values(comb).join("-").toUpperCase();
+      const variantPrice = (existing?.price !== undefined && existing?.price > 0) ? existing.price : basePrice;
+      const variantStock = (existing?.stock !== undefined && (existing?.stock > 0 || hasExplicitStock)) ? existing.stock : baseStock;
+
       return {
         sku: existing?.sku || `${baseSku}-${comboSuffix}-${idx}`,
-        price: existing?.price !== undefined ? existing.price : basePrice,
-        stock: existing?.stock !== undefined ? existing.stock : baseStock,
+        price: variantPrice,
+        stock: variantStock,
         images: existing?.images || [],
         barcode: existing?.barcode || "",
         availability: existing?.availability !== undefined ? existing.availability : true,
@@ -121,19 +166,95 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
     });
 
     setProductVariants(newVariants);
-  }, [productAttributes, newProduct.price, newProduct.stock, newProduct.sku, newProduct.name]);
+  }, [productAttributes, customAttributes, newProduct.sizes, newProduct.price, newProduct.stock, newProduct.sku, newProduct.name]);
 
-  const toggleVariantImage = (variantIdx, imgIdx) => {
-    setProductVariants(prev => {
-      const updated = [...prev];
-      const currentImages = updated[variantIdx].images || [];
-      if (currentImages.includes(imgIdx)) {
-        updated[variantIdx].images = currentImages.filter(i => i !== imgIdx);
-      } else {
-        updated[variantIdx].images = [...currentImages, imgIdx];
+  // Variant management UI optimization & JSON Code Editor states
+  const [showAllVariants, setShowAllVariants] = useState(false);
+  const [showRightSidebar, setShowRightSidebar] = useState(true);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showVariantJsonModal, setShowVariantJsonModal] = useState(false);
+  const [variantJsonText, setVariantJsonText] = useState("");
+  const [variantJsonError, setVariantJsonError] = useState("");
+  const [bulkPriceInput, setBulkPriceInput] = useState("");
+  const [bulkStockInput, setBulkStockInput] = useState("");
+
+  const handleOpenVariantJsonModal = () => {
+    const cleanVariants = productVariants.map(v => ({
+      attributes: v.attributes,
+      price: v.price,
+      stock: v.stock,
+      sku: v.sku,
+      barcode: v.barcode || "",
+      availability: v.availability !== false
+    }));
+    setVariantJsonText(JSON.stringify(cleanVariants, null, 2));
+    setVariantJsonError("");
+    setShowVariantJsonModal(true);
+  };
+
+  const handleApplyVariantJson = () => {
+    try {
+      const parsed = JSON.parse(variantJsonText);
+      if (!Array.isArray(parsed)) {
+        setVariantJsonError("JSON must be an array of variant objects.");
+        return;
       }
-      return updated;
-    });
+      for (let i = 0; i < parsed.length; i++) {
+        const item = parsed[i];
+        if (typeof item !== "object" || item === null) {
+          setVariantJsonError(`Variant #${i + 1} is not a valid object.`);
+          return;
+        }
+        if (item.price === undefined || typeof item.price !== "number") {
+          setVariantJsonError(`Variant #${i + 1} must have a numeric "price".`);
+          return;
+        }
+        if (!item.attributes || typeof item.attributes !== "object") {
+          setVariantJsonError(`Variant #${i + 1} must have an "attributes" object.`);
+          return;
+        }
+      }
+      const updatedVariants = parsed.map((item, idx) => {
+        const existing = productVariants[idx];
+        return {
+          sku: item.sku || `${newProduct.sku || "PROD"}-${idx}`,
+          price: parseFloat(item.price) || 0,
+          stock: parseInt(item.stock) || 0,
+          images: existing?.images || item.images || [],
+          barcode: item.barcode || "",
+          availability: item.availability !== false,
+          attributes: item.attributes || {}
+        };
+      });
+      setProductVariants(updatedVariants);
+      setShowVariantJsonModal(false);
+      toast.success("Variant JSON updated successfully! 🚀");
+    } catch (err) {
+      setVariantJsonError("Invalid JSON syntax: " + err.message);
+    }
+  };
+
+  const handleApplyBulkPrice = () => {
+    const p = parseFloat(bulkPriceInput);
+    if (isNaN(p) || p < 0) {
+      toast.warning("Please enter a valid price for bulk update.");
+      return;
+    }
+    setProductVariants(prev => prev.map(v => ({ ...v, price: p })));
+    toast.success(`Updated price to ₹${p} across all ${productVariants.length} variants.`);
+    setBulkPriceInput("");
+  };
+
+  const handleApplyBulkStock = () => {
+    const s = parseInt(bulkStockInput);
+    if (isNaN(s) || s < 0) {
+      toast.warning("Please enter a valid stock amount.");
+      return;
+    }
+    setProductVariants(prev => prev.map(v => ({ ...v, stock: s })));
+    toast.success(`Updated stock to ${s} units across all ${productVariants.length} variants.`);
+    setBulkStockInput("");
   };
 
   // Custom Category & Subcategory text overrides
@@ -195,12 +316,16 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
     }
   }, [token]);
 
-  // Clean up object URLs
+  // Clean up object URLs on unmount only
   useEffect(() => {
     return () => {
-      uploadedFiles.forEach(f => URL.revokeObjectURL(f.preview));
+      uploadedFiles.forEach(f => {
+        if (f.preview && f.file) {
+          URL.revokeObjectURL(f.preview);
+        }
+      });
     };
-  }, [uploadedFiles]);
+  }, []);
 
   // JSON syntax check
   useEffect(() => {
@@ -282,8 +407,12 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
 
   const removeUploadedFile = (index) => {
     setUploadedFiles(prev => {
+      const target = prev[index];
+      if (target && target.preview && target.file) {
+        URL.revokeObjectURL(target.preview);
+      }
       const updated = prev.filter((_, idx) => idx !== index);
-      if (prev[index]?.isCover && updated.length > 0) {
+      if (target?.isCover && updated.length > 0) {
         updated[0].isCover = true;
       }
       return updated;
@@ -427,16 +556,20 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
 
         setIsCustomSubCategory(true);
 
+        const defaultStockVal = (product.stock !== undefined && product.stock !== null && product.stock !== "")
+          ? String(product.stock)
+          : ((parsedData.stock !== undefined && parsedData.stock !== null && parsedData.stock !== "") ? String(parsedData.stock) : "10");
+
         setNewProduct({
           name: product.name || "",
-          price: product.price || "",
+          price: product.price !== undefined ? String(product.price) : "",
           category: product.category || "",
           subCategory: product.subCategory || "",
           audience: product.audience || "Unisex",
           brand: product.brand || "",
           sku: product.sku || "",
           description: product.description || "",
-          stock: product.stock || "",
+          stock: defaultStockVal,
           tags: product.tags ? (Array.isArray(product.tags) ? product.tags.join(", ") : product.tags) : "",
           keywords: product.keywords ? (Array.isArray(product.keywords) ? product.keywords.join(", ") : product.keywords) : "",
           seoDescription: product.shortDescription || ""
@@ -475,6 +608,19 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
               }));
             setProductAttributes(formattedAttrs);
           }
+        }
+
+        if (product.variants && Array.isArray(product.variants) && product.variants.length > 0) {
+          const loadedVariants = product.variants.map((v, idx) => ({
+            sku: v.sku || `${product.sku || "PROD"}-${idx}`,
+            price: v.price !== undefined ? parseFloat(v.price) : (parseFloat(product.price) || 0),
+            stock: v.stock !== undefined ? parseInt(v.stock) : (parseInt(defaultStockVal) || 10),
+            images: v.images || [],
+            barcode: v.barcode || "",
+            availability: v.availability !== false,
+            attributes: v.attributes || {}
+          }));
+          setProductVariants(loadedVariants);
         }
 
         if (product.images) {
@@ -685,41 +831,47 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
       attributesPayload = JSON.stringify(finalAttributes);
     }
 
-    const success = await addProduct({
-      ...newProduct,
-      price: priceNum,
-      stock: parseInt(newProduct.stock) || 0,
-      images: uploadedFiles.filter(f => f.file !== null).map(f => f.file),
-      existingImages: JSON.stringify(uploadedFiles.filter(f => f.file === null).map(f => f.preview)),
-      coverIndex: coverIndex >= 0 ? coverIndex : 0,
-      attributes: attributesPayload,
-      variants: variantsPayload,
-      collections: JSON.stringify(selectedCollections)
-    });
-
-    if (success) {
-      // Clear form
-      setNewProduct({
-        name: "",
-        brand: "",
-        price: "",
-        stock: "",
-        description: "",
-        category: "",
-        subCategory: "",
-        audience: "Unisex",
-        sku: "",
-        tags: "",
-        keywords: "",
-        seoDescription: ""
+    setIsPublishing(true);
+    try {
+      const success = await addProduct({
+        ...newProduct,
+        price: priceNum,
+        stock: parseInt(newProduct.stock) || 0,
+        images: uploadedFiles.filter(f => f.file !== null).map(f => f.file),
+        existingImages: JSON.stringify(uploadedFiles.filter(f => f.file === null).map(f => f.preview)),
+        coverIndex: coverIndex >= 0 ? coverIndex : 0,
+        attributes: attributesPayload,
+        variants: variantsPayload,
+        collections: JSON.stringify(selectedCollections)
       });
-      setCustomAttributes([]);
-      setProductAttributes([]);
-      setProductVariants([]);
-      setUploadedFiles([]);
-      setSelectedCollections([]);
-      setAiText("");
-      setJsonText("");
+
+      if (success) {
+        setShowSuccessModal(true);
+        // Clear form
+        setNewProduct({
+          name: "",
+          brand: "",
+          price: "",
+          stock: "",
+          description: "",
+          category: "",
+          subCategory: "",
+          audience: "Unisex",
+          sku: "",
+          tags: "",
+          keywords: "",
+          seoDescription: ""
+        });
+        setCustomAttributes([]);
+        setProductAttributes([]);
+        setProductVariants([]);
+        setUploadedFiles([]);
+        setSelectedCollections([]);
+        setAiText("");
+        setJsonText("");
+      }
+    } finally {
+      setIsPublishing(false);
     }
   };
 
@@ -788,6 +940,23 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
           <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Smart Product Creation</h2>
           <p className="text-xs text-slate-400 mt-1">Select your preferred mode: manually fill traditional forms, paste raw specs via Smart AI, or supply structured JSON layouts.</p>
         </div>
+        <button
+          type="button"
+          onClick={() => setShowRightSidebar(prev => !prev)}
+          className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold transition cursor-pointer shrink-0 border border-slate-200 dark:border-slate-700 shadow-xs"
+        >
+          {showRightSidebar ? (
+            <>
+              <EyeOff size={14} className="text-slate-500" />
+              <span>Hide Preview Box</span>
+            </>
+          ) : (
+            <>
+              <Eye size={14} className="text-indigo-500" />
+              <span>Show Preview Box</span>
+            </>
+          )}
+        </button>
       </div>
 
       {/* Switcher Tab Layout */}
@@ -816,9 +985,9 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
       </div>
 
       {/* Main split dashboard layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start transition-all duration-500 ease-in-out">
         {/* Left Side: Creation Forms & Textareas */}
-        <div className="lg:col-span-7 space-y-6">
+        <div className={`space-y-6 transition-all duration-500 ease-in-out ${showRightSidebar ? "lg:col-span-7" : "lg:col-span-12"}`}>
           {/* Smart AI Mode Textarea Block */}
           {activeMode === "ai" && (
             <div className="bg-white dark:bg-slate-900 border border-slate-200/40 dark:border-white/[0.08] rounded-none p-5 shadow-sm space-y-4">
@@ -1525,143 +1694,275 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                   })}
                 </div>
 
-                {/* Variants Grid Table */}
-                {productVariants.length > 0 && (
-                  <div className="space-y-2 mt-4 pt-4 border-t border-slate-100 dark:border-white/[0.04]">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Generated Variants ({productVariants.length})</span>
-                    <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-white/[0.08]">
-                      <table className="w-full text-left border-collapse">
-                        <thead>
-                          <tr className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-white/[0.08]">
-                            <th className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Combination</th>
-                            <th className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-1/4">SKU</th>
-                            <th className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-20">Price (₹)</th>
-                            <th className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-16">Stock</th>
-                            <th className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-36">Images</th>
-                            <th className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-24">Barcode</th>
-                            <th className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider w-12 text-center">Avail.</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-white/[0.04]">
-                          {productVariants.map((variant, idx) => (
-                            <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/30">
-                              <td className="px-3 py-2 text-xs font-medium text-slate-800 dark:text-slate-200">
-                                <div className="flex flex-wrap gap-1">
-                                  {Object.entries(variant.attributes).map(([k, v]) => (
-                                    <span key={k} className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-[10px] font-bold text-slate-500 dark:text-slate-400">
-                                      {k}: {v}
-                                    </span>
-                                  ))}
-                                </div>
-                              </td>
-                              <td className="px-3 py-2">
-                                <input
-                                  type="text"
-                                  value={variant.sku}
-                                  onChange={(e) => {
-                                    const val = e.target.value;
-                                    setProductVariants(prev => {
-                                      const updated = [...prev];
-                                      updated[idx].sku = val;
-                                      return updated;
-                                    });
-                                  }}
-                                  className="w-full px-2 py-1 bg-transparent border border-slate-200 dark:border-white/[0.08] rounded text-xs text-slate-800 dark:text-white outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                                />
-                              </td>
-                              <td className="px-3 py-2">
-                                <input
-                                  type="number"
-                                  value={variant.price}
-                                  onChange={(e) => {
-                                    const val = parseFloat(e.target.value) || 0;
-                                    setProductVariants(prev => {
-                                      const updated = [...prev];
-                                      updated[idx].price = val;
-                                      return updated;
-                                    });
-                                  }}
-                                  className="w-full px-2 py-1 bg-transparent border border-slate-200 dark:border-white/[0.08] rounded text-xs text-slate-800 dark:text-white outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                                />
-                              </td>
-                              <td className="px-3 py-2">
-                                <input
-                                  type="number"
-                                  value={variant.stock}
-                                  onChange={(e) => {
-                                    const val = parseInt(e.target.value) || 0;
-                                    setProductVariants(prev => {
-                                      const updated = [...prev];
-                                      updated[idx].stock = val;
-                                      return updated;
-                                    });
-                                  }}
-                                  className="w-full px-2 py-1 bg-transparent border border-slate-200 dark:border-white/[0.08] rounded text-xs text-slate-800 dark:text-white outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                                />
-                              </td>
-                              <td className="px-3 py-2">
-                                <div className="flex gap-1 overflow-x-auto py-0.5 max-w-[150px]">
-                                  {uploadedFiles.map((fileObj, fIdx) => {
-                                    const isSelected = (variant.images || []).includes(fIdx);
-                                    return (
-                                      <button
-                                        key={fIdx}
-                                        type="button"
-                                        onClick={() => toggleVariantImage(idx, fIdx)}
-                                        className={`relative w-6 h-6 rounded overflow-hidden border-2 transition-all flex-shrink-0 ${isSelected ? "border-orange-500 scale-105 shadow-sm" : "border-slate-200 dark:border-white/[0.08] opacity-50 hover:opacity-100" }`}
-                                      >
-                                        <img src={fileObj.preview} alt="" className="w-full h-full object-contain bg-slate-50 dark:bg-slate-950" />
-                                        {isSelected && (
-                                          <div className="absolute inset-0 bg-orange-500/20 flex items-center justify-center">
-                                            <Check size={10} className="text-slate-100 dark:text-white stroke-[3]" />
-                                          </div>
-                                        )}
-                                      </button>
-                                    );
-                                  })}
-                                  {uploadedFiles.length === 0 && (
-                                    <span className="text-[10px] text-slate-400 italic">No images uploaded</span>
-                                  )}
-                                </div>
-                              </td>
-                              <td className="px-3 py-2">
-                                <input
-                                  type="text"
-                                  value={variant.barcode || ""}
-                                  onChange={(e) => {
-                                    const val = e.target.value;
-                                    setProductVariants(prev => {
-                                      const updated = [...prev];
-                                      updated[idx].barcode = val;
-                                      return updated;
-                                    });
-                                  }}
-                                  placeholder="Barcode"
-                                  className="w-full px-2 py-1 bg-transparent border border-slate-200 dark:border-white/[0.08] rounded text-xs text-slate-800 dark:text-white outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                                />
-                              </td>
-                              <td className="px-3 py-2 text-center">
-                                <input
-                                  type="checkbox"
-                                  checked={variant.availability !== false}
-                                  onChange={(e) => {
-                                    const val = e.target.checked;
-                                    setProductVariants(prev => {
-                                      const updated = [...prev];
-                                      updated[idx].availability = val;
-                                      return updated;
-                                    });
-                                  }}
-                                  className="w-4 h-4 text-orange-500 border-slate-200 dark:border-white/[0.08] rounded cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                                />
-                              </td>
+                {/* Variant Recap & Matrix Section */}
+                {productVariants.length > 0 && (() => {
+                  const prices = productVariants.map(v => v.price || 0);
+                  const minPrice = prices.length ? Math.min(...prices) : 0;
+                  const maxPrice = prices.length ? Math.max(...prices) : 0;
+                  const totalStock = productVariants.reduce((sum, v) => sum + (v.stock || 0), 0);
+
+                  const attrSummary = {};
+                  productVariants.forEach(v => {
+                    Object.entries(v.attributes || {}).forEach(([k, val]) => {
+                      if (!attrSummary[k]) attrSummary[k] = new Set();
+                      attrSummary[k].add(val);
+                    });
+                  });
+
+                  const displayedVariants = showAllVariants ? productVariants : productVariants.slice(0, 5);
+
+                  return (
+                    <div className="space-y-3 mt-4 pt-4 border-t border-slate-100 dark:border-white/[0.04]">
+                      {/* Compact Recap Header */}
+                      <div className="bg-gradient-to-r from-slate-900 to-slate-800 dark:from-slate-950 dark:to-indigo-950/80 text-white rounded-xl p-4 shadow-sm border border-slate-800 dark:border-indigo-500/20">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <Package className="w-4 h-4 text-indigo-400" />
+                              <span className="text-xs font-black uppercase tracking-wider text-slate-200">
+                                Variant Recap ({productVariants.length} Combinations)
+                              </span>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-300">
+                              <span>Price: <strong className="text-emerald-400">₹{minPrice}{minPrice !== maxPrice ? ` - ₹${maxPrice}` : ''}</strong></span>
+                              <span className="text-slate-500">•</span>
+                              <span>Total Stock: <strong className="text-indigo-300">{totalStock} units</strong></span>
+                              <span className="text-slate-500">•</span>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                {Object.entries(attrSummary).map(([k, set]) => (
+                                  <span key={k} className="px-1.5 py-0.5 bg-slate-800/80 dark:bg-indigo-900/40 border border-slate-700 dark:border-indigo-700/40 rounded text-[10px] text-slate-300">
+                                    {k}: <strong>{set.size} options</strong>
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <button
+                              type="button"
+                              onClick={handleOpenVariantJsonModal}
+                              className="px-3 py-1.5 bg-indigo-600/80 hover:bg-indigo-600 text-white text-[11px] font-bold rounded-lg transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
+                            >
+                              <Code size={13} />
+                              JSON Code Editor
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Bulk Action Quick Inputs */}
+                        <div className="mt-3 pt-3 border-t border-slate-800/80 dark:border-white/10 flex flex-wrap items-center gap-3 text-[11px]">
+                          <span className="text-slate-400 font-bold uppercase text-[10px] tracking-wider flex items-center gap-1">
+                            <Zap size={11} className="text-amber-400" /> Bulk Update:
+                          </span>
+                          <div className="flex items-center gap-1.5">
+                            <input
+                              type="number"
+                              placeholder="Price (₹)"
+                              value={bulkPriceInput}
+                              onChange={(e) => setBulkPriceInput(e.target.value)}
+                              className="w-24 px-2 py-1 bg-slate-950/80 border border-slate-700 rounded text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                            />
+                            <button
+                              type="button"
+                              onClick={handleApplyBulkPrice}
+                              className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-[10px] font-bold cursor-pointer"
+                            >
+                              Apply Price
+                            </button>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <input
+                              type="number"
+                              placeholder="Stock Qty"
+                              value={bulkStockInput}
+                              onChange={(e) => setBulkStockInput(e.target.value)}
+                              className="w-20 px-2 py-1 bg-slate-950/80 border border-slate-700 rounded text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                            />
+                            <button
+                              type="button"
+                              onClick={handleApplyBulkStock}
+                              className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-[10px] font-bold cursor-pointer"
+                            >
+                              Apply Stock
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Matrix Table - Shows 5 items initially */}
+                      <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-white/[0.08]">
+                        <table className="w-full text-left border-collapse">
+                          <thead>
+                            <tr className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-white/[0.08]">
+                              <th className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider min-w-[120px]">Combination</th>
+                              <th className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider min-w-[140px]">SKU</th>
+                              <th className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider min-w-[100px]">Price (₹)</th>
+                              <th className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider min-w-[90px]">Stock</th>
+                              <th className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider min-w-[150px]">Images</th>
+                              <th className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider min-w-[110px]">Barcode</th>
+                              <th className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider min-w-[60px] text-center">Avail.</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100 dark:divide-white/[0.04]">
+                            {displayedVariants.map((variant, idx) => {
+                              const realIdx = showAllVariants ? idx : idx;
+                              return (
+                                <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/30">
+                                  <td className="px-3 py-2 text-xs font-medium text-slate-800 dark:text-slate-200">
+                                    <div className="flex flex-wrap gap-1">
+                                      {Object.entries(variant.attributes).map(([k, v]) => (
+                                        <span key={k} className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-[10px] font-bold text-slate-500 dark:text-slate-400">
+                                          {k}: {v}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </td>
+                                  <td className="px-3 py-2">
+                                    <input
+                                      type="text"
+                                      value={variant.sku}
+                                      onChange={(e) => {
+                                        const val = e.target.value;
+                                        setProductVariants(prev => {
+                                          const updated = [...prev];
+                                          updated[realIdx].sku = val;
+                                          return updated;
+                                        });
+                                      }}
+                                      className="w-full min-w-[120px] px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500"
+                                    />
+                                  </td>
+                                  <td className="px-3 py-2">
+                                    <input
+                                      type="number"
+                                      value={variant.price}
+                                      onChange={(e) => {
+                                        const val = parseFloat(e.target.value) || 0;
+                                        setProductVariants(prev => {
+                                          const updated = [...prev];
+                                          updated[realIdx].price = val;
+                                          return updated;
+                                        });
+                                      }}
+                                      className="w-full min-w-[80px] px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                    />
+                                  </td>
+                                  <td className="px-3 py-2">
+                                    <input
+                                      type="number"
+                                      value={variant.stock}
+                                      onChange={(e) => {
+                                        const val = parseInt(e.target.value) || 0;
+                                        setProductVariants(prev => {
+                                          const updated = [...prev];
+                                          updated[realIdx].stock = val;
+                                          return updated;
+                                        });
+                                      }}
+                                      className="w-full min-w-[70px] px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                    />
+                                  </td>
+                                  <td className="px-3 py-2">
+                                    <div className="flex gap-1.5 overflow-x-auto py-0.5 max-w-[160px]">
+                                      {uploadedFiles.map((fileObj, fIdx) => {
+                                        const isSelected = (variant.images || []).includes(fIdx);
+                                        return (
+                                          <button
+                                            key={fIdx}
+                                            type="button"
+                                            onClick={() => toggleVariantImage(realIdx, fIdx)}
+                                            className={`relative w-7 h-7 rounded-md overflow-hidden border-2 transition-all flex-shrink-0 cursor-pointer ${isSelected ? "border-indigo-600 dark:border-indigo-400 scale-105 shadow-xs" : "border-slate-200 dark:border-slate-700 opacity-60 hover:opacity-100" }`}
+                                            title={isSelected ? "Selected for variant" : "Click to select image"}
+                                          >
+                                            <img 
+                                              src={fileObj.preview} 
+                                              alt={`Thumb ${fIdx + 1}`} 
+                                              onError={(e) => {
+                                                e.target.onerror = null;
+                                                e.target.src = "https://placehold.co/100x100?text=Img";
+                                              }}
+                                              className="w-full h-full object-cover bg-slate-100 dark:bg-slate-900" 
+                                            />
+                                            {isSelected && (
+                                              <div className="absolute inset-0 bg-indigo-600/30 flex items-center justify-center">
+                                                <Check size={12} className="text-white stroke-[3]" />
+                                              </div>
+                                            )}
+                                          </button>
+                                        );
+                                      })}
+                                      {uploadedFiles.length === 0 && (
+                                        <button
+                                          type="button"
+                                          onClick={() => document.getElementById("file-upload-input")?.click()}
+                                          className="text-[10px] text-indigo-500 font-bold hover:underline flex items-center gap-1 cursor-pointer"
+                                        >
+                                          <Upload size={11} /> Upload Images
+                                        </button>
+                                      )}
+                                    </div>
+                                  </td>
+                                  <td className="px-3 py-2">
+                                    <input
+                                      type="text"
+                                      value={variant.barcode || ""}
+                                      onChange={(e) => {
+                                        const val = e.target.value;
+                                        setProductVariants(prev => {
+                                          const updated = [...prev];
+                                          updated[realIdx].barcode = val;
+                                          return updated;
+                                        });
+                                      }}
+                                      placeholder="Barcode"
+                                      className="w-full min-w-[90px] px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500"
+                                    />
+                                  </td>
+                                  <td className="px-3 py-2 text-center">
+                                    <input
+                                      type="checkbox"
+                                      checked={variant.availability !== false}
+                                      onChange={(e) => {
+                                        const val = e.target.checked;
+                                        setProductVariants(prev => {
+                                          const updated = [...prev];
+                                          updated[realIdx].availability = val;
+                                          return updated;
+                                        });
+                                      }}
+                                      className="w-4 h-4 text-indigo-600 border-slate-200 dark:border-slate-700 rounded cursor-pointer focus:ring-indigo-500"
+                                    />
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+
+                        {/* Footer Bar to Expand/Collapse Matrix Rows */}
+                        {productVariants.length > 5 && (
+                          <div className="p-3 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-white/[0.08] flex items-center justify-between text-xs">
+                            <span className="text-slate-500 dark:text-slate-400 font-medium">
+                              Showing <strong>{displayedVariants.length}</strong> of <strong>{productVariants.length}</strong> variants
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setShowAllVariants(prev => !prev)}
+                              className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-bold text-xs flex items-center gap-1.5 transition cursor-pointer shadow-xs"
+                            >
+                              {showAllVariants ? (
+                                <>Show Fewer (5) <ChevronUp size={14} /></>
+                              ) : (
+                                <>Show All ({productVariants.length}) <ChevronDown size={14} /></>
+                              )}
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
               </div>
 
               {/* Collections section */}
@@ -1828,65 +2129,93 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
             <div className="pt-4 border-t border-slate-100 dark:border-white/[0.04]">
               <button
                 type="submit"
-                className="w-full py-3.5 bg-orange-500 hover:bg-orange-600 text-slate-100 dark:text-white rounded-xl text-xs font-black uppercase tracking-wider transition active:scale-95 shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+                disabled={isPublishing}
+                className={`w-full py-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 shadow-lg flex items-center justify-center gap-2 cursor-pointer relative overflow-hidden group ${
+                  isPublishing
+                    ? "bg-gradient-to-r from-amber-500 via-orange-500 to-emerald-500 text-white cursor-wait animate-pulse"
+                    : "bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:from-orange-600 hover:to-amber-600 text-white hover:shadow-orange-500/25 active:scale-[0.98]"
+                }`}
               >
-                <CheckCircle size={14} />
-                <span>Publish Listing (Requires Admin Verification)</span>
+                {/* Hover Shimmer Line */}
+                <span className="absolute inset-0 w-full h-full bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out pointer-events-none" />
+
+                {isPublishing ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin text-white" />
+                    <span>Publishing Listing to Store...</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 size={16} className="text-white group-hover:scale-110 transition-transform" />
+                    <span>Publish Listing (Requires Admin Verification)</span>
+                  </>
+                )}
               </button>
             </div>
           </form>
         </div>
 
         {/* Right Side: Live Previews & Warnings */}
-        <div className="lg:col-span-5 space-y-6">
+        {showRightSidebar && (
+          <div className="lg:col-span-5 space-y-6 transition-all duration-500 ease-in-out transform origin-top-right animate-in fade-in slide-in-from-right-6 duration-500">
 
-          {/* Validation Warnings Summary Panel */}
-          {validationWarnings.length > 0 && (
-            <div className="bg-amber-50 dark:bg-amber-950/10 border border-amber-200 dark:border-amber-900/30 rounded-2xl p-4 space-y-2">
-              <div className="flex items-center gap-2 text-amber-800 dark:text-amber-400 font-extrabold uppercase text-[10px] tracking-wider">
-                <AlertTriangle size={14} />
-                <span>Pre-submission Flags ({validationWarnings.length})</span>
+            {/* Validation Warnings Summary Panel */}
+            {validationWarnings.length > 0 && (
+              <div className="bg-amber-50 dark:bg-amber-950/10 border border-amber-200 dark:border-amber-900/30 rounded-2xl p-4 space-y-2">
+                <div className="flex items-center gap-2 text-amber-800 dark:text-amber-400 font-extrabold uppercase text-[10px] tracking-wider">
+                  <AlertTriangle size={14} />
+                  <span>Pre-submission Flags ({validationWarnings.length})</span>
+                </div>
+                <ul className="space-y-1.5">
+                  {validationWarnings.map((warn, index) => (
+                    <li key={index} className="text-[10px] text-amber-700 dark:text-amber-300 font-medium leading-normal flex items-start gap-1">
+                      <span className="mt-0.5">•</span>
+                      <span>{warn.message}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <ul className="space-y-1.5">
-                {validationWarnings.map((warn, index) => (
-                  <li key={index} className="text-[10px] text-amber-700 dark:text-amber-300 font-medium leading-normal flex items-start gap-1">
-                    <span className="mt-0.5">•</span>
-                    <span>{warn.message}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+            )}
 
-          {/* Preview panel switcher */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.08] rounded-2xl p-5 shadow-sm space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/[0.06] pb-3">
-              <div className="flex items-center gap-2 text-slate-800 dark:text-white font-extrabold uppercase text-xs tracking-wider">
-                <Eye size={14} />
-                <span>Instant Live Preview</span>
-              </div>
+            {/* Preview panel switcher */}
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.08] rounded-2xl p-5 shadow-sm space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/[0.06] pb-3">
+                <div className="flex items-center gap-2 text-slate-800 dark:text-white font-extrabold uppercase text-xs tracking-wider">
+                  <Eye size={14} />
+                  <span>Instant Live Preview</span>
+                </div>
 
-              <div className="flex bg-slate-100 dark:bg-slate-900 p-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider">
-                <button
-                  onClick={() => setActivePreviewTab("card")}
-                  className={`px-2 py-1.5 rounded-md transition cursor-pointer ${activePreviewTab === "card" ? "bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-sm" : "text-slate-500" }`}
-                >
-                  Card
-                </button>
-                <button
-                  onClick={() => setActivePreviewTab("page")}
-                  className={`px-2 py-1.5 rounded-md transition cursor-pointer ${activePreviewTab === "page" ? "bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-sm" : "text-slate-500" }`}
-                >
-                  Page
-                </button>
-                <button
-                  onClick={() => setActivePreviewTab("seo")}
-                  className={`px-2 py-1.5 rounded-md transition cursor-pointer ${activePreviewTab === "seo" ? "bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-sm" : "text-slate-500" }`}
-                >
-                  SEO
-                </button>
+                <div className="flex items-center gap-2">
+                  <div className="flex bg-slate-100 dark:bg-slate-900 p-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider">
+                    <button
+                      onClick={() => setActivePreviewTab("card")}
+                      className={`px-2 py-1.5 rounded-md transition cursor-pointer ${activePreviewTab === "card" ? "bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-sm" : "text-slate-500" }`}
+                    >
+                      Card
+                    </button>
+                    <button
+                      onClick={() => setActivePreviewTab("page")}
+                      className={`px-2 py-1.5 rounded-md transition cursor-pointer ${activePreviewTab === "page" ? "bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-sm" : "text-slate-500" }`}
+                    >
+                      Page
+                    </button>
+                    <button
+                      onClick={() => setActivePreviewTab("seo")}
+                      className={`px-2 py-1.5 rounded-md transition cursor-pointer ${activePreviewTab === "seo" ? "bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-sm" : "text-slate-500" }`}
+                    >
+                      SEO
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowRightSidebar(false)}
+                    title="Hide Live Preview Box"
+                    className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white transition cursor-pointer"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
               </div>
-            </div>
 
             {/* PREVIEW CONTAINER */}
             <div className="overflow-hidden min-h-[300px] flex items-center justify-center bg-slate-50/50 dark:bg-slate-900/30 rounded-xl p-4 border border-dashed border-slate-200 dark:border-white/[0.04]">
@@ -2039,7 +2368,116 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
             </div>
           </div>
         </div>
-      </div>
+      )}
+    </div>
+
+      {/* Variant JSON Code Editor Modal */}
+      {showVariantJsonModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-slate-900 text-white rounded-2xl w-full max-w-2xl border border-slate-800 shadow-2xl flex flex-col max-h-[85vh] overflow-hidden">
+            <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Code className="text-indigo-400" size={18} />
+                <div>
+                  <h3 className="text-sm font-bold">Variant JSON Code Editor</h3>
+                  <p className="text-[11px] text-slate-400">View, edit, or paste variant prices, stocks, and attributes in JSON format</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowVariantJsonModal(false)}
+                className="p-1 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="p-4 flex-1 overflow-y-auto space-y-2">
+              {variantJsonError && (
+                <div className="p-2.5 bg-rose-500/10 border border-rose-500/30 rounded-lg text-rose-400 text-xs flex items-center gap-2">
+                  <AlertCircle size={14} className="flex-shrink-0" />
+                  <span>{variantJsonError}</span>
+                </div>
+              )}
+              <textarea
+                rows={14}
+                value={variantJsonText}
+                onChange={(e) => {
+                  setVariantJsonText(e.target.value);
+                  setVariantJsonError("");
+                }}
+                className="w-full p-3 bg-slate-950 text-indigo-200 font-mono text-xs rounded-xl border border-slate-800 focus:outline-none focus:border-indigo-500 leading-relaxed"
+                placeholder='[{"attributes":{"Color":"Red","Size":"M"},"price":599,"stock":10,"sku":"PROD-RED-M-0"}]'
+              />
+              <div className="flex items-center justify-between text-[11px] text-slate-400">
+                <span>Format: Array of objects with `attributes`, `price`, `stock`, `sku`.</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(variantJsonText);
+                    toast.info("JSON copied to clipboard!");
+                  }}
+                  className="text-indigo-400 hover:underline flex items-center gap-1 cursor-pointer font-medium"
+                >
+                  <Copy size={12} /> Copy JSON
+                </button>
+              </div>
+            </div>
+
+            <div className="p-4 border-t border-slate-800 flex justify-end gap-2 bg-slate-900/50">
+              <button
+                type="button"
+                onClick={() => setShowVariantJsonModal(false)}
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleApplyVariantJson}
+                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-md cursor-pointer"
+              >
+                <Check size={14} /> Save & Apply JSON
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Animated Success Celebration Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-3xl p-8 max-w-md w-full text-center space-y-6 shadow-2xl relative overflow-hidden transform animate-in zoom-in-95 duration-300">
+            {/* Glow aura background effect */}
+            <div className="absolute -top-24 -left-24 w-48 h-48 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-orange-500/20 rounded-full blur-3xl pointer-events-none" />
+
+            {/* Floating Animated Badge */}
+            <div className="relative mx-auto w-20 h-20 bg-gradient-to-tr from-emerald-500 to-teal-400 rounded-3xl flex items-center justify-center shadow-lg shadow-emerald-500/30 animate-bounce">
+              <PartyPopper size={36} className="text-white" />
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
+                Product Listing Submitted! 🎉
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                Your product has been created successfully with all attributes & variants intact and submitted for admin verification.
+              </p>
+            </div>
+
+            <div className="pt-2 flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={() => setShowSuccessModal(false)}
+                className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition shadow-md cursor-pointer"
+              >
+                Create Another Product
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

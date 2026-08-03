@@ -141,174 +141,178 @@ const Orders = ({ token }) => {
   return (
     <div className="flex flex-col md:h-[calc(100vh-120px)] h-auto space-y-6 animate-fadeIn text-slate-800 dark:text-slate-100 pb-4">
 
-      {/* ── Page Header ── */}
-      <div className="flex flex-wrap items-center justify-between gap-4 shrink-0 bg-white/40 dark:bg-slate-950/20 backdrop-blur-md border border-slate-200/50 dark:border-slate-900/50 p-4 rounded-2xl shadow-xs">
-        <div className="space-y-1">
-          <p className="text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">Dispatch & Operations Control</p>
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-slate-950 to-slate-800 dark:from-indigo-600 dark:to-indigo-500 flex items-center justify-center shadow-md">
-              <ShoppingBag size={18} className="text-slate-100 dark:text-white" />
+      {/* ── Single Consolidated Container: Header, KPI Stats, & Filter Controls ── */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-4 shadow-xs space-y-3.5 shrink-0">
+        
+        {/* Top: Header Row */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="h-8 w-8 rounded-lg bg-gradient-to-tr from-slate-950 to-slate-800 dark:from-indigo-600 dark:to-indigo-500 flex items-center justify-center shadow-xs shrink-0">
+              <ShoppingBag size={15} className="text-slate-100 dark:text-white" />
             </div>
-            <h2 className="text-2xl font-black tracking-tight bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-900 bg-clip-text text-transparent dark:from-white dark:via-slate-200 dark:to-indigo-300">
-              Orders Command Center
-            </h2>
+            <div>
+              <p className="text-[9px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 leading-none">Dispatch & Operations Control</p>
+              <h2 className="text-base font-black tracking-tight text-slate-900 dark:text-white mt-0.5">
+                Orders Command Center
+              </h2>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {overdueCount > 0 && (
+              <div className="flex items-center gap-1.5 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/30 rounded-lg px-3 py-1 shrink-0 animate-pulse">
+                <AlertTriangle size={12} className="text-rose-600 dark:text-rose-500" />
+                <span className="text-[9px] font-black text-rose-700 dark:text-rose-400 uppercase tracking-wider">
+                  {overdueCount} SLA Overdue
+                </span>
+              </div>
+            )}
+            
+            <button 
+              onClick={fetchAllOrder}
+              disabled={isRefreshing}
+              className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition duration-200 cursor-pointer shadow-xs active:scale-95 disabled:opacity-50 flex items-center justify-center"
+              title="Refresh Orders List"
+            >
+              <RefreshCw size={13} className={isRefreshing ? "animate-spin text-indigo-500" : ""} />
+            </button>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          {overdueCount > 0 && (
-            <div className="flex items-center gap-2 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/30 rounded-xl px-4 py-2 shrink-0 shadow-sm animate-pulse">
-              <AlertTriangle size={14} className="text-rose-600 dark:text-rose-500" />
-              <span className="text-[10px] font-black text-rose-700 dark:text-rose-400 uppercase tracking-widest">
-                {overdueCount} SLA Overdue
-              </span>
-            </div>
-          )}
-          
-          <button 
-            onClick={fetchAllOrder}
-            disabled={isRefreshing}
-            className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition duration-300 cursor-pointer shadow-sm hover:scale-105 active:scale-95 disabled:opacity-50 flex items-center justify-center"
-            title="Refresh Orders List"
-          >
-            <RefreshCw size={14} className={isRefreshing ? "animate-spin text-indigo-500" : ""} />
-          </button>
-        </div>
-      </div>
-
-      {/* ── KPI Stats Mini Grid ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 shrink-0">
-        {[
-          {
-            key: "all",
-            label: "Total Registered",
-            val: filtered.length,
-            sub: `₹${totalRevenue.toLocaleString()}`,
-            icon: TrendingUp,
-            color: "text-blue-600 dark:text-blue-400 bg-blue-500/10 border-blue-500/15"
-          },
-          {
-            key: "active",
-            label: "Active Dispatches",
-            val: active.length,
-            sub: "In delivery cycle",
-            icon: Truck,
-            color: "text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 border-indigo-500/15"
-          },
-          {
-            key: "delivered",
-            label: "Successful Runs",
-            val: delivered.length,
-            sub: "Delivered to client",
-            icon: CheckCircle2,
-            color: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/15"
-          },
-          {
-            key: "overdue",
-            label: "SLA Overdue",
-            val: overdueCount,
-            sub: "Action required",
-            icon: AlertOctagon,
-            color: "text-rose-600 dark:text-rose-500 bg-rose-500/10 border-rose-500/15"
-          }
-        ].map(card => {
-          const isSelected = statusFilter === card.key;
-          const Icon = card.icon;
-          return (
-            <div
-              key={card.key}
-              onClick={() => setStatusFilter(card.key)}
-              className={`p-5 rounded-2xl border transition-all duration-300 cursor-pointer flex items-center justify-between group relative overflow-hidden ${ isSelected ? "bg-slate-950 border-slate-950 text-slate-100 dark:text-white dark:bg-indigo-600 dark:border-indigo-500 shadow-md scale-102" : "bg-white/80 dark:bg-slate-900/70 backdrop-blur-md border-slate-200/60 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700/80 shadow-xs" }`}
-            >
-              {isSelected && (
-                <div className="absolute inset-0 bg-[radial-gradient(circle_120px_at_100%_0%,rgba(99,102,241,0.15),transparent)] pointer-events-none" />
-              )}
-              <div className="space-y-2 relative z-10 text-left">
-                <span className={`text-[9px] font-black uppercase tracking-widest ${ isSelected ? "text-slate-300 dark:text-indigo-100" : "text-slate-400 dark:text-slate-500" }`}>
-                  {card.label}
-                </span>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-black tracking-tight">{card.val}</span>
-                  <span className={`text-[10px] font-black uppercase tracking-wider ${ isSelected ? "text-slate-300 dark:text-indigo-200" : "text-slate-400 dark:text-slate-500" }`}>
-                    {card.sub}
+        {/* Middle: KPI Stats Mini Grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {[
+            {
+              key: "all",
+              label: "Total Registered",
+              val: filtered.length,
+              sub: `₹${totalRevenue.toLocaleString()}`,
+              icon: TrendingUp,
+              color: "text-blue-600 dark:text-blue-400 bg-blue-500/10 border-blue-500/15"
+            },
+            {
+              key: "active",
+              label: "Active Dispatches",
+              val: active.length,
+              sub: "In delivery cycle",
+              icon: Truck,
+              color: "text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 border-indigo-500/15"
+            },
+            {
+              key: "delivered",
+              label: "Successful Runs",
+              val: delivered.length,
+              sub: "Delivered to client",
+              icon: CheckCircle2,
+              color: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/15"
+            },
+            {
+              key: "overdue",
+              label: "SLA Overdue",
+              val: overdueCount,
+              sub: "Action required",
+              icon: AlertOctagon,
+              color: "text-rose-600 dark:text-rose-500 bg-rose-500/10 border-rose-500/15"
+            }
+          ].map(card => {
+            const isSelected = statusFilter === card.key;
+            const Icon = card.icon;
+            return (
+              <div
+                key={card.key}
+                onClick={() => setStatusFilter(card.key)}
+                className={`p-3 rounded-xl border transition-all duration-200 cursor-pointer flex items-center justify-between group relative overflow-hidden ${ isSelected ? "bg-slate-950 border-slate-950 text-slate-100 dark:text-white dark:bg-indigo-600 dark:border-indigo-500 shadow-xs" : "bg-slate-50/70 dark:bg-slate-950/40 border-slate-200/60 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700/80" }`}
+              >
+                {isSelected && (
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_120px_at_100%_0%,rgba(99,102,241,0.15),transparent)] pointer-events-none" />
+                )}
+                <div className="space-y-1 relative z-10 text-left">
+                  <span className={`text-[8px] font-black uppercase tracking-widest ${ isSelected ? "text-slate-300 dark:text-indigo-100" : "text-slate-400 dark:text-slate-500" }`}>
+                    {card.label}
                   </span>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-lg font-black tracking-tight">{card.val}</span>
+                    <span className={`text-[9px] font-black uppercase tracking-wider ${ isSelected ? "text-slate-300 dark:text-indigo-200" : "text-slate-400 dark:text-slate-500" }`}>
+                      {card.sub}
+                    </span>
+                  </div>
+                </div>
+                <div className={`p-2 rounded-lg border ${card.color} transition-transform duration-200 group-hover:scale-105 relative z-10`}>
+                  <Icon size={14} />
                 </div>
               </div>
-              <div className={`p-2.5 rounded-xl border ${card.color} transition-transform duration-300 group-hover:scale-110 relative z-10`}>
-                <Icon size={16} />
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* ── Control Center Filter & Search Bar ── */}
-      <div className="bg-white/80 dark:bg-slate-900/70 backdrop-blur-md border border-slate-200/60 dark:border-slate-800 rounded-2xl p-4 flex flex-col xl:flex-row xl:items-center justify-between gap-4 shadow-sm shrink-0">
-        
-        {/* Date presets block */}
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 mr-1">
-            <Calendar size={13} />
-            <span className="text-[9px] font-black uppercase tracking-widest leading-none">Timeline</span>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-1 bg-slate-50 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-xl p-1">
-            {[
-              { id: "all", label: "All Time" },
-              { id: "today", label: "Today" },
-              { id: "week", label: "7 Days" },
-              { id: "month", label: "30 Days" },
-              { id: "custom", label: "Custom" },
-            ].map(p => (
-              <button
-                key={p.id}
-                onClick={() => p.id === "custom" ? setDatePreset("custom") : handlePreset(p.id)}
-                className={`px-3.5 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all duration-250 cursor-pointer ${ datePreset === p.id ? "bg-slate-950 text-slate-100 dark:text-white dark:bg-indigo-600 dark:text-white shadow" : "text-slate-500 dark:text-slate-400 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white" }`}
-              >
-                {p.label}
-              </button>
-            ))}
-          </div>
-
-          {datePreset === "custom" && (
-            <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-1.5 animate-fadeIn">
-              <input 
-                type="date" 
-                value={startDate} 
-                onChange={e => setStartDate(e.target.value)}
-                className="bg-transparent text-[9px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-200 outline-none cursor-pointer" 
-              />
-              <span className="text-slate-400 font-black text-[9px]">→</span>
-              <input 
-                type="date" 
-                value={endDate} 
-                onChange={e => setEndDate(e.target.value)}
-                className="bg-transparent text-[9px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-200 outline-none cursor-pointer" 
-              />
-              {(startDate || endDate) && (
-                <button 
-                  onClick={() => handlePreset("all")} 
-                  className="text-[9px] text-rose-500 hover:text-rose-600 font-black uppercase tracking-wider cursor-pointer ml-1"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
-          )}
+            );
+          })}
         </div>
 
-        {/* Search Input block */}
-        <div className="relative w-full xl:w-96 shrink-0">
-          <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none">
-            <Search size={14} />
-          </span>
-          <input
-            type="text"
-            placeholder="Search reference ID, client name, phone..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-slate-50 dark:bg-slate-900/50 outline-none transition focus:bg-white dark:focus:bg-gray-900 dark: font-semibold text-slate-800 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-          />
+        {/* Bottom: Control Center Filter & Search Bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-0.5">
+          
+          {/* Date presets block */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-1 text-slate-400 dark:text-slate-500 mr-1">
+              <Calendar size={12} />
+              <span className="text-[8px] font-black uppercase tracking-widest leading-none">Timeline</span>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-0.5 bg-slate-50 dark:bg-slate-950/60 border border-slate-200/60 dark:border-slate-800 rounded-lg p-0.5">
+              {[
+                { id: "all", label: "All Time" },
+                { id: "today", label: "Today" },
+                { id: "week", label: "7 Days" },
+                { id: "month", label: "30 Days" },
+                { id: "custom", label: "Custom" },
+              ].map(p => (
+                <button
+                  key={p.id}
+                  onClick={() => p.id === "custom" ? setDatePreset("custom") : handlePreset(p.id)}
+                  className={`px-2.5 py-1 rounded-md text-[8px] font-black uppercase tracking-wider transition-all duration-200 cursor-pointer ${ datePreset === p.id ? "bg-slate-950 text-slate-100 dark:text-white dark:bg-indigo-600 dark:text-white shadow-xs" : "text-slate-500 dark:text-slate-400 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white" }`}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+
+            {datePreset === "custom" && (
+              <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-lg px-2 py-1 animate-fadeIn">
+                <input 
+                  type="date" 
+                  value={startDate} 
+                  onChange={e => setStartDate(e.target.value)}
+                  className="bg-transparent text-[8px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-200 outline-none cursor-pointer" 
+                />
+                <span className="text-slate-400 font-black text-[8px]">→</span>
+                <input 
+                  type="date" 
+                  value={endDate} 
+                  onChange={e => setEndDate(e.target.value)}
+                  className="bg-transparent text-[8px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-200 outline-none cursor-pointer" 
+                />
+                {(startDate || endDate) && (
+                  <button 
+                    onClick={() => handlePreset("all")} 
+                    className="text-[8px] text-rose-500 hover:text-rose-600 font-black uppercase tracking-wider cursor-pointer ml-0.5"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Search Input block */}
+          <div className="relative w-full sm:w-80 shrink-0">
+            <span className="absolute inset-y-0 left-0 pl-2.5 flex items-center text-slate-400 pointer-events-none">
+              <Search size={13} />
+            </span>
+            <input
+              type="text"
+              placeholder="Search reference ID, client name, phone..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-8 pr-3 py-1.5 text-[11px] rounded-lg border border-slate-200/80 dark:border-slate-800/80 bg-slate-50 dark:bg-slate-950/60 outline-none transition focus:bg-white dark:focus:bg-gray-900 font-semibold text-slate-800 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+            />
+          </div>
         </div>
       </div>
 
