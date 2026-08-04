@@ -218,7 +218,7 @@ const SignUp = () => {
                   type={showPassword ? "text" : "password"}
                   value={form.password}
                   onChange={(e) => updateField("password", e.target.value)}
-                  placeholder="Minimum 6 characters"
+                  placeholder="Create a strong password"
                   className="w-full pl-10 pr-10 py-2 rounded-xl border border-slate-800 bg-slate-900/30 text-xs text-slate-100 dark:text-white outline-none transition duration-200 placeholder:text-slate-600 focus:bg-slate-950/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                   required
                 />
@@ -229,6 +229,72 @@ const SignUp = () => {
                 >
                   {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
                 </button>
+              </div>
+
+              {/* Real-time Password Rules & Strength Indicator */}
+              <div className="mt-2 p-2.5 rounded-xl bg-slate-900/40 border border-slate-800/80 space-y-2 text-left">
+                <div className="flex items-center justify-between text-[10px] font-bold">
+                  <span className="text-slate-400 uppercase tracking-wider text-[9px]">Password Rules</span>
+                  {form.password && (
+                    <span className={
+                      form.password.length >= 8 && /[A-Z]/.test(form.password) && /[0-9]/.test(form.password)
+                        ? "text-emerald-400 font-extrabold"
+                        : form.password.length >= 6
+                        ? "text-amber-400 font-extrabold"
+                        : "text-rose-400 font-extrabold"
+                    }>
+                      {form.password.length >= 8 && /[A-Z]/.test(form.password) && /[0-9]/.test(form.password)
+                        ? "Strong"
+                        : form.password.length >= 6
+                        ? "Medium"
+                        : "Weak"}
+                    </span>
+                  )}
+                </div>
+
+                {/* Password Strength Progress Bar */}
+                <div className="h-1 w-full bg-slate-800 rounded-full overflow-hidden flex gap-0.5">
+                  <div className={`h-full transition-all duration-300 ${
+                    form.password.length >= 1 ? (form.password.length >= 6 ? "bg-amber-400 w-1/3" : "bg-rose-500 w-1/3") : "bg-transparent w-0"
+                  }`} />
+                  <div className={`h-full transition-all duration-300 ${
+                    form.password.length >= 6 && (/[A-Z]/.test(form.password) || /[0-9]/.test(form.password)) ? "bg-amber-400 w-1/3" : "bg-transparent w-0"
+                  }`} />
+                  <div className={`h-full transition-all duration-300 ${
+                    form.password.length >= 8 && /[A-Z]/.test(form.password) && /[0-9]/.test(form.password) && /[^A-Za-z0-9]/.test(form.password) ? "bg-emerald-400 w-1/3" : "bg-transparent w-0"
+                  }`} />
+                </div>
+
+                {/* Live Rules Checklist */}
+                <div className="grid grid-cols-2 gap-1.5 pt-1 text-[9.5px]">
+                  <div className={`flex items-center gap-1.5 ${form.password.length >= 6 ? "text-emerald-400 font-bold" : "text-slate-500"}`}>
+                    <span className={`h-3.5 w-3.5 rounded-full flex items-center justify-center text-[9px] font-black ${form.password.length >= 6 ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "bg-slate-800 text-slate-600"}`}>
+                      {form.password.length >= 6 ? "✓" : "•"}
+                    </span>
+                    <span>Min. 6 characters</span>
+                  </div>
+
+                  <div className={`flex items-center gap-1.5 ${/[A-Z]/.test(form.password) ? "text-emerald-400 font-bold" : "text-slate-500"}`}>
+                    <span className={`h-3.5 w-3.5 rounded-full flex items-center justify-center text-[9px] font-black ${/[A-Z]/.test(form.password) ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "bg-slate-800 text-slate-600"}`}>
+                      {/[A-Z]/.test(form.password) ? "✓" : "•"}
+                    </span>
+                    <span>1 Capital letter (A-Z)</span>
+                  </div>
+
+                  <div className={`flex items-center gap-1.5 ${/[0-9]/.test(form.password) ? "text-emerald-400 font-bold" : "text-slate-500"}`}>
+                    <span className={`h-3.5 w-3.5 rounded-full flex items-center justify-center text-[9px] font-black ${/[0-9]/.test(form.password) ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "bg-slate-800 text-slate-600"}`}>
+                      {/[0-9]/.test(form.password) ? "✓" : "•"}
+                    </span>
+                    <span>1 Number (0-9)</span>
+                  </div>
+
+                  <div className={`flex items-center gap-1.5 ${/[^A-Za-z0-9]/.test(form.password) ? "text-emerald-400 font-bold" : "text-slate-500"}`}>
+                    <span className={`h-3.5 w-3.5 rounded-full flex items-center justify-center text-[9px] font-black ${/[^A-Za-z0-9]/.test(form.password) ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "bg-slate-800 text-slate-600"}`}>
+                      {/[^A-Za-z0-9]/.test(form.password) ? "✓" : "•"}
+                    </span>
+                    <span>1 Special symbol (@#$)</span>
+                  </div>
+                </div>
               </div>
             </div>
 

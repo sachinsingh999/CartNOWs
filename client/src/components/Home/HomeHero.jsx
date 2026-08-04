@@ -639,14 +639,15 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
                         )}
                       </div>
 
-                      {/* On Mobile / Small screens, show a subtle background image of the model */}
-                      <div className="absolute inset-0 block lg:hidden z-0 opacity-[0.08] pointer-events-none rounded-none overflow-hidden">
+                      {/* On Mobile / Small screens, show a responsive background image of the model */}
+                      <div className="absolute inset-0 block lg:hidden z-0 pointer-events-none rounded-none overflow-hidden">
                         <img
                           src={banner.modelImage ? (banner.modelImage.startsWith("http") ? banner.modelImage : `${backendUrl}${banner.modelImage}`) : (banner.image ? (banner.image.startsWith("http") ? banner.image : `${backendUrl}${banner.image}`) : "")}
                           alt=""
                           loading="lazy"
-                          className="w-full h-full object-cover object-center"
+                          className="w-full h-full object-cover object-right opacity-85 z-0"
                         />
+                        <div className="absolute inset-y-0 left-0 w-2/3 bg-gradient-to-r from-slate-950 via-slate-950/70 to-transparent z-10" />
                       </div>
                     </motion.div>
                   );
@@ -717,6 +718,36 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
           {/* Ambient Lighting Mesh Gradient Overlay */}
           <div className="absolute top-[10%] right-[15%] w-96 h-96 bg-indigo-500/[0.04] dark:bg-indigo-500/[0.08] rounded-full blur-[140px] pointer-events-none z-0" />
           <div className="absolute bottom-[20%] left-[10%] w-[350px] h-[350px] bg-rose-500/[0.03] dark:bg-rose-500/[0.05] rounded-full blur-[120px] pointer-events-none z-0" />
+
+          {/* Responsive Model Background Image for Mobile & Tablet (< lg) */}
+          <div className="absolute inset-0 block lg:hidden z-0 pointer-events-none overflow-hidden select-none">
+            <AnimatePresence mode="wait">
+              {activeSlides.map((slide, idx) => {
+                if (idx !== slideIdx) return null;
+                return (
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, scale: 1.05 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.98 }}
+                    transition={shouldReduceMotion ? { duration: 0.3 } : { duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                    className="absolute inset-0 w-full h-full flex items-end justify-end pointer-events-none"
+                  >
+                    {/* High opacity model background image positioned on right */}
+                    <img
+                      src={slide.imageUrl}
+                      alt={slide.name}
+                      decoding="sync"
+                      className="h-[95%] w-auto max-w-[85%] sm:max-w-[65%] object-contain object-bottom select-none z-0 filter drop-shadow-2xl opacity-90 dark:opacity-85"
+                    />
+
+                    {/* Soft legibility gradient overlay ONLY on the left half where text sits */}
+                    <div className="absolute inset-y-0 left-0 w-full sm:w-2/3 bg-gradient-to-r from-white via-white/70 to-transparent dark:from-slate-950 dark:via-slate-950/70 dark:to-transparent z-10 pointer-events-none" />
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </div>
 
           {/* Balanced 50/50 Composition Grid */}
           <div className="w-full px-6 sm:px-12 lg:px-20 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center z-10 relative">
@@ -880,8 +911,8 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
               </motion.div>
             </div>
 
-            {/* Right Side Product / Model Area */}
-            <div className="relative w-full h-full min-h-[350px] sm:min-h-[450px] lg:min-h-[500px] flex items-end justify-center select-none bg-transparent z-10 pointer-events-auto overflow-visible">
+            {/* Right Side Product / Model Area (Desktop Viewport Only) */}
+            <div className="hidden lg:flex relative w-full h-full min-h-[500px] items-end justify-center select-none bg-transparent z-10 pointer-events-auto overflow-visible">
               
               {/* Twinkling Gold Stars */}
               <div className="absolute inset-0 pointer-events-none z-0">

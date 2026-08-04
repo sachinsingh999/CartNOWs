@@ -62,7 +62,34 @@ const VariantSelector = ({
       .filter(Boolean);
   };
 
-  const variantAttributes = getVariantAttributes();
+  const getVariantsFromVariantsArray = () => {
+    if (!product?.variants || !Array.isArray(product.variants) || product.variants.length === 0) return null;
+
+    const colors = [...new Set(product.variants.map(v => v.Color || v.color || v.attributes?.Color || v.attributes?.color).filter(Boolean))];
+    const sizes = [...new Set(product.variants.map(v => v.Size || v.size || v.attributes?.Size || v.attributes?.size).filter(Boolean))];
+
+    const result = [];
+    if (colors.length > 0) {
+      result.push({
+        name: "Color",
+        displayType: "variant",
+        inputType: "Color Picker",
+        values: colors
+      });
+    }
+    if (sizes.length > 0) {
+      result.push({
+        name: "Size",
+        displayType: "variant",
+        inputType: "Dropdown",
+        values: sizes
+      });
+    }
+
+    return result.length > 0 ? result : null;
+  };
+
+  const variantAttributes = getVariantsFromVariantsArray() || getVariantAttributes();
   const hasVariants = variantAttributes.length > 0;
   const hasSizesFallback = product?.sizes && product.sizes.length > 0;
 

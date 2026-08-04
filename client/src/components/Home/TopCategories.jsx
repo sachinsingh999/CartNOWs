@@ -236,7 +236,7 @@ const TopCategories = ({ popularCategories = [] }) => {
 
         <button
           onClick={() => navigate("/categories")}
-          className="group flex items-center gap-1 text-xs font-extrabold text-[#F43F5E] dark:text-[#FB7185] hover:underline cursor-pointer sm:px-6 sm:py-3 sm:rounded-full sm:border sm:border-blue-600/20 sm:hover:border-blue-600 sm:text-blue-600 sm:dark:text-blue-400 sm:hover:bg-blue-600 sm:hover:text-white sm:dark:hover:bg-blue-500 sm:dark:hover:text-white sm:shadow-sm sm:hover:shadow-md sm:transition-all sm:duration-300 sm:bg-transparent"
+          className="group flex items-center gap-1 text-xs font-extrabold text-[#F43F5E] dark:text-[#FB7185] hover:underline cursor-pointer sm:px-6 sm:py-3 sm:rounded-xs sm:border sm:border-blue-600/20 sm:hover:border-blue-600 sm:text-blue-600 sm:dark:text-blue-400 sm:hover:bg-blue-600 sm:hover:text-white sm:dark:hover:bg-blue-500 sm:dark:hover:text-white sm:shadow-sm sm:hover:shadow-md sm:transition-all sm:duration-300 sm:bg-transparent"
         >
           <span className="sm:hidden">View all</span>
           <span className="hidden sm:inline">View All Categories</span>
@@ -250,19 +250,19 @@ const TopCategories = ({ popularCategories = [] }) => {
           <div
             key={i}
             onClick={() => navigate(`/categories/${cat.name.toLowerCase()}`)}
-            className={`group relative aspect-[2/3] sm:aspect-square flex flex-col justify-between bg-slate-900/90 dark:bg-slate-950/80 sm:bg-white sm:dark:bg-slate-900 border border-slate-800/80 dark:border-slate-800/80 sm:border-slate-200 sm:dark:border-slate-800 rounded-xl transition-[box-shadow,border-color] duration-300 cursor-pointer shadow-sm hover:shadow-xl ${cat.borderGlow} ${cat.shadowColor} w-[105px] sm:w-auto shrink-0 snap-start overflow-hidden transform-gpu`}
+            className={`group relative aspect-[2/3] sm:aspect-square flex flex-col justify-between bg-slate-900/90 dark:bg-slate-950/80 sm:bg-white sm:dark:bg-slate-900 border border-slate-800/80 dark:border-slate-800/80 sm:border-slate-200 sm:dark:border-slate-800 rounded-xs transition-[box-shadow,border-color] duration-300 cursor-pointer shadow-sm hover:shadow-xl ${cat.borderGlow} ${cat.shadowColor} w-[105px] sm:w-auto shrink-0 snap-start overflow-hidden transform-gpu`}
           >
             {/* Background Gradient Glow (Persists on Desktop) */}
             <div className={`absolute inset-0 ${cat.bgClass} opacity-80 z-0 transition-opacity duration-500 group-hover:opacity-100 hidden sm:block`} />
             
             {/* Center Image: Fitted nicely inside top-middle section, transparent bg */}
-            <div className="absolute inset-x-0 top-0 h-[68%] sm:h-full w-full flex items-center justify-center p-2.5 sm:p-0 z-0 select-none pointer-events-none overflow-hidden rounded-xl transform-gpu">
+            <div className="absolute inset-x-0 top-0 h-[68%] sm:h-full w-full flex items-center justify-center p-2.5 sm:p-0 z-0 select-none pointer-events-none overflow-hidden rounded-xs transform-gpu">
               <img
                 src={cat.img}
                 alt={cat.name}
                 loading="lazy"
                 decoding="async"
-                className="max-h-full max-w-full sm:w-full sm:h-full object-contain sm:object-cover rounded-xl"
+                className="max-h-full max-w-full sm:w-full sm:h-full object-contain sm:object-cover rounded-xs"
               />
             </div>
 
@@ -274,7 +274,7 @@ const TopCategories = ({ popularCategories = [] }) => {
 
             {/* Desktop-only: Floating Icon (Fades in on hover) */}
             <div className="absolute top-4 left-4 z-20 opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300 hidden sm:block transform-gpu">
-              <div className="w-7.5 h-7.5 rounded-full bg-white/95 dark:bg-slate-900/95 shadow-md flex items-center justify-center">
+              <div className="w-7.5 h-7.5 rounded-xs bg-white/95 dark:bg-slate-900/95 shadow-md flex items-center justify-center">
                 {React.createElement(cat.icon, { size: 13, className: `${cat.iconColor} stroke-[2.5]` })}
               </div>
             </div>

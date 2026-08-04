@@ -1176,21 +1176,27 @@ const SocialFeed = () => {
           {/* Feed Title and Info Header */}
           <div className="flex items-center justify-between gap-4 select-none pb-2">
             <div className="text-left">
-              <span className="text-[10px] font-black uppercase tracking-widest text-[#ff4e20]">Cartnow Social</span>
-              <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight mt-1">Community Feed</h1>
-              <p className="text-[11.5px] text-slate-500 dark:text-slate-400 font-medium mt-1">Share your style. Tag your purchases. Inspire others.</p>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-rose-500/10 to-indigo-500/10 border border-rose-500/20 text-[10px] font-black uppercase tracking-widest text-[#ff4e20]">
+                <Sparkles size={11} className="text-[#ff4e20]" />
+                <span>CartNow Social Hub</span>
+              </span>
+              <h1 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight mt-1.5 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-800 dark:from-white dark:via-slate-100 dark:to-slate-300 bg-clip-text text-transparent">
+                Community Feed
+              </h1>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">
+                Explore real style, tag your purchases, and shop trending fits directly from creators.
+              </p>
             </div>
             
             {/* Notification Bell */}
-            <div className="relative cursor-pointer hover:scale-105 active:scale-95 transition duration-150 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 shrink-0">
-              <Bell size={20} className="text-slate-800 dark:text-slate-200 stroke-[2.5]" />
-              <span className="absolute top-2 right-2 flex h-1.5 w-1.5 rounded-full bg-[#f43f5e] ring-2 ring-white dark:ring-slate-900" />
+            <div className="relative cursor-pointer hover:scale-105 active:scale-95 transition duration-150 p-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm shrink-0">
+              <Bell size={20} className="text-slate-800 dark:text-slate-200 stroke-[2.2]" />
+              <span className="absolute top-2 right-2 flex h-2 w-2 rounded-full bg-[#f43f5e] ring-2 ring-white dark:ring-slate-900 animate-ping" />
             </div>
           </div>
 
-          {/* RESTORED & BEAUTIFIED STORIES CAROUSEL */}
-          {/* RESTORED & BEAUTIFIED STORIES CAROUSEL */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80 rounded-lg p-2.5 px-3.5 flex gap-4.5 overflow-x-auto scrollbar-hide select-none shadow-xs items-center">
+          {/* UNIFIED COMBINED STORIES & POST CREATION BAR */}
+          <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-4 shadow-sm select-none space-y-4">
             <input 
               type="file" 
               accept="image/*,video/*" 
@@ -1200,146 +1206,152 @@ const SocialFeed = () => {
               multiple
             />
 
-            {/* Your Story Circle */}
-            {(() => {
-              const myStoryGroup = stories.find(s => s._id === currentUser?._id);
-              return (
-                <div 
-                  onClick={() => {
-                    if (!token) {
-                      toast.info("Please log in to add stories!");
-                      return;
-                    }
-                    if (myStoryGroup) {
-                      setActiveStoryGroup(myStoryGroup);
-                      setActiveStoryIndex(0);
-                    } else {
-                      setStoryModalOpen(true);
-                    }
-                  }}
-                  className="flex flex-col items-center shrink-0 cursor-pointer relative group"
-                >
-                  <div className={`h-11.5 w-11.5 rounded-full p-[2px] transition-all duration-300 group-hover:scale-105 ${
-                    myStoryGroup 
-                      ? (isGroupSeen(myStoryGroup) 
-                          ? "bg-slate-200 dark:bg-slate-800" 
-                          : "bg-gradient-to-tr from-rose-500 via-pink-500 to-indigo-500 animate-pulse")
-                      : "bg-slate-200 dark:bg-slate-800"
-                  }`}>
-                    <div className="h-full w-full rounded-full border-2 border-white dark:border-slate-900 overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                      {currentUser?.profilePhoto ? (
-                        <img src={currentUser.profilePhoto} alt="" className="h-full w-full object-cover" />
-                      ) : (
-                        <div className="h-full w-full flex items-center justify-center bg-indigo-55 dark:bg-indigo-950 text-indigo-500 dark:text-indigo-400 font-extrabold text-xs">
-                          {currentUser?.name?.charAt(0) || "+"}
-                        </div>
-                      )}
-                    </div>
-                  </div>
+            {/* TOP ROW: STORIES CAROUSEL */}
+            <div className="flex items-center gap-4 overflow-x-auto scrollbar-hide pb-1">
+              {/* Your Story Circle */}
+              {(() => {
+                const myStoryGroup = stories.find(s => s._id === currentUser?._id);
+                return (
                   <div 
-                    onClick={(e) => {
-                      e.stopPropagation();
+                    onClick={() => {
                       if (!token) {
                         toast.info("Please log in to add stories!");
                         return;
                       }
-                      if (fileInputRef.current) fileInputRef.current.click();
+                      if (myStoryGroup) {
+                        setActiveStoryGroup(myStoryGroup);
+                        setActiveStoryIndex(0);
+                      } else {
+                        setStoryModalOpen(true);
+                      }
                     }}
-                    className="absolute right-0 bottom-4.5 bg-[#ff4e20] hover:bg-rose-600 text-white rounded-full p-0.5 border-2 border-white dark:border-slate-900 flex items-center justify-center transition hover:scale-110 active:scale-90 shadow-sm z-10"
-                    title="Upload new story"
+                    className="flex flex-col items-center shrink-0 cursor-pointer relative group"
                   >
-                    <Plus size={7} className="stroke-[4]" />
-                  </div>
-                  <span className="text-[9px] font-black uppercase text-slate-450 dark:text-slate-500 mt-1 tracking-wider truncate w-16 text-center">
-                    Your Story
-                  </span>
-                </div>
-              );
-            })()}
-
-            {/* Other users' stories */}
-            {stories
-              .filter(s => s._id !== currentUser?._id)
-              .map(group => {
-                const avatar = group.profilePhoto || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150";
-                return (
-                  <div 
-                    key={group._id} 
-                    onClick={() => {
-                      setActiveStoryGroup(group);
-                      setActiveStoryIndex(0);
-                    }}
-                    className="flex flex-col items-center shrink-0 cursor-pointer relative group animate-fade-in"
-                  >
-                    <div className={`h-11.5 w-11.5 rounded-full p-[2px] transition-all duration-300 group-hover:scale-105 ${
-                      isGroupSeen(group)
-                        ? "bg-slate-200 dark:bg-slate-800"
-                        : "bg-gradient-to-tr from-rose-500 via-pink-500 to-indigo-500"
+                    <div className={`h-13 w-13 rounded-full p-[2.5px] transition-all duration-300 group-hover:scale-105 shadow-md ${
+                      myStoryGroup 
+                        ? (isGroupSeen(myStoryGroup) 
+                            ? "bg-slate-200 dark:bg-slate-800" 
+                            : "bg-gradient-to-tr from-rose-500 via-purple-500 to-indigo-500 animate-pulse")
+                        : "bg-slate-200 dark:bg-slate-800"
                     }`}>
-                      <div className="h-full w-full rounded-full border-2 border-white dark:border-slate-900 overflow-hidden bg-slate-100 dark:bg-slate-800">
-                        <img src={avatar} alt="" className="h-full w-full object-cover" />
+                      <div className="h-full w-full rounded-full border-2 border-white dark:border-slate-900 overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                        {currentUser?.profilePhoto ? (
+                          <img src={currentUser.profilePhoto} alt="" className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="h-full w-full flex items-center justify-center bg-indigo-50 dark:bg-indigo-950 text-indigo-500 dark:text-indigo-400 font-extrabold text-sm">
+                            {currentUser?.name?.charAt(0) || "+"}
+                          </div>
+                        )}
                       </div>
                     </div>
-                    <span className="text-[9px] font-black uppercase text-slate-450 dark:text-slate-500 mt-1 tracking-wider truncate w-16 text-center">
-                      {group.name.split(" ")[0]}
+                    <div 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!token) {
+                          toast.info("Please log in to add stories!");
+                          return;
+                        }
+                        if (fileInputRef.current) fileInputRef.current.click();
+                      }}
+                      className="absolute right-0 bottom-4 bg-gradient-to-r from-rose-500 to-indigo-600 hover:from-rose-600 hover:to-indigo-700 text-white rounded-full p-1 border-2 border-white dark:border-slate-900 flex items-center justify-center transition hover:scale-110 active:scale-90 shadow-md z-10"
+                      title="Upload new story"
+                    >
+                      <Plus size={9} className="stroke-[3.5]" />
+                    </div>
+                    <span className="text-[9.5px] font-black uppercase text-slate-500 dark:text-slate-400 mt-1 tracking-wider truncate w-16 text-center">
+                      Your Story
                     </span>
                   </div>
                 );
-              })
-            }
-          </div>
+              })()}
 
-          {/* WHAT'S ON YOUR MIND? POST BOX */}
-          <div 
-            onClick={() => {
-              if (token) {
-                setCreateModalOpen(true);
-              } else {
-                toast.info("Please log in to share your style!");
+              {/* Vertical Separator */}
+              <div className="h-10 w-[1px] bg-slate-200/80 dark:bg-slate-800 shrink-0" />
+
+              {/* Other users' stories */}
+              {stories
+                .filter(s => s._id !== currentUser?._id)
+                .map(group => {
+                  const avatar = group.profilePhoto || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150";
+                  return (
+                    <div 
+                      key={group._id} 
+                      onClick={() => {
+                        setActiveStoryGroup(group);
+                        setActiveStoryIndex(0);
+                      }}
+                      className="flex flex-col items-center shrink-0 cursor-pointer relative group animate-fade-in"
+                    >
+                      <div className={`h-13 w-13 rounded-full p-[2.5px] transition-all duration-300 group-hover:scale-105 shadow-md ${
+                        isGroupSeen(group)
+                          ? "bg-slate-200 dark:bg-slate-800"
+                          : "bg-gradient-to-tr from-rose-500 via-purple-500 to-indigo-500"
+                      }`}>
+                        <div className="h-full w-full rounded-full border-2 border-white dark:border-slate-900 overflow-hidden bg-slate-100 dark:bg-slate-800">
+                          <img src={avatar} alt="" className="h-full w-full object-cover" />
+                        </div>
+                      </div>
+                      <span className="text-[9.5px] font-black uppercase text-slate-500 dark:text-slate-400 mt-1 tracking-wider truncate w-16 text-center">
+                        {group.name.split(" ")[0]}
+                      </span>
+                    </div>
+                  );
+                })
               }
-            }}
-            className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80 rounded-lg p-4.5 flex items-center justify-between shadow-2xs hover:shadow-xs transition duration-200 cursor-pointer select-none"
-          >
-            <div className="flex items-center gap-4 flex-1">
-              <div className="relative h-11 w-11 rounded-full border border-dashed border-indigo-400 flex items-center justify-center bg-indigo-55/50 dark:bg-indigo-950/20 shrink-0">
-                <Plus size={16} className="text-indigo-600 dark:text-indigo-400 stroke-[3]" />
-              </div>
-              <div className="text-left min-w-0 flex-1 pr-4">
-                <h3 className="text-[13px] font-black text-slate-800 dark:text-white uppercase tracking-tight">What’s on your mind?</h3>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 font-medium truncate">Share your style, tagged purchases, and vibes.</p>
-              </div>
             </div>
-            
-            <div className="flex items-center gap-4 shrink-0" onClick={(e) => e.stopPropagation()}>
-              <div className="flex items-center gap-3 text-slate-400 dark:text-slate-500">
+
+            {/* BOTTOM ROW: INTEGRATED POST CREATION BAR */}
+            <div 
+              onClick={() => {
+                if (token) {
+                  setCreateModalOpen(true);
+                } else {
+                  toast.info("Please log in to share your style!");
+                }
+              }}
+              className="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-3 cursor-pointer"
+            >
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="relative h-9 w-9 rounded-full border border-dashed border-indigo-500/40 flex items-center justify-center bg-indigo-50/50 dark:bg-indigo-950/30 shrink-0">
+                  <Plus size={15} className="text-indigo-600 dark:text-indigo-400 stroke-[3]" />
+                </div>
+                <div className="text-left min-w-0 flex-1 pr-2">
+                  <h3 className="text-xs font-black text-slate-800 dark:text-white uppercase tracking-tight">What’s on your mind?</h3>
+                  <p className="text-[10.5px] text-slate-500 dark:text-slate-400 mt-0.5 font-medium truncate">Share your style, tagged purchases, and vibes.</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3 shrink-0" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center gap-2 text-slate-400 dark:text-slate-500">
+                  <button 
+                    type="button" 
+                    onClick={() => token ? setCreateModalOpen(true) : toast.info("Please log in to share your style!")}
+                    className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition text-slate-400 dark:text-slate-500 border-none bg-transparent cursor-pointer"
+                  >
+                    <ImageIcon size={17} className="stroke-[2.2]" />
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={() => token ? setCreateModalOpen(true) : toast.info("Please log in to share your style!")}
+                    className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition text-slate-400 dark:text-slate-500 border-none bg-transparent cursor-pointer"
+                  >
+                    <Tag size={17} className="stroke-[2.2]" />
+                  </button>
+                </div>
                 <button 
-                  type="button" 
-                  onClick={() => token ? setCreateModalOpen(true) : toast.info("Please log in to share your style!")}
-                  className="p-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition text-slate-400 dark:text-slate-500 border-none bg-transparent cursor-pointer"
+                  type="button"
+                  onClick={() => {
+                    if (token) {
+                      setCreateModalOpen(true);
+                    } else {
+                      toast.info("Please log in to share your style!");
+                    }
+                  }}
+                  className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white text-[10px] font-black uppercase tracking-wider rounded-xl transition duration-150 shadow-sm border-none cursor-pointer active:scale-95"
                 >
-                  <ImageIcon size={18} className="stroke-[2.5]" />
-                </button>
-                <button 
-                  type="button" 
-                  onClick={() => token ? setCreateModalOpen(true) : toast.info("Please log in to share your style!")}
-                  className="p-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition text-slate-400 dark:text-slate-500 border-none bg-transparent cursor-pointer"
-                >
-                  <Tag size={18} className="stroke-[2.5]" />
+                  Post
                 </button>
               </div>
-              <button 
-                type="button"
-                onClick={() => {
-                  if (token) {
-                    setCreateModalOpen(true);
-                  } else {
-                    toast.info("Please log in to share your style!");
-                  }
-                }}
-                className="px-4.5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase tracking-wider rounded-xl transition duration-150 shadow-sm border-none cursor-pointer active:scale-95"
-              >
-                Post
-              </button>
             </div>
           </div>
 

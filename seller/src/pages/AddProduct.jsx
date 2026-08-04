@@ -68,14 +68,14 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
   const [productAttributes, setProductAttributes] = useState([]);
   const [productVariants, setProductVariants] = useState([]);
 
-  // Auto-Variant Generator logic: Applies across ALL attributes & specifications
+  // Auto-Variant Generator logic: Generates variants STRICTLY from Dynamic Attributes ONLY
   useEffect(() => {
     const attrMap = {};
 
-    // 1. Gather from productAttributes (Dynamic Attributes)
+    // Gather ONLY from productAttributes (Dynamic Attributes)
     productAttributes.forEach(attr => {
       const name = attr.name ? attr.name.trim() : "";
-      if (!name || attr.displayType === "hidden") return;
+      if (!name || attr.displayType === "hidden" || attr.displayType === "specification") return;
 
       const rawVal = (attr.values && attr.values.trim()) 
         ? attr.values 
@@ -92,33 +92,6 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
         attrMap[name] = parsedVals;
       }
     });
-
-    // 2. Gather from customAttributes (Technical Specifications)
-    customAttributes.forEach(spec => {
-      const name = spec.key ? spec.key.trim() : "";
-      if (!name || attrMap[name]) return;
-      const rawVal = spec.value ? String(spec.value).trim() : "";
-      if (!rawVal) return;
-
-      const parsedVals = rawVal
-        .split(",")
-        .map(v => v.trim())
-        .filter(Boolean);
-
-      if (parsedVals.length > 0) {
-        attrMap[name] = parsedVals;
-      }
-    });
-
-    // 3. Gather from sizes field if entered
-    if (newProduct.sizes && typeof newProduct.sizes === "string" && newProduct.sizes.trim()) {
-      if (!attrMap["Size"] && !attrMap["size"]) {
-        const parsedSizes = newProduct.sizes.split(",").map(v => v.trim()).filter(Boolean);
-        if (parsedSizes.length > 0) {
-          attrMap["Size"] = parsedSizes;
-        }
-      }
-    }
 
     const attrKeys = Object.keys(attrMap);
     if (attrKeys.length === 0) {
@@ -147,14 +120,19 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
 
     const newVariants = combinations.map((comb, idx) => {
       const existing = productVariants.find(v => {
-        return attrKeys.every(k => v.attributes && v.attributes[k] === comb[k]);
+        return attrKeys.every(k => (v.attributes && v.attributes[k] === comb[k]) || (v[k] === comb[k]));
       });
+
+      const colorVal = comb.Color || comb.color || Object.entries(comb).find(([k]) => k.toLowerCase().includes("color"))?.[1] || "";
+      const sizeVal = comb.Size || comb.size || Object.entries(comb).find(([k]) => k.toLowerCase().includes("size"))?.[1] || "";
 
       const comboSuffix = Object.values(comb).join("-").toUpperCase();
       const variantPrice = (existing?.price !== undefined && existing?.price > 0) ? existing.price : basePrice;
       const variantStock = (existing?.stock !== undefined && (existing?.stock > 0 || hasExplicitStock)) ? existing.stock : baseStock;
 
       return {
+        Color: colorVal,
+        Size: sizeVal,
         sku: existing?.sku || `${baseSku}-${comboSuffix}-${idx}`,
         price: variantPrice,
         stock: variantStock,
@@ -166,7 +144,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
     });
 
     setProductVariants(newVariants);
-  }, [productAttributes, customAttributes, newProduct.sizes, newProduct.price, newProduct.stock, newProduct.sku, newProduct.name]);
+  }, [productAttributes, newProduct.price, newProduct.stock, newProduct.sku, newProduct.name]);
 
   // Variant management UI optimization & JSON Code Editor states
   const [showAllVariants, setShowAllVariants] = useState(false);
@@ -180,14 +158,29 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
   const [bulkStockInput, setBulkStockInput] = useState("");
 
   const handleOpenVariantJsonModal = () => {
-    const cleanVariants = productVariants.map(v => ({
-      attributes: v.attributes,
-      price: v.price,
-      stock: v.stock,
-      sku: v.sku,
-      barcode: v.barcode || "",
-      availability: v.availability !== false
-    }));
+    const cleanVariants = productVariants.map((v, idx) => {
+      const colorVal = v.Color || v.color || v.attributes?.Color || v.attributes?.color || "";
+      const sizeVal = v.Size || v.size || v.attributes?.Size || v.attributes?.size || "";
+      
+      const res = {};
+      if (colorVal) res.Color = colorVal;
+      if (sizeVal) res.Size = sizeVal;
+      
+      if (v.attributes) {
+        Object.entries(v.attributes).forEach(([k, val]) => {
+          if (k !== "Color" && k !== "Size" && k !== "color" && k !== "size") {
+            res[k] = val;
+          }
+        });
+      }
+
+      res.sku = v.sku || `SKU-${idx + 1}`;
+      res.price = Number(v.price || newProduct.price || 0);
+      res.stock = Number(v.stock || 0);
+
+      return res;
+    });
+
     setVariantJsonText(JSON.stringify(cleanVariants, null, 2));
     setVariantJsonError("");
     setShowVariantJsonModal(true);
@@ -206,27 +199,29 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
           setVariantJsonError(`Variant #${i + 1} is not a valid object.`);
           return;
         }
-        if (item.price === undefined || typeof item.price !== "number") {
-          setVariantJsonError(`Variant #${i + 1} must have a numeric "price".`);
-          return;
-        }
-        if (!item.attributes || typeof item.attributes !== "object") {
-          setVariantJsonError(`Variant #${i + 1} must have an "attributes" object.`);
-          return;
-        }
       }
+
       const updatedVariants = parsed.map((item, idx) => {
-        const existing = productVariants[idx];
+        const colorVal = item.Color || item.color || item.attributes?.Color || item.attributes?.color || "";
+        const sizeVal = item.Size || item.size || item.attributes?.Size || item.attributes?.size || "";
+
+        const attrs = { ...item.attributes };
+        if (colorVal) attrs.Color = colorVal;
+        if (sizeVal) attrs.Size = sizeVal;
+
         return {
-          sku: item.sku || `${newProduct.sku || "PROD"}-${idx}`,
+          Color: colorVal,
+          Size: sizeVal,
+          sku: item.sku || `SKU-${idx + 1}`,
           price: parseFloat(item.price) || 0,
           stock: parseInt(item.stock) || 0,
-          images: existing?.images || item.images || [],
+          images: item.images || [],
           barcode: item.barcode || "",
           availability: item.availability !== false,
-          attributes: item.attributes || {}
+          attributes: attrs
         };
       });
+
       setProductVariants(updatedVariants);
       setShowVariantJsonModal(false);
       toast.success("Variant JSON updated successfully! 🚀");
@@ -1788,6 +1783,76 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                             </button>
                           </div>
                         </div>
+                      </div>
+
+                      {/* Live Formatted Variant JSON Preview Box */}
+                      <div className="bg-slate-900 dark:bg-slate-950 border border-slate-800 dark:border-indigo-500/20 rounded-xl p-4 space-y-2 text-left shadow-sm">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <Code className="w-4 h-4 text-emerald-400" />
+                            <span className="text-xs font-black uppercase tracking-wider text-slate-200">
+                              Formatted Variant JSON ({productVariants.length} Variants)
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const formatted = productVariants.map((v, idx) => {
+                                  const colorVal = v.Color || v.color || v.attributes?.Color || v.attributes?.color || "";
+                                  const sizeVal = v.Size || v.size || v.attributes?.Size || v.attributes?.size || "";
+                                  const obj = {};
+                                  if (colorVal) obj.Color = colorVal;
+                                  if (sizeVal) obj.Size = sizeVal;
+                                  if (v.attributes) {
+                                    Object.entries(v.attributes).forEach(([k, val]) => {
+                                      if (k !== "Color" && k !== "Size" && k !== "color" && k !== "size") {
+                                        obj[k] = val;
+                                      }
+                                    });
+                                  }
+                                  obj.sku = v.sku || `SKU-${idx + 1}`;
+                                  obj.price = Number(v.price || 0);
+                                  obj.stock = Number(v.stock || 0);
+                                  return obj;
+                                });
+                                navigator.clipboard.writeText(JSON.stringify(formatted, null, 2));
+                                toast.success("Variant JSON copied to clipboard!");
+                              }}
+                              className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-[10px] font-bold cursor-pointer flex items-center gap-1 transition"
+                            >
+                              <Copy size={11} /> Copy JSON
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleOpenVariantJsonModal}
+                              className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-[10px] font-bold cursor-pointer flex items-center gap-1 transition"
+                            >
+                              <Code size={11} /> Edit JSON
+                            </button>
+                          </div>
+                        </div>
+
+                        <pre className="p-3 bg-slate-950 rounded-lg text-emerald-400 text-[11px] font-mono overflow-x-auto max-h-48 scrollbar-thin border border-slate-800/80">
+                          {JSON.stringify(productVariants.map((v, idx) => {
+                            const colorVal = v.Color || v.color || v.attributes?.Color || v.attributes?.color || "";
+                            const sizeVal = v.Size || v.size || v.attributes?.Size || v.attributes?.size || "";
+                            const obj = {};
+                            if (colorVal) obj.Color = colorVal;
+                            if (sizeVal) obj.Size = sizeVal;
+                            if (v.attributes) {
+                              Object.entries(v.attributes).forEach(([k, val]) => {
+                                if (k !== "Color" && k !== "Size" && k !== "color" && k !== "size") {
+                                  obj[k] = val;
+                                }
+                              });
+                            }
+                            obj.sku = v.sku || `SKU-${idx + 1}`;
+                            obj.price = Number(v.price || 0);
+                            obj.stock = Number(v.stock || 0);
+                            return obj;
+                          }), null, 2)}
+                        </pre>
                       </div>
 
                       {/* Matrix Table - Shows 5 items initially */}

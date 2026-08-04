@@ -260,7 +260,7 @@ const ShopByBrands = ({ popularBrands = [] }) => {
       {/* Header section with view all */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-8">
         <div>
-          <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-blue-600 bg-blue-50/80 dark:text-blue-300 dark:bg-blue-950/40 px-3.5 py-1.5 rounded-full mb-3 border border-blue-100/30 dark:border-blue-900/30 shadow-sm">
+          <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-blue-600 bg-blue-50/80 dark:text-blue-300 dark:bg-blue-950/40 px-3.5 py-1.5 rounded-xs mb-3 border border-blue-100/30 dark:border-blue-900/30 shadow-sm">
             <ShieldCheck size={11} className="stroke-[2.5]" />
             Trusted Brands
           </span>
@@ -271,14 +271,14 @@ const ShopByBrands = ({ popularBrands = [] }) => {
             Explore top global brands and their best selling products
           </p>
           <div className="flex items-center gap-1.5 mt-3">
-            <div className="w-16 h-1.5 bg-gradient-to-r from-blue-600 to-indigo-500 rounded-full" />
-            <div className="w-2.5 h-1.5 bg-indigo-500 rounded-full" />
+            <div className="w-16 h-1.5 bg-gradient-to-r from-blue-600 to-indigo-500 rounded-xs" />
+            <div className="w-2.5 h-1.5 bg-indigo-500 rounded-xs" />
           </div>
         </div>
 
         <button
           onClick={() => navigate("/brands")}
-          className="group px-6 py-3 rounded-full border border-blue-600/20 hover:border-blue-600 text-blue-600 dark:text-blue-400 font-extrabold text-xs flex items-center gap-2 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-500 dark:hover:text-white transition-all duration-300 shadow-sm hover:shadow-md hover:shadow-blue-500/10 cursor-pointer bg-transparent"
+          className="group px-6 py-3 rounded-xs border border-blue-600/20 hover:border-blue-600 text-blue-600 dark:text-blue-400 font-extrabold text-xs flex items-center gap-2 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-500 dark:hover:text-white transition-all duration-300 shadow-sm hover:shadow-md hover:shadow-blue-500/10 cursor-pointer bg-transparent"
         >
           <span>View All Brands</span>
           <ArrowRight size={14} className="stroke-[2.5] transition-transform duration-300 group-hover:translate-x-1" />
@@ -291,22 +291,22 @@ const ShopByBrands = ({ popularBrands = [] }) => {
           <div
             key={i}
             onClick={() => navigate(`/brands/${brand.name.toLowerCase()}`)}
-            className={`group relative aspect-square border rounded-xl transition-[box-shadow,border-color] duration-300 cursor-pointer overflow-hidden ${brand.colorClass} ${brand.shadowClass} w-[220px] sm:w-auto shrink-0 snap-start transform-gpu`}
+            className={`group relative aspect-square border rounded-xs transition-[box-shadow,border-color] duration-300 cursor-pointer overflow-hidden ${brand.colorClass} ${brand.shadowClass} w-[220px] sm:w-auto shrink-0 snap-start transform-gpu`}
           >
-            {/* Center: Brand Logo (no background, no scale transition on hover, responsive padding) */}
+            {/* Center: Brand Logo */}
             <div className="absolute inset-0 flex items-center justify-center p-6 md:p-5 lg:p-4.5 select-none pointer-events-none z-0 transform-gpu">
               {renderBrandLogo(brand.name, brand.logoUrl, brand.textColor)}
             </div>
 
-            {/* Hover Transparent Dark Overlay (No backdrop blur filter) */}
+            {/* Hover Transparent Dark Overlay */}
             <div className="absolute inset-0 bg-slate-950/85 dark:bg-slate-950/90 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 transform-gpu" />
 
-            {/* Top row: Discount (Top Left) & Rating Badge (Top Right) - Flex Container */}
+            {/* Top row: Discount & Rating Badge */}
             <div className="absolute top-4 inset-x-4 z-20 flex items-center justify-between gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform-gpu">
               <span className={`text-[10.5px] font-black uppercase tracking-widest ${brand.discountColor}`}>
                 {brand.discount}
               </span>
-              <span className="flex items-center gap-0.5 text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20 text-[9.5px] font-extrabold shadow-sm shrink-0">
+              <span className="flex items-center gap-0.5 text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-xs border border-amber-400/20 text-[9.5px] font-extrabold shadow-sm shrink-0">
                 <Star size={10} className="fill-current text-amber-400" />
                 {brand.rating}
               </span>

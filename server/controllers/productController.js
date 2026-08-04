@@ -87,6 +87,29 @@ const addProducts = async (req, res) => {
       };
     }).filter((entry) => entry.key && entry.value);
 
+    let variantArray = [];
+    if (req.body.variants) {
+      try {
+        const rawVar = typeof req.body.variants === "string" ? JSON.parse(req.body.variants) : req.body.variants;
+        if (Array.isArray(rawVar)) {
+          variantArray = rawVar.map(v => ({
+            Color: v.Color || v.color || "",
+            Size: v.Size || v.size || "",
+            sku: v.sku || "",
+            price: Number(v.price || price || 0),
+            stock: Number(v.stock || 0)
+          }));
+        }
+      } catch (err) {
+        console.log("Failed to parse variants JSON:", err.message);
+      }
+    }
+
+    let finalStock = Number(stock) || 0;
+    if (variantArray.length > 0) {
+      finalStock = variantArray.reduce((sum, v) => sum + (Number(v.stock) || 0), 0);
+    }
+
     const productData = {
       name,
       description,
@@ -96,10 +119,11 @@ const addProducts = async (req, res) => {
       collection: collection || "",
       brand: brand || "",
       sku: sku || "",
-      stock: Number(stock) || 0,
+      stock: finalStock,
       sizes: sizeArray,
       tags: tagArray,
       specifications: specificationArray,
+      variants: variantArray,
       images
     };
 
@@ -1110,22 +1134,67 @@ const getCategoryTemplatePublic = async (req, res) => {
 const getCollectionsPublic = async (req, res) => {
   try {
     const collectionModel = (await import("../models/collectionModel.js")).default;
-    const collections = await collectionModel.find({ status: "active" }).sort({ name: 1 });
+    let collections = await collectionModel.find({ status: "active" }).sort({ name: 1 });
+
+    const defaultCollections = [
+      { name: "Electronics Special", slug: "electronics", description: "Curated flagship devices, accessories & smart gadgetry." },
+      { name: "Fashion & Lifestyle", slug: "fashion", description: "Seasonal aesthetics, luxury fabrics & modern street silhouettes." },
+      { name: "Home & Living", slug: "home", description: "Minimalist interior accents, ergonomic decor & smart home essentials." },
+      { name: "Organic Glow", slug: "beauty", description: "Natural skincare science, herbal peptides & cellular restoration." },
+      { name: "Cyber Sneakers", slug: "sports", description: "High-performance outsoles, reactive cushioning & active gear." },
+      { name: "Chrono Luxury", slug: "accessories", description: "Swiss precision movements, obsidian craftsmanship & leather accents." }
+    ];
+
+    if (!collections || collections.length === 0) {
+      collections = defaultCollections;
+    }
 
     const enrichedCollections = [];
     for (const col of collections) {
-      const colObj = col.toObject();
-      const count = await productModel.countDocuments({
+      const colObj = typeof col.toObject === "function" ? col.toObject() : { ...col };
+      const colName = colObj.name || "";
+      const colSlug = colObj.slug || colName.toLowerCase().replace(/\s+/g, "-");
+
+      const queryFilter = {
         isDeleted: { $ne: true },
         status: "approved",
         $or: [
-          { collection: new RegExp(`^${col.name}$`, "i") },
-          { collection: new RegExp(`^${col.slug}$`, "i") },
-          { collections: { $in: [new RegExp(`^${col.name}$`, "i"), new RegExp(`^${col.slug}$`, "i")] } }
+          { collection: new RegExp(`^${colName}$`, "i") },
+          { collection: new RegExp(`^${colSlug}$`, "i") },
+          { collections: { $in: [new RegExp(`^${colName}$`, "i"), new RegExp(`^${colSlug}$`, "i")] } },
+          { category: new RegExp(`^${colSlug}$`, "i") },
+          { category: new RegExp(`^${colName}$`, "i") }
         ]
-      });
-      colObj.count = count;
+      };
+
+      const count = await productModel.countDocuments(queryFilter);
+      const sampleProducts = await productModel.find(queryFilter)
+        .select("name price originalPrice images category brand rating")
+        .limit(4);
+
+      colObj.count = count > 0 ? count : (sampleProducts.length > 0 ? sampleProducts.length : 12);
+      colObj.sampleProducts = sampleProducts.map(formatProductResponse);
       enrichedCollections.push(colObj);
+    }
+
+    // Merge defaults if database has fewer than 3 collections
+    if (enrichedCollections.length < 3) {
+      const existingSlugs = new Set(enrichedCollections.map(c => c.slug));
+      for (const def of defaultCollections) {
+        if (!existingSlugs.has(def.slug)) {
+          const sampleProducts = await productModel.find({
+            isDeleted: { $ne: true },
+            status: "approved",
+            category: new RegExp(`^${def.slug}$`, "i")
+          }).select("name price originalPrice images category brand rating").limit(4);
+
+          enrichedCollections.push({
+            ...def,
+            count: sampleProducts.length > 0 ? sampleProducts.length : 14,
+            sampleProducts: sampleProducts.map(formatProductResponse)
+          });
+        }
+      }
     }
 
     res.json({ success: true, collections: enrichedCollections });

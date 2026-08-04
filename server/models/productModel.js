@@ -125,9 +125,11 @@ const productSchema = new mongoose.Schema({
   variants: {
     type: [
       {
-        sku: { type: String, default: "" },
-        price: { type: Number, required: true },
-        stock: { type: Number, default: 0 },
+        Color: { type: String, default: "", trim: true },
+        Size: { type: String, default: "", trim: true },
+        sku: { type: String, default: "", trim: true },
+        price: { type: Number, default: 0 },
+        stock: { type: Number, default: 0, min: 0 },
         images: { type: [String], default: [] },
         barcode: { type: String, default: "" },
         availability: { type: Boolean, default: true },
