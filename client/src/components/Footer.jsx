@@ -155,38 +155,58 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Seller Program */}
+          {/* Seller & Delivery Partners */}
           <div className="border-b border-[#242A3B] md:border-b-0 pb-3 md:pb-0">
             <button
               type="button"
               onClick={() => toggleSection("sellers")}
               className="w-full md:cursor-default flex justify-between items-center md:block text-left outline-none cursor-pointer group"
             >
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-100 dark:text-white">SELLERS</h3>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-100 dark:text-white">SELLERS & PARTNERS</h3>
               <span className="md:hidden text-gray-400 group-hover:text-white transition font-mono font-bold text-xs pr-1">
                 {openSections.sellers ? "−" : "+"}
               </span>
             </button>
             <ul className={`mt-3 md:mt-4 space-y-2.5 text-xs font-medium transition-all duration-300 md:block ${openSections.sellers ? "block" : "hidden"}`}>
               <li>
-                <a href="/seller/login" className="hover:text-orange-400 hover:translate-x-1 transition-all duration-200 inline-block">
-                  Seller Dashboard
+                <a 
+                  href="https://cartnow-seller.vercel.app/" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="hover:text-orange-400 hover:translate-x-1 transition-all duration-200 inline-block"
+                >
+                  Seller Portal / Dashboard
                 </a>
               </li>
               <li>
-                <Link to="/about" className="hover:text-orange-400 hover:translate-x-1 transition-all duration-200 inline-block">
-                  Seller Program Details
-                </Link>
+                <a 
+                  href="https://cartnow-seller.vercel.app/" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="hover:text-orange-400 hover:translate-x-1 transition-all duration-200 inline-block"
+                >
+                  Become a Seller
+                </a>
               </li>
               <li>
-                <Link to="/help" className="hover:text-orange-400 hover:translate-x-1 transition-all duration-200 inline-block">
-                  Verification Badges
-                </Link>
+                <a 
+                  href="https://cart-now-deliveryagent.vercel.app/" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="hover:text-orange-400 hover:translate-x-1 transition-all duration-200 inline-block"
+                >
+                  Deliveryman / Rider Portal
+                </a>
               </li>
               <li>
-                <Link to="/about" className="hover:text-orange-400 hover:translate-x-1 transition-all duration-200 inline-block">
-                  Partner Directory
-                </Link>
+                <a 
+                  href="https://cart-now-deliveryagent.vercel.app/" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="hover:text-orange-400 hover:translate-x-1 transition-all duration-200 inline-block"
+                >
+                  Join as Delivery Partner
+                </a>
               </li>
             </ul>
           </div>

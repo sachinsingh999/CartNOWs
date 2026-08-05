@@ -10,7 +10,7 @@ const BadgeChips = ({ product }) => {
         return badgeTexts.map((text, sIdx) => (
           <span
             key={`${idx}-${sIdx}`}
-            className="inline-flex items-center gap-1 rounded-full bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/30 px-2.5 py-0.5 text-[9px] font-bold text-amber-600 dark:text-amber-400 shadow-xs uppercase tracking-wider"
+            className="inline-flex items-center gap-1 rounded-xs bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/30 px-2.5 py-0.5 text-[9px] font-bold text-amber-600 dark:text-amber-400 shadow-xs uppercase tracking-wider"
           >
             {text}
           </span>

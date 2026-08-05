@@ -303,7 +303,7 @@ const Home = () => {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-80px" }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full px-6 sm:px-12 lg:px-20 pt-4 pb-2 select-none will-change-[transform,opacity] transform-gpu"
+        className="w-full px-4 sm:px-8 lg:px-12 pt-4 pb-2 select-none will-change-[transform,opacity] transform-gpu"
       >
         <TopCategories popularCategories={homepageData.popularCategories} />
       </motion.section>
@@ -314,7 +314,7 @@ const Home = () => {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-80px" }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full px-6 sm:px-12 lg:px-20 py-4 md:py-6 space-y-6 md:space-y-8 select-none will-change-[transform,opacity] transform-gpu"
+        className="w-full px-4 sm:px-8 lg:px-12 py-4 md:py-6 space-y-6 md:space-y-8 select-none will-change-[transform,opacity] transform-gpu"
       >
         <div>
           <ShopByBrands popularBrands={homepageData.popularBrands} />
@@ -341,7 +341,7 @@ const Home = () => {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-80px" }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full px-6 sm:px-12 lg:px-20 py-2 will-change-[transform,opacity] transform-gpu"
+        className="w-full px-4 sm:px-8 lg:px-12 py-2 will-change-[transform,opacity] transform-gpu"
       >
         <FlashDeals
           deals={(() => {
@@ -393,7 +393,7 @@ const Home = () => {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-80px" }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full px-6 sm:px-12 lg:px-20 py-2 select-none will-change-[transform,opacity] transform-gpu"
+        className="w-full px-4 sm:px-8 lg:px-12 py-2 select-none will-change-[transform,opacity] transform-gpu"
       >
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-left">
           <DealOfTheDay 

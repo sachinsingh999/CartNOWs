@@ -26,7 +26,9 @@ import {
   Hourglass,
   LayoutGrid,
   CheckCircle,
-  ThumbsUp
+  ThumbsUp,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 
 // Fallback campaign slide assets imported from assets folder
@@ -39,6 +41,14 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
   const shouldReduceMotion = useReducedMotion();
   const navigate = useNavigate();
   const heroContainerRef = useRef(null);
+  const catScrollRef = useRef(null);
+
+  const scrollCategories = (direction) => {
+    if (catScrollRef.current) {
+      const scrollAmount = direction === "left" ? -280 : 280;
+      catScrollRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
+    }
+  };
   
   const [slideIdx, setSlideIdx] = useState(0);
   const [slides, setSlides] = useState([]);
@@ -413,42 +423,58 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
         }}
       />
 
-      {/* Top Announcement Bar */}
-      <div 
-        onClick={() => navigate("/products")}
-        className="w-full bg-[#0B0F19] dark:bg-[#070A13] border-b border-slate-800/60 py-2.5 px-6 sm:px-12 lg:px-20 flex items-center justify-between text-slate-100 dark:text-white cursor-pointer hover:bg-slate-900/60 transition duration-300 overflow-hidden relative z-20"
-      >
-        <div className="flex items-center gap-2 shrink-0">
-          <span className="w-2 h-2 rounded-full bg-[#ff3f6c] animate-pulse" />
-          <span className="text-[10px] sm:text-xs font-black uppercase tracking-[0.15em] text-[#ff3f6c] dark:text-[#ff3f6c] select-none">
-            MIDNIGHT CAMPAIGN LIVE
-          </span>
+      {/* Top Category Navigation Bar (Strict 1-Line Single Row) */}
+      <div className="w-full bg-white dark:bg-slate-950 border-b border-slate-200/90 dark:border-slate-800/80 py-2 px-4 sm:px-8 lg:px-12 flex flex-nowrap items-center justify-between gap-3 sm:gap-6 relative z-20 transition-colors duration-200 overflow-hidden">
+        {/* Left CATEGORIES Badge */}
+        <div 
+          onClick={() => navigate("/categories")}
+          className="px-3.5 py-1 bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[11px] font-black tracking-wider uppercase rounded-full shrink-0 cursor-pointer hover:bg-amber-500 hover:text-slate-950 transition-all duration-200 select-none"
+        >
+          CATEGORIES
         </div>
 
-        {/* Scrolling announcement text marquee */}
-        <div className="hidden md:flex flex-1 overflow-hidden mx-8 select-none">
-          <div className="animate-marquee whitespace-nowrap text-[10px] font-bold text-slate-400 uppercase tracking-widest flex gap-12">
-            <span>🔥 CYBER FLASH SEASON IS LIVE: USE COUPON CODE CARTNOW10 FOR 10% OFF</span>
-            <span>⚡ OVER 12,410 SHOPPERS TRANSACTING ON THE HUB RIGHT NOW</span>
-            <span>📦 FREE DELIVERY ON ALL ORDERS OVER ₹999</span>
-            {/* Repeated for seamless marquee loop */}
-            <span>🔥 CYBER FLASH SEASON IS LIVE: USE COUPON CODE CARTNOW10 FOR 10% OFF</span>
-            <span>⚡ OVER 12,410 SHOPPERS TRANSACTING ON THE HUB RIGHT NOW</span>
-            <span>📦 FREE DELIVERY ON ALL ORDERS OVER ₹999</span>
+        {/* Middle Category Text Links (Strictly 1 Line, No Visible Scrollbar) */}
+        <div className="flex-1 overflow-x-auto no-scrollbar scrollbar-hide select-none">
+          <div className="flex items-center gap-5 sm:gap-6 md:gap-7 whitespace-nowrap min-w-max px-1">
+            {[
+              { name: "Electronics", path: "/product?category=electronics" },
+              { name: "Mobiles & Tech", path: "/product?category=electronics" },
+              { name: "Women's Fashion", path: "/product?category=women" },
+              { name: "Men's Apparel", path: "/product?category=men" },
+              { name: "Footwear", path: "/product?category=footwear" },
+              { name: "Jewelry & Watches", path: "/product?category=accessories" },
+              { name: "Beauty & Care", path: "/product?category=beauty" },
+              { name: "Home & Living", path: "/product?category=home" },
+              { name: "Accessories", path: "/product?category=accessories" },
+              { name: "Bags & Luggage", path: "/product?category=accessories" },
+              { name: "Kids & Toys", path: "/product?category=kid" },
+              { name: "Groceries", path: "/product?category=groceries" },
+              { name: "Books & Media", path: "/product?category=books" },
+              { name: "Gaming", path: "/product?category=electronics" },
+              { name: "Sports & Fitness", path: "/product?category=sports" },
+            ].map((cat, idx) => (
+              <button
+                key={idx}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(cat.path);
+                }}
+                className="text-xs font-bold text-slate-800 dark:text-slate-200 hover:text-amber-600 dark:hover:text-amber-400 transition-colors duration-200 whitespace-nowrap shrink-0"
+              >
+                {cat.name}
+              </button>
+            ))}
           </div>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
-          <div className="flex items-center gap-1.5 select-none">
-            <div className="flex -space-x-1.5">
-              <img className="inline-block h-5 w-5 rounded-full ring-2 ring-slate-950 object-cover" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop" alt="" />
-              <img className="inline-block h-5 w-5 rounded-full ring-2 ring-slate-950 object-cover" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&h=80&fit=crop" alt="" />
-              <img className="inline-block h-5 w-5 rounded-full ring-2 ring-slate-950 object-cover" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop" alt="" />
-            </div>
-            <span className="text-[10px] sm:text-xs font-bold text-slate-400">10k+ shopping right now</span>
-          </div>
-          <ArrowRight size={14} className="text-slate-400 stroke-[2.5]" />
-        </div>
+        {/* Right Browse All Pill Button */}
+        <button
+          onClick={() => navigate("/categories")}
+          className="px-3.5 py-1 bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-slate-200 text-white dark:text-slate-950 text-[11px] font-bold rounded-full flex items-center gap-1 shrink-0 shadow-2xs transition-colors duration-200 cursor-pointer select-none"
+        >
+          <span className="hidden sm:inline">Browse All</span>
+          <ArrowRight size={12} className="stroke-[2.5]" />
+        </button>
       </div>
 
       <AnimatePresence mode="wait">
@@ -462,7 +488,7 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
           className="relative overflow-visible bg-slate-50 dark:bg-slate-950 text-[#0F172A] dark:text-slate-100 flex items-center justify-center py-16 md:py-24 select-none w-full min-h-[480px] sm:min-h-[550px] lg:min-h-[620px] z-10"
         >
           {/* Main Slider Wrapper */}
-          <div className="w-full px-6 sm:px-12 lg:px-20 flex flex-col items-center justify-center relative overflow-visible">
+          <div className="w-full px-4 sm:px-8 lg:px-12 flex flex-col items-center justify-center relative overflow-visible">
             
             {/* Banner Main Card */}
             <div className="relative w-full h-[360px] md:h-[400px] rounded-none overflow-visible shadow-2xl border border-slate-200/50 dark:border-white/10 text-slate-100 dark:text-white">
@@ -750,7 +776,7 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
           </div>
 
           {/* Balanced 50/50 Composition Grid */}
-          <div className="w-full px-6 sm:px-12 lg:px-20 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center z-10 relative">
+          <div className="w-full px-4 sm:px-8 lg:px-12 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center z-10 relative">
 
             {/* Left Side Content Area */}
             <div className="flex flex-col space-y-5 lg:space-y-6 text-left max-w-xl mx-auto lg:mx-0 items-start z-10 relative">

@@ -35,14 +35,19 @@ section,
   border: none !important;
 }
 
-/* Hide scrollbar for the category strip */
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+/* Hide scrollbar for the category strip and scroll containers */
+.scrollbar-hide,
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
 
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
+.scrollbar-hide::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+  width: 0px;
+  height: 0px;
+  background: transparent;
 }
 
 /* Add bottom padding on mobile so content clears the bottom nav */

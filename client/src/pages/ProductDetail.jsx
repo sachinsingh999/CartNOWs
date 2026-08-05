@@ -22,6 +22,7 @@ import {
   ShieldCheck, 
   ShoppingCart, 
   ShoppingBag,
+  Zap,
   Plus,
   Minus,
   MessageSquare,
@@ -467,8 +468,15 @@ const ProductDetail = () => {
     );
   };
 
+  // Reset AI chat messages when navigating to another product
   useEffect(() => {
-    if (showAssistant && chatMessages.length === 0 && product) {
+    setChatMessages([]);
+    setChatInput("");
+  }, [id]);
+
+  // Update assistant initial greeting when product updates
+  useEffect(() => {
+    if (product && product._id === id) {
       setChatMessages([
         {
           sender: "assistant",
@@ -476,7 +484,7 @@ const ProductDetail = () => {
         },
       ]);
     }
-  }, [showAssistant, product]);
+  }, [product?._id, id]);
 
   const handleSendMessage = async (textToSend) => {
     const query = textToSend || chatInput;
@@ -493,8 +501,32 @@ const ProductDetail = () => {
         content: msg.text
       }));
 
+      // Gather full product specifications context
+      let specsText = "";
+      if (product?.specifications && Array.isArray(product.specifications)) {
+        specsText = product.specifications.map(s => `${s.key || s.name}: ${s.value}`).join(", ");
+      } else if (product?.attributes?.specifications && Array.isArray(product.attributes.specifications)) {
+        specsText = product.attributes.specifications.map(s => `${s.name || s.key}: ${s.value}`).join(", ");
+      }
+
+      const productDetailsPrompt = `[CURRENT PRODUCT VIEWED BY USER]:
+- Product Name: ${product.name}
+- Product ID: ${product._id}
+- Brand: ${product.brand || "Generic"}
+- Price: ₹${product.price} (Original: ₹${product.originalPrice || product.price})
+- Category: ${product.category || ""} / ${product.subCategory || product.subcategory || ""}
+- Stock Status: ${product.stock > 0 ? `${product.stock} units in stock` : "Out of Stock"}
+- Material: ${product.material || product.fabric || "N/A"}
+- Weight: ${product.weight || "N/A"}
+- Occasion: ${product.occasion || "N/A"}
+- Description: ${product.description || ""}
+- Direct Product Link: [${product.name}](/product/${product._id})
+${specsText ? `- Full Specifications: ${specsText}` : ""}
+
+[USER QUESTION]: ${query}`;
+
       const res = await axios.post(`${backendUrl}/api/ai/chat`, {
-        message: `${query} (Context: We are discussing the product ${product.name}, category: ${product.category}, price: ₹${product.price}, description: ${product.description})`,
+        message: productDetailsPrompt,
         history
       });
 
@@ -812,7 +844,7 @@ const ProductDetail = () => {
         {/* 3-Column Split Showcase Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1.1fr_0.8fr] gap-8 items-start">
           {/* COLUMN 1: E-commerce Image Showcase */}
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-6 lg:sticky lg:top-24 lg:self-start">
             <div className="flex gap-2.5 items-stretch">
               
               {/* Vertical Thumbnail Deck (Desktop) */}
@@ -1174,7 +1206,7 @@ const ProductDetail = () => {
           <div className="space-y-5 text-left lg:sticky lg:top-24 lg:self-start">
             
             {/* Store brand / Category Badge */}
-            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2.5">
               <span 
                 onClick={() => navigate(`/brand/${encodeURIComponent(product.brand || "FashionAura")}`)}
                 className="text-xs font-black text-blue-500 hover:underline cursor-pointer tracking-wider"
@@ -1238,7 +1270,7 @@ const ProductDetail = () => {
             </div>
 
             {/* Trust Badges Card */}
-            <div className="border border-slate-200 dark:border-slate-800 rounded-2xl p-3 bg-slate-50/50 dark:bg-slate-950/20 grid grid-cols-3 divide-x divide-slate-200 dark:divide-slate-800 text-center gap-1">
+            <div className="border border-slate-200 dark:border-slate-800 rounded-sm p-3 bg-slate-50/50 dark:bg-slate-950/20 grid grid-cols-3 divide-x divide-slate-200 dark:divide-slate-800 text-center gap-1">
               <div className="flex flex-col items-center justify-center p-1">
                 <Truck size={16} className="text-slate-500 dark:text-indigo-400 mb-1" />
                 <span className="text-[10px] font-black text-blue-500 dark:text-blue-400 leading-tight">Free Shipping</span>
@@ -1277,7 +1309,7 @@ const ProductDetail = () => {
 
               {/* Dynamic Selected Variant Card */}
               {hasDynamicAttrs && (
-                <div className="relative overflow-hidden bg-slate-50/50 dark:bg-slate-950/30 rounded-xl p-3.5 border border-slate-100 dark:border-slate-800/60 shadow-2xs mt-3">
+                <div className="relative overflow-hidden bg-slate-50/50 dark:bg-slate-950/30 rounded-sm p-3.5 border border-slate-100 dark:border-slate-800/60 shadow-2xs mt-3">
                   {/* Premium left accent bar */}
                   <div className="absolute top-0 left-0 bottom-0 w-1 bg-gradient-to-b from-indigo-500 via-purple-500 to-pink-500" />
                   
@@ -1335,12 +1367,12 @@ const ProductDetail = () => {
             {/* Quantity Selector: rounded segmented control */}
             <div className="space-y-2.5 border-t border-slate-200 dark:border-slate-800 pt-4.5 flex items-center gap-4 text-left">
               <span className="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-wider block">Quantity:</span>
-              <div className="flex items-center justify-between rounded-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 p-1 w-32 shadow-inner">
+              <div className="flex items-center justify-between rounded-sm border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 p-1 w-32 shadow-inner">
                 <button
                   type="button"
                   disabled={isPurchaseDisabled || qty <= 1}
                   onClick={() => setQty(qty - 1)}
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 cursor-pointer shadow-xs"
+                  className="w-8 h-8 rounded-xs flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 cursor-pointer shadow-xs"
                 >
                   <Minus size={12} />
                 </button>
@@ -1349,15 +1381,9 @@ const ProductDetail = () => {
                 </span>
                 <button
                   type="button"
-                  disabled={isPurchaseDisabled}
-                  onClick={() => {
-                    if (qty < displayStock) {
-                      setQty(qty + 1);
-                    } else {
-                      toast.warning(`Only ${displayStock} items left in stock.`);
-                    }
-                  }}
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 cursor-pointer shadow-xs"
+                  disabled={isPurchaseDisabled || qty >= displayStock}
+                  onClick={() => setQty(qty + 1)}
+                  className="w-8 h-8 rounded-xs flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 cursor-pointer shadow-xs"
                 >
                   <Plus size={12} />
                 </button>
@@ -1366,37 +1392,24 @@ const ProductDetail = () => {
 
             {/* Buying Action buttons */}
             <div className="grid gap-3 pt-2">
-              <div className="grid grid-cols-2 gap-3">
-                <motion.button
-                  whileHover={!isPurchaseDisabled && !isAdding ? { scale: 1.02, y: -1 } : {}}
-                  whileTap={!isPurchaseDisabled && !isAdding ? { scale: 0.98 } : {}}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                <button
                   onClick={handleCart}
                   disabled={isPurchaseDisabled || isAdding}
-                  className={`flex items-center justify-center gap-2 rounded-xl py-3 text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${ isPurchaseDisabled || isAdding ? "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-600 border border-slate-200 dark:border-slate-800 cursor-not-allowed opacity-50" : "border-2 border-slate-900 dark:border-slate-100 text-slate-900 dark:text-slate-100 hover:bg-slate-900 hover:text-white dark:hover:bg-slate-100 dark:hover:text-slate-900 hover:shadow-xs" }`}
+                  className={`flex items-center justify-center gap-2 rounded-sm py-3 text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${ isPurchaseDisabled || isAdding ? "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-600 border border-slate-200 dark:border-slate-800 cursor-not-allowed opacity-50" : "border-2 border-slate-900 dark:border-slate-100 text-slate-900 dark:text-slate-100 hover:bg-slate-900 hover:text-white dark:hover:bg-slate-100 dark:hover:text-slate-900 hover:shadow-xs" }`}
                 >
-                  {isAdding ? (
-                    <>
-                      <Loader2 size={13} className="animate-spin" />
-                      <span>Adding...</span>
-                    </>
-                  ) : (
-                    <>
-                      <ShoppingCart size={13} />
-                      <span>Add to Cart</span>
-                    </>
-                  )}
-                </motion.button>
+                  <ShoppingCart size={15} />
+                  <span>{isAdding ? "Adding..." : "Add to Cart"}</span>
+                </button>
 
-                <motion.button
-                  whileHover={!isPurchaseDisabled ? { scale: 1.02, y: -1 } : {}}
-                  whileTap={!isPurchaseDisabled ? { scale: 0.98 } : {}}
+                <button
                   onClick={handleBuyNow}
                   disabled={isPurchaseDisabled}
-                  className={`flex items-center justify-center gap-2 rounded-xl py-3 text-xs font-black uppercase tracking-wider text-slate-100 dark:text-white transition-all cursor-pointer ${ isPurchaseDisabled ? "bg-slate-100 dark:bg-slate-800 text-slate-300 dark:text-slate-600 border border-slate-200 dark:border-slate-800 cursor-not-allowed opacity-50" : "bg-gradient-to-r from-amber-500 via-orange-500 to-rose-600 hover:shadow-[0_4px_15px_rgba(245,158,11,0.45)]" }`}
+                  className={`flex items-center justify-center gap-2 rounded-sm py-3 text-xs font-black uppercase tracking-wider text-slate-950 transition-all cursor-pointer ${ isPurchaseDisabled ? "bg-slate-100 dark:bg-slate-800 text-slate-300 dark:text-slate-600 border border-slate-200 dark:border-slate-800 cursor-not-allowed opacity-50" : "bg-amber-500 hover:bg-amber-600 shadow-sm" }`}
                 >
-                  <ShoppingBag size={13} />
+                  <Zap size={15} />
                   <span>Buy Now</span>
-                </motion.button>
+                </button>
               </div>
 
               {/* Extra interactivity buttons: Compare + AI Assistant drawer */}
@@ -1409,7 +1422,7 @@ const ProductDetail = () => {
                       addToCompare(product);
                     }
                   }}
-                  className={`flex items-center justify-center gap-2 rounded-xl border py-2 text-[10.5px] font-black transition active:scale-98 cursor-pointer uppercase ${ isComparing ? "border-indigo-600 bg-indigo-600 text-white" : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-50" }`}
+                  className={`flex items-center justify-center gap-2 rounded-sm border py-2 text-[10.5px] font-black transition active:scale-98 cursor-pointer uppercase ${ isComparing ? "border-indigo-600 bg-indigo-600 text-white" : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-50" }`}
                 >
                   <BarChart2 size={12} />
                   <span className="truncate">{isComparing ? "In Compare" : "Compare"}</span>
@@ -1417,7 +1430,7 @@ const ProductDetail = () => {
 
                 <button
                   onClick={() => setShowAssistant(true)}
-                  className="flex items-center justify-center gap-2 rounded-xl border border-indigo-100 dark:border-indigo-900/50 bg-indigo-50/20 dark:bg-indigo-950/10 py-2 text-[10.5px] font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition active:scale-98 cursor-pointer"
+                  className="flex items-center justify-center gap-2 rounded-sm border border-indigo-100 dark:border-indigo-900/50 bg-indigo-50/20 dark:bg-indigo-950/10 py-2 text-[10.5px] font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition active:scale-98 cursor-pointer"
                 >
                   <MessageSquare size={12} className="text-indigo-600 dark:text-indigo-400" />
                   <span>Ask AI Assistant</span>
@@ -1428,7 +1441,7 @@ const ProductDetail = () => {
               {isFashionItem(product) && (
                 <button
                   onClick={() => navigate("/tryon", { state: { productId: product._id } })}
-                  className="relative flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 bg-[size:200%_auto] hover:bg-[position:right_center] py-2.5 text-xs font-black uppercase tracking-wider text-slate-100 dark:text-white shadow-xs hover:shadow-sm active:scale-98 transition-all duration-500 group overflow-hidden cursor-pointer"
+                  className="relative flex items-center justify-center gap-2 rounded-sm bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 bg-[size:200%_auto] hover:bg-[position:right_center] py-2.5 text-xs font-black uppercase tracking-wider text-slate-100 dark:text-white shadow-xs hover:shadow-sm active:scale-98 transition-all duration-500 group overflow-hidden cursor-pointer"
                 >
                   <Sparkles className="h-3.5 w-3.5 animate-pulse" />
                   <span>AI Interactive Try-On</span>
@@ -1438,15 +1451,15 @@ const ProductDetail = () => {
 
           </div>
 
-          {/* COLUMN 3: Seller, and Shipping Sidebar cards */}
-          <div className="space-y-4">
+          {/* COLUMN 3: Seller, Shipping, and Specifications Sidebar cards (Extreme Right Column) */}
+          <div className="space-y-4 text-left lg:sticky lg:top-24 lg:self-start">
 
-            {/* 2. Seller Info card */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-900 rounded-2xl p-5 text-left shadow-xs">
-              <h4 className="text-xs font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider mb-2">
+            {/* 1. Seller Info card */}
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm p-5 text-left shadow-2xs space-y-3">
+              <h4 className="text-xs font-black uppercase text-slate-900 dark:text-white tracking-wider border-b border-slate-100 dark:border-slate-800 pb-2">
                 Seller Information
               </h4>
-              <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center justify-between gap-4 pt-1">
                 <div>
                   <h5 className="text-sm font-black text-slate-900 dark:text-white">
                     {product.brand || "Fashion Aura Store"}
@@ -1464,35 +1477,38 @@ const ProductDetail = () => {
                 </div>
                 <button 
                   onClick={() => navigate(`/brand/${encodeURIComponent(product.brand || "FashionAura")}`)}
-                  className="px-3 py-1.5 border border-slate-200 dark:border-slate-800 hover:border-slate-950 dark:hover:border-indigo-400 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-bold transition cursor-pointer"
+                  className="px-3 py-1.5 border border-slate-200 dark:border-slate-800 hover:border-slate-950 dark:hover:border-indigo-400 text-slate-700 dark:text-slate-300 rounded-sm text-xs font-bold transition cursor-pointer"
                 >
                   View Store
                 </button>
               </div>
             </div>
 
-            {/* 3. Shipping Information card */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-900 rounded-2xl p-5 text-left shadow-xs">
-              <h4 className="text-sm font-black uppercase text-slate-900 dark:text-white tracking-wider mb-4 border-b border-slate-100 dark:border-slate-800 pb-2">
+            {/* 2. Shipping Information card */}
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm p-5 text-left shadow-2xs space-y-3">
+              <h4 className="text-xs font-black uppercase text-slate-900 dark:text-white tracking-wider border-b border-slate-100 dark:border-slate-800 pb-2">
                 Shipping Information
               </h4>
-              <div className="space-y-2.5 text-xs">
-                <div className="flex justify-between">
-                  <span className="font-bold text-slate-400">Weight</span>
-                  <span className="text-slate-800 dark:text-slate-200 font-semibold">{product.weight || "350g"}</span>
+              <div className="divide-y divide-slate-100 dark:divide-slate-800/80 text-xs">
+                <div className="py-2 flex justify-between first:pt-0">
+                  <span className="font-bold text-slate-500 dark:text-slate-400">Weight</span>
+                  <span className="text-slate-900 dark:text-slate-100 font-semibold">{product.weight || "350g"}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="font-bold text-slate-400">Free Shipping</span>
+                <div className="py-2 flex justify-between">
+                  <span className="font-bold text-slate-500 dark:text-slate-400">Free Shipping</span>
                   <span className="text-emerald-600 dark:text-emerald-400 font-bold">On all orders</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="font-bold text-slate-400">Estimated Delivery</span>
-                  <span className={`font-semibold ${!isAvailable ? "text-rose-500" : "text-slate-800 dark:text-slate-200"}`}>
+                <div className="py-2 flex justify-between last:pb-0">
+                  <span className="font-bold text-slate-500 dark:text-slate-400">Estimated Delivery</span>
+                  <span className={`font-semibold ${!isAvailable ? "text-rose-500" : "text-slate-900 dark:text-slate-100"}`}>
                     {!isAvailable ? "Unavailable (Out of stock)" : "3-5 Days"}
                   </span>
                 </div>
               </div>
             </div>
+
+            {/* 3. Product Specifications card (Extreme Right Column) */}
+            <SpecificationTable product={product} />
 
           </div>
 
@@ -1872,39 +1888,138 @@ const ProductDetail = () => {
 
       <div className={`fixed inset-y-0 right-0 z-[100] w-full sm:max-w-md bg-white dark:bg-slate-950 border-l border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col transition-transform duration-300 ease-out transform ${ showAssistant ? "translate-x-0" : "translate-x-full" }`}>
         
-        <div className="flex items-center justify-between bg-gradient-to-r from-indigo-900 to-indigo-700 dark:from-slate-900 dark:to-indigo-950 px-6 py-5 text-slate-100 dark:text-white shadow-md border-b dark:border-slate-800">
+        {/* Drawer Header */}
+        <div className="flex items-center justify-between bg-slate-900 dark:bg-slate-950 px-6 py-4 text-slate-100 dark:text-white shadow-md border-b border-slate-800">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-slate-100 dark:text-white shadow-inner">
-              <Sparkles size={20} className="text-amber-300" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-sm bg-amber-500/10 border border-amber-500/20 text-amber-500 shadow-inner">
+              <Sparkles size={18} className="text-amber-500" />
             </div>
             <div className="text-left">
-              <h3 className="font-black text-sm uppercase tracking-wider">CartNOW Stylist</h3>
-              <p className="text-[10px] text-slate-300 mt-0.5 flex items-center gap-1">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse inline-block" />
+              <h3 className="font-black text-xs uppercase tracking-widest text-slate-100 dark:text-white">CartNOW Stylist</h3>
+              <p className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse inline-block" />
                 Assistant Online
               </p>
             </div>
           </div>
           <button
             onClick={() => setShowAssistant(false)}
-            className="rounded-full bg-white/10 p-2 text-slate-100 dark:text-white hover:bg-white/20 transition active:scale-95 cursor-pointer"
+            className="rounded-sm bg-slate-800 hover:bg-slate-700 p-1.5 text-slate-300 hover:text-white transition active:scale-95 cursor-pointer border border-slate-700"
           >
             <X size={16} />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50/50 dark:bg-slate-900/30">
+        {/* Chat History */}
+        <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-slate-50/50 dark:bg-slate-900/30">
           {chatMessages.map((msg, i) => {
             const isUser = msg.sender === "user";
+
+            const parseInlineMarkdown = (content) => {
+              if (!content) return null;
+              const tokens = [];
+              let remaining = content;
+              let keyIdx = 0;
+
+              while (remaining.length > 0) {
+                const linkMatch = remaining.match(/^\[([^\]]+)\]\(([^)]+)\)/);
+                if (linkMatch) {
+                  const label = linkMatch[1];
+                  const url = linkMatch[2];
+                  tokens.push(
+                    <a
+                      key={`link-${keyIdx++}`}
+                      href={url}
+                      onClick={(e) => {
+                        if (url.startsWith("/")) {
+                          e.preventDefault();
+                          navigate(url);
+                          setShowAssistant(false);
+                        }
+                      }}
+                      className="text-blue-600 dark:text-blue-400 font-extrabold hover:underline"
+                    >
+                      {label}
+                    </a>
+                  );
+                  remaining = remaining.substring(linkMatch[0].length);
+                  continue;
+                }
+
+                const boldMatch = remaining.match(/^\*\*([^*]+)\*\*/);
+                if (boldMatch) {
+                  tokens.push(
+                    <strong key={`bold-${keyIdx++}`} className="font-black text-slate-900 dark:text-white">
+                      {boldMatch[1]}
+                    </strong>
+                  );
+                  remaining = remaining.substring(boldMatch[0].length);
+                  continue;
+                }
+
+                const nextLink = remaining.indexOf("[");
+                const nextBold = remaining.indexOf("**");
+
+                let cutIndex = remaining.length;
+                if (nextLink !== -1) cutIndex = Math.min(cutIndex, nextLink);
+                if (nextBold !== -1) cutIndex = Math.min(cutIndex, nextBold);
+
+                if (cutIndex === 0) {
+                  tokens.push(remaining[0]);
+                  remaining = remaining.substring(1);
+                } else {
+                  tokens.push(remaining.substring(0, cutIndex));
+                  remaining = remaining.substring(cutIndex);
+                }
+              }
+
+              return tokens;
+            };
+
+            const renderFormattedMessage = (text) => {
+              if (!text) return null;
+              const lines = text.split("\n");
+              const elements = [];
+
+              lines.forEach((line, lineIdx) => {
+                const trimmed = line.trim();
+                if (!trimmed) {
+                  elements.push(<div key={`br-${lineIdx}`} className="h-1.5" />);
+                  return;
+                }
+
+                if (trimmed.startsWith("* ") || trimmed.startsWith("- ")) {
+                  const bulletContent = trimmed.substring(2);
+                  elements.push(
+                    <div key={`bullet-${lineIdx}`} className="flex items-start gap-2 my-1 pl-1">
+                      <span className="text-amber-500 font-black text-xs mt-0.5">•</span>
+                      <div className="flex-1 text-xs text-slate-700 dark:text-slate-300">
+                        {parseInlineMarkdown(bulletContent)}
+                      </div>
+                    </div>
+                  );
+                  return;
+                }
+
+                elements.push(
+                  <p key={`p-${lineIdx}`} className="my-1 text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                    {parseInlineMarkdown(trimmed)}
+                  </p>
+                );
+              });
+
+              return elements;
+            };
+
             return (
               <div
                 key={i}
                 className={`flex ${isUser ? "justify-end text-right" : "justify-start text-left"}`}
               >
                 <div
-                  className={`max-w-[85%] rounded-2xl px-4 py-3 text-xs sm:text-sm shadow-sm whitespace-pre-line leading-relaxed ${ isUser ? "bg-slate-900 dark:bg-indigo-600 text-slate-100 dark:text-white rounded-tr-none shadow shadow-indigo-950/20" : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 rounded-tl-none" }`}
+                  className={`max-w-[88%] rounded-sm p-4 text-xs shadow-2xs leading-relaxed ${ isUser ? "bg-slate-900 dark:bg-slate-900 text-white border border-slate-800 shadow-sm" : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100" }`}
                 >
-                  {msg.text}
+                  {isUser ? msg.text : renderFormattedMessage(msg.text)}
                 </div>
               </div>
             );
@@ -1912,19 +2027,20 @@ const ProductDetail = () => {
           
           {chatLoading && (
             <div className="flex justify-start">
-              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl rounded-tl-none px-4 py-2.5 shadow-sm">
-                <div className="flex gap-1 items-center h-4">
-                  <span className="h-1.5 w-1.5 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: "0ms" }} />
-                  <span className="h-1.5 w-1.5 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: "150ms" }} />
-                  <span className="h-1.5 w-1.5 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: "300ms" }} />
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm px-4 py-3 shadow-2xs">
+                <div className="flex gap-1.5 items-center h-4">
+                  <span className="h-1.5 w-1.5 rounded-xs bg-amber-500 animate-bounce" style={{ animationDelay: "0ms" }} />
+                  <span className="h-1.5 w-1.5 rounded-xs bg-amber-500 animate-bounce" style={{ animationDelay: "150ms" }} />
+                  <span className="h-1.5 w-1.5 rounded-xs bg-amber-500 animate-bounce" style={{ animationDelay: "300ms" }} />
                 </div>
               </div>
             </div>
           )}
         </div>
 
+        {/* Suggested Questions */}
         {chatMessages.length === 1 && (
-          <div className="px-6 py-3 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950">
+          <div className="px-5 py-3 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950">
             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 text-left">Suggested Questions</p>
             <div className="flex flex-wrap gap-2">
               {[
@@ -1937,7 +2053,7 @@ const ProductDetail = () => {
                   key={i}
                   type="button"
                   onClick={() => handleSendMessage(sug)}
-                  className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100/60 dark:border-indigo-900/50 px-3 py-1.5 rounded-full hover:bg-indigo-100 dark:hover:bg-indigo-950/80 transition cursor-pointer"
+                  className="text-[10px] font-bold text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-3 py-1.5 rounded-sm hover:border-amber-500 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-500/5 transition cursor-pointer shadow-2xs"
                 >
                   {sug}
                 </button>
@@ -1946,6 +2062,7 @@ const ProductDetail = () => {
           </div>
         )}
 
+        {/* Input Bar */}
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -1958,14 +2075,14 @@ const ProductDetail = () => {
             value={chatInput}
             onChange={(e) => setChatInput(e.target.value)}
             placeholder={`Ask about this product...`}
-            className="flex-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs sm:text-sm outline-none dark: dark:text-white transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+            className="flex-1 rounded-sm border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-xs outline-none dark:text-white focus:border-amber-500 dark:focus:border-amber-500 transition"
           />
           <button
             type="submit"
             disabled={!chatInput.trim() || chatLoading}
-            className="rounded-xl bg-indigo-600 hover:bg-indigo-800 dark:bg-indigo-600 dark:hover:bg-indigo-500 px-4 text-xs font-black uppercase text-slate-100 dark:text-white tracking-wider transition disabled:opacity-50 active:scale-95 shrink-0 flex items-center justify-center cursor-pointer"
+            className="rounded-sm bg-amber-500 hover:bg-amber-600 text-slate-950 px-4 text-xs font-black uppercase tracking-wider transition disabled:opacity-50 active:scale-95 shrink-0 flex items-center justify-center cursor-pointer border-none shadow-sm"
           >
-            <Send size={14} className="mr-1" />
+            <Send size={14} className="mr-1.5 stroke-[2.5]" />
             <span>Send</span>
           </button>
         </form>

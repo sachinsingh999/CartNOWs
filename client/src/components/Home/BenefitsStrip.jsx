@@ -3,7 +3,7 @@ import { Truck, RotateCcw, ShieldCheck, Headphones } from "lucide-react";
 
 const BenefitsStrip = () => {
   return (
-    <section className="w-full px-4 sm:px-12 lg:px-20 py-2 sm:py-4 select-none border-t border-slate-200/50 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-900/10">
+    <section className="w-full px-4 sm:px-8 lg:px-12 py-2 sm:py-4 select-none border-t border-slate-200/50 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-900/10">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
         {[
           { title: "Secure Checkout", desc: "100% protected", icon: ShieldCheck, iconColor: "text-emerald-500", bgColor: "hover:border-emerald-500/20 hover:bg-emerald-50/20 dark:hover:bg-emerald-950/10" },

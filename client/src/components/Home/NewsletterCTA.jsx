@@ -13,7 +13,7 @@ const NewsletterCTA = () => {
   };
 
   return (
-    <section className="w-full px-6 sm:px-12 lg:px-20 py-6 select-none">
+    <section className="w-full px-4 sm:px-8 lg:px-12 py-6 select-none">
       <div className="relative rounded-none overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-700 to-violet-900 text-slate-100 dark:text-white p-8 sm:p-12 lg:p-16 text-center shadow-xl border border-white/10 flex flex-col items-center gap-4">
         
         {/* Animated Gifts Vector */}

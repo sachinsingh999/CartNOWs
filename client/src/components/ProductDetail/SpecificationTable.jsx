@@ -1,41 +1,99 @@
 import React from "react";
 
 const SpecificationTable = ({ product }) => {
-  const allowedKeys = ["material", "plating", "stone type", "pearl type", "weight", "occasion"];
-  const isAllowed = (key) => allowedKeys.includes(String(key || "").toLowerCase().trim());
+  if (!product) return null;
+
+  const blacklist = new Set([
+    "_id", "id", "createdat", "updatedat", "images", "reviews", "v", "__v", 
+    "variants", "variant", "status", "price", "originalprice", "name", "description", 
+    "shortdescription", "stock", "rating", "searchkeywords"
+  ]);
 
   let specsToRender = [];
+  const seenKeys = new Set();
 
+  const addSpec = (rawKey, rawVal) => {
+    if (!rawKey || rawVal === undefined || rawVal === null || rawVal === "") return;
+    const keyStr = String(rawKey).trim();
+    const normalizedKey = keyStr.toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (!keyStr || blacklist.has(normalizedKey) || seenKeys.has(normalizedKey)) return;
+
+    let valStr = "";
+    if (Array.isArray(rawVal)) {
+      valStr = rawVal.join(", ");
+    } else if (typeof rawVal === "object") {
+      valStr = JSON.stringify(rawVal);
+    } else {
+      valStr = String(rawVal).trim();
+    }
+
+    if (valStr && valStr !== "[object Object]") {
+      seenKeys.add(normalizedKey);
+      specsToRender.push({ key: keyStr, value: valStr });
+    }
+  };
+
+  // 1. Check product.attributes.specifications (array)
   if (product?.attributes?.specifications && Array.isArray(product.attributes.specifications)) {
-    specsToRender = product.attributes.specifications
-      .filter(spec => isAllowed(spec.name))
-      .map(spec => ({ key: spec.name, value: spec.value }));
-  } else if (product?.specifications && Array.isArray(product.specifications)) {
-    specsToRender = product.specifications
-      .filter(spec => isAllowed(spec.key))
-      .map(spec => ({ key: spec.key, value: spec.value }));
-  } else {
-    // Fallback: check legacy direct product fields
-    const fallbackSpecs = [
-      { key: "Material", value: product?.material },
-      { key: "Weight", value: product?.weight },
-      { key: "Occasion", value: product?.occasion }
-    ];
-    specsToRender = fallbackSpecs.filter(spec => spec.value && isAllowed(spec.key));
+    product.attributes.specifications.forEach(spec => {
+      if (spec && typeof spec === "object") {
+        addSpec(spec.name || spec.key || spec.title, spec.value || spec.values);
+      }
+    });
   }
+
+  // 2. Check product.specifications (array or object)
+  if (product?.specifications) {
+    if (Array.isArray(product.specifications)) {
+      product.specifications.forEach(spec => {
+        if (spec && typeof spec === "object") {
+          addSpec(spec.key || spec.name || spec.title, spec.value || spec.values);
+        } else if (typeof spec === "string" && spec.includes(":")) {
+          const [k, v] = spec.split(":");
+          addSpec(k, v);
+        }
+      });
+    } else if (typeof product.specifications === "object") {
+      Object.entries(product.specifications).forEach(([k, v]) => addSpec(k, v));
+    }
+  }
+
+  // 3. Check product.attributes (object format)
+  if (product?.attributes && typeof product.attributes === "object" && !Array.isArray(product.attributes)) {
+    Object.entries(product.attributes).forEach(([k, v]) => {
+      if (k !== "specifications" && k !== "variants") {
+        addSpec(k, v);
+      }
+    });
+  }
+
+  // 4. Fallback product top-level properties
+  addSpec("Brand", product.brand);
+  addSpec("Category", product.category);
+  addSpec("Subcategory", product.subcategory);
+  addSpec("Material", product.material);
+  addSpec("Fabric", product.fabric);
+  addSpec("Weight", product.weight);
+  addSpec("Dimensions", product.dimensions);
+  addSpec("Occasion", product.occasion);
+  addSpec("Warranty", product.warranty);
+  addSpec("Country of Origin", product.origin || product.countryOfOrigin);
 
   if (specsToRender.length === 0) return null;
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 text-left shadow-xs">
-      <h4 className="text-sm font-black uppercase text-slate-900 dark:text-white tracking-wider mb-4 border-b border-slate-100 dark:border-slate-800 pb-2">
-        Specifications
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm p-5 text-left shadow-2xs space-y-3">
+      <h4 className="text-xs font-black uppercase text-slate-900 dark:text-white tracking-wider border-b border-slate-100 dark:border-slate-800 pb-2 flex items-center justify-between">
+        <span>Product Specifications</span>
+        <span className="text-[9px] font-bold text-amber-500 uppercase tracking-widest bg-amber-500/10 px-2 py-0.5 rounded-xs border border-amber-500/20">
+          Verified Specs
+        </span>
       </h4>
-      <div className="space-y-2.5 text-xs">
+      <div className="divide-y divide-slate-100 dark:divide-slate-800/80 text-xs">
         {specsToRender.map((spec, index) => (
-          <div key={index} className="flex justify-between border-b border-slate-100 dark:border-slate-800 pb-2 last:border-none last:pb-0">
-            <span className="font-bold text-slate-500 dark:text-slate-400">{spec.key}</span>
-            <span className="text-right text-slate-800 dark:text-slate-200 font-semibold">{spec.value}</span>
+          <div key={index} className="py-2 flex items-start justify-between gap-4 first:pt-0 last:pb-0">
+            <span className="font-bold text-slate-500 dark:text-slate-400 shrink-0 capitalize">{spec.key}</span>
+            <span className="text-right text-slate-900 dark:text-slate-100 font-semibold break-words leading-tight">{spec.value}</span>
           </div>
         ))}
       </div>

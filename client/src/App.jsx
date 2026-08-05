@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, Suspense } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation, matchPath } from "react-router-dom";
 import axios from "axios";
 import { backendUrl } from "./config";
 import Lenis from "lenis";
@@ -16,7 +16,6 @@ import ErrorBoundary from "./components/ErrorBoundary";
 
 // Toastify components (eager loaded)
 import { ToastContainer, Slide } from 'react-toastify';
-import { useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Lazy loaded page components
@@ -54,14 +53,59 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
 
 
+// List of all valid registered route patterns
+const VALID_ROUTES = [
+  "/",
+  "/about",
+  "/product",
+  "/products",
+  "/product/men",
+  "/product/women",
+  "/product/kid",
+  "/product/:id",
+  "/help",
+  "/category/:slug",
+  "/discover",
+  "/categories",
+  "/categories/:slug",
+  "/collections",
+  "/collections/:slug",
+  "/brands",
+  "/brands/:slug",
+  "/mobile",
+  "/social",
+  "/saas",
+  "/login",
+  "/signup",
+  "/register",
+  "/cart",
+  "/placeorder",
+  "/orderdetail",
+  "/order/:orderId",
+  "/track",
+  "/track/:id",
+  "/profile",
+  "/tryon",
+  "/verify",
+  "/order-confirmed/:orderId",
+  "/wishlist",
+  "/rma/:rmaId"
+];
+
 const App = () => {
   const location = useLocation();
+  const isKnownRoute = VALID_ROUTES.some((pattern) => matchPath(pattern, location.pathname));
+  const isNotFound = !isKnownRoute;
   const [maintenanceSettings, setMaintenanceSettings] = useState(null);
   const [loadingMaintenance, setLoadingMaintenance] = useState(true);
   const [showSplash, setShowSplash] = useState(true);
   const [showPromo, setShowPromo] = useState(false);
 
   useEffect(() => {
+    // Check if user has already dismissed the promo widget
+    const isDismissed = sessionStorage.getItem("cartnow_promo_dismissed") || localStorage.getItem("cartnow_promo_dismissed");
+    if (isDismissed) return;
+
     // Show partnership recruitment widget on mount after 1.2s delay to let the site load and render nicely
     const timer = setTimeout(() => {
       setShowPromo(true);
@@ -71,6 +115,8 @@ const App = () => {
 
   const closePromo = () => {
     setShowPromo(false);
+    sessionStorage.setItem("cartnow_promo_dismissed", "true");
+    localStorage.setItem("cartnow_promo_dismissed", "true");
   };
 
   const lenisRef = useRef(null);
@@ -195,7 +241,7 @@ const App = () => {
             )}
           />
 
-          <Navbar />
+          {!isNotFound && <Navbar />}
 
           {/* MAIN must grow */}
           <main className="flex-1">
@@ -242,6 +288,7 @@ const App = () => {
                         <Route path="/placeorder" element={<PlaceOrder />} />
                         <Route path="/orderdetail" element={<Orderdetail />} />
                         <Route path="/order/:orderId" element={<SingleOrderDetail />} />
+                        <Route path="/track" element={<Track />} />
                         <Route path="/track/:id" element={<Track />} />
                         <Route path="/profile" element={<Profile />} />
                         <Route path="/tryon" element={<TryOn />} />
@@ -257,14 +304,14 @@ const App = () => {
             </ErrorBoundary>
           </main>
 
-          {!["/login", "/signup", "/register", "/social"].includes(location.pathname.toLowerCase()) && <Footer />}
-          <ComparisonTray />
+          {!isNotFound && !["/login", "/signup", "/register", "/social"].includes(location.pathname.toLowerCase()) && <Footer />}
+          {!isNotFound && <ComparisonTray />}
 
           {/* ──────────────────────────────────────────────────────────
               GLOBAL PROMO/ADVERTISING PARTNERSHIP WIDGET
               ────────────────────────────────────────────────────────── */}
           <AnimatePresence>
-            {showPromo && (
+            {showPromo && !isNotFound && (
               <motion.div
                 initial={{ opacity: 0, y: 50, scale: 0.9 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}

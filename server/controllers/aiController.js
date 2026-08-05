@@ -3,31 +3,36 @@ import { v2 as cloudinary } from "cloudinary";
 
 
 
-// Build a short product context string for Gemini
+// Build a comprehensive product context string for Gemini
 const buildProductContext = (products) => {
   return products
     .slice(0, 60) // limit tokens
-    .map((p) =>
-      `- Name: ${p.name} | Category: ${p.category || "N/A"} | Collection: ${p.collection || "N/A"} | Price: ₹${p.price} | Brand: ${p.brand || "N/A"} | Sizes: ${(p.sizes || []).join(", ") || "N/A"} | Stock: ${p.stock > 0 ? "In Stock" : "Out of Stock"} | ID: ${p._id}`
-    )
+    .map((p) => {
+      let specs = "";
+      if (p.specifications && Array.isArray(p.specifications)) {
+        specs = p.specifications.map(s => `${s.key || s.name}: ${s.value}`).join("; ");
+      } else if (p.attributes?.specifications && Array.isArray(p.attributes.specifications)) {
+        specs = p.attributes.specifications.map(s => `${s.name || s.key}: ${s.value}`).join("; ");
+      }
+      return `- ID: ${p._id} | Name: ${p.name} | Brand: ${p.brand || "Generic"} | Category: ${p.category || "N/A"} | Price: ₹${p.price} | Stock: ${p.stock > 0 ? `${p.stock} units in stock` : "Out of Stock"} | Material: ${p.material || "N/A"} | Weight: ${p.weight || "N/A"} | Description: ${p.description || "N/A"}${specs ? ` | Specs: ${specs}` : ""}`;
+    })
     .join("\n");
 };
 
-const SYSTEM_PROMPT = `You are a helpful and friendly shopping assistant for CartNOW, a fashion e-commerce store.
-You help customers find the right products, suggest outfits, compare items, answer questions about sizes and availability, and guide them through the buying process.
+const SYSTEM_PROMPT = `You are a helpful and friendly shopping assistant for CartNOW, a premium e-commerce store.
+You help customers find the right products, answer queries about product specifications, material, price, sizes, stock availability, and guide them through the buying process.
 
 Here are the available products in our catalog:
 {PRODUCT_CONTEXT}
 
 Rules:
-- Always be concise, warm, and helpful.
-- When recommending a product, mention its name and price, and ALWAYS provide a clickable link in the format [Product Name](/product/ID) (using the ID from the catalog) so the user can navigate to it. Example: [MacBook Air M2](/product/123456)
-- If a user asks to "show" or "find" something, recommend 1-3 relevant products from the list above.
-- If a product is Out of Stock, mention it clearly.
-- Never make up products not in the list.
-- If the user asks about something outside fashion/shopping, politely redirect them.
-- Format responses cleanly — use short bullet points when listing products.
-- Keep replies under 150 words unless the user asks for detail.`;
+- Always be concise, warm, professional, and helpful.
+- When discussing the specific product currently being viewed by the user (indicated in the message context), prioritize giving exact details, specifications, price, brand, material, and availability for THAT product.
+- When recommending or referring to a product, mention its name and price, and ALWAYS provide a clickable link in the format [Product Name](/product/ID) (using the ID from the catalog) so the user can navigate to it. Example: [MacBook Air M2](/product/123456)
+- If a product is In Stock, state its availability clearly. If Out of Stock, mention it clearly.
+- Never claim a product in our catalog does not exist if it is present in the context.
+- Format responses cleanly using short bullet points when listing specifications or products.
+- Keep replies focused and clear.`;
 
 export const chat = async (req, res) => {
   try {

@@ -6,7 +6,7 @@ import ProductCard from "../pages/ProductCard";
 import FilterSidebar from "../components/FilterSidebar";
 import { backendUrl } from "../config";
 import { getAverageRating } from "../utils/productRatings";
-import { Star, X, ShoppingCart, Eye, AlertTriangle, ArrowRight, Filter, ChevronLeft, ChevronRight, SlidersHorizontal, Search, Heart } from "lucide-react";
+import { Star, X, ShoppingCart, Eye, AlertTriangle, ArrowRight, Filter, ChevronLeft, ChevronRight, SlidersHorizontal, Search, Heart, RotateCcw, PackageSearch } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ProductCardSkeleton } from "../components/SkeletonLoader";
 
@@ -1010,20 +1010,23 @@ const Product = () => {
             </div>
           ) : productList.length === 0 ? (
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="text-center py-16 px-6 bg-white/40 dark:bg-slate-900/40 backdrop-blur-md rounded-[32px] border border-slate-200/50 dark:border-slate-800/80 shadow-md max-w-2xl mx-auto space-y-6 select-none"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="text-center py-12 px-6 sm:px-10 bg-white dark:bg-slate-900 rounded-sm border border-slate-200 dark:border-slate-800 shadow-sm max-w-xl mx-auto space-y-6 select-none"
             >
-              <span className="text-5xl block animate-bounce">📦</span>
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-sm bg-amber-500/10 border border-amber-500/20 text-amber-500 shadow-2xs">
+                <PackageSearch size={32} className="stroke-[2]" />
+              </div>
               <div className="space-y-2">
-                <h3 className="text-xl font-black text-slate-800 dark:text-slate-100">No Products Located</h3>
-                <p className="text-xs text-slate-400 dark:text-slate-500 max-w-md mx-auto leading-relaxed">
-                  We couldn't locate any products matching your selected criteria. Wide your search terms, clear filters, or browse trending categories.
+                <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">No Products Located</h3>
+                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed font-medium">
+                  We couldn't locate any products matching your selected criteria. Try clearing filters or exploring our popular collections below.
                 </p>
               </div>
 
               {/* Suggested categories */}
-              <div className="space-y-3">
+              <div className="space-y-3 pt-2">
                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Popular Collections</span>
                 <div className="flex flex-wrap gap-2 justify-center">
                   {["Fashion", "Electronics", "Beauty", "Home"].map((dept) => (
@@ -1034,7 +1037,7 @@ const Product = () => {
                         setSelectedSubCategories([]);
                         setSelectedBrands([]);
                       }}
-                      className="px-4 py-2 bg-white/70 dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/80 text-xs font-bold text-slate-700 dark:text-slate-300 rounded-xl hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all duration-200 cursor-pointer shadow-sm"
+                      className="px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-extrabold text-slate-700 dark:text-slate-200 rounded-sm hover:border-amber-500 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-500/5 transition-all duration-200 cursor-pointer shadow-2xs"
                     >
                       {dept}
                     </button>
@@ -1046,9 +1049,10 @@ const Product = () => {
               <div className="pt-2">
                 <button
                   onClick={handleReset}
-                  className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:brightness-110 text-slate-100 dark:text-white rounded-2xl text-xs font-black uppercase tracking-wider transition active:scale-95 shadow-md cursor-pointer border-none"
+                  className="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-sm text-xs font-black uppercase tracking-wider transition active:scale-95 shadow-sm cursor-pointer border-none flex items-center justify-center gap-2 mx-auto"
                 >
-                  Clear All Filters
+                  <RotateCcw size={14} className="stroke-[2.5]" />
+                  <span>Clear All Filters</span>
                 </button>
               </div>
             </motion.div>

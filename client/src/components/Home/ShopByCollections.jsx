@@ -106,7 +106,7 @@ const ShopByCollections = ({ trendingCollections = [] }) => {
   });
 
   return (
-    <section className="w-full px-6 sm:px-12 lg:px-20 mb-3 select-none text-left">
+    <section className="w-full px-4 sm:px-8 lg:px-12 mb-3 select-none text-left">
       {/* Header with Slider Controls + View All */}
       <div className="flex justify-between items-end mb-6">
         <div className="text-left">

@@ -170,7 +170,7 @@ const VariantSelector = ({
                       whileHover={isAvailable ? { y: -1, boxShadow: "0 2px 6px rgba(0, 0, 0, 0.05)" } : {}}
                       whileTap={isAvailable ? { scale: 0.98 } : {}}
                       transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 border ${ isSelected ? "bg-indigo-50/70 dark:bg-indigo-950/30 border-indigo-600 dark:border-indigo-500 text-indigo-700 dark:text-indigo-300" : !isAvailable ? "bg-slate-50/30 dark:bg-slate-900/20 border-slate-200/60 dark:border-slate-800/60 text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-35 line-through" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50/50 dark:hover:bg-slate-800/50 cursor-pointer" }`}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-semibold transition-all duration-150 border ${ isSelected ? "bg-indigo-50/70 dark:bg-indigo-950/30 border-indigo-600 dark:border-indigo-500 text-indigo-700 dark:text-indigo-300" : !isAvailable ? "bg-slate-50/30 dark:bg-slate-900/20 border-slate-200/60 dark:border-slate-800/60 text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-35 line-through" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50/50 dark:hover:bg-slate-800/50 cursor-pointer" }`}
                     >
                       {isColorPicker && (
                         <span 
@@ -229,7 +229,7 @@ const VariantSelector = ({
                 whileHover={{ y: -1, boxShadow: "0 2px 6px rgba(0, 0, 0, 0.05)" }}
                 whileTap={{ scale: 0.98 }}
                 transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 border cursor-pointer ${ isSelected ? "bg-indigo-50/70 dark:bg-indigo-950/30 border-indigo-600 dark:border-indigo-500 text-indigo-700 dark:text-indigo-300" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50/50 dark:hover:bg-slate-800/50" }`}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-semibold transition-all duration-150 border cursor-pointer ${ isSelected ? "bg-indigo-50/70 dark:bg-indigo-950/30 border-indigo-600 dark:border-indigo-500 text-indigo-700 dark:text-indigo-300" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50/50 dark:hover:bg-slate-800/50" }`}
               >
                 <span>{item}</span>
                 {isSelected && (

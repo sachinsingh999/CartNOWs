@@ -15,6 +15,7 @@ import {
   Heart,
   X,
   ChevronDown,
+  ChevronRight,
   Home,
   Tag,
   HelpCircle,
@@ -100,6 +101,7 @@ const Navbar = () => {
   });
   const [pincodeOpen, setPincodeOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [searchCategory, setSearchCategory] = useState("all");
 
   /* Search autocomplete */
   const [allProducts, setAllProducts] = useState([]);
@@ -376,7 +378,8 @@ const Navbar = () => {
     }
     setShowSuggestions(false);
     setMobileSearchOpen(false);
-    navigate(`/product${trimmed ? `?q=${encodeURIComponent(trimmed)}` : ""}`);
+    const catQuery = searchCategory && searchCategory !== "all" ? `&category=${encodeURIComponent(searchCategory)}` : "";
+    navigate(`/product${trimmed ? `?q=${encodeURIComponent(trimmed)}${catQuery}` : catQuery ? `?${catQuery.slice(1)}` : ""}`);
   };
 
   const handleGetLocation = () => {
@@ -482,7 +485,7 @@ const Navbar = () => {
       <header id="main-navbar-header" className="sticky top-0 z-50 w-full">
 
         {/* ── Main bar ── */}
-        <nav className="border-b border-slate-200/50 dark:border-slate-800/60 bg-white/85 dark:bg-slate-950/85 backdrop-blur-xl shadow-xs transition-all duration-300">
+        <nav className="border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 backdrop-blur-xl shadow-xs transition-all duration-300">
           <div className="mx-auto max-w-[1400px] px-4 sm:px-6">
             <div className="flex h-16 items-center gap-3 lg:gap-4 w-full">
 
@@ -496,25 +499,35 @@ const Navbar = () => {
                 />
               </Link>
 
-              {/* ── Desktop Categories ── */}
-              <div className={`hidden lg:flex items-center font-bold text-[13px] text-slate-700 dark:text-slate-200 shrink-0 transition-all duration-300 ease-in-out ${searchFocused ? "max-w-0 opacity-0 overflow-hidden ml-0 gap-0 pointer-events-none" : "max-w-[600px] opacity-100 ml-6 gap-6"}`}>
-                <Link to="/product?collection=men" className="py-5 border-b-2 border-transparent hover:border-[#ff3f6c] hover:text-[#ff3f6c] dark:hover:text-rose-500 dark:hover:border-rose-500 transition-colors">Men</Link>
-                <Link to="/product?collection=women" className="py-5 border-b-2 border-transparent hover:border-[#ff3f6c] hover:text-[#ff3f6c] dark:hover:text-rose-500 dark:hover:border-rose-500 transition-colors">Women</Link>
-                <Link to="/product?collection=kid" className="py-5 border-b-2 border-transparent hover:border-[#ff3f6c] hover:text-[#ff3f6c] dark:hover:text-rose-500 dark:hover:border-rose-500 transition-colors">Kids</Link>
-                <Link to="/product?category=electronics" className="py-5 border-b-2 border-transparent hover:border-[#ff3f6c] hover:text-[#ff3f6c] dark:hover:text-rose-500 dark:hover:border-rose-500 transition-colors">Electronics</Link>
-                <Link to="/product?category=beauty" className="py-5 border-b-2 border-transparent hover:border-[#ff3f6c] hover:text-[#ff3f6c] dark:hover:text-rose-500 dark:hover:border-rose-500 transition-colors">Beauty</Link>
-              </div>
+              {/* ── Delivery Location Widget (Amazon Style) ── */}
+              <button
+                type="button"
+                onClick={() => setPincodeOpen(true)}
+                className="hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded-sm hover:bg-slate-100 dark:hover:bg-slate-900 transition cursor-pointer text-left select-none shrink-0 border border-transparent hover:border-slate-200 dark:hover:border-slate-800 bg-transparent"
+              >
+                <MapPin size={17} className="text-amber-500 shrink-0 stroke-[2.5]" />
+                <div className="flex flex-col leading-none">
+                  <span className="text-[10px] text-slate-400 font-semibold">
+                    Deliver to {username ? username.split(" ")[0] : "Sachin"}
+                  </span>
+                  <span className="text-xs font-black text-slate-800 dark:text-slate-100 flex items-center gap-0.5 leading-none mt-0.5">
+                    {locationLabel && locationLabel !== "Use location" ? locationLabel : "Vaghodia 391760"}
+                    <ChevronDown size={10} className="text-slate-400" />
+                  </span>
+                </div>
+              </button>
 
               {/* ── Desktop Search (Minimalist Capsule) ── */}
               <div
                 ref={searchRef}
-                className={`relative hidden md:flex flex-1 min-w-0 mx-auto transition-all duration-300 ease-in-out z-50 ${searchFocused ? "max-w-2xl" : "max-w-md"}`}
+                className={`relative hidden md:flex flex-1 min-w-0 mx-2 lg:mx-4 transition-all duration-300 ease-in-out z-50 ${searchFocused ? "max-w-3xl" : "max-w-xl lg:max-w-2xl"}`}
               >
                 <form
                   onSubmit={(e) => { e.preventDefault(); submitSearch(); }}
-                  className={`flex w-full items-center overflow-hidden rounded-md border transition-all duration-300 ${searchFocused ? "border-indigo-500/80 dark:border-indigo-500/60 bg-white dark:bg-slate-900 shadow-xs ring-4 ring-indigo-500/5" : "border-slate-200/80 dark:border-slate-800/80 bg-slate-50/60 dark:bg-slate-900/50"}`}
+                  className={`flex w-full items-center overflow-hidden rounded-sm border transition-all duration-300 ${searchFocused ? "border-amber-500/90 bg-white dark:bg-slate-900 shadow-md ring-2 ring-amber-500/20" : "border-slate-300 dark:border-slate-700 bg-slate-50/90 dark:bg-slate-900/90"}`}
                 >
-                  <Search className="ml-4 h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500" />
+                  <Search className="ml-3 h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500 stroke-[2.5]" />
+
                   <input
                     type="text"
                     value={searchValue}
@@ -523,14 +536,15 @@ const Navbar = () => {
                       setSearchFocused(true);
                       setShowSuggestions(true);
                     }}
-                    placeholder="Search for products, brands and more"
-                    className="h-10 w-full bg-transparent px-3 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none font-medium"
+                    placeholder="Search CartNow..."
+                    className="h-10 w-full bg-transparent px-3 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 outline-none font-medium"
                   />
+
                   {searchValue && (
                     <button
                       type="button"
                       onClick={() => { setSearchValue(""); setShowSuggestions(false); }}
-                      className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-300 dark:hover:bg-slate-700 transition cursor-pointer border-none"
+                      className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-sm bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-300 dark:hover:bg-slate-700 transition cursor-pointer border-none"
                     >
                       <X size={10} />
                     </button>
@@ -539,16 +553,24 @@ const Navbar = () => {
                   <button
                     type="button"
                     onClick={handleVoiceSearch}
-                    className={`mr-4 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-slate-400 dark:text-slate-500 hover:bg-slate-200/50 dark:hover:bg-slate-800/60 transition cursor-pointer border-none ${isListening ? "bg-red-500/10 text-red-500" : ""}`}
+                    className={`mr-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-sm text-slate-400 dark:text-slate-500 hover:bg-slate-200/50 dark:hover:bg-slate-800/60 transition cursor-pointer border-none ${isListening ? "bg-red-500/10 text-red-500" : ""}`}
                     title="Search by Voice"
                   >
                     <Mic size={13} className={isListening ? "animate-pulse" : ""} />
+                  </button>
+
+                  {/* Orange Search Icon Button */}
+                  <button
+                    type="submit"
+                    className="h-10 px-4 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black transition flex items-center justify-center shrink-0 cursor-pointer border-none rounded-r-sm"
+                  >
+                    <Search size={16} className="text-slate-950 stroke-[2.5]" />
                   </button>
                 </form>
 
                 {/* Autocomplete dropdown */}
                 {showSuggestions && (
-                  <div className="absolute top-[calc(100%+8px)] left-0 right-0 z-50 overflow-hidden rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl ring-1 ring-black/5 dark:ring-white/10 p-4 space-y-4">
+                  <div className="absolute top-[calc(100%+6px)] left-0 right-0 z-50 overflow-hidden rounded-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl ring-1 ring-black/5 dark:ring-white/10 p-4 space-y-4">
                     {/* If search query is empty, show Recents and Trendings */}
                     {!searchValue.trim() ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
@@ -701,40 +723,38 @@ const Navbar = () => {
               {/* ── Right Actions ── */}
               <div className="flex items-center gap-1.5 sm:gap-2 ml-auto lg:ml-0">
 
-                {/* Mobile search trigger */}
+                {/* Language Selector */}
                 <button
-                  onClick={() => { setMobileSearchOpen(true); setTimeout(() => mobileSearchInputRef.current?.focus(), 50); }}
-                  className="lg:hidden flex h-10 w-10 items-center justify-center rounded-md border border-slate-200/80 dark:border-slate-800/80 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 active:scale-95 transition-all duration-200 cursor-pointer"
-                  title="Search"
+                  type="button"
+                  onClick={() => changeLanguage(language === "en" ? "hi" : "en")}
+                  className="hidden lg:flex items-center gap-1 px-2.5 py-1.5 rounded-sm hover:bg-slate-100 dark:hover:bg-slate-900 border border-transparent hover:border-slate-200/60 dark:hover:border-slate-800/60 text-xs font-extrabold text-slate-800 dark:text-slate-100 transition cursor-pointer bg-transparent shrink-0"
                 >
-                  <Search size={17} />
+                  <span className="text-sm">🇮🇳</span>
+                  <span className="uppercase">{language || "EN"}</span>
+                  <ChevronDown size={10} className="text-slate-400" />
                 </button>
 
-                {/* AI Try-On */}
+                {/* Returns & Orders */}
                 <Link
-                  to="/tryon"
-                  className={`hidden sm:inline-flex items-center gap-1.5 h-10 rounded-md bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 px-4 text-[10px] font-bold uppercase tracking-wider text-white shadow-[0_4px_12px_rgba(244,63,94,0.15)] hover:shadow-[0_6px_16px_rgba(244,63,94,0.25)] transition-all duration-250 cursor-pointer select-none whitespace-nowrap border-none ${searchFocused ? "max-w-0 opacity-0 overflow-hidden px-0 py-0 mr-0 pointer-events-none" : "max-w-[150px] opacity-100"}`}
+                  to={token ? "/orderdetail" : "/login"}
+                  className="hidden md:flex flex-col text-left px-2.5 py-1 rounded-sm hover:bg-slate-100 dark:hover:bg-slate-900 border border-transparent hover:border-slate-200/60 dark:hover:border-slate-800/60 transition cursor-pointer select-none shrink-0"
                 >
-                  <Sparkles size={12} className="shrink-0" />
-                  <span>{t("ai_tryon")}</span>
+                  <span className="text-[10px] text-slate-400 font-semibold leading-none">Returns</span>
+                  <span className="text-xs font-black text-slate-800 dark:text-slate-100 leading-none mt-0.5">& Orders</span>
                 </Link>
 
-                {/* Social Feed */}
+                {/* Cart Icon Button (White BG, Sharp Icon) */}
                 <Link
-                  to="/social"
-                  className={`hidden sm:inline-flex items-center gap-1.5 h-10 rounded-md bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 px-4 text-[10px] font-bold uppercase tracking-wider text-white shadow-[0_4px_12px_rgba(99,102,241,0.15)] hover:shadow-[0_6px_16px_rgba(99,102,241,0.25)] transition-all duration-250 cursor-pointer select-none whitespace-nowrap border-none ${searchFocused ? "max-w-0 opacity-0 overflow-hidden px-0 py-0 mr-0 pointer-events-none" : "max-w-[150px] opacity-100"}`}
+                  to="/cart"
+                  title="Shopping Cart"
+                  className="relative flex h-10 w-10 items-center justify-center rounded-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-600 shadow-xs hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200 cursor-pointer select-none shrink-0 group"
                 >
-                  <Globe size={12} className="shrink-0 text-white animate-pulse" />
-                  <span>Social Feed</span>
-                </Link>
-
-                {/* Wishlist (desktop) */}
-                <Link
-                  to="/wishlist"
-                  title="My Wishlist"
-                  className="hidden md:flex h-10 w-10 items-center justify-center rounded-md bg-slate-50/60 dark:bg-slate-900/40 border border-slate-200/50 dark:border-slate-800 text-slate-655 dark:text-slate-400 hover:bg-rose-50/20 hover:text-rose-600 dark:hover:bg-rose-950/20 dark:hover:text-rose-400 hover:border-rose-200 dark:hover:border-rose-900/40 transition-all duration-200 cursor-pointer"
-                >
-                  <Heart size={16} className="text-rose-500" />
+                  <ShoppingCart size={19} className="text-slate-900 dark:text-white stroke-[2.2] group-hover:scale-110 transition-transform duration-200" />
+                  {cartCount > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 bg-white dark:bg-slate-950 text-slate-950 dark:text-white text-[10px] font-black rounded-xs flex items-center justify-center shadow-sm border border-slate-300 dark:border-slate-700">
+                      {cartCount}
+                    </span>
+                  )}
                 </Link>
 
                 {/* Notifications Bell */}
@@ -743,7 +763,7 @@ const Navbar = () => {
                     <button
                       onClick={() => setNotiOpen((p) => !p)}
                       title="Notifications"
-                      className={`relative flex h-10 w-10 items-center justify-center rounded-md border transition-all duration-200 cursor-pointer ${notiOpen ? "border-indigo-400 bg-indigo-50/20 dark:bg-indigo-950/20 text-indigo-655 dark:text-indigo-400 shadow-sm" : "bg-slate-50/60 dark:bg-slate-900/40 border-slate-200/50 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-850 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-200 dark:hover:border-indigo-900/30"}`}
+                      className={`relative flex h-10 w-10 items-center justify-center rounded-sm border transition-all duration-200 cursor-pointer ${notiOpen ? "border-amber-500/80 bg-amber-500/10 text-amber-500 shadow-sm" : "bg-slate-50/60 dark:bg-slate-900/40 border-slate-200/80 dark:border-slate-800/80 text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-850 hover:text-amber-500 dark:hover:text-amber-400"}`}
                     >
                       <div className="relative flex items-center justify-center h-4 w-4">
                         <Bell size={16} className={unreadCount > 0 ? "animate-wiggle" : ""} />
@@ -853,13 +873,21 @@ const Navbar = () => {
                               };
 
                               const extractCode = (msg) => {
-                                const match = msg.match(/code ([A-Z0-9]{6})\b/i);
-                                return match ? match[1] : null;
+                                if (!msg) return null;
+                                const parts = msg.split("code ");
+                                if (parts.length > 1) {
+                                  return parts[1].split(" ")[0].replace(/"/g, "");
+                                }
+                                return null;
                               };
 
                               const extractPromoCode = (msg) => {
-                                const match = msg.match(/code "([^"]+)"/i);
-                                return match ? match[1] : null;
+                                if (!msg) return null;
+                                const parts = msg.split("code ");
+                                if (parts.length > 1) {
+                                  return parts[1].split(" ")[0].replace(/"/g, "");
+                                }
+                                return null;
                               };
 
                               return (
@@ -1011,55 +1039,41 @@ const Navbar = () => {
                   </div>
                 )}
 
-                {/* Cart */}
-                <Link
-                  id="navbar-cart-btn"
-                  to="/cart"
-                  className={`relative flex h-10 w-10 items-center justify-center rounded-md bg-slate-50/60 dark:bg-slate-900/40 border border-slate-200/50 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-850 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-200 dark:hover:border-indigo-900/30 transition-all duration-200 cursor-pointer shadow-none ${isCartBouncing ? "cart-bounce-active" : ""}`}
-                >
-                  <ShoppingCart size={16} />
-                  {cartCount > 0 && (
-                    <span
-                      className="absolute -right-1.5 -top-1.5 flex min-w-[18px] h-[18px] items-center justify-center rounded-full bg-[#ff3f6c] px-[3px] text-[9px] font-black text-slate-100 dark:text-white ring-2 ring-white dark:ring-slate-950 shadow-md transition-transform animate-pulse"
-                    >
-                      {cartCount > 99 ? "99+" : cartCount}
-                    </span>
-                  )}
-                </Link>
-
-                {/* Profile dropdown */}
-                <div ref={profileRef} className="relative hidden lg:block">
+                {/* Hello [User] | Account & Lists (MOST RIGHT) */}
+                <div ref={profileRef} className="relative hidden md:block shrink-0">
                   <button
+                    type="button"
                     onClick={() => { setOpen((p) => !p); setPincodeOpen(false); }}
-                    className={`flex h-10 items-center gap-2 rounded-md border px-3.5 font-bold text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer select-none ${open ? "border-indigo-400 dark:border-indigo-500 bg-indigo-50/20 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 shadow-sm" : "bg-slate-50/60 dark:bg-slate-900/40 border-slate-200/50 dark:border-slate-800 text-slate-705 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-850 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-200 dark:hover:border-indigo-900/30"}`}
+                    className="flex flex-col text-left px-2.5 py-1 rounded-sm hover:bg-slate-100 dark:hover:bg-slate-900 border border-transparent hover:border-slate-200/60 dark:hover:border-slate-800/60 transition cursor-pointer select-none bg-transparent"
                   >
-                    <span className="flex h-6.5 w-6.5 items-center justify-center rounded-full bg-gradient-to-br from-[#ff3f6c] to-rose-600 text-[9.5px] font-black text-slate-100 dark:text-white shadow-sm ring-1 ring-white dark:ring-slate-950">
-                      {token && initials ? initials : <User size={12} />}
+                    <span className="text-[10px] text-slate-400 font-semibold leading-none">
+                      Hello, {username ? username.split(" ")[0] : "Sign in"}
                     </span>
-                    <span className="hidden sm:block max-w-[70px] truncate capitalize text-[12px]">
-                      {token ? username || t("account") : t("login")}
+                    <span className="text-xs font-black text-slate-800 dark:text-slate-100 flex items-center gap-0.5 leading-none mt-0.5">
+                      Account & Lists
+                      <ChevronDown size={10} className={`text-slate-400 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
                     </span>
-                    <ChevronDown size={12} className={`hidden sm:block transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
                   </button>
 
-                  {/* Dropdown */}
+                  {/* Profile Dropdown */}
                   {open && (
-                    <div className="absolute right-0 top-[calc(100%+8px)] w-64 overflow-hidden rounded-md border border-slate-200/80 dark:border-slate-800/80 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl shadow-[0_20px_50px_rgba(0,0,0,0.12)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-50 ring-1 ring-black/5 dark:ring-white/10 animate-in fade-in slide-in-from-top-3 duration-200">
+                    <div className="absolute right-0 top-[calc(100%+4px)] w-64 overflow-hidden rounded-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-xl z-50 animate-in fade-in slide-in-from-top-2 duration-150 text-left">
                       {token ? (
                         <>
-                          {/* User greeting */}
-                          <div className="flex items-center gap-3 bg-gradient-to-r from-orange-500/[0.04] to-amber-500/[0.02] dark:from-orange-500/[0.08] dark:to-transparent px-5 py-4 border-b border-slate-100 dark:border-slate-900/60">
-                            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-[#ff3f6c] to-rose-600 text-sm font-black text-slate-100 dark:text-white shadow-md shadow-rose-500/25">
-                              {initials || <User size={16} />}
+                          {/* User Header */}
+                          <div className="flex items-center gap-3 bg-slate-50 dark:bg-slate-900/60 px-4 py-2.5 border-b border-slate-200/80 dark:border-slate-800/80">
+                            <div className="relative flex h-9 w-9 items-center justify-center rounded-sm bg-rose-600 text-xs font-black text-white shrink-0 shadow-2xs">
+                              {initials || <User size={15} />}
+                              <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-950" />
                             </div>
-                            <div className="min-w-0">
-                              <p className="text-xs font-black tracking-wider uppercase text-slate-400 dark:text-slate-500">Welcome back,</p>
-                              <p className="text-sm font-black text-slate-800 dark:text-white truncate capitalize mt-0.5">{username || "My Account"}</p>
+                            <div className="min-w-0 flex-1">
+                              <span className="text-[9px] font-black tracking-widest uppercase text-slate-400 dark:text-slate-500 block leading-none">WELCOME BACK</span>
+                              <p className="text-xs font-black text-slate-900 dark:text-white truncate capitalize mt-1 leading-none">{username || "My Account"}</p>
                             </div>
                           </div>
 
-                          {/* Nav items */}
-                          <div className="py-1.5">
+                          {/* Nav Items */}
+                          <div className="p-1 space-y-0.5">
                             {[
                               { icon: User, label: t("profile"), to: "/profile" },
                               { icon: Package, label: t("orders"), to: "/orderdetail" },
@@ -1070,258 +1084,92 @@ const Navbar = () => {
                               <button
                                 key={to}
                                 onClick={() => { setOpen(false); navigate(to); }}
-                                className="flex w-full items-center gap-3 px-5 py-2.5 text-left text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-orange-500/[0.04] dark:hover:bg-slate-800/40 hover:text-orange-500 dark:hover:text-orange-400 hover:translate-x-0.5 transition-all duration-200 cursor-pointer group"
+                                className="flex w-full items-center justify-between px-3 py-1.5 rounded-sm text-left text-xs font-extrabold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors duration-150 cursor-pointer group border-none bg-transparent"
                               >
-                                <Icon size={14} className="text-slate-400 group-hover:text-orange-500 dark:group-hover:text-orange-400 transition-colors" />
-                                <span>{label}</span>
+                                <div className="flex items-center gap-2.5">
+                                  <Icon size={14} className="text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors" />
+                                  <span>{label}</span>
+                                </div>
+                                <ChevronRight size={12} className="text-slate-400 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-150" />
                               </button>
                             ))}
                           </div>
 
-                          {/* Settings section */}
-                          <div className="px-5 py-4 border-t border-slate-100 dark:border-slate-900/60 bg-slate-50/50 dark:bg-slate-900/30 space-y-3.5">
+                          {/* Settings Section */}
+                          <div className="mx-1 my-1 p-2.5 rounded-sm border border-slate-200/80 dark:border-slate-800/80 bg-slate-50/60 dark:bg-slate-900/30 space-y-2">
                             <div className="flex items-center justify-between">
-                              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Interface Theme</span>
+                              <div className="flex items-center gap-2">
+                                {isDarkMode ? <Moon size={12} className="text-amber-400" /> : <Sun size={12} className="text-amber-500" />}
+                                <span className="text-[9.5px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">INTERFACE THEME</span>
+                              </div>
                               <button
                                 onClick={() => setIsDarkMode(!isDarkMode)}
-                                className={`relative h-5.5 w-10.5 rounded-full transition-all duration-300 cursor-pointer ${isDarkMode ? "bg-orange-500" : "bg-slate-200 dark:bg-slate-800"}`}
+                                className={`relative h-5 w-9 rounded-full transition-colors duration-200 cursor-pointer border-none ${isDarkMode ? "bg-slate-700" : "bg-slate-300"}`}
                               >
-                                <span className={`absolute top-0.5 left-0.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-white dark:bg-slate-900 shadow transition-transform duration-300 ${isDarkMode ? "translate-x-5" : "translate-x-0"}`}>
-                                  {isDarkMode ? <Moon size={9} className="text-orange-500" /> : <Sun size={9} className="text-amber-500" />}
+                                <span className={`absolute top-0.5 left-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-white shadow transition-transform duration-200 ${isDarkMode ? "translate-x-4" : "translate-x-0"}`}>
+                                  {isDarkMode ? <Moon size={9} className="text-slate-800" /> : <Sun size={9} className="text-amber-500" />}
                                 </span>
                               </button>
                             </div>
 
-                            <div className="flex items-center justify-between">
-                              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Language (Lang)</span>
+                            <div className="flex items-center justify-between pt-1.5 border-t border-slate-200/60 dark:border-slate-800/60">
+                              <span className="text-[9.5px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">LANGUAGE</span>
                               <select
                                 value={language}
                                 onChange={(e) => changeLanguage(e.target.value)}
-                                className="h-6.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-2 text-[10px] font-black text-slate-700 dark:text-slate-300 cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                                className="h-6 rounded-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-2 text-[10px] font-extrabold text-slate-800 dark:text-slate-200 cursor-pointer transition-colors focus:outline-none focus:ring-1 focus:ring-slate-400"
                               >
                                 <option value="en">English (EN)</option>
                                 <option value="hi">Hindi (HI)</option>
                                 <option value="es">Español (ES)</option>
                               </select>
                             </div>
-
-                            {/* Delivery location */}
-                            <div className="border-t border-slate-100 dark:border-slate-800/80 pt-3 mt-1.5">
-                              <div className="flex items-center justify-between mb-2">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Delivery Area</span>
-                                <button
-                                  type="button"
-                                  onClick={() => setPincodeOpen(!pincodeOpen)}
-                                  className="text-[10px] font-black uppercase text-orange-500 hover:text-orange-600 dark:hover:text-orange-400 transition-colors"
-                                >
-                                  {pincodeOpen ? "Close" : "Change"}
-                                </button>
-                              </div>
-
-                              {!pincodeOpen ? (
-                                <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-950 px-3 py-2 rounded-xl border border-slate-100 dark:border-slate-900/60 shadow-2xs">
-                                  <MapPin size={12} className="text-[#ff3f6c] shrink-0" />
-                                  <span className="truncate max-w-[150px]" title={locationLabel}>{locationLabel}</span>
-                                </div>
-                              ) : (
-                                <div className="space-y-2 animate-in fade-in duration-200">
-                                  <form
-                                    onSubmit={(e) => {
-                                      e.preventDefault();
-                                      const val = pincodeInput.trim();
-                                      if (!/^\d{6}$/.test(val)) {
-                                        toast.error("Please enter a valid 6-digit Pincode.");
-                                        return;
-                                      }
-                                      let city = "Delhi NCR";
-                                      if (val.startsWith("4")) city = "Mumbai";
-                                      else if (val.startsWith("5") || val.startsWith("6")) city = "Bangalore";
-                                      else if (val.startsWith("7")) city = "Kolkata";
-                                      else if (val.startsWith("3")) city = "Gujarat/Rajasthan";
-
-                                      const label = `${city} (${val})`;
-                                      localStorage.setItem("delivery_pincode", val);
-                                      localStorage.setItem("delivery_location", label);
-                                      setLocationLabel(label);
-                                      setPincodeOpen(false);
-                                      window.dispatchEvent(new Event("pincodeUpdated"));
-                                      toast.success(`Delivery pincode set to ${val}`);
-                                    }}
-                                    className="flex gap-1.5"
-                                  >
-                                    <input
-                                      type="text"
-                                      maxLength={6}
-                                      value={pincodeInput}
-                                      onChange={(e) => setPincodeInput(e.target.value.replace(/\D/g, ""))}
-                                      placeholder="Pincode"
-                                      className="w-full h-8 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-2.5 text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 outline-none transition-colors font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                                    />
-                                    <button
-                                      type="submit"
-                                      className="h-8 rounded-xl bg-orange-500 hover:bg-orange-600 text-slate-100 dark:text-white font-bold text-[10px] px-3 uppercase border-none cursor-pointer active:scale-95 transition-all"
-                                    >
-                                      Apply
-                                    </button>
-                                  </form>
-                                  <button
-                                    type="button"
-                                    onClick={handleGetLocation}
-                                    className="flex items-center justify-center gap-1.5 w-full h-8 rounded-xl bg-white dark:bg-slate-950 hover:bg-slate-50 dark:hover:bg-slate-900 text-[10px] font-black uppercase text-slate-700 dark:text-slate-300 cursor-pointer border border-slate-200 dark:border-slate-800/80 shadow-3xs active:scale-95 transition-all"
-                                  >
-                                    {locationLoading ? (
-                                      <Navigation size={11} className="animate-spin text-[#ff3f6c]" />
-                                    ) : (
-                                      <Navigation size={11} className="text-[#ff3f6c]" />
-                                    )}
-                                    <span>Detect Location</span>
-                                  </button>
-                                </div>
-                              )}
-                            </div>
                           </div>
 
                           {/* Logout */}
-                          <button
-                            onClick={handleLogout}
-                            className="flex w-full items-center gap-3 px-5 py-3.5 text-left text-xs font-black text-rose-500 dark:text-rose-400 hover:bg-rose-500/[0.04] dark:hover:bg-rose-500/[0.02] hover:text-rose-600 dark:hover:text-rose-300 transition-all duration-200 cursor-pointer border-t border-slate-100 dark:border-slate-900/60"
-                          >
-                            <LogOut size={14} className="text-rose-500" />
-                            <span>{t("logout")}</span>
-                          </button>
+                          <div className="p-1 border-t border-slate-100 dark:border-slate-900/80">
+                            <button
+                              onClick={handleLogout}
+                              className="flex w-full items-center justify-between px-3 py-1.5 rounded-sm text-left text-xs font-black text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 transition-colors duration-150 cursor-pointer border-none bg-transparent group"
+                            >
+                              <div className="flex items-center gap-2.5">
+                                <LogOut size={14} className="text-rose-500" />
+                                <span>{t("logout")}</span>
+                              </div>
+                              <ChevronRight size={12} className="text-rose-400 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-150" />
+                            </button>
+                          </div>
                         </>
                       ) : (
-                        <div className="p-5 space-y-4">
-                          <div className="text-center pb-2 border-b border-slate-100 dark:border-slate-900/60">
-                            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500/5 text-orange-500 border border-orange-500/10">
-                              <User size={20} />
+                        <div className="p-4 space-y-3">
+                          <div className="text-center pb-2 border-b border-slate-100 dark:border-slate-900">
+                            <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-sm bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-white border border-slate-200 dark:border-slate-800">
+                              <User size={18} />
                             </div>
-                            <h4 className="text-sm font-black text-slate-800 dark:text-white">Welcome Guest!</h4>
-                            <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-semibold">Sign in to track orders & details</p>
+                            <h4 className="text-xs font-black text-slate-800 dark:text-white">Welcome Guest!</h4>
+                            <p className="text-[9.5px] text-slate-400 dark:text-slate-500 mt-0.5 font-semibold">Sign in to track orders & details</p>
                           </div>
 
-                          <div className="space-y-2">
+                          <div className="space-y-1.5">
                             <button
                               onClick={() => { setOpen(false); navigate("/login", { state: { from: location } }); }}
-                              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-center text-xs font-black text-slate-100 dark:text-white shadow-md shadow-orange-500/15 active:scale-95 transition-all cursor-pointer border-none uppercase tracking-wider"
+                              className="w-full py-2 rounded-sm bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-center text-xs font-black active:scale-95 transition-all cursor-pointer border-none uppercase tracking-wider shadow-2xs"
                             >
                               {t("login")}
                             </button>
                             <button
                               onClick={() => { setOpen(false); navigate("/signup", { state: { from: location } }); }}
-                              className="w-full py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-center text-xs font-black text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 active:scale-95 transition-all cursor-pointer uppercase tracking-wider"
+                              className="w-full py-2 rounded-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-center text-xs font-black text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 active:scale-95 transition-all cursor-pointer uppercase tracking-wider"
                             >
                               Create Account
                             </button>
-                          </div>
-
-                          {/* Settings section for guests */}
-                          <div className="pt-2.5 border-t border-slate-100 dark:border-slate-900/60 space-y-3.5">
-                            <div className="flex items-center justify-between">
-                              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Interface Theme</span>
-                              <button
-                                onClick={() => setIsDarkMode(!isDarkMode)}
-                                className={`relative h-5.5 w-10.5 rounded-full transition-all duration-300 cursor-pointer ${isDarkMode ? "bg-orange-500" : "bg-slate-200 dark:bg-slate-800"}`}
-                              >
-                                <span className={`absolute top-0.5 left-0.5 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-white dark:bg-slate-900 shadow transition-transform duration-300 ${isDarkMode ? "translate-x-5" : "translate-x-0"}`}>
-                                  {isDarkMode ? <Moon size={9} className="text-orange-500" /> : <Sun size={9} className="text-amber-500" />}
-                                </span>
-                              </button>
-                            </div>
-
-                            <div className="flex items-center justify-between">
-                              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Language</span>
-                              <select
-                                value={language}
-                                onChange={(e) => changeLanguage(e.target.value)}
-                                className="h-6.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-2 text-[10px] font-black text-slate-700 dark:text-slate-300 cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                              >
-                                <option value="en">English (EN)</option>
-                                <option value="hi">Hindi (HI)</option>
-                                <option value="es">Español (ES)</option>
-                              </select>
-                            </div>
-
-                            {/* Delivery location */}
-                            <div className="border-t border-slate-100 dark:border-slate-800/80 pt-3 mt-1.5">
-                              <div className="flex items-center justify-between mb-2">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Delivery Area</span>
-                                <button
-                                  type="button"
-                                  onClick={() => setPincodeOpen(!pincodeOpen)}
-                                  className="text-[10px] font-black uppercase text-orange-500 hover:text-orange-700 dark:hover:text-orange-400 transition-colors"
-                                >
-                                  {pincodeOpen ? "Close" : "Change"}
-                                </button>
-                              </div>
-
-                              {!pincodeOpen ? (
-                                <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-950 px-3 py-2 rounded-xl border border-slate-100 dark:border-slate-900/60 shadow-2xs">
-                                  <MapPin size={12} className="text-[#ff3f6c] shrink-0" />
-                                  <span className="truncate max-w-[150px]" title={locationLabel}>{locationLabel}</span>
-                                </div>
-                              ) : (
-                                <div className="space-y-2 animate-in fade-in duration-200">
-                                  <form
-                                    onSubmit={(e) => {
-                                      e.preventDefault();
-                                      const val = pincodeInput.trim();
-                                      if (!/^\d{6}$/.test(val)) {
-                                        toast.error("Please enter a valid 6-digit Pincode.");
-                                        return;
-                                      }
-                                      let city = "Delhi NCR";
-                                      if (val.startsWith("4")) city = "Mumbai";
-                                      else if (val.startsWith("5") || val.startsWith("6")) city = "Bangalore";
-                                      else if (val.startsWith("7")) city = "Kolkata";
-                                      else if (val.startsWith("3")) city = "Gujarat/Rajasthan";
-
-                                      const label = `${city} (${val})`;
-                                      localStorage.setItem("delivery_pincode", val);
-                                      localStorage.setItem("delivery_location", label);
-                                      setLocationLabel(label);
-                                      setPincodeOpen(false);
-                                      window.dispatchEvent(new Event("pincodeUpdated"));
-                                      toast.success(`Delivery pincode set to ${val}`);
-                                    }}
-                                    className="flex gap-1.5"
-                                  >
-                                    <input
-                                      type="text"
-                                      maxLength={6}
-                                      value={pincodeInput}
-                                      onChange={(e) => setPincodeInput(e.target.value.replace(/\D/g, ""))}
-                                      placeholder="Pincode"
-                                      className="w-full h-8 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-2.5 text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 outline-none transition-colors font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                                    />
-                                    <button
-                                      type="submit"
-                                      className="h-8 rounded-xl bg-orange-500 hover:bg-orange-600 text-slate-100 dark:text-white font-bold text-[10px] px-3 uppercase border-none cursor-pointer active:scale-95 transition-all"
-                                    >
-                                      Apply
-                                    </button>
-                                  </form>
-                                  <button
-                                    type="button"
-                                    onClick={handleGetLocation}
-                                    className="flex items-center justify-center gap-1.5 w-full h-8 rounded-xl bg-white dark:bg-slate-950 hover:bg-slate-50 dark:hover:bg-slate-900 text-[10px] font-black uppercase text-slate-700 dark:text-slate-300 cursor-pointer border border-slate-200 dark:border-slate-800/80 shadow-3xs active:scale-95 transition-all"
-                                  >
-                                    {locationLoading ? (
-                                      <Navigation size={11} className="animate-spin text-[#ff3f6c]" />
-                                    ) : (
-                                      <Navigation size={11} className="text-[#ff3f6c]" />
-                                    )}
-                                    <span>Detect Location</span>
-                                  </button>
-                                </div>
-                              )}
-                            </div>
                           </div>
                         </div>
                       )}
                     </div>
                   )}
                 </div>
+
               </div>
             </div>
           </div>

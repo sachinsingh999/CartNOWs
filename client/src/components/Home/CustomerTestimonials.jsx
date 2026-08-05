@@ -318,7 +318,7 @@ const CustomerTestimonials = () => {
   };
 
   return (
-    <section className="w-full px-6 sm:px-12 lg:px-20 py-4 select-none overflow-hidden bg-transparent dark:bg-[#09090B]">
+    <section className="w-full px-4 sm:px-8 lg:px-12 py-4 select-none overflow-hidden bg-transparent dark:bg-[#09090B]">
       {/* Star Shimmer Animation CSS style */}
       <style>{`
         @keyframes star-shimmer {
