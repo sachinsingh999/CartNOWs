@@ -13,8 +13,8 @@ section,
   scroll-margin-top: var(--navbar-height, 80px);
 }
 
-* {
-  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+body {
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* Exclude Leaflet elements from universal transitions to prevent map rendering bugs */

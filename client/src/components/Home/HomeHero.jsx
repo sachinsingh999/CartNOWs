@@ -58,18 +58,31 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
   const [showBanners, setShowBanners] = useState(false);
   const [couponCopied, setCouponCopied] = useState(false);
 
-  // Mouse parallax position states
+  // Mouse parallax position states (throttled with RAF)
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const mouseRafRef = useRef(null);
 
   const handleMouseMove = (e) => {
-    if (!heroContainerRef.current) return;
-    const { left, top, width, height } = heroContainerRef.current.getBoundingClientRect();
-    const x = (e.clientX - left - width / 2) / 25; // Sensitivity divisor
-    const y = (e.clientY - top - height / 2) / 25;
-    setMousePosition({ x, y });
+    if (!heroContainerRef.current || mouseRafRef.current) return;
+    const clientX = e.clientX;
+    const clientY = e.clientY;
+
+    mouseRafRef.current = requestAnimationFrame(() => {
+      if (heroContainerRef.current) {
+        const { left, top, width, height } = heroContainerRef.current.getBoundingClientRect();
+        const x = (clientX - left - width / 2) / 35;
+        const y = (clientY - top - height / 2) / 35;
+        setMousePosition({ x, y });
+      }
+      mouseRafRef.current = null;
+    });
   };
 
   const handleMouseLeave = () => {
+    if (mouseRafRef.current) {
+      cancelAnimationFrame(mouseRafRef.current);
+      mouseRafRef.current = null;
+    }
     setMousePosition({ x: 0, y: 0 });
   };
 

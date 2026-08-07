@@ -231,8 +231,8 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
         </h2>
       </div>
 
-      {/* Image Slider container with peek previews on sides (exactly like mockup) */}
-      <div className="relative w-full h-[250px] bg-white dark:bg-slate-900 flex items-center justify-between px-3 select-none overflow-hidden group/slider border-b border-slate-100/50 dark:border-slate-800/50">
+      {/* Image Slider container with compact peek previews on sides */}
+      <div className="relative w-full h-[240px] bg-white dark:bg-slate-900 flex items-center justify-center gap-1.5 px-1 select-none overflow-hidden group/slider border-b border-slate-100/50 dark:border-slate-800/50">
 
         {!hasImage || imgError ? (
           <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-955 text-slate-400 p-4 rounded-md">
@@ -244,23 +244,23 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
             {/* Left Peek Image Preview with chevron arrow */}
             <div 
               onClick={(e) => { e.stopPropagation(); setImgIdx(prevIdx); }}
-              className="w-[14%] h-[180px] opacity-35 hover:opacity-50 transition-all duration-300 flex items-center justify-center shrink-0 border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-md p-1 scale-95 overflow-hidden relative cursor-pointer"
+              className="w-[10%] h-[190px] opacity-40 hover:opacity-75 transition-all duration-300 flex items-center justify-center shrink-0 border border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-md p-0.5 overflow-hidden relative cursor-pointer"
             >
               <img src={getSrc(prevIdx)} className="max-h-full max-w-full object-contain" alt="" loading="lazy" decoding="async" />
               <div className="absolute inset-0 bg-black/5 flex items-center justify-end pr-0.5 text-slate-700 dark:text-white">
-                <ChevronLeft className="h-6 w-6 stroke-[2]" />
+                <ChevronLeft className="h-5 w-5 stroke-[2]" />
               </div>
             </div>
 
             {/* Active Center Image Panel */}
-            <div className="w-[66%] h-[210px] z-10 flex items-center justify-center shrink-0 border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-md p-2.5 shadow-sm relative">
+            <div className="w-[76%] h-[218px] z-10 flex items-center justify-center shrink-0 border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-md p-1.5 shadow-xs relative">
               <img src={getSrc(imgIdx)} className="max-h-full max-w-full object-contain" alt="" onError={() => setImgError(true)} loading="lazy" decoding="async" />
               
               {/* Wishlist Button Overlay */}
               <button
                 type="button"
                 onClick={toggleFavorite}
-                className="absolute top-2.5 right-2.5 h-7 w-7 bg-white/95 dark:bg-slate-900/95 rounded-full flex items-center justify-center shadow-xs cursor-pointer transition-all duration-200 active:scale-90 z-30 border-none"
+                className="absolute top-2 right-2 h-7 w-7 bg-white/95 dark:bg-slate-900/95 rounded-full flex items-center justify-center shadow-xs cursor-pointer transition-all duration-200 active:scale-90 z-30 border-none"
               >
                 <Heart
                   size={12}
@@ -279,14 +279,14 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
                     addToCompare(product);
                   }
                 }}
-                className={`absolute top-10.5 right-2.5 h-7 w-7 backdrop-blur-md rounded-full flex items-center justify-center shadow-xs z-30 cursor-pointer transition-all duration-200 active:scale-90 ${isComparing ? "bg-indigo-600 border-none text-white" : "bg-white/95 dark:bg-slate-900/95 border-none text-slate-500 dark:text-slate-400 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/20" }`}
+                className={`absolute top-10 right-2 h-7 w-7 backdrop-blur-md rounded-full flex items-center justify-center shadow-xs z-30 cursor-pointer transition-all duration-200 active:scale-90 ${isComparing ? "bg-indigo-600 border-none text-white" : "bg-white/95 dark:bg-slate-900/95 border-none text-slate-500 dark:text-slate-400 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/20" }`}
                 title="Compare product"
               >
                 <BarChart2 size={12} className={isComparing ? "stroke-[2.5px]" : ""} />
               </button>
 
               {/* Dynamic slider indicator dots inside center card */}
-              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-20">
+              <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex gap-1 z-20">
                 {images.map((_, i) => (
                   <span 
                     key={i} 
@@ -299,11 +299,11 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
             {/* Right Peek Image Preview with chevron arrow */}
             <div 
               onClick={(e) => { e.stopPropagation(); setImgIdx(nextIdx); }}
-              className="w-[14%] h-[180px] opacity-35 hover:opacity-50 transition-all duration-300 flex items-center justify-center shrink-0 border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-md p-1 scale-95 overflow-hidden relative cursor-pointer"
+              className="w-[10%] h-[190px] opacity-40 hover:opacity-75 transition-all duration-300 flex items-center justify-center shrink-0 border border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-md p-0.5 overflow-hidden relative cursor-pointer"
             >
               <img src={getSrc(nextIdx)} className="max-h-full max-w-full object-contain" alt="" loading="lazy" decoding="async" />
               <div className="absolute inset-0 bg-black/5 flex items-center justify-start pl-0.5 text-slate-700 dark:text-white">
-                <ChevronRight className="h-6 w-6 stroke-[2]" />
+                <ChevronRight className="h-5 w-5 stroke-[2]" />
               </div>
             </div>
           </>

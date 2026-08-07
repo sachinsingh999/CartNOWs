@@ -43,7 +43,7 @@ const FilterSidebar = ({
   const [showAllBrands, setShowAllBrands] = useState(false);
 
   return (
-    <aside className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-left text-[#282c3f] dark:text-slate-100 transition-all duration-300">
+    <aside className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md text-left text-[#282c3f] dark:text-slate-100 transition-all duration-300 w-full overflow-hidden">
       
       {/* 1. Header: FILTERS / CLEAR ALL */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-800">

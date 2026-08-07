@@ -299,22 +299,22 @@ const Home = () => {
       </AnimatePresence>
 
       <motion.section
-        initial={{ opacity: 0, y: 30 }}
+        initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-80px" }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full px-4 sm:px-8 lg:px-12 pt-4 pb-2 select-none will-change-[transform,opacity] transform-gpu"
+        viewport={{ once: true, margin: "-50px" }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="w-full px-4 sm:px-8 lg:px-12 pt-4 pb-2 select-none"
       >
         <TopCategories popularCategories={homepageData.popularCategories} />
       </motion.section>
 
       {/* SECTION 5: BRANDS + RECOMMENDATIONS - Eager Loaded */}
       <motion.section
-        initial={{ opacity: 0, y: 40 }}
+        initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-80px" }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full px-4 sm:px-8 lg:px-12 py-4 md:py-6 space-y-6 md:space-y-8 select-none will-change-[transform,opacity] transform-gpu"
+        viewport={{ once: true, margin: "-50px" }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="w-full px-4 sm:px-8 lg:px-12 py-4 md:py-6 space-y-6 md:space-y-8 select-none"
       >
         <div>
           <ShopByBrands popularBrands={homepageData.popularBrands} />
@@ -334,14 +334,13 @@ const Home = () => {
         </div>
       </motion.section>
 
-
       {/* SECTION 4: FLASH DEALS + TRENDING PRODUCTS - Eager Loaded */}
       <motion.section
-        initial={{ opacity: 0, y: 40 }}
+        initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-80px" }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full px-4 sm:px-8 lg:px-12 py-2 will-change-[transform,opacity] transform-gpu"
+        viewport={{ once: true, margin: "-50px" }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="w-full px-4 sm:px-8 lg:px-12 py-2"
       >
         <FlashDeals
           deals={(() => {
@@ -373,27 +372,23 @@ const Home = () => {
         />
       </motion.section>
 
-      
-
       {/* SECTION 4: SHOP BY COLLECTIONS - Eager Loaded */}
       <motion.div
-        className="will-change-[transform,opacity] transform-gpu"
-        initial={{ opacity: 0, y: 40 }}
+        initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-80px" }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        viewport={{ once: true, margin: "-50px" }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
       >
         <ShopByCollections trendingCollections={homepageData.trendingCollections} />
       </motion.div>
 
-
       {/* SECTION 5: DEAL OF THE DAY + SELLER SPOTLIGHT + AI CHAT - Eager Loaded */}
       <motion.section
-        initial={{ opacity: 0, y: 40 }}
+        initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-80px" }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full px-4 sm:px-8 lg:px-12 py-2 select-none will-change-[transform,opacity] transform-gpu"
+        viewport={{ once: true, margin: "-50px" }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="w-full px-4 sm:px-8 lg:px-12 py-2 select-none"
       >
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-left">
           <DealOfTheDay 
@@ -410,22 +405,20 @@ const Home = () => {
 
       {/* SECTION 6: CUSTOMER TESTIMONIALS - Eager Loaded */}
       <motion.div
-        className="will-change-[transform,opacity] transform-gpu"
-        initial={{ opacity: 0, y: 40 }}
+        initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-80px" }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        viewport={{ once: true, margin: "-50px" }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
       >
         <CustomerTestimonials />
       </motion.div>
 
       {/* SECTION 3: BENEFITS STRIP - Eager Loaded */}
       <motion.div
-        className="will-change-[transform,opacity] transform-gpu"
-        initial={{ opacity: 0, y: 30 }}
+        initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-80px" }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        viewport={{ once: true, margin: "-50px" }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
       >
         <BenefitsStrip />
       </motion.div>

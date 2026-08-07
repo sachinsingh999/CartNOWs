@@ -480,7 +480,7 @@ const Cart = () => {
 
   if (pageLoading) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 px-4 sm:px-6 py-6 text-slate-800 dark:text-slate-100">
+      <div className="min-h-screen bg-[#F8F9FC] dark:bg-[#050508] px-4 sm:px-6 py-6 text-slate-800 dark:text-slate-100">
         <div className="mx-auto max-w-[1440px] space-y-6">
           <div className="border-b border-slate-200 dark:border-slate-800/60 pb-4 text-left">
             <h1 className="text-xl sm:text-2xl font-black text-slate-950 dark:text-white">Shopping Cart</h1>
@@ -493,9 +493,9 @@ const Cart = () => {
 
   if (cartItems.length === 0 && savedItems.length === 0) {
     return (
-      <div className="min-h-[70vh] bg-slate-50 dark:bg-slate-950 px-6 py-20 transition-colors duration-200 flex items-center justify-center">
-        <div className="mx-auto flex max-w-xl flex-col items-center rounded-md border border-dashed border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900/40 backdrop-blur-md p-10 text-center shadow-xs">
-          <div className="flex h-16 w-16 items-center justify-center rounded-md bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400">
+      <div className="min-h-[70vh] bg-[#F8F9FC] dark:bg-[#050508] px-6 py-20 transition-colors duration-200 flex items-center justify-center">
+        <div className="mx-auto flex max-w-xl flex-col items-center rounded border border-dashed border-slate-300 dark:border-slate-800 bg-white dark:bg-[#0F131C]/40 backdrop-blur-md p-10 text-center shadow-xs">
+          <div className="flex h-16 w-16 items-center justify-center rounded bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400">
             <ShoppingBag className="h-8 w-8" />
           </div>
           <h1 className="mt-6 text-2xl font-black text-slate-900 dark:text-slate-100">{t("cart_empty")}</h1>
@@ -504,7 +504,7 @@ const Cart = () => {
           </p>
           <button
             onClick={() => navigate("/product")}
-            className="mt-6 rounded-md bg-indigo-600 text-slate-100 dark:text-white px-6 py-3 text-xs font-black uppercase tracking-wider hover:bg-indigo-700 active:scale-95 transition-all cursor-pointer shadow-md shadow-indigo-600/10"
+            className="mt-6 rounded bg-slate-900 dark:bg-indigo-600 text-slate-100 dark:text-white px-6 py-3 text-xs font-black uppercase tracking-wider hover:bg-slate-800 dark:hover:bg-indigo-550 active:scale-95 transition-all cursor-pointer shadow-md"
           >
             {t("continue_shopping")}
           </button>
@@ -577,7 +577,7 @@ const Cart = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 px-4 sm:px-6 py-6 transition-colors duration-200 pb-28 lg:pb-12 text-slate-800 dark:text-slate-100">
+    <div className="min-h-screen bg-[#F8F9FC] dark:bg-[#050508] px-4 sm:px-6 py-6 transition-colors duration-200 pb-28 lg:pb-12 text-slate-800 dark:text-slate-100">
       <div className="mx-auto max-w-[1440px]">
         
         {/* Breadcrumb and Header */}
@@ -623,7 +623,7 @@ const Cart = () => {
             
             {/* Select All Banner */}
             {cartItems.length > 0 && (
-              <div className="flex items-center justify-between bg-white/70 dark:bg-slate-900/20 backdrop-blur-md border border-slate-200/60 dark:border-slate-800 rounded-md p-2.5 px-4 shadow-xs text-left">
+              <div className="flex items-center justify-between bg-white dark:bg-[#0F131C] border border-slate-200 dark:border-slate-800 rounded p-3 px-4 shadow-xs text-left">
                 <label className="flex items-center gap-2.5 cursor-pointer text-[11px] font-bold text-slate-700 dark:text-slate-400 select-none">
                   <input
                     type="checkbox"
@@ -655,7 +655,7 @@ const Cart = () => {
                   <div key={`${item.itemId}-${item.size}`} className="w-full">
                     {/* DESKTOP CARD VIEW */}
                     <div
-                      className={`hidden lg:flex items-center gap-3.5 rounded-md border p-4 shadow-sm transition-all duration-350 hover:scale-[1.005] hover:shadow-md w-full ${ item.selected ? "border-transparent bg-amber-50/50 dark:bg-amber-950/20" : "border-slate-200/70 dark:border-slate-800/80 bg-white dark:bg-slate-900/50 hover:border-slate-300 dark:hover:border-slate-700" }`}
+                      className={`hidden lg:flex items-center gap-3.5 rounded border p-4 shadow-sm transition-all duration-300 hover:scale-[1.005] hover:shadow-md w-full ${ item.selected ? "border-amber-500/30 bg-amber-500/5" : "border-slate-200 dark:border-slate-800/80 bg-white dark:bg-[#0F131C] hover:border-slate-300 dark:hover:border-slate-700" }`}
                     >
                       {/* Checkbox Selector */}
                       <div className="flex items-center justify-center shrink-0">
@@ -668,7 +668,7 @@ const Cart = () => {
                       </div>
 
                       {/* Product Image Frame */}
-                      <div className="h-28 w-28 flex items-center justify-center rounded-md bg-slate-50 dark:bg-slate-950 overflow-hidden border border-slate-100 dark:border-slate-800 p-2 shrink-0 transition-transform duration-300 group-hover:scale-[1.02] shadow-inner">
+                      <div className="h-28 w-28 flex items-center justify-center rounded bg-slate-50 dark:bg-[#0C0F16] overflow-hidden border border-slate-200 dark:border-slate-800 p-2 shrink-0 transition-transform duration-300 group-hover:scale-[1.02] shadow-xs">
                         <img
                           src={imageUrl}
                           className="h-full w-full object-contain"
@@ -684,13 +684,13 @@ const Cart = () => {
                             <h3 className="text-sm font-black text-slate-900 dark:text-white leading-snug line-clamp-2 pr-4 tracking-tight">
                               {item.product.name}
                             </h3>
-                            <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mt-1">
+                            <p className="text-[10px] font-black uppercase tracking-wider text-[#10B981] mt-1">
                               {item.product.category} · {item.product.brand || "Acme"}
                             </p>
                             
                             {/* Rating and details */}
                             <div className="flex items-center gap-2.5 mt-1.5 flex-wrap">
-                              <span className="inline-flex items-center gap-0.5 text-[9px] font-black text-amber-500 bg-amber-500/5 px-1.5 py-0.5 rounded-md border border-amber-500/10 uppercase tracking-wider">
+                              <span className="inline-flex items-center gap-0.5 text-[9px] font-black text-amber-500 bg-amber-500/5 px-1.5 py-0.5 rounded border border-amber-500/10 uppercase tracking-wider">
                                 <Star className="h-3 w-3 fill-amber-500 stroke-none" />
                                 <span>{avgRating.toFixed(1)}</span>
                               </span>
@@ -707,7 +707,7 @@ const Cart = () => {
                                 </span>
                               )}
                               <span className={`h-1.5 w-1.5 rounded-full ${itemStock > 0 ? "bg-emerald-500 animate-pulse" : "bg-rose-500"}`} />
-                              <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">
+                              <span className="text-[10px] font-bold text-slate-400 dark:text-slate-505">
                                 {itemStock > 0 ? `In Stock (${itemStock})` : "Out of Stock"}
                               </span>
                             </div>
@@ -724,7 +724,7 @@ const Cart = () => {
                             </button>
                             <button
                               onClick={() => saveForLater(index)}
-                              className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition cursor-pointer"
+                              className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 hover:text-indigo-650 dark:hover:text-indigo-400 transition cursor-pointer"
                             >
                               <Bookmark size={12} className="stroke-[2.5]" />
                               <span>Save for Later</span>
@@ -747,7 +747,7 @@ const Cart = () => {
                               )}
                             </div>
                             {discountPercent > 0 && (
-                              <span className="text-[9px] font-black bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 px-1.5 py-0.5 rounded-md mt-0.5 inline-block">
+                              <span className="text-[9px] font-black bg-rose-500/10 text-rose-600 dark:text-rose-450 px-1.5 py-0.5 rounded border border-rose-500/20 mt-0.5 inline-block">
                                 {discountPercent}% OFF
                               </span>
                             )}
@@ -755,23 +755,23 @@ const Cart = () => {
 
                           {/* Stepper block */}
                           <div className="flex items-center gap-2">
-                            <div className="flex items-center rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 overflow-hidden h-8 shrink-0">
+                            <div className="flex items-center rounded border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0C0F16] overflow-hidden h-8 shrink-0 p-0.5">
                               <button
                                 onClick={() => updateQty(index, item.qty - 1)}
-                                className="h-full flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition cursor-pointer px-2.5 active:scale-95"
+                                className="h-full flex items-center justify-center bg-slate-100 hover:bg-slate-250 dark:bg-[#1e293b]/40 dark:hover:bg-[#1e293b]/85 text-slate-500 hover:text-slate-700 dark:text-slate-350 transition cursor-pointer px-2 rounded-xs active:scale-95"
                                 aria-label="Decrease quantity"
                               >
-                                <Minus className="h-3 w-3 stroke-[3]" />
+                                <Minus className="h-2.5 w-2.5 stroke-[3]" />
                               </button>
-                              <span className="min-w-6 text-center text-xs font-black text-slate-950 dark:text-white">
+                              <span className="min-w-6 text-center text-xs font-black text-slate-900 dark:text-white">
                                 {item.qty}
                               </span>
                               <button
                                 onClick={() => updateQty(index, item.qty + 1)}
-                                className="h-full flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition cursor-pointer px-2.5 active:scale-95"
+                                className="h-full flex items-center justify-center bg-slate-100 hover:bg-slate-250 dark:bg-[#1e293b]/40 dark:hover:bg-[#1e293b]/85 text-slate-500 hover:text-slate-700 dark:text-slate-350 transition cursor-pointer px-2 rounded-xs active:scale-95"
                                 aria-label="Increase quantity"
                               >
-                                <Plus className="h-3 w-3 stroke-[3]" />
+                                <Plus className="h-2.5 w-2.5 stroke-[3]" />
                               </button>
                             </div>
 
@@ -795,7 +795,7 @@ const Cart = () => {
 
                     {/* MOBILE CARD VIEW */}
                     <div
-                      className={`block lg:hidden rounded-md border p-4 shadow-xs transition-all duration-350 ${ item.selected ? "border-transparent bg-amber-50/50 dark:bg-amber-950/20" : "border-slate-200/70 dark:border-slate-800/80 bg-white dark:bg-slate-900" }`}
+                      className={`block lg:hidden rounded border p-4 shadow-xs transition-all duration-300 ${ item.selected ? "border-amber-500/30 bg-amber-500/5" : "border-slate-200 dark:border-slate-800/80 bg-white dark:bg-[#0F131C]" }`}
                     >
                       {/* Top Row: Checkbox, Image, Title & Attributes */}
                       <div className="flex gap-3 items-start">
@@ -810,7 +810,7 @@ const Cart = () => {
                         </div>
 
                         {/* Product Image Frame */}
-                        <div className="h-20 w-20 flex items-center justify-center rounded-md bg-slate-50 dark:bg-slate-950 overflow-hidden border border-slate-100 dark:border-slate-800 p-1.5 shrink-0 shadow-inner">
+                        <div className="h-20 w-20 flex items-center justify-center rounded bg-slate-50 dark:bg-[#0C0F16] overflow-hidden border border-slate-200 dark:border-slate-800 p-1.5 shrink-0 shadow-xs">
                           <img
                             src={imageUrl}
                             className="h-full w-full object-contain"
@@ -825,7 +825,7 @@ const Cart = () => {
                           </h3>
                           
                           {/* Brand & Category */}
-                          <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mt-1">
+                          <p className="text-[9px] font-bold uppercase tracking-wider text-[#10B981] mt-1">
                             {item.product.category} · {item.product.brand || "Acme"}
                           </p>
 
@@ -857,34 +857,33 @@ const Cart = () => {
                             </span>
                             {discountPercent > 0 && (
                               <span className="text-[10px] font-semibold text-slate-400 line-through">
-                                ₹{originalPrice.toLocaleString("en-IN")}
+                                  ₹{originalPrice.toLocaleString("en-IN")}
                               </span>
                             )}
                           </div>
                           {discountPercent > 0 && (
-                            <span className="text-[9px] font-black bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 px-1.5 py-0.5 rounded mt-0.5 inline-block">
+                            <span className="text-[9px] font-black bg-rose-500/10 text-rose-600 dark:text-rose-400 px-1.5 py-0.5 rounded border border-rose-500/20 mt-0.5 inline-block">
                               {discountPercent}% OFF
                             </span>
                           )}
                         </div>
 
-                        {/* Quantity Stepper & Delete */}
                         <div className="flex items-center gap-2">
-                          <div className="flex items-center rounded-sm border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 overflow-hidden h-7 shrink-0">
+                          <div className="flex items-center rounded border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0C0F16] overflow-hidden h-7 shrink-0 p-0.5">
                             <button
                               onClick={() => updateQty(index, item.qty - 1)}
-                              className="h-full flex items-center justify-center text-slate-400 hover:text-slate-600 transition px-2 active:scale-90"
+                              className="h-full flex items-center justify-center bg-slate-100 hover:bg-slate-200 dark:bg-[#1e293b]/40 dark:hover:bg-[#1e293b]/85 text-slate-550 hover:text-slate-705 transition px-2 rounded-xs active:scale-90"
                             >
-                              <Minus className="h-2.5 w-2.5 stroke-[3]" />
+                              <Minus className="h-2 w-2 stroke-[3]" />
                             </button>
                             <span className="min-w-5 text-center text-xs font-black text-slate-900 dark:text-white">
                               {item.qty}
                             </span>
                             <button
                               onClick={() => updateQty(index, item.qty + 1)}
-                              className="h-full flex items-center justify-center text-slate-400 hover:text-slate-600 transition px-2 active:scale-90"
+                              className="h-full flex items-center justify-center bg-slate-100 hover:bg-slate-200 dark:bg-[#1e293b]/40 dark:hover:bg-[#1e293b]/85 text-slate-550 hover:text-slate-705 transition px-2 rounded-xs active:scale-90"
                             >
-                              <Plus className="h-2.5 w-2.5 stroke-[3]" />
+                              <Plus className="h-2 w-2 stroke-[3]" />
                             </button>
                           </div>
 
@@ -931,10 +930,10 @@ const Cart = () => {
 
             {/* Premium Interactive Gift Wrapping Card */}
             {selectedItems.length > 0 && (
-              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md p-5 text-left space-y-4 shadow-xs">
+              <div className="bg-white dark:bg-[#0F131C] border border-slate-200 dark:border-slate-800 rounded p-5 text-left space-y-4 shadow-xs">
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div className="flex items-center gap-3">
-                    <div className={`h-9 w-9 rounded-md flex items-center justify-center transition border ${ giftWrap ? "bg-indigo-500/10 text-indigo-500 border-indigo-500/20" : "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700" }`}>
+                    <div className={`h-9 w-9 rounded flex items-center justify-center transition border ${ giftWrap ? "bg-indigo-500/10 text-indigo-500 border-indigo-500/20" : "bg-slate-50 dark:bg-[#0C0F16] text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-800" }`}>
                       <Gift size={16} />
                     </div>
                     <div>
@@ -945,7 +944,7 @@ const Cart = () => {
                   <button
                     type="button"
                     onClick={() => setGiftWrap(!giftWrap)}
-                    className={`px-4 py-1.5 rounded-md text-xs font-black uppercase tracking-wider transition ${ giftWrap ? "bg-indigo-600 text-slate-100 dark:text-white shadow-sm" : "bg-slate-100 dark:bg-slate-800 hover:bg-slate-200/80 text-slate-700 dark:text-slate-300" }`}
+                    className={`px-4 py-1.5 rounded text-xs font-black uppercase tracking-wider transition ${ giftWrap ? "bg-[#10B981] text-white shadow-sm" : "bg-slate-100 dark:bg-[#1e293b]/40 hover:bg-slate-200 dark:hover:bg-[#1e293b]/80 text-slate-750 dark:text-slate-300" }`}
                   >
                     {giftWrap ? "Added" : "Add Gift Wrap"}
                   </button>
@@ -959,7 +958,7 @@ const Cart = () => {
                       placeholder="Write your heartfelt message here (e.g., Happy Birthday! Warmest wishes on your special day...)"
                       value={giftMessage}
                       onChange={(e) => setGiftMessage(e.target.value)}
-                      className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 px-4 py-2.5 text-xs font-medium text-slate-800 dark:text-slate-200 outline-none transition focus:bg-white dark:focus:bg-slate-900 resize-none shadow-inner focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                      className="w-full rounded border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0C0F16] px-4 py-2.5 text-xs font-medium text-slate-800 dark:text-slate-200 outline-none transition focus:bg-white dark:focus:bg-slate-900 resize-none shadow-inner focus:outline-none focus:ring-2 focus:ring-[#10B981]"
                     />
                   </div>
                 )}
@@ -979,9 +978,9 @@ const Cart = () => {
                   {savedItems.map((item, idx) => (
                     <div
                       key={`saved-${item.itemId}-${item.size}`}
-                      className="group flex gap-3.5 border border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-900/50 p-3.5 rounded-md shadow-xs hover:shadow-sm hover:border-slate-300 dark:hover:border-slate-700 transition"
+                      className="group flex gap-3.5 border border-slate-200 dark:border-slate-800/80 bg-white dark:bg-[#0F131C] p-3.5 rounded shadow-xs hover:shadow-sm hover:border-slate-300 dark:hover:border-slate-700 transition"
                     >
-                      <div className="h-20 w-20 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-md overflow-hidden p-1 shrink-0 flex items-center justify-center">
+                      <div className="h-20 w-20 bg-slate-50 dark:bg-[#0C0F16] border border-slate-200 dark:border-slate-800 rounded overflow-hidden p-1 shrink-0 flex items-center justify-center">
                         <img
                           src={item.product.images?.[0]?.startsWith("http") ? item.product.images[0] : `${backendUrl}/${item.product.images?.[0]}`}
                           className="h-full w-full object-contain"
@@ -990,7 +989,7 @@ const Cart = () => {
                       </div>
                       <div className="flex-1 flex flex-col justify-between text-left min-w-0">
                         <div>
-                          <h4 className="text-xs font-bold text-slate-900 dark:text-white leading-snug line-clamp-1 group-hover:text-indigo-500 transition">{item.product.name}</h4>
+                          <h4 className="text-xs font-bold text-slate-900 dark:text-white leading-snug line-clamp-1 group-hover:text-[#10B981] transition">{item.product.name}</h4>
                           <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 mt-1">
                             Size: {item.size} · Price: <span className="text-slate-900 dark:text-white font-extrabold">₹{item.product.price}</span>
                           </p>
@@ -998,7 +997,7 @@ const Cart = () => {
                         <div className="flex items-center gap-3 mt-2 text-[9px] font-black uppercase tracking-wider">
                           <button
                             onClick={() => moveToCart(idx)}
-                            className="text-indigo-600 hover:text-indigo-700 transition cursor-pointer"
+                            className="text-indigo-600 hover:text-indigo-750 transition cursor-pointer"
                           >
                             Move to Cart
                           </button>
@@ -1022,7 +1021,7 @@ const Cart = () => {
           {/* Right Side: Order Summary Panel */}
           <div className="lg:col-span-4 lg:sticky lg:top-24 space-y-4">
             
-            <div className="rounded-md border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5.5 shadow-sm text-left space-y-5">
+            <div className="rounded border border-slate-250 dark:border-slate-800 bg-white dark:bg-[#0F131C] p-5.5 shadow-sm text-left space-y-5">
               <div>
                 <h2 className="text-lg font-black text-slate-950 dark:text-white tracking-tight">Order Summary</h2>
                 <p className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest mt-0.5">Review items & checkout</p>
@@ -1037,7 +1036,7 @@ const Cart = () => {
                       <button
                         type="button"
                         onClick={() => setCouponsDrawerOpen(!couponsDrawerOpen)}
-                        className="text-[9px] font-black text-indigo-600 dark:text-indigo-400 lowercase hover:underline flex items-center gap-0.5 transition cursor-pointer select-none"
+                        className="text-[9px] font-black text-[#10B981] lowercase hover:underline flex items-center gap-0.5 transition cursor-pointer select-none"
                       >
                         <Percent size={9} />
                         <span>{couponsDrawerOpen ? "hide coupons" : "view coupons"}</span>
@@ -1051,13 +1050,13 @@ const Cart = () => {
                       value={couponCode}
                       onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                       disabled={couponLoading || appliedCoupon}
-                      className="flex-1 rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 px-3.5 py-2.5 text-xs font-semibold text-slate-950 dark:text-white outline-none transition shadow-inner placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                      className="flex-1 rounded border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0C0F16] px-3.5 py-2.5 text-xs font-semibold text-slate-950 dark:text-white outline-none transition shadow-inner placeholder:text-slate-400 dark:placeholder:text-slate-650 focus:outline-none focus:ring-2 focus:ring-[#10B981]"
                     />
                     {appliedCoupon ? (
                       <button
                         type="button"
                         onClick={handleRemoveCoupon}
-                        className="rounded-md border border-red-200 hover:bg-red-50 text-red-600 dark:border-red-500 dark:hover:bg-red-500/10 px-4 py-2 text-xs font-black uppercase tracking-wider transition cursor-pointer"
+                        className="rounded border border-red-200 hover:bg-red-50 text-red-600 dark:border-red-550 dark:hover:bg-red-500/10 px-4 py-2 text-xs font-black uppercase tracking-wider transition cursor-pointer"
                       >
                         Remove
                       </button>
@@ -1065,7 +1064,7 @@ const Cart = () => {
                       <button
                         type="submit"
                         disabled={couponLoading || !couponCode.trim()}
-                        className="rounded-md bg-slate-900 dark:bg-indigo-600 text-slate-100 dark:text-white px-4 py-2.5 text-xs font-black uppercase tracking-wider hover:opacity-90 active:scale-95 transition cursor-pointer disabled:opacity-50"
+                        className="rounded bg-slate-900 dark:bg-indigo-600 text-slate-100 dark:text-white px-4 py-2.5 text-xs font-black uppercase tracking-wider hover:bg-slate-850 dark:hover:bg-indigo-500 active:scale-95 transition cursor-pointer disabled:opacity-50"
                       >
                         Apply
                       </button>
@@ -1083,14 +1082,14 @@ const Cart = () => {
 
                 {/* Available Coupons Drawer inside Summary Page */}
                 {couponsDrawerOpen && availableCoupons.length > 0 && (
-                  <div className="animate-scaleUp bg-slate-50/50 dark:bg-slate-950/40 border border-slate-200/50 dark:border-slate-800/80 rounded-md p-3 space-y-2 mt-2 max-h-48 overflow-y-auto custom-scrollbar">
-                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-wider mb-1">Available Coupons</p>
+                  <div className="animate-scaleUp bg-slate-55/50 dark:bg-slate-950/40 border border-slate-200/50 dark:border-slate-800/80 rounded p-3 space-y-2 mt-2 max-h-48 overflow-y-auto custom-scrollbar">
+                    <p className="text-[9px] font-black text-slate-450 uppercase tracking-wider mb-1">Available Coupons</p>
                     {availableCoupons.map((coupon) => {
                       const isEligible = total >= coupon.minOrderAmount;
                       return (
                         <div 
                           key={coupon._id} 
-                          className="flex items-center justify-between gap-3 p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm text-xs"
+                          className="flex items-center justify-between gap-3 p-2 bg-white dark:bg-[#0C0F16] border border-slate-200 dark:border-slate-800 rounded-sm text-xs"
                         >
                           <div className="min-w-0 text-left">
                             <div className="flex items-center gap-1.5">
@@ -1186,7 +1185,7 @@ const Cart = () => {
                 <button
                   disabled={itemCount === 0}
                   onClick={handleCheckout}
-                  className={`w-full rounded-md h-[56px] text-xs font-black uppercase tracking-wider text-slate-100 dark:text-white flex items-center justify-center gap-2 hover:shadow-lg transition-all active:scale-[0.98] cursor-pointer shadow-md ${ itemCount === 0 ? "bg-slate-300 dark:bg-slate-800 cursor-not-allowed hover:shadow-none" : "bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 hover:shadow-indigo-500/25 shadow-indigo-600/10" }`}
+                  className={`w-full rounded h-[56px] text-xs font-black uppercase tracking-wider text-white flex items-center justify-center gap-2 hover:shadow-lg transition-all active:scale-[0.98] cursor-pointer shadow-md border-none ${ itemCount === 0 ? "bg-slate-300 dark:bg-slate-800 cursor-not-allowed hover:shadow-none" : "bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-450 hover:to-emerald-550 hover:shadow-emerald-500/25 shadow-emerald-600/10" }`}
                 >
                   <Lock size={13} className="stroke-[2.5]" />
                   <span>Secure Checkout ({itemCount})</span>
@@ -1195,25 +1194,25 @@ const Cart = () => {
 
               {/* Trust Badges section */}
               <div className="border-t border-slate-100 dark:border-slate-800/80 pt-4 grid grid-cols-3 gap-2 text-center select-none">
-                <div className="flex flex-col items-center gap-1">
-                  <div className="h-8 w-8 rounded-sm bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center border border-indigo-100/10 shadow-xs">
+                <div className="flex flex-col items-center gap-1.5">
+                  <div className="h-8 w-8 rounded-sm bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/15 shadow-xs">
                     <ShieldCheck size={16} />
                   </div>
-                  <span className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wide">Secure Pay</span>
+                  <span className="text-[9px] font-black text-slate-500 dark:text-slate-450 uppercase tracking-wide">Secure Pay</span>
                 </div>
 
-                <div className="flex flex-col items-center gap-1">
-                  <div className="h-8 w-8 rounded-sm bg-emerald-50 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/10 shadow-xs">
+                <div className="flex flex-col items-center gap-1.5">
+                  <div className="h-8 w-8 rounded-sm bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/15 shadow-xs">
                     <RotateCcw size={16} />
                   </div>
-                  <span className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wide">30 Day Return</span>
+                  <span className="text-[9px] font-black text-slate-500 dark:text-slate-450 uppercase tracking-wide">30 Day Return</span>
                 </div>
 
-                <div className="flex flex-col items-center gap-1">
-                  <div className="h-8 w-8 rounded-sm bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-100/10 shadow-xs">
+                <div className="flex flex-col items-center gap-1.5">
+                  <div className="h-8 w-8 rounded-sm bg-emerald-500/5 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/15 shadow-xs">
                     <Truck size={16} />
                   </div>
-                  <span className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wide">Fast Delivery</span>
+                  <span className="text-[9px] font-black text-slate-500 dark:text-slate-450 uppercase tracking-wide">Fast Delivery</span>
                 </div>
               </div>
 
@@ -1244,13 +1243,13 @@ const Cart = () => {
                 return (
                   <div 
                     key={prod._id} 
-                    className="w-48 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-md p-3 flex flex-col justify-between shrink-0 shadow-xs snap-start hover:border-indigo-500/50 dark:hover:border-indigo-500/40 hover:scale-[1.01] transition duration-200"
+                    className="w-48 bg-white dark:bg-[#0F131C] border border-slate-200 dark:border-slate-800 rounded p-3 flex flex-col justify-between shrink-0 shadow-xs snap-start hover:border-emerald-500/50 dark:hover:border-emerald-500/40 hover:scale-[1.01] transition duration-200"
                   >
                     <div>
                       {/* Frame image */}
                       <div 
                         onClick={() => navigate(`/product/${prod._id}`)}
-                        className="h-32 w-full rounded-md bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 flex items-center justify-center p-1.5 cursor-pointer relative group overflow-hidden"
+                        className="h-32 w-full rounded bg-slate-50 dark:bg-[#0C0F16] border border-slate-200 dark:border-slate-800 flex items-center justify-center p-1.5 cursor-pointer relative group overflow-hidden"
                       >
                         <img 
                           src={prod.images?.[0]?.startsWith("http") ? prod.images[0] : `${backendUrl}/${prod.images?.[0]}`} 
@@ -1258,7 +1257,7 @@ const Cart = () => {
                           className="h-full w-full object-contain transition duration-300 group-hover:scale-105"
                         />
                         {discount > 0 && (
-                          <span className="absolute top-2 left-2 px-1.5 py-0.5 bg-rose-500 text-slate-100 dark:text-white font-black text-[8px] uppercase tracking-wider rounded">
+                          <span className="absolute top-2 left-2 px-1.5 py-0.5 bg-rose-500 text-slate-100 dark:text-white font-black text-[8px] uppercase tracking-wider rounded-sm">
                             -{discount}%
                           </span>
                         )}
@@ -1287,7 +1286,7 @@ const Cart = () => {
                       <button
                         type="button"
                         onClick={() => handleAddRecommended(prod)}
-                        className="h-7 px-3 bg-slate-900 hover:bg-slate-900 dark:bg-indigo-600 dark:hover:bg-indigo-500 text-slate-100 dark:text-white rounded-sm text-[9px] font-black uppercase tracking-wider transition active:scale-95 cursor-pointer flex items-center gap-1"
+                        className="h-7 px-3 bg-slate-900 hover:bg-slate-800 dark:bg-indigo-600 dark:hover:bg-indigo-550 text-white rounded-sm text-[9px] font-black uppercase tracking-wider transition active:scale-95 cursor-pointer flex items-center gap-1 border-none"
                       >
                         <Plus size={10} className="stroke-[3]" />
                         <span>Add</span>
@@ -1306,7 +1305,7 @@ const Cart = () => {
 
       {/* Mobile Sticky Bottom Checkout Bar */}
       {!pageLoading && cartItems.length > 0 && (
-        <div className="lg:hidden fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] left-0 right-0 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200/60 dark:border-slate-800/80 p-4 shadow-[0_-6px_20px_rgba(0,0,0,0.04)] dark:shadow-[0_-6px_20px_rgba(0,0,0,0.3)] flex items-center justify-between select-none">
+        <div className="lg:hidden fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] left-0 right-0 z-30 bg-white/95 dark:bg-[#0F131C]/95 backdrop-blur-md border-t border-slate-200/60 dark:border-slate-800/80 p-4 shadow-[0_-6px_20px_rgba(0,0,0,0.04)] dark:shadow-[0_-6px_20px_rgba(0,0,0,0.3)] flex items-center justify-between select-none animate-slideUp">
         <div className="text-left">
           <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider leading-none">Total Amount</p>
           <div className="flex items-baseline gap-1.5 mt-1">
@@ -1315,13 +1314,13 @@ const Cart = () => {
             </span>
           </div>
           {savings > 0 && (
-            <p className="text-[9px] font-bold text-emerald-600 mt-0.5">Saved: ₹{savings.toLocaleString("en-IN")}</p>
+            <p className="text-[9px] font-bold text-emerald-650 mt-0.5">Saved: ₹{savings.toLocaleString("en-IN")}</p>
           )}
         </div>
         <button
           disabled={itemCount === 0}
           onClick={handleCheckout}
-          className={`px-5 py-3 rounded-md text-xs font-black uppercase tracking-wider text-slate-100 dark:text-white flex items-center gap-1.5 transition active:scale-95 shadow-md ${ itemCount === 0 ? "bg-slate-300 dark:bg-slate-800 cursor-not-allowed hover:shadow-none" : "bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-600" }`}
+          className={`px-5 py-3 rounded text-xs font-black uppercase tracking-wider text-white flex items-center gap-1.5 transition active:scale-95 shadow-md border-none ${ itemCount === 0 ? "bg-slate-300 dark:bg-slate-800 cursor-not-allowed hover:shadow-none" : "bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-450 hover:to-emerald-550" }`}
         >
           <Lock size={12} className="stroke-[2.5]" />
           <span>Checkout ({itemCount})</span>

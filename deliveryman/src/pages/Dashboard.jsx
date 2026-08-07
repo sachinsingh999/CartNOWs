@@ -37,19 +37,22 @@ const formatAddress = (address) => {
     }, "");
 };
 
-const Dashboard = ({ 
-  token, 
-  driver, 
-  logout,
-  orders,
-  availableOrders,
-  returnTasks,
-  complaints,
-  stats,
-  loading,
-  setLoading,
-  fetchData
-}) => {
+import { useOutletContext } from "react-router-dom";
+
+const Dashboard = () => {
+  const {
+    token,
+    driver,
+    logout,
+    orders,
+    availableOrders,
+    returnTasks,
+    complaints,
+    stats,
+    loading,
+    setLoading,
+    fetchData
+  } = useOutletContext();
   const location = useLocation();
   const navigate = useNavigate();
 

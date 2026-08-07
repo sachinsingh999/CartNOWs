@@ -802,22 +802,22 @@ const Product = () => {
 
       {/* ── Sticky Control Bar ── */}
       <div 
-        className="sticky z-30 bg-white dark:bg-slate-950 border-b border-slate-200/40 dark:border-slate-800/40 py-4 shadow-[0_8px_30px_rgba(0,0,0,0.02)] transition-all duration-300"
+        className="sticky z-30 bg-white dark:bg-slate-950 border-b border-slate-200/40 dark:border-slate-800/40 py-2 sm:py-2.5 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-all duration-300"
         style={{ top: "var(--navbar-height, 80px)" }}
       >
-        <div className="max-w-full mx-auto px-4 sm:px-8 lg:px-12 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="max-w-full mx-auto px-4 sm:px-8 lg:px-12 flex flex-col md:flex-row md:items-center justify-between gap-2.5 md:gap-4">
           {/* Title & Count (Myntra style) */}
-          <div className="flex flex-col text-left">
-            <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+          <div className="flex flex-col text-left justify-center">
+            <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider leading-none">
               Home / Products Catalog
             </span>
-            <h2 className="text-sm sm:text-base font-black text-slate-800 dark:text-white uppercase tracking-wider mt-1.5">
-              Products Collection <span className="text-xs font-normal text-slate-400 dark:text-slate-500 lowercase normal-case ml-1.5"> - {totalCount} items</span>
+            <h2 className="text-xs sm:text-sm font-black text-slate-800 dark:text-white uppercase tracking-wider mt-1 leading-tight">
+              Products Collection <span className="text-[11px] font-normal text-slate-400 dark:text-slate-500 lowercase normal-case ml-1"> - {totalCount} items</span>
             </h2>
           </div>
 
           {/* Right Controls: Category, Sort, Results */}
-          <div className="flex flex-wrap items-center gap-3 justify-end">
+          <div className="flex flex-wrap items-center gap-2.5 justify-end">
             
             {/* Category dropdown */}
             <div className="flex items-center gap-1.5">
@@ -825,7 +825,7 @@ const Product = () => {
               <select
                 value={category}
                 onChange={(e) => handleCategoryPillChange(e.target.value)}
-                className="border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 dark:text-slate-300 bg-white dark:bg-slate-900 cursor-pointer outline-none shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                className="border border-slate-200 dark:border-slate-800 rounded-md px-2.5 py-1 text-xs font-bold text-slate-800 dark:text-slate-300 bg-white dark:bg-slate-900 cursor-pointer outline-none shadow-2xs focus:outline-none focus:ring-1 focus:ring-blue-500"
               >
                 <option value="all">All Categories</option>
                 {categoriesList.filter(c => c !== "all").map(c => (
@@ -840,7 +840,7 @@ const Product = () => {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 dark:text-slate-300 bg-white dark:bg-slate-900 cursor-pointer outline-none shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                className="border border-slate-200 dark:border-slate-800 rounded-md px-2.5 py-1 text-xs font-bold text-slate-800 dark:text-slate-300 bg-white dark:bg-slate-900 cursor-pointer outline-none shadow-2xs focus:outline-none focus:ring-1 focus:ring-blue-500"
               >
                 <option value="featured">Best Matches</option>
                 <option value="popularity">Popularity</option>
@@ -852,9 +852,9 @@ const Product = () => {
             </div>
 
             {/* Results Count indicator */}
-            <div className="hidden sm:flex items-center gap-2 pl-3 border-l border-slate-200 dark:border-slate-800">
+            <div className="hidden sm:flex items-center gap-2 pl-2.5 border-l border-slate-200 dark:border-slate-800">
               <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 tracking-widest uppercase">Found</span>
-              <span className="text-xs font-extrabold text-slate-800 dark:text-slate-100 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-xl">
+              <span className="text-xs font-extrabold text-slate-800 dark:text-slate-100 bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded-md">
                 {totalCount} items
               </span>
             </div>
@@ -863,13 +863,13 @@ const Product = () => {
 
         {/* Active Filter Chips block */}
         {activeFiltersChips.length > 0 && (
-          <div className="max-w-full mx-auto px-4 sm:px-8 lg:px-12 flex flex-wrap gap-1.5 items-center mt-3 pt-3 border-t border-slate-200/30 dark:border-slate-800/30">
+          <div className="max-w-full mx-auto px-4 sm:px-8 lg:px-12 flex flex-wrap gap-1.5 items-center mt-2 pt-2 border-t border-slate-200/30 dark:border-slate-800/30">
             <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider mr-1">Active:</span>
             {activeFiltersChips.map((chip) => (
               <button
                 key={chip.key}
                 onClick={chip.clear}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-500/5 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-900/30 text-[10.5px] font-extrabold text-indigo-600 dark:text-indigo-400 hover:border-rose-500 hover:text-rose-500 transition-all cursor-pointer capitalize shadow-xs"
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-500/5 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-900/30 text-[10px] font-extrabold text-indigo-600 dark:text-indigo-400 hover:border-rose-500 hover:text-rose-500 transition-all cursor-pointer capitalize shadow-2xs"
               >
                 <span>{chip.label}</span>
                 <X size={10} className="stroke-[3px]" />
@@ -886,10 +886,10 @@ const Product = () => {
       </div>
 
       {/* ── Layout Grid Columns ── */}
-      <div className="max-w-full mx-auto px-4 sm:px-8 lg:px-12 py-6 grid grid-cols-1 md:grid-cols-[260px_1fr] gap-8 items-start relative">
+      <div className="max-w-full mx-auto px-4 sm:px-8 lg:px-12 py-5 grid grid-cols-1 md:grid-cols-[260px_1fr] gap-6 items-start relative">
         
         {/* Desktop Sidebar filter card */}
-        <div className="hidden md:block sticky top-32 max-h-[calc(100vh-10rem)] overflow-y-auto pr-1 select-none scrollbar-hide">
+        <div className="hidden md:block sticky top-[135px] max-h-[calc(100vh-140px)] overflow-y-auto select-none scrollbar-hide">
           <FilterSidebar
             categories={categoriesList}
             subCategories={subCategoriesList}
@@ -1061,7 +1061,7 @@ const Product = () => {
               {/* Product Card grid - Animate items stagger entry */}
               <motion.div 
                 layout
-                className="grid grid-cols-1 min-[450px]:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6"
+                className="grid grid-cols-1 min-[450px]:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3.5 sm:gap-4"
               >
                 {productList.map((item) => (
                   <motion.div
