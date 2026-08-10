@@ -31,11 +31,11 @@ import {
   ChevronRight
 } from "lucide-react";
 
-// Fallback campaign slide assets imported from assets folder
-import heroSlide1 from "../../assets/hero_slide_1.png";
-import heroSlide2 from "../../assets/hero_slide_2.png";
-import heroSlide3 from "../../assets/hero_slide_3.png";
-import heroSlide4 from "../../assets/hero_slide_4.png";
+// Fallback campaign slide assets
+const heroSlide1 = "/hero_slide_1.webp";
+import heroSlide2 from "../../assets/hero_slide_2.webp";
+import heroSlide3 from "../../assets/hero_slide_3.webp";
+import heroSlide4 from "../../assets/hero_slide_4.webp";
 
 const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
   const shouldReduceMotion = useReducedMotion();
@@ -205,62 +205,45 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
     }
   }, [slideIdx, slides, customBanners, showBanners, isDark]);
 
-  // Fetch campaign slideshow assets and banners from server
+  // Fetch campaign slideshow assets and banners from server in parallel
   useEffect(() => {
     const fetchHeroData = async () => {
       try {
-        // Fetch public categories
-        try {
-          const catRes = await cachedGet(`${backendUrl}/api/product/categories`);
-          if (catRes.data?.success) {
-            setCategories(catRes.data.categories || []);
-          }
-        } catch (catErr) {
-          console.error("Failed to fetch categories:", catErr);
+        const [catRes, bannerRes, assetRes] = await Promise.allSettled([
+          cachedGet(`${backendUrl}/api/product/categories`),
+          cachedGet(`${backendUrl}/api/banners`),
+          cachedGet(`${backendUrl}/api/system/hero-assets`)
+        ]);
+
+        if (catRes.status === "fulfilled" && catRes.value.data?.success) {
+          setCategories(catRes.value.data.categories || []);
         }
 
-        // Fetch banners
-        let activeBanners = [];
-        try {
-          const bannerRes = await cachedGet(`${backendUrl}/api/banners`);
-          if (bannerRes.data?.success && bannerRes.data?.banners?.length > 0) {
-            activeBanners = bannerRes.data.banners;
-            setCustomBanners(activeBanners);
-          }
-        } catch (bannerErr) {
-          console.error("Failed to fetch banners:", bannerErr);
+        if (bannerRes.status === "fulfilled" && bannerRes.value.data?.success && bannerRes.value.data?.banners?.length > 0) {
+          setCustomBanners(bannerRes.value.data.banners);
         }
 
-        // Fetch cutout assets
-        try {
-          const response = await cachedGet(`${backendUrl}/api/system/hero-assets`);
-          if (response.data?.success && response.data?.assets?.length > 0) {
-            const mapped = response.data.assets.map(asset => {
-              const scaleClass = "scale-[1.0] sm:scale-[1.05] lg:scale-[1.08]";
-              return {
-                imageUrl: asset.imageUrl.startsWith("http") ? asset.imageUrl : `${backendUrl}${asset.imageUrl}`,
-                name: asset.name,
-                category: asset.category,
-                tagline: asset.tagline,
-                scaleClass
-              };
-            });
-            setSlides(mapped);
-          } else {
-            setSlides(fallbackSlides);
-          }
-        } catch (cutoutErr) {
-          console.error("Failed to load hero assets from backend:", cutoutErr);
+        if (assetRes.status === "fulfilled" && assetRes.value.data?.success && assetRes.value.data?.assets?.length > 0) {
+          const mapped = assetRes.value.data.assets.map(asset => {
+            const scaleClass = "scale-[1.0] sm:scale-[1.05] lg:scale-[1.08]";
+            return {
+              imageUrl: asset.imageUrl.startsWith("http") ? asset.imageUrl : `${backendUrl}${asset.imageUrl}`,
+              name: asset.name,
+              category: asset.category,
+              tagline: asset.tagline,
+              scaleClass
+            };
+          });
+          setSlides(mapped);
+        } else {
           setSlides(fallbackSlides);
         }
-      } catch (error) {
-        console.error("Critical error fetching hero data:", error);
-        setSlides(fallbackSlides);
+      } catch (err) {
+        console.error("Failed to fetch hero data:", err);
       } finally {
         setLoading(false);
       }
     };
-
     fetchHeroData();
   }, []);
 
@@ -787,7 +770,7 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
                 return (
                   <motion.div
                     key={idx}
-                    initial={{ opacity: 0, scale: 1.05 }}
+                    initial={idx === 0 ? false : { opacity: 0, scale: 1.05 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.98 }}
                     transition={shouldReduceMotion ? { duration: 0.3 } : { duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
@@ -797,6 +780,7 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
                     <img
                       src={slide.imageUrl}
                       alt={slide.name}
+                      fetchPriority="high"
                       decoding="sync"
                       className="h-[95%] w-auto max-w-[85%] sm:max-w-[65%] object-contain object-bottom select-none z-0 filter drop-shadow-2xl opacity-90 dark:opacity-85"
                     />
@@ -1000,7 +984,7 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
                   return (
                     <motion.div
                       key={idx}
-                      initial={{ 
+                      initial={idx === 0 ? false : { 
                         opacity: 0, 
                         scale: shouldReduceMotion ? 1 : 0.97
                       }}

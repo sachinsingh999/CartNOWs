@@ -1219,19 +1219,22 @@ const getCollectionsPublic = async (req, res) => {
 const getBrandsPublic = async (req, res) => {
   try {
     const brandModel = (await import("../models/brandModel.js")).default;
-    const brands = await brandModel.find({ status: "active" }).sort({ name: 1 });
+    const brands = await brandModel.find({ status: "active" }).sort({ name: 1 }).lean();
 
-    const enrichedBrands = [];
-    for (const brand of brands) {
-      const brandObj = brand.toObject();
-      const count = await productModel.countDocuments({
-        isDeleted: { $ne: true },
-        status: "approved",
-        brand: new RegExp(`^${brand.name}$`, "i")
-      });
-      brandObj.count = count;
-      enrichedBrands.push(brandObj);
-    }
+    const brandCounts = await productModel.aggregate([
+      { $match: { isDeleted: { $ne: true }, status: "approved" } },
+      { $group: { _id: { $toLower: "$brand" }, count: { $sum: 1 } } }
+    ]);
+
+    const countMap = {};
+    brandCounts.forEach((b) => {
+      if (b._id) countMap[b._id] = b.count;
+    });
+
+    const enrichedBrands = brands.map((brand) => ({
+      ...brand,
+      count: countMap[brand.name?.toLowerCase()] || 0
+    }));
 
     res.json({ success: true, brands: enrichedBrands });
   } catch (error) {

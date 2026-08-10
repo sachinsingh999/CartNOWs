@@ -37,7 +37,7 @@ const rawProductsTemplate = {
       desc: "Flagship iPhone featuring Titanium design, A17 Pro chip, custom Action button, and advanced 5x Telephoto camera.",
       images: [
         "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=600&q=80",
-        "https://images.unsplash.com/photo-1695048133031-64581f14ec04?w=600&q=80",
+        "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=600&q=80",
         "https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?w=600&q=80"
       ]
     },
@@ -705,7 +705,7 @@ const rawProductsTemplate = {
       desc: "Lidar-guided automatic vacuum mop sweeper mapping home rooms dynamically, returning to self-empty charge base.",
       images: [
         "https://images.unsplash.com/photo-1518310383802-640c2de311b2?w=600&q=80",
-        "https://images.unsplash.com/photo-1562224003-498d7af910c5?w=600&q=80",
+        "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=600&q=80",
         "https://images.unsplash.com/photo-1558317374-067fb5f30001?w=600&q=80"
       ]
     },
@@ -748,7 +748,7 @@ const rawProductsTemplate = {
       brand: "LG",
       desc: "Cordless lightweight stick vacuum with dual batteries, robust suction motors, and multi-surface wash heads.",
       images: [
-        "https://images.unsplash.com/photo-1562224003-498d7af910c5?w=600&q=80",
+        "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=600&q=80",
         "https://images.unsplash.com/photo-1558317374-067fb5f30001?w=600&q=80",
         "https://images.unsplash.com/photo-1518310383802-640c2de311b2?w=600&q=80"
       ]
@@ -817,7 +817,7 @@ const rawProductsTemplate = {
       desc: "Robust athletic workout duffel bag with specialized external shoe compartment, mesh pocket, and padded strap.",
       images: [
         "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&q=80",
-        "https://images.unsplash.com/photo-1576053139778-7e32f2ae3cf4?w=600&q=80",
+        "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&q=80",
         "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=600&q=80"
       ]
     },
@@ -840,7 +840,7 @@ const rawProductsTemplate = {
       images: [
         "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=600&q=80",
         "https://images.unsplash.com/photo-1523362628745-0c100150b504?w=600&q=80",
-        "https://images.unsplash.com/photo-1576053139778-7e32f2ae3cf4?w=600&q=80"
+        "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&q=80"
       ]
     },
     {
@@ -953,7 +953,7 @@ const rawProductsTemplate = {
       desc: "Water-repellent protective travel sleeve bag featuring padded felt interiors and accessory organizer pockets.",
       images: [
         "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&q=80",
-        "https://images.unsplash.com/photo-1576053139778-7e32f2ae3cf4?w=600&q=80",
+        "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&q=80",
         "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=600&q=80"
       ]
     },
@@ -1024,7 +1024,7 @@ const rawProductsTemplate = {
       images: [
         "https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=600&q=80",
         "https://images.unsplash.com/photo-1597481499750-3e6b22637e12?w=600&q=80",
-        "https://images.unsplash.com/photo-1564890369478-c90ae83f4edf?w=600&q=80"
+        "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=600&q=80"
       ]
     },
     {

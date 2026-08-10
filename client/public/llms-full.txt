@@ -1,0 +1,27 @@
+# CartNOW Full System Documentation
+
+> CartNOW is an advanced, full-stack e-commerce ecosystem built with React, Vite, Tailwind CSS, Express, MongoDB, and Socket.io.
+
+## Architecture Overview
+
+CartNOW provides an end-to-end shopping experience featuring:
+1. Buyer Storefront: Browse products, manage wishlist, apply coupons, perform AI voice search, and place orders.
+2. Seller Portal: Inventory management, sales analytics, and order fulfillment.
+3. Logistics Fleet: Real-time rider tracking, delivery assignments, and fulfillment updates.
+
+## API Documentation
+
+- `GET /api/product/list`: Fetch published catalog items.
+- `GET /api/product/brands`: Retrieve active seller brands and product totals.
+- `POST /api/user/login`: User authentication endpoint.
+- `POST /api/order/place`: Order creation and checkout processing.
+
+## Core Navigation Routes
+
+- [Store Front](https://cartnow-omega.vercel.app/)
+- [Product Categories](https://cartnow-omega.vercel.app/categories)
+- [Curated Collections](https://cartnow-omega.vercel.app/collections)
+- [Brand Storefronts](https://cartnow-omega.vercel.app/brands)
+- [AI Product Discover](https://cartnow-omega.vercel.app/discover)
+- [Seller Hub](https://cartnow-seller.vercel.app/)
+- [Rider Delivery Fleet](https://cart-now-deliveryagent.vercel.app/)

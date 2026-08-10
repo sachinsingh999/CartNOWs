@@ -29,12 +29,23 @@ const AiRobotChat = () => {
     }
   };
 
-  // Auto-scroll inside the container only (preventing main page scrolling)
+  const isInitialMountRef = useRef(true);
+
+  // Auto-scroll inside the container only when new messages arrive (preventing initial mount forced reflow)
   useEffect(() => {
+    if (isInitialMountRef.current) {
+      isInitialMountRef.current = false;
+      return;
+    }
+
     if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTo({
-        top: chatContainerRef.current.scrollHeight,
-        behavior: "smooth"
+      requestAnimationFrame(() => {
+        if (chatContainerRef.current) {
+          chatContainerRef.current.scrollTo({
+            top: chatContainerRef.current.scrollHeight,
+            behavior: "smooth"
+          });
+        }
       });
     }
   }, [aiChat, aiLoading]);

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { backendUrl } from "../config";
+import { getOptimizedImageUrl } from "../utils/imageOptimizer";
 import Rating from "../components/Rating";
 import CostomersReviews from "../components/CostomersReviews";
 import GiveReview from "../components/GiveReview";
@@ -814,9 +815,10 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
       setReviewLoading(false);
     }
   };
-  const activeMainImgSrc = (mainImg && typeof mainImg === "string")
+  const rawMainImgSrc = (mainImg && typeof mainImg === "string")
     ? (mainImg.startsWith("http") ? mainImg : `${backendUrl}/${mainImg}`)
     : "";
+  const activeMainImgSrc = getOptimizedImageUrl(rawMainImgSrc, { width: 900, quality: 80 });
 
   const triggerLightbox = (idx) => {
     setLightboxImgIdx(idx);
@@ -861,9 +863,11 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
                       className={`relative w-full aspect-[3/4] overflow-hidden border transition-all cursor-pointer ${ isActive ? "border-slate-950 dark:border-white border-2" : "border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-600" }`}
                     >
                       <img
-                        src={img.startsWith("http") ? img : `${backendUrl}/${img}`}
+                        src={getOptimizedImageUrl(img.startsWith("http") ? img : `${backendUrl}/${img}`, { width: 200, quality: 75 })}
                         className="h-full w-full object-cover"
                         alt="thumbnail"
+                        loading="lazy"
+                        decoding="async"
                       />
                     </button>
                   );

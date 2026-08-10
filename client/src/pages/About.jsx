@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { backendUrl } from "../config";
-import aboutHeroIllustration from "../assets/about_hero_illustration.png";
+import aboutHeroIllustration from "../assets/about_hero_illustration.webp";
 import { 
   ChevronLeft, 
   ChevronRight, 

@@ -1,10 +1,22 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { backendUrl } from "../config";
 import ProductCard from "../pages/ProductCard";
 import { toast } from "react-toastify";
-import { ArrowLeft, Layers, Award, ShieldCheck, SlidersHorizontal, Laptop, Flame } from "lucide-react";
+import { 
+  ArrowLeft, 
+  Layers, 
+  Award, 
+  ShieldCheck, 
+  SlidersHorizontal, 
+  Laptop, 
+  Flame,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight
+} from "lucide-react";
 import { ProductGridSkeleton } from "../components/SkeletonLoader";
 
 const CatalogDetail = ({ type }) => {
@@ -24,6 +36,13 @@ const CatalogDetail = ({ type }) => {
   const initialProducts = getInitialProducts();
   const [products, setProducts] = useState(initialProducts);
   const [loading, setLoading] = useState(initialProducts.length === 0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(9);
+
+  // Reset page number on slug or catalog type change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [slug, type]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -138,6 +157,19 @@ const CatalogDetail = ({ type }) => {
     fetchProducts();
   }, [slug, type]);
 
+  // Memoized pagination calculations
+  const totalPages = Math.max(1, Math.ceil(products.length / itemsPerPage));
+
+  const paginatedProducts = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return products.slice(start, start + itemsPerPage);
+  }, [products, currentPage, itemsPerPage]);
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   // Dynamic layout metadata helper
   const getMetadata = () => {
     const capitalizedSlug = slug ? slug.replace(/-/g, " ") : "";
@@ -206,22 +238,46 @@ const CatalogDetail = ({ type }) => {
         <span>{meta.backLabel}</span>
       </button>
 
-      {/* Header section */}
-      <div className="mb-4">
-        <span className={`inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md mb-1 ${meta.badgeColor}`}>
-          <HeaderIcon size={10} className="stroke-[2.5]" />
-          {meta.badgeLabel}
-        </span>
-        <h1 className="text-2xl sm:text-3xl font-black text-slate-800 dark:text-slate-100 capitalize leading-tight">
-          {meta.title}
-        </h1>
-        <p className="text-[11px] font-bold text-slate-500 mt-0.5">
-          {meta.subtitle}
-        </p>
+      {/* Header section with Per-Page Toolbar */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-4">
+        <div>
+          <span className={`inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md mb-1 ${meta.badgeColor}`}>
+            <HeaderIcon size={10} className="stroke-[2.5]" />
+            {meta.badgeLabel}
+          </span>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-800 dark:text-slate-100 capitalize leading-tight">
+            {meta.title}
+          </h1>
+          <p className="text-[11px] font-bold text-slate-500 mt-0.5">
+            {meta.subtitle}
+          </p>
+        </div>
+
+        {!loading && products.length > 0 && (
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+              Per Page:
+            </span>
+            <select
+              value={itemsPerPage}
+              onChange={(e) => {
+                setItemsPerPage(Number(e.target.value));
+                setCurrentPage(1);
+              }}
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 text-xs font-bold px-2 py-1 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-xs"
+            >
+              <option value={6}>6</option>
+              <option value={9}>9</option>
+              <option value={12}>12</option>
+              <option value={18}>18</option>
+              <option value={24}>24</option>
+            </select>
+          </div>
+        )}
       </div>
 
       {loading ? (
-        <ProductGridSkeleton count={8} />
+        <ProductGridSkeleton count={itemsPerPage} />
       ) : products.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-center animate-fade-in">
           <SlidersHorizontal size={32} className="text-slate-300 dark:text-slate-600 mb-2 animate-bounce" />
@@ -231,11 +287,80 @@ const CatalogDetail = ({ type }) => {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-in">
-          {products.map((p) => (
-            <ProductCard key={p._id} product={p} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-in">
+            {paginatedProducts.map((p) => (
+              <ProductCard key={p._id} product={p} />
+            ))}
+          </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <p className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                Showing <span className="font-black text-slate-800 dark:text-white">{(currentPage - 1) * itemsPerPage + 1}</span>–
+                <span className="font-black text-slate-800 dark:text-white">{Math.min(currentPage * itemsPerPage, products.length)}</span> of{" "}
+                <span className="font-black text-slate-800 dark:text-white">{products.length}</span> products
+              </p>
+
+              <div className="flex items-center gap-1.5">
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => handlePageChange(1)}
+                  title="First Page"
+                  className="p-2 text-xs font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition duration-150"
+                >
+                  <ChevronsLeft size={14} className="stroke-[2.5]" />
+                </button>
+
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  title="Previous Page"
+                  className="px-3 py-1.5 text-xs font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition duration-150 flex items-center gap-1"
+                >
+                  <ChevronLeft size={14} className="stroke-[2.5]" />
+                  <span>Prev</span>
+                </button>
+
+                <div className="flex items-center gap-1 px-1">
+                  {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => handlePageChange(page)}
+                      className={`w-8 h-8 text-xs font-black rounded-lg transition duration-150 cursor-pointer border ${
+                        currentPage === page
+                          ? "bg-blue-600 text-white border-blue-600 shadow-xs"
+                          : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  disabled={currentPage === totalPages}
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  title="Next Page"
+                  className="px-3 py-1.5 text-xs font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition duration-150 flex items-center gap-1"
+                >
+                  <span>Next</span>
+                  <ChevronRight size={14} className="stroke-[2.5]" />
+                </button>
+
+                <button
+                  disabled={currentPage === totalPages}
+                  onClick={() => handlePageChange(totalPages)}
+                  title="Last Page"
+                  className="p-2 text-xs font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition duration-150"
+                >
+                  <ChevronsRight size={14} className="stroke-[2.5]" />
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

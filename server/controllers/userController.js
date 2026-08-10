@@ -429,10 +429,9 @@ const addUserAppReview = async (req, res) => {
 /* ================= GET ALL APPLICATION REVIEWS ================= */
 const getAllAppReviews = async (req, res) => {
   try {
-    const usersWithReviews = await userModel.find(
-      { "appReview.rating": { $gt: 0 } },
-      "name profilePhoto appReview"
-    );
+    const usersWithReviews = await userModel
+      .find({ "appReview.rating": { $gt: 0 } }, "name profilePhoto appReview")
+      .lean();
 
     const reviews = usersWithReviews.map(user => {
       const nameParts = user.name.trim().split(" ");

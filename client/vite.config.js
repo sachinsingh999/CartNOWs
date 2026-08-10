@@ -9,6 +9,15 @@ export default defineConfig({
   server: { port: 5173 },
   build: {
     cssCodeSplit: true,
-    cssMinify: 'esbuild'
+    cssMinify: 'esbuild',
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules/lucide-react')) {
+            return 'vendor-icons';
+          }
+        }
+      }
+    }
   }
 })
