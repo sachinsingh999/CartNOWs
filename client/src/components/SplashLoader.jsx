@@ -7,26 +7,22 @@ const SplashLoader = ({ stage, onComplete }) => {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    const startTime = Date.now();
-    const duration = 2200; // 2.2s loading duration for high-end feel
+    const steps = [30, 60, 85, 100];
+    let stepIdx = 0;
 
-    const updateProgress = () => {
-      const elapsed = Date.now() - startTime;
-      const progressRatio = Math.min(1, elapsed / duration);
-      // Quintic ease out for a luxury, decrescendo speed build-up
-      const easeOutRatio = 1 - Math.pow(1 - progressRatio, 5);
-      const computed = Math.min(100, Math.floor(easeOutRatio * 100));
-
-      setProgress(computed);
-
-      if (elapsed < duration) {
-        requestAnimationFrame(updateProgress);
+    const timer = setInterval(() => {
+      if (stepIdx < steps.length) {
+        setProgress(steps[stepIdx]);
+        if (steps[stepIdx] === 100 && onComplete) {
+          setTimeout(onComplete, 120);
+        }
+        stepIdx++;
       } else {
-        if (onComplete) onComplete();
+        clearInterval(timer);
       }
-    };
+    }, 160);
 
-    requestAnimationFrame(updateProgress);
+    return () => clearInterval(timer);
   }, [onComplete]);
 
   // Framer Motion premium layout transitions
@@ -138,11 +134,9 @@ const SplashLoader = ({ stage, onComplete }) => {
         {/* Minimalist horizontal progress bar */}
         <div className={`mt-8 flex flex-col items-center justify-center w-full transition-all duration-550 ${stage === "splash-move" ? "opacity-0 scale-95 pointer-events-none" : "opacity-100 scale-100"}`}>
           <div className="w-36 h-[2px] bg-white/10 rounded-full overflow-hidden relative">
-            <motion.div
-              className="absolute left-0 top-0 h-full bg-white dark:bg-slate-900"
-              initial={{ width: "0%" }}
-              animate={{ width: `${progress}%` }}
-              transition={{ ease: "easeOut" }}
+            <div
+              className="absolute left-0 top-0 h-full bg-white dark:bg-slate-900 transition-all duration-200 ease-out"
+              style={{ width: `${progress}%` }}
             />
           </div>
           <span className="text-[10px] font-mono tracking-[0.2em] text-slate-400 mt-2.5 select-none">

@@ -2,17 +2,16 @@
  * Helper utility to optimize Cloudinary URLs directly.
  * Adds f_auto, q_auto, and specified width transformations.
  */
-export const optimizeCloudinaryUrl = (url, width = 400, options = {}) => {
+export const optimizeCloudinaryUrl = (url, width = 350, options = {}) => {
   if (!url || typeof url !== "string") return "";
   const { quality = "auto", format = "auto", crop = "limit" } = options;
 
   if (url.includes("cloudinary.com") && url.includes("/upload/")) {
-    // Avoid double transformation if already transformed
-    if (url.includes("/f_auto") || url.includes("/q_auto") || url.includes("/w_")) {
-      if (url.includes("/w_")) {
-        return url.replace(/\/w_\d+/, `/w_${width}`);
-      }
-      return url;
+    if (/\/w_\d+/.test(url)) {
+      return url.replace(/\/w_\d+/, `/w_${width}`);
+    }
+    if (url.includes("/upload/f_auto,q_auto/")) {
+      return url.replace("/upload/f_auto,q_auto/", `/upload/f_auto,q_auto,w_${width},c_${crop}/`);
     }
     const transform = `f_${format},q_${quality},w_${width},c_${crop}`;
     return url.replace("/upload/", `/upload/${transform}/`);

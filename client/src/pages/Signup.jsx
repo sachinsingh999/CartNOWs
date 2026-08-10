@@ -19,7 +19,7 @@ import {
   Sparkles
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { GoogleLogin } from "@react-oauth/google";
+import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
 import { useAuth } from "../context/AuthContext";
 
 const Signup = () => {
@@ -244,7 +244,8 @@ const Signup = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-64px)] max-h-[calc(100vh-64px)] overflow-hidden bg-slate-50 dark:bg-[#09090B] px-3 sm:px-6 py-1 sm:py-2 transition-colors duration-300 flex items-center justify-center relative font-sans">
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+      <div className="h-[calc(100vh-64px)] max-h-[calc(100vh-64px)] overflow-hidden bg-slate-50 dark:bg-[#09090B] px-3 sm:px-6 py-1 sm:py-2 transition-colors duration-300 flex items-center justify-center relative font-sans">
       
       {/* Ambient background rays */}
       <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] dark:bg-[radial-gradient(#242A3B_1px,transparent_1px)] bg-[size:28px_28px] opacity-60 dark:opacity-40 pointer-events-none z-0" />
@@ -476,6 +477,7 @@ const Signup = () => {
         </div>
       </motion.div>
     </div>
+    </GoogleOAuthProvider>
   );
 };
 

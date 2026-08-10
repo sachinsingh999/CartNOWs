@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import { backendUrl } from "../config";
 import { AnimatePresence } from "framer-motion";
@@ -46,8 +46,13 @@ export const SystemProvider = ({ children }) => {
     maintenanceSettings?.enabled &&
     !maintenanceSettings?.isWhitelisted;
 
+  const systemValue = useMemo(
+    () => ({ showSplash, maintenanceSettings }),
+    [showSplash, maintenanceSettings]
+  );
+
   return (
-    <SystemContext.Provider value={{ showSplash, maintenanceSettings }}>
+    <SystemContext.Provider value={systemValue}>
       <AnimatePresence>
         {showSplash && <SplashLoader onComplete={handleSplashComplete} />}
       </AnimatePresence>

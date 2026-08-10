@@ -100,7 +100,7 @@ const MainLayout = () => {
       <AnimatePresence>
         {showPromo && !isPromoOrFooterExcluded && (
           <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            initial={false}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 50, scale: 0.9 }}
             transition={{ type: "spring", stiffness: 260, damping: 25 }}

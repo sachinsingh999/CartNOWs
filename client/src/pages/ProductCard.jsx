@@ -150,9 +150,8 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
   const getSrc = (idx = 0) => {
     const s = images[idx] || images[0];
     if (!s) return "";
-    if (s.startsWith("http")) return s;
-    const cleanPath = s.startsWith("/") ? s.slice(1) : s;
-    return `${backendUrl}/${cleanPath}`;
+    const rawUrl = s.startsWith("http") ? s : `${backendUrl}/${s.startsWith("/") ? s.slice(1) : s}`;
+    return getOptimizedImageUrl(rawUrl, { width: 350, quality: 80 });
   };
 
   const isOOS = product.stock === 0;

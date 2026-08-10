@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import { backendUrl } from "../config";
 import { toast } from "react-toastify";
@@ -156,21 +156,24 @@ export const AuthProvider = ({ children }) => {
     verifyAuth();
   }, [token, role]);
 
+  const authContextValue = useMemo(
+    () => ({
+      token,
+      role,
+      user,
+      loading,
+      isAuthenticated: !!token,
+      login,
+      logout,
+      setToken,
+      setRole,
+      setUser
+    }),
+    [token, role, user, loading]
+  );
+
   return (
-    <AuthContext.Provider
-      value={{
-        token,
-        role,
-        user,
-        loading,
-        isAuthenticated: !!token,
-        login,
-        logout,
-        setToken,
-        setRole,
-        setUser
-      }}
-    >
+    <AuthContext.Provider value={authContextValue}>
       {children}
     </AuthContext.Provider>
   );
