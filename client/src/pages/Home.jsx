@@ -21,6 +21,7 @@ const DealOfTheDay = React.lazy(() => import("../components/Home/DealOfTheDay"))
 const SellerSpotlight = React.lazy(() => import("../components/Home/SellerSpotlight"));
 const AiRobotChat = React.lazy(() => import("../components/Home/AiRobotChat"));
 const CustomerTestimonials = React.lazy(() => import("../components/Home/CustomerTestimonials"));
+const BenefitsStrip = React.lazy(() => import("../components/Home/BenefitsStrip"));
 const LazySection = ({ children, height = "280px" }) => {
   const [isVisible, setIsVisible] = useState(false);
   const ref = React.useRef(null);
