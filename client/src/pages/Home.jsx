@@ -21,7 +21,31 @@ const DealOfTheDay = React.lazy(() => import("../components/Home/DealOfTheDay"))
 const SellerSpotlight = React.lazy(() => import("../components/Home/SellerSpotlight"));
 const AiRobotChat = React.lazy(() => import("../components/Home/AiRobotChat"));
 const CustomerTestimonials = React.lazy(() => import("../components/Home/CustomerTestimonials"));
-const BenefitsStrip = React.lazy(() => import("../components/Home/BenefitsStrip"));
+const LazySection = ({ children, height = "280px" }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = React.useRef(null);
+
+  useEffect(() => {
+    if (!ref.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "350px 0px" }
+    );
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={ref} style={{ minHeight: isVisible ? undefined : height }}>
+      {isVisible ? <Suspense fallback={null}>{children}</Suspense> : null}
+    </div>
+  );
+};
 
 const Home = () => {
   const navigate = useNavigate();
@@ -308,9 +332,8 @@ const Home = () => {
         <TopCategories popularCategories={homepageData.popularCategories} />
       </motion.section>
 
-      {/* BELOW-THE-FOLD SECTIONS (Lazy Loaded for minimal Main-Thread Blocking Time) */}
-      <Suspense fallback={<div className="min-h-[200px]" />}>
-        {/* SECTION 5: BRANDS + RECOMMENDATIONS */}
+      {/* BELOW-THE-FOLD SECTIONS (Lazy Loaded on Scroll for Minimal Main-Thread Execution Time) */}
+      <LazySection height="320px">
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -335,8 +358,9 @@ const Home = () => {
             />
           </div>
         </motion.section>
+      </LazySection>
 
-        {/* SECTION 4: FLASH DEALS + TRENDING PRODUCTS */}
+      <LazySection height="320px">
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -373,8 +397,9 @@ const Home = () => {
             wishlist={wishlist}
           />
         </motion.section>
+      </LazySection>
 
-        {/* SECTION 4: SHOP BY COLLECTIONS */}
+      <LazySection height="250px">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -383,8 +408,9 @@ const Home = () => {
         >
           <ShopByCollections trendingCollections={homepageData.trendingCollections} />
         </motion.div>
+      </LazySection>
 
-        {/* SECTION 5: DEAL OF THE DAY + SELLER SPOTLIGHT + AI CHAT */}
+      <LazySection height="350px">
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -404,8 +430,9 @@ const Home = () => {
             <AiRobotChat />
           </div>
         </motion.section>
+      </LazySection>
 
-        {/* SECTION 6: CUSTOMER TESTIMONIALS */}
+      <LazySection height="250px">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -414,8 +441,9 @@ const Home = () => {
         >
           <CustomerTestimonials />
         </motion.div>
+      </LazySection>
 
-        {/* SECTION 3: BENEFITS STRIP */}
+      <LazySection height="180px">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -424,7 +452,7 @@ const Home = () => {
         >
           <BenefitsStrip />
         </motion.div>
-      </Suspense>
+      </LazySection>
 
       {/* QUICK VIEW INTERACTIVE MODAL */}
       <QuickViewModal

@@ -27,18 +27,12 @@ const SplashLoader = ({ stage, onComplete }) => {
 
   // Framer Motion premium layout transitions
   const containerVariants = {
-    initial: {
-      clipPath: "circle(150% at 50% 50%)",
-      opacity: 1
-    },
+    initial: { opacity: 1, scale: 1 },
     exit: {
-      clipPath: "circle(0% at 50% 50%)",
       opacity: 0,
-      transition: {
-        duration: 1.4,
-        ease: [0.76, 0, 0.24, 1], // Custom slow-out bezier
-      },
-    },
+      scale: 1.02,
+      transition: { duration: 0.35, ease: "easeInOut" }
+    }
   };
 
   const logoVariants = {

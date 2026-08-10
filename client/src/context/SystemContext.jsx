@@ -8,8 +8,17 @@ import Maintenance from "../pages/Maintenance";
 const SystemContext = createContext(null);
 
 export const SystemProvider = ({ children }) => {
-  const [maintenanceSettings, setMaintenanceSettings] = useState(null);
-  const [loadingMaintenance, setLoadingMaintenance] = useState(true);
+  const getInitialMaintenance = () => {
+    try {
+      const cached = sessionStorage.getItem("cached_maintenance_settings");
+      if (cached) return JSON.parse(cached);
+    } catch (e) {}
+    return null;
+  };
+
+  const initialSettings = getInitialMaintenance();
+  const [maintenanceSettings, setMaintenanceSettings] = useState(initialSettings);
+  const [loadingMaintenance, setLoadingMaintenance] = useState(!initialSettings);
   const [showSplash, setShowSplash] = useState(true);
   const [canDismissSplash, setCanDismissSplash] = useState(false);
 
@@ -20,6 +29,9 @@ export const SystemProvider = ({ children }) => {
         const { data } = await axios.get(`${backendUrl}/api/system/maintenance`);
         if (data.success) {
           setMaintenanceSettings(data.settings);
+          try {
+            sessionStorage.setItem("cached_maintenance_settings", JSON.stringify(data.settings));
+          } catch (e) {}
         }
       } catch (err) {
         console.error("Failed to fetch maintenance settings:", err);

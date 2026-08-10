@@ -1023,6 +1023,8 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
                           <img
                             src={slide.imageUrl}
                             alt={slide.name}
+                            width="600"
+                            height="600"
                             fetchPriority="high"
                             decoding="sync"
                             style={{

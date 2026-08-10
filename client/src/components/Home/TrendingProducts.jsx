@@ -89,13 +89,17 @@ const TrendingProducts = ({ bestSellers = [], newArrivals = [], mostViewed = [],
           {/* Glassmorphism navigation buttons */}
           <div className="flex gap-2">
             <button
+              type="button"
               onClick={() => scrollSlider("left")}
+              aria-label="Previous trending products"
               className="h-8.5 w-8.5 rounded-full border border-slate-200/50 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md hover:bg-white dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center shadow-sm hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
             >
               <ChevronLeft size={15} />
             </button>
             <button
+              type="button"
               onClick={() => scrollSlider("right")}
+              aria-label="Next trending products"
               className="h-8.5 w-8.5 rounded-full border border-slate-200/50 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md hover:bg-white dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center shadow-sm hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
             >
               <ChevronRight size={15} />

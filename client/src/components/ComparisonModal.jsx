@@ -80,7 +80,9 @@ const ComparisonModal = ({ onClose }) => {
             </span>
           </div>
           <button
+            type="button"
             onClick={onClose}
+            aria-label="Close comparison modal"
             className="flex items-center justify-center h-8.5 w-8.5 rounded-full bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 cursor-pointer transition-all"
           >
             <X size={16} />

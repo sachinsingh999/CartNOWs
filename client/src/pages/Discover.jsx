@@ -1122,6 +1122,7 @@ const Discover = () => {
                           e.stopPropagation();
                           onToggleFavorite(product._id);
                         }}
+                        aria-label={isFav ? "Remove from wishlist" : "Add to wishlist"}
                         className="absolute top-3.5 right-3.5 h-8.5 w-8.5 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center shadow-sm border border-slate-100 dark:border-slate-700/50 cursor-pointer hover:scale-105 active:scale-95 transition-all"
                       >
                         <Heart
