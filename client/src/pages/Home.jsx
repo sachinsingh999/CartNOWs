@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { AnimatePresence, motion } from "framer-motion";
@@ -11,17 +11,17 @@ import TopCategories from "../components/Home/TopCategories";
 import QuickViewModal from "../components/Home/QuickViewModal";
 import PremiumDealBanner from "../components/Home/PremiumDealBanner";
 
-// Eagerly loaded modular components (below-the-fold content)
-import FlashDeals from "../components/Home/FlashDeals";
-import TrendingProducts from "../components/Home/TrendingProducts";
-import ShopByBrands from "../components/Home/ShopByBrands";
-import RecommendedProducts from "../components/Home/RecommendedProducts";
-import ShopByCollections from "../components/Home/ShopByCollections";
-import DealOfTheDay from "../components/Home/DealOfTheDay";
-import SellerSpotlight from "../components/Home/SellerSpotlight";
-import AiRobotChat from "../components/Home/AiRobotChat";
-import CustomerTestimonials from "../components/Home/CustomerTestimonials";
-import BenefitsStrip from "../components/Home/BenefitsStrip";
+// Lazy loaded below-the-fold components to reduce main-thread script evaluation & layout blocking
+const FlashDeals = React.lazy(() => import("../components/Home/FlashDeals"));
+const TrendingProducts = React.lazy(() => import("../components/Home/TrendingProducts"));
+const ShopByBrands = React.lazy(() => import("../components/Home/ShopByBrands"));
+const RecommendedProducts = React.lazy(() => import("../components/Home/RecommendedProducts"));
+const ShopByCollections = React.lazy(() => import("../components/Home/ShopByCollections"));
+const DealOfTheDay = React.lazy(() => import("../components/Home/DealOfTheDay"));
+const SellerSpotlight = React.lazy(() => import("../components/Home/SellerSpotlight"));
+const AiRobotChat = React.lazy(() => import("../components/Home/AiRobotChat"));
+const CustomerTestimonials = React.lazy(() => import("../components/Home/CustomerTestimonials"));
+const BenefitsStrip = React.lazy(() => import("../components/Home/BenefitsStrip"));
 
 const Home = () => {
   const navigate = useNavigate();
@@ -308,120 +308,123 @@ const Home = () => {
         <TopCategories popularCategories={homepageData.popularCategories} />
       </motion.section>
 
-      {/* SECTION 5: BRANDS + RECOMMENDATIONS - Eager Loaded */}
-      <motion.section
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-50px" }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
-        className="w-full px-4 sm:px-8 lg:px-12 py-4 md:py-6 space-y-6 md:space-y-8 select-none"
-      >
-        <div>
-          <ShopByBrands popularBrands={homepageData.popularBrands} />
-        </div>
+      {/* BELOW-THE-FOLD SECTIONS (Lazy Loaded for minimal Main-Thread Blocking Time) */}
+      <Suspense fallback={<div className="min-h-[200px]" />}>
+        {/* SECTION 5: BRANDS + RECOMMENDATIONS */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          className="w-full px-4 sm:px-8 lg:px-12 py-4 md:py-6 space-y-6 md:space-y-8 select-none"
+        >
+          <div>
+            <ShopByBrands popularBrands={homepageData.popularBrands} />
+          </div>
 
-        <div>
-          <RecommendedProducts
-            recommended={homepageData.recommended}
-            trending={homepageData.trending}
-            topRated={homepageData.topRated}
-            newArrivals={homepageData.newArrivals}
+          <div>
+            <RecommendedProducts
+              recommended={homepageData.recommended}
+              trending={homepageData.trending}
+              topRated={homepageData.topRated}
+              newArrivals={homepageData.newArrivals}
+              onQuickView={setQuickViewProduct}
+              onAddToCart={onAddToCart}
+              onToggleFavorite={onToggleFavorite}
+              wishlist={wishlist}
+            />
+          </div>
+        </motion.section>
+
+        {/* SECTION 4: FLASH DEALS + TRENDING PRODUCTS */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          className="w-full px-4 sm:px-8 lg:px-12 py-2"
+        >
+          <FlashDeals
+            deals={(() => {
+              const seen = new Set();
+              const combined = [];
+              [...(homepageData.dealsOfDay || []), ...(homepageData.trending || [])].forEach(p => {
+                if (p && p._id && !seen.has(p._id.toString())) {
+                  seen.add(p._id.toString());
+                  combined.push(p);
+                }
+              });
+              return combined;
+            })()}
             onQuickView={setQuickViewProduct}
             onAddToCart={onAddToCart}
             onToggleFavorite={onToggleFavorite}
             wishlist={wishlist}
           />
-        </div>
-      </motion.section>
 
-      {/* SECTION 4: FLASH DEALS + TRENDING PRODUCTS - Eager Loaded */}
-      <motion.section
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-50px" }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
-        className="w-full px-4 sm:px-8 lg:px-12 py-2"
-      >
-        <FlashDeals
-          deals={(() => {
-            const seen = new Set();
-            const combined = [];
-            [...(homepageData.dealsOfDay || []), ...(homepageData.trending || [])].forEach(p => {
-              if (p && p._id && !seen.has(p._id.toString())) {
-                seen.add(p._id.toString());
-                combined.push(p);
-              }
-            });
-            return combined;
-          })()}
-          onQuickView={setQuickViewProduct}
-          onAddToCart={onAddToCart}
-          onToggleFavorite={onToggleFavorite}
-          wishlist={wishlist}
-        />
-
-        <TrendingProducts
-          bestSellers={homepageData.bestSellers}
-          newArrivals={homepageData.newArrivals}
-          mostViewed={homepageData.mostViewed}
-          loading={loading}
-          onQuickView={setQuickViewProduct}
-          onAddToCart={onAddToCart}
-          onToggleFavorite={onToggleFavorite}
-          wishlist={wishlist}
-        />
-      </motion.section>
-
-      {/* SECTION 4: SHOP BY COLLECTIONS - Eager Loaded */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-50px" }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
-      >
-        <ShopByCollections trendingCollections={homepageData.trendingCollections} />
-      </motion.div>
-
-      {/* SECTION 5: DEAL OF THE DAY + SELLER SPOTLIGHT + AI CHAT - Eager Loaded */}
-      <motion.section
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-50px" }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
-        className="w-full px-4 sm:px-8 lg:px-12 py-2 select-none"
-      >
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-left">
-          <DealOfTheDay 
-            deals={homepageData.dealsOfDay} 
-            activeDeal={activeDeal} 
-            onAddToCart={onAddToCart} 
+          <TrendingProducts
+            bestSellers={homepageData.bestSellers}
+            newArrivals={homepageData.newArrivals}
+            mostViewed={homepageData.mostViewed}
+            loading={loading}
+            onQuickView={setQuickViewProduct}
+            onAddToCart={onAddToCart}
+            onToggleFavorite={onToggleFavorite}
+            wishlist={wishlist}
           />
+        </motion.section>
 
-          <SellerSpotlight />
+        {/* SECTION 4: SHOP BY COLLECTIONS */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        >
+          <ShopByCollections trendingCollections={homepageData.trendingCollections} />
+        </motion.div>
 
-          <AiRobotChat />
-        </div>
-      </motion.section>
+        {/* SECTION 5: DEAL OF THE DAY + SELLER SPOTLIGHT + AI CHAT */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          className="w-full px-4 sm:px-8 lg:px-12 py-2 select-none"
+        >
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-left">
+            <DealOfTheDay 
+              deals={homepageData.dealsOfDay} 
+              activeDeal={activeDeal} 
+              onAddToCart={onAddToCart} 
+            />
 
-      {/* SECTION 6: CUSTOMER TESTIMONIALS - Eager Loaded */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-50px" }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
-      >
-        <CustomerTestimonials />
-      </motion.div>
+            <SellerSpotlight />
 
-      {/* SECTION 3: BENEFITS STRIP - Eager Loaded */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-50px" }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
-      >
-        <BenefitsStrip />
-      </motion.div>
+            <AiRobotChat />
+          </div>
+        </motion.section>
+
+        {/* SECTION 6: CUSTOMER TESTIMONIALS */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        >
+          <CustomerTestimonials />
+        </motion.div>
+
+        {/* SECTION 3: BENEFITS STRIP */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        >
+          <BenefitsStrip />
+        </motion.div>
+      </Suspense>
 
       {/* QUICK VIEW INTERACTIVE MODAL */}
       <QuickViewModal

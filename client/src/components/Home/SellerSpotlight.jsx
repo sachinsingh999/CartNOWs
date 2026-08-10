@@ -8,9 +8,9 @@ const SellerSpotlight = () => {
   return (
     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-md p-6 shadow-[0_8px_30px_rgba(0,0,0,0.015)] flex flex-col justify-between min-h-[500px]">
       <div className="space-y-4">
-        <h3 className="text-sm font-black text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+        <h2 className="text-sm font-black text-slate-900 dark:text-slate-100 uppercase tracking-wider">
           Seller Spotlight
-        </h3>
+        </h2>
 
         <div className="flex items-center gap-4 py-2 border-b border-slate-100 dark:border-slate-800/80">
           <div className="w-16 h-16 rounded-md overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm shrink-0 bg-slate-50 dark:bg-slate-955">

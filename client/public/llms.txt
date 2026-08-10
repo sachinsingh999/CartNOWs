@@ -1,0 +1,16 @@
+# CartNOW
+
+> CartNOW is a next-generation e-commerce platform offering fast delivery across electronics, fashion, beauty, home decor, and daily deals with AI-driven product recommendations.
+
+## Overview & Key Pages
+
+- [CartNOW Home](https://cartnow-omega.vercel.app/): Main store front, daily deals, and featured products.
+- [Categories](https://cartnow-omega.vercel.app/categories): Browse products by category including Electronics, Fashion, Home, and Groceries.
+- [Collections](https://cartnow-omega.vercel.app/collections): Curated seasonal fashion and lifestyle collections.
+- [Brands](https://cartnow-omega.vercel.app/brands): Official store fronts for global brands.
+- [Discover](https://cartnow-omega.vercel.app/discover): AI-powered product discovery and trending feeds.
+
+## Partner Ecosystem
+
+- [Seller Hub](https://cartnow-seller.vercel.app/): Portal for merchant onboardings and store management.
+- [Delivery Fleet](https://cart-now-deliveryagent.vercel.app/): Portal for delivery agent operations and logistics.

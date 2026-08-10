@@ -58,22 +58,38 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
   const [showBanners, setShowBanners] = useState(false);
   const [couponCopied, setCouponCopied] = useState(false);
 
-  // Mouse parallax position states (throttled with RAF)
+  // Mouse parallax position states & cached container bounds ref
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const mouseRafRef = useRef(null);
+  const boundsRef = useRef({ width: 1200, height: 650, left: 0, top: 0 });
+
+  useEffect(() => {
+    const updateBounds = () => {
+      if (heroContainerRef.current) {
+        const rect = heroContainerRef.current.getBoundingClientRect();
+        boundsRef.current = {
+          width: rect.width || 1200,
+          height: rect.height || 650,
+          left: rect.left || 0,
+          top: rect.top || 0
+        };
+      }
+    };
+    updateBounds();
+    window.addEventListener("resize", updateBounds, { passive: true });
+    return () => window.removeEventListener("resize", updateBounds);
+  }, []);
 
   const handleMouseMove = (e) => {
-    if (!heroContainerRef.current || mouseRafRef.current) return;
+    if (mouseRafRef.current) return;
     const clientX = e.clientX;
     const clientY = e.clientY;
 
     mouseRafRef.current = requestAnimationFrame(() => {
-      if (heroContainerRef.current) {
-        const { left, top, width, height } = heroContainerRef.current.getBoundingClientRect();
-        const x = (clientX - left - width / 2) / 35;
-        const y = (clientY - top - height / 2) / 35;
-        setMousePosition({ x, y });
-      }
+      const { left, top, width, height } = boundsRef.current;
+      const x = (clientX - left - width / 2) / 35;
+      const y = (clientY - top - height / 2) / 35;
+      setMousePosition({ x, y });
       mouseRafRef.current = null;
     });
   };
@@ -432,7 +448,7 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
       <div 
         className="absolute inset-0 pointer-events-none opacity-0 group-hover/hero:opacity-100 transition-opacity duration-700 z-0"
         style={{
-          background: `radial-gradient(800px circle at ${mousePosition.x * 25 + (heroContainerRef.current?.getBoundingClientRect().width || 1200) / 2}px ${mousePosition.y * 25 + (heroContainerRef.current?.getBoundingClientRect().height || 650) / 2}px, rgba(99,102,241,0.06), transparent 50%)`
+          background: `radial-gradient(800px circle at ${mousePosition.x * 25 + boundsRef.current.width / 2}px ${mousePosition.y * 25 + boundsRef.current.height / 2}px, rgba(99,102,241,0.06), transparent 50%)`
         }}
       />
 
@@ -441,7 +457,7 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
         {/* Left CATEGORIES Badge */}
         <div 
           onClick={() => navigate("/categories")}
-          className="px-3.5 py-1 bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[11px] font-black tracking-wider uppercase rounded-full shrink-0 cursor-pointer hover:bg-amber-500 hover:text-slate-950 transition-all duration-200 select-none"
+          className="px-3.5 py-1 bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/20 text-amber-800 dark:text-amber-400 text-[11px] font-black tracking-wider uppercase rounded-full shrink-0 cursor-pointer hover:bg-amber-500 hover:text-slate-950 transition-all duration-200 select-none"
         >
           CATEGORIES
         </div>
@@ -697,26 +713,31 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
             {/* Slide Navigation Dots */}
             <div className="flex justify-center gap-2.5 mt-6 z-20">
               {customBanners.map((_, i) => (
-                <motion.button
+                <button
                   key={i}
+                  type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     setSlideIdx(i);
                   }}
-                  animate={{
-                    width: slideIdx === i ? 32 : 10,
-                    backgroundColor: slideIdx === i 
-                      ? "#f97316" 
-                      : (isDark ? "rgb(30, 41, 59)" : "rgb(203, 213, 225)")
-                  }}
-                  transition={shouldReduceMotion ? { duration: 0.2 } : {
-                    type: "spring",
-                    stiffness: 260,
-                    damping: 26
-                  }}
-                  className="h-2.5 rounded-full cursor-pointer border-none focus:outline-none"
                   aria-label={`Go to slide ${i + 1}`}
-                />
+                  className="p-2.5 cursor-pointer border-none bg-transparent flex items-center justify-center outline-none focus:outline-none"
+                >
+                  <motion.span
+                    animate={{
+                      width: slideIdx === i ? 32 : 12,
+                      backgroundColor: slideIdx === i 
+                        ? "#f97316" 
+                        : (isDark ? "rgb(30, 41, 59)" : "rgb(203, 213, 225)")
+                    }}
+                    transition={shouldReduceMotion ? { duration: 0.2 } : {
+                      type: "spring",
+                      stiffness: 260,
+                      damping: 26
+                    }}
+                    className="h-3 rounded-full block"
+                  />
+                </button>
               ))}
             </div>
           </div>
@@ -906,26 +927,31 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
                 className="flex items-center justify-start gap-2.5 pt-2 select-none"
               >
                 {activeSlides.map((_, i) => (
-                  <motion.button
+                  <button
                     key={i}
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       setSlideIdx(i);
                     }}
-                    animate={{
-                      width: slideIdx === i ? 32 : 8,
-                      backgroundColor: slideIdx === i 
-                        ? "#ff3f6c" 
-                        : (isDark ? "rgb(30, 41, 59)" : "rgb(226, 232, 240)")
-                    }}
-                    transition={shouldReduceMotion ? { duration: 0.2 } : {
-                      type: "spring",
-                      stiffness: 260,
-                      damping: 26
-                    }}
-                    className="h-2 rounded-full cursor-pointer border-none focus:outline-none"
                     aria-label={`Go to slide ${i + 1}`}
-                  />
+                    className="p-2.5 cursor-pointer border-none bg-transparent flex items-center justify-center outline-none focus:outline-none"
+                  >
+                    <motion.span
+                      animate={{
+                        width: slideIdx === i ? 32 : 12,
+                        backgroundColor: slideIdx === i 
+                          ? "#ff3f6c" 
+                          : (isDark ? "rgb(30, 41, 59)" : "rgb(226, 232, 240)")
+                      }}
+                      transition={shouldReduceMotion ? { duration: 0.2 } : {
+                        type: "spring",
+                        stiffness: 260,
+                        damping: 26
+                      }}
+                      className="h-3 rounded-full block"
+                    />
+                  </button>
                 ))}
               </motion.div>
 

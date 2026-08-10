@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { backendUrl } from "../../config";
 import { cachedGet } from "../../utils/apiCache";
+import { getOptimizedImageUrl } from "../../utils/imageOptimizer";
 
 // Import premium background-free assets
 import electronicsFallback from "../../assets/brand_asset_electronics_new.webp";
@@ -195,6 +196,7 @@ const TopCategories = ({ popularCategories = [] }) => {
     } else if (!imageSrc.startsWith("http")) {
       imageSrc = `${backendUrl}/${imageSrc}`;
     }
+    imageSrc = getOptimizedImageUrl(imageSrc, { width: 300, quality: 75 });
 
     const countVal = countsMap[cat.name.toLowerCase()] !== undefined
       ? `${countsMap[cat.name.toLowerCase()]} Products`

@@ -8,6 +8,7 @@ import {
   Star
 } from "lucide-react";
 import { backendUrl } from "../../config";
+import { getOptimizedImageUrl } from "../../utils/imageOptimizer";
 
 const ShopByBrands = ({ popularBrands = [] }) => {
   const navigate = useNavigate();
@@ -26,12 +27,13 @@ const ShopByBrands = ({ popularBrands = [] }) => {
           setCountsMap(map);
         }
       })
-      .catch(err => console.error("Failed to load brand counts in ShopByBrands:", err));
+      .catch(() => {});
   }, []);
 
   const renderBrandLogo = (brandName, logoUrl, textColorClass) => {
     if (logoUrl && (logoUrl.startsWith("http") || logoUrl.includes("uploads"))) {
-      const src = logoUrl.startsWith("http") ? logoUrl : `${backendUrl}/${logoUrl}`;
+      const rawUrl = logoUrl.startsWith("http") ? logoUrl : `${backendUrl}/${logoUrl}`;
+      const src = getOptimizedImageUrl(rawUrl, { width: 250, quality: 80 });
       return (
         <img
           src={src}

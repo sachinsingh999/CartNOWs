@@ -7,6 +7,7 @@ import { Star, Eye, ShoppingCart, Heart, BarChart2, Truck, CheckCircle2, Chevron
 import { useComparison } from "../context/ComparisonContext";
 import { getAverageRating, getReviewCount } from "../utils/productRatings";
 import { triggerFlyToCart } from "../utils/animation";
+import { getOptimizedImageUrl } from "../utils/imageOptimizer";
 
 const ProductCard = ({ product, compact = false, onQuickView }) => {
   const [isBursting, setIsBursting] = useState(false);
@@ -246,7 +247,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
               onClick={(e) => { e.stopPropagation(); setImgIdx(prevIdx); }}
               className="w-[10%] h-[190px] opacity-40 hover:opacity-75 transition-all duration-300 flex items-center justify-center shrink-0 border border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-md p-0.5 overflow-hidden relative cursor-pointer"
             >
-              <img src={getSrc(prevIdx)} className="max-h-full max-w-full object-contain" alt="" loading="lazy" decoding="async" />
+              <img src={getSrc(prevIdx)} width="400" height="400" className="max-h-full max-w-full object-contain" alt={product.name || "Product"} loading="lazy" decoding="async" />
               <div className="absolute inset-0 bg-black/5 flex items-center justify-end pr-0.5 text-slate-700 dark:text-white">
                 <ChevronLeft className="h-5 w-5 stroke-[2]" />
               </div>
@@ -254,12 +255,13 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
 
             {/* Active Center Image Panel */}
             <div className="w-[76%] h-[218px] z-10 flex items-center justify-center shrink-0 border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-md p-1.5 shadow-xs relative">
-              <img src={getSrc(imgIdx)} className="max-h-full max-w-full object-contain" alt="" onError={() => setImgError(true)} loading="lazy" decoding="async" />
+              <img src={getSrc(imgIdx)} width="400" height="400" className="max-h-full max-w-full object-contain" alt={product.name || "Product"} onError={() => setImgError(true)} loading="lazy" decoding="async" />
               
               {/* Wishlist Button Overlay */}
               <button
                 type="button"
                 onClick={toggleFavorite}
+                aria-label={isFavorite ? "Remove from wishlist" : "Add to wishlist"}
                 className="absolute top-2 right-2 h-7 w-7 bg-white/95 dark:bg-slate-900/95 rounded-full flex items-center justify-center shadow-xs cursor-pointer transition-all duration-200 active:scale-90 z-30 border-none"
               >
                 <Heart
@@ -279,6 +281,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
                     addToCompare(product);
                   }
                 }}
+                aria-label={isComparing ? "Remove from product comparison" : "Compare product"}
                 className={`absolute top-10 right-2 h-7 w-7 backdrop-blur-md rounded-full flex items-center justify-center shadow-xs z-30 cursor-pointer transition-all duration-200 active:scale-90 ${isComparing ? "bg-indigo-600 border-none text-white" : "bg-white/95 dark:bg-slate-900/95 border-none text-slate-500 dark:text-slate-400 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/20" }`}
                 title="Compare product"
               >
@@ -301,7 +304,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
               onClick={(e) => { e.stopPropagation(); setImgIdx(nextIdx); }}
               className="w-[10%] h-[190px] opacity-40 hover:opacity-75 transition-all duration-300 flex items-center justify-center shrink-0 border border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-md p-0.5 overflow-hidden relative cursor-pointer"
             >
-              <img src={getSrc(nextIdx)} className="max-h-full max-w-full object-contain" alt="" loading="lazy" decoding="async" />
+              <img src={getSrc(nextIdx)} width="400" height="400" className="max-h-full max-w-full object-contain" alt={product.name || "Product"} loading="lazy" decoding="async" />
               <div className="absolute inset-0 bg-black/5 flex items-center justify-start pl-0.5 text-slate-700 dark:text-white">
                 <ChevronRight className="h-5 w-5 stroke-[2]" />
               </div>
@@ -309,12 +312,13 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
           </>
         ) : (
           <div className="w-full h-full flex items-center justify-center p-6 bg-white dark:bg-slate-900 relative">
-            <img src={getSrc(0)} className="max-h-full max-w-full object-contain p-2" alt="" onError={() => setImgError(true)} loading="lazy" decoding="async" />
+            <img src={getSrc(0)} width="400" height="400" className="max-h-full max-w-full object-contain p-2" alt={product.name || "Product"} onError={() => setImgError(true)} loading="lazy" decoding="async" />
 
             {/* Wishlist Button Overlay */}
             <button
               type="button"
               onClick={toggleFavorite}
+              aria-label={isFavorite ? "Remove from wishlist" : "Add to wishlist"}
               className="absolute top-3 right-3 h-7 w-7 bg-white/95 dark:bg-slate-900/95 rounded-full flex items-center justify-center shadow-xs cursor-pointer transition-all duration-200 active:scale-90 z-30 border-none"
             >
               <Heart
@@ -334,6 +338,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
                   addToCompare(product);
                 }
               }}
+              aria-label={isComparing ? "Remove from product comparison" : "Compare product"}
               className={`absolute top-11 right-3 h-7 w-7 backdrop-blur-md rounded-full flex items-center justify-center shadow-xs z-30 cursor-pointer transition-all duration-200 active:scale-90 ${isComparing ? "bg-indigo-600 border-none text-white" : "bg-white/95 dark:bg-slate-900/95 border-none text-slate-500 dark:text-slate-400 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/20" }`}
               title="Compare product"
             >

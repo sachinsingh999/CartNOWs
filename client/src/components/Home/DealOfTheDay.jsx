@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Star, ShoppingCart, Eye, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { backendUrl } from "../../config";
+import { getOptimizedImageUrl } from "../../utils/imageOptimizer";
 
 const DealOfTheDay = ({ deals = [], activeDeal = null, onAddToCart }) => {
   const navigate = useNavigate();
@@ -72,10 +73,12 @@ const DealOfTheDay = ({ deals = [], activeDeal = null, onAddToCart }) => {
     : `SAVE ${discountPercent}%`;
 
   const rawModelImg = isCampaignActive ? (activeDeal.modelImage || dealProduct.images?.[0] || "") : (dealProduct.images?.[0] || "");
-  const finalModelImgUrl = rawModelImg?.startsWith("http") ? rawModelImg : `${backendUrl}/${rawModelImg}`;
+  const rawModelUrl = rawModelImg?.startsWith("http") ? rawModelImg : `${backendUrl}/${rawModelImg}`;
+  const finalModelImgUrl = getOptimizedImageUrl(rawModelUrl, { width: 600, quality: 75 });
 
   const productImg = dealProduct.images?.[0] || "";
-  const finalProductImgUrl = productImg?.startsWith("http") ? productImg : `${backendUrl}/${productImg}`;
+  const rawProdUrl = productImg?.startsWith("http") ? productImg : `${backendUrl}/${productImg}`;
+  const finalProductImgUrl = getOptimizedImageUrl(rawProdUrl, { width: 200, quality: 75 });
 
   const handleAddToCart = () => {
     if (isExpired && isCampaignActive) return;

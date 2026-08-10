@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { getOptimizedImageUrl } from "../../utils/imageOptimizer";
 import electronicsImg from "../../assets/electronics_collection_composite.webp";
 import fashionImg from "../../assets/fashion_collection_composite.webp";
 import homeImg from "../../assets/home_collection_composite.webp";
@@ -87,6 +88,8 @@ const ShopByCollections = ({ trendingCollections = [] }) => {
     let imageSrc = col.banner;
     if (!imageSrc || !imageSrc.startsWith("http")) {
       imageSrc = preset.fallbackImage;
+    } else {
+      imageSrc = getOptimizedImageUrl(imageSrc, { width: 500, quality: 75 });
     }
 
     return {

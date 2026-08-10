@@ -45,12 +45,15 @@ const MainLayout = () => {
   }, [location.pathname]);
 
   useEffect(() => {
+    let rafId;
     const updateHeight = () => {
-      const header = document.getElementById("main-navbar-header");
-      if (header) {
-        const height = header.offsetHeight;
-        document.documentElement.style.setProperty("--navbar-height", `${height}px`);
-      }
+      rafId = requestAnimationFrame(() => {
+        const header = document.getElementById("main-navbar-header");
+        if (header) {
+          const height = header.offsetHeight;
+          document.documentElement.style.setProperty("--navbar-height", `${height}px`);
+        }
+      });
     };
 
     // Run initial update
@@ -71,6 +74,7 @@ const MainLayout = () => {
 
     return () => {
       if (observer) observer.disconnect();
+      if (rafId) cancelAnimationFrame(rafId);
       window.removeEventListener("resize", updateHeight);
       clearTimeout(timer);
     };
@@ -105,7 +109,9 @@ const MainLayout = () => {
             <div className="bg-slate-950/95 backdrop-blur-xl rounded-[23.5px] p-5 flex flex-col gap-3.5 text-white w-full relative">
               {/* Close Button */}
               <button
+                type="button"
                 onClick={closePromo}
+                aria-label="Dismiss partnership promo"
                 className="absolute top-4.5 right-4.5 text-slate-400 hover:text-white transition-colors border-none bg-transparent cursor-pointer focus:outline-none"
               >
                 <X size={14} />

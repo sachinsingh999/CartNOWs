@@ -43,6 +43,14 @@ connectDb();
 connectCloudinary();
 
 // middlewares
+app.use((req, res, next) => {
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Content-Security-Policy', "frame-ancestors 'self';");
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+  next();
+});
 app.use(express.json());
 app.use(cors());
 app.use(maintenanceMiddleware);
@@ -51,9 +59,9 @@ app.use(maintenanceMiddleware);
 app.use('/api/system', systemRouter);
 app.use('/api/user',userRouter);
 app.use('/uploads', express.static('uploads', {
-  maxAge: '1d',
+  maxAge: '1y',
   setHeaders: (res) => {
-    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
   }
 }));
 

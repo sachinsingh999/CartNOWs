@@ -507,7 +507,7 @@ const Navbar = () => {
               >
                 <MapPin size={17} className="text-amber-500 shrink-0 stroke-[2.5]" />
                 <div className="flex flex-col leading-none">
-                  <span className="text-[10px] text-slate-400 font-semibold">
+                  <span className="text-[10px] text-slate-600 dark:text-slate-400 font-bold">
                     Deliver to {username ? username.split(" ")[0] : "Sachin"}
                   </span>
                   <span className="text-xs font-black text-slate-800 dark:text-slate-100 flex items-center gap-0.5 leading-none mt-0.5">
@@ -553,6 +553,7 @@ const Navbar = () => {
                   <button
                     type="button"
                     onClick={handleVoiceSearch}
+                    aria-label="Search by voice"
                     className={`mr-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-sm text-slate-400 dark:text-slate-500 hover:bg-slate-200/50 dark:hover:bg-slate-800/60 transition cursor-pointer border-none ${isListening ? "bg-red-500/10 text-red-500" : ""}`}
                     title="Search by Voice"
                   >
@@ -562,9 +563,11 @@ const Navbar = () => {
                   {/* Orange Search Icon Button */}
                   <button
                     type="submit"
+                    aria-label="Submit product search"
                     className="h-10 px-4 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black transition flex items-center justify-center shrink-0 cursor-pointer border-none rounded-r-sm"
                   >
                     <Search size={16} className="text-slate-950 stroke-[2.5]" />
+                    <span className="sr-only">Search</span>
                   </button>
                 </form>
 
@@ -739,7 +742,7 @@ const Navbar = () => {
                   to={token ? "/orderdetail" : "/login"}
                   className="hidden md:flex flex-col text-left px-2.5 py-1 rounded-sm hover:bg-slate-100 dark:hover:bg-slate-900 border border-transparent hover:border-slate-200/60 dark:hover:border-slate-800/60 transition cursor-pointer select-none shrink-0"
                 >
-                  <span className="text-[10px] text-slate-400 font-semibold leading-none">Returns</span>
+                  <span className="text-[10px] text-slate-600 dark:text-slate-400 font-bold leading-none">Returns</span>
                   <span className="text-xs font-black text-slate-800 dark:text-slate-100 leading-none mt-0.5">& Orders</span>
                 </Link>
 
@@ -1046,7 +1049,7 @@ const Navbar = () => {
                     onClick={() => { setOpen((p) => !p); setPincodeOpen(false); }}
                     className="flex flex-col text-left px-2.5 py-1 rounded-sm hover:bg-slate-100 dark:hover:bg-slate-900 border border-transparent hover:border-slate-200/60 dark:hover:border-slate-800/60 transition cursor-pointer select-none bg-transparent"
                   >
-                    <span className="text-[10px] text-slate-400 font-semibold leading-none">
+                    <span className="text-[10px] text-slate-600 dark:text-slate-400 font-bold leading-none">
                       Hello, {username ? username.split(" ")[0] : "Sign in"}
                     </span>
                     <span className="text-xs font-black text-slate-800 dark:text-slate-100 flex items-center gap-0.5 leading-none mt-0.5">
@@ -1103,7 +1106,9 @@ const Navbar = () => {
                                 <span className="text-[9.5px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">INTERFACE THEME</span>
                               </div>
                               <button
+                                type="button"
                                 onClick={() => setIsDarkMode(!isDarkMode)}
+                                aria-label="Toggle interface theme"
                                 className={`relative h-5 w-9 rounded-full transition-colors duration-200 cursor-pointer border-none ${isDarkMode ? "bg-slate-700" : "bg-slate-300"}`}
                               >
                                 <span className={`absolute top-0.5 left-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-white shadow transition-transform duration-200 ${isDarkMode ? "translate-x-4" : "translate-x-0"}`}>

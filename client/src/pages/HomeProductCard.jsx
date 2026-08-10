@@ -6,6 +6,7 @@ import { backendUrl } from "../config";
 import { Star, Eye, ShoppingCart, Heart, BarChart2, Truck, Sparkles, CheckCircle2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { useComparison } from "../context/ComparisonContext";
 import { getAverageRating, getReviewCount } from "../utils/productRatings";
+import { getOptimizedImageUrl } from "../utils/imageOptimizer";
 
 const HomeProductCard = ({ product, onQuickView }) => {
   const [isAdding, setIsAdding] = useState(false);
@@ -135,9 +136,8 @@ const HomeProductCard = ({ product, onQuickView }) => {
   const getSrc = (idx = 0) => {
     const s = images[idx] || images[0];
     if (!s) return "";
-    if (s.startsWith("http")) return s;
-    const cleanPath = s.startsWith("/") ? s.slice(1) : s;
-    return `${backendUrl}/${cleanPath}`;
+    const rawUrl = s.startsWith("http") ? s : `${backendUrl}/${s.startsWith("/") ? s.slice(1) : s}`;
+    return getOptimizedImageUrl(rawUrl, { width: 400, quality: 75 });
   };
 
   const isOOS = product.stock === 0;
@@ -221,7 +221,7 @@ const HomeProductCard = ({ product, onQuickView }) => {
               onClick={(e) => { e.stopPropagation(); setImgIdx(prevIdx); }}
               className="w-[14%] h-[180px] opacity-35 hover:opacity-50 transition-all duration-300 flex items-center justify-center shrink-0 border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-md p-1 scale-95 overflow-hidden relative cursor-pointer"
             >
-              <img src={getSrc(prevIdx)} className="max-h-full max-w-full object-contain" alt="" />
+              <img src={getSrc(prevIdx)} width="400" height="400" className="max-h-full max-w-full object-contain" alt={product.name || "Product"} loading="lazy" decoding="async" />
               <div className="absolute inset-0 bg-black/5 flex items-center justify-end pr-0.5 text-slate-700 dark:text-white">
                 <ChevronLeft className="h-6 w-6 stroke-[2]" />
               </div>
@@ -229,12 +229,13 @@ const HomeProductCard = ({ product, onQuickView }) => {
 
             {/* Active Center Image Panel */}
             <div className="w-[66%] h-[210px] z-10 flex items-center justify-center shrink-0 border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-md p-2.5 shadow-sm relative">
-              <img src={getSrc(imgIdx)} className="max-h-full max-w-full object-contain" alt="" onError={() => setImgError(true)} />
+              <img src={getSrc(imgIdx)} width="400" height="400" className="max-h-full max-w-full object-contain" alt={product.name || "Product"} onError={() => setImgError(true)} loading="lazy" decoding="async" />
               
               {/* Wishlist Button Overlay */}
               <button
                 type="button"
                 onClick={toggleFavorite}
+                aria-label={isFavorite ? "Remove from wishlist" : "Add to wishlist"}
                 className="absolute top-2.5 right-2.5 h-7 w-7 bg-white/95 dark:bg-slate-900/95 rounded-full flex items-center justify-center shadow-xs cursor-pointer transition-all duration-200 active:scale-90 z-30 border-none"
               >
                 <Heart
@@ -254,6 +255,7 @@ const HomeProductCard = ({ product, onQuickView }) => {
                     addToCompare(product);
                   }
                 }}
+                aria-label={isComparing ? "Remove from product comparison" : "Compare product"}
                 className={`absolute top-10.5 right-2.5 h-7 w-7 backdrop-blur-md rounded-full flex items-center justify-center shadow-xs z-30 cursor-pointer transition-all duration-200 active:scale-90 ${isComparing ? "bg-indigo-600 border-none text-white" : "bg-white/95 dark:bg-slate-900/95 border-none text-slate-500 dark:text-slate-400 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/20" }`}
                 title="Compare product"
               >
@@ -276,7 +278,7 @@ const HomeProductCard = ({ product, onQuickView }) => {
               onClick={(e) => { e.stopPropagation(); setImgIdx(nextIdx); }}
               className="w-[14%] h-[180px] opacity-35 hover:opacity-50 transition-all duration-300 flex items-center justify-center shrink-0 border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-md p-1 scale-95 overflow-hidden relative cursor-pointer"
             >
-              <img src={getSrc(nextIdx)} className="max-h-full max-w-full object-contain" alt="" />
+              <img src={getSrc(nextIdx)} width="400" height="400" className="max-h-full max-w-full object-contain" alt={product.name || "Product"} loading="lazy" decoding="async" />
               <div className="absolute inset-0 bg-black/5 flex items-center justify-start pl-0.5 text-slate-700 dark:text-white">
                 <ChevronRight className="h-6 w-6 stroke-[2]" />
               </div>
@@ -284,7 +286,7 @@ const HomeProductCard = ({ product, onQuickView }) => {
           </>
         ) : (
           <div className="w-full h-full flex items-center justify-center p-6 bg-white dark:bg-slate-900 relative">
-            <img src={getSrc(0)} className="max-h-full max-w-full object-contain p-2" alt="" onError={() => setImgError(true)} />
+            <img src={getSrc(0)} width="400" height="400" className="max-h-full max-w-full object-contain p-2" alt={product.name || "Product"} onError={() => setImgError(true)} loading="lazy" decoding="async" />
 
             {/* Wishlist Button Overlay */}
             <button

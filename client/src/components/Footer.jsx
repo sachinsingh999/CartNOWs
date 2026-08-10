@@ -269,7 +269,7 @@ const Footer = () => {
                 Subscribe
               </button>
             </form>
-            <p className="text-[10px] text-gray-500">
+            <p className="text-[10px] text-gray-400">
               *Promotional updates only. Unsubscribe anytime.
             </p>
           </div>
@@ -281,10 +281,10 @@ const Footer = () => {
         {/* ── Footer Bottom Bar ── */}
         <div className="mt-6 flex flex-col-reverse items-center justify-between gap-4 sm:flex-row">
           <div className="text-center sm:text-left space-y-1">
-            <p className="text-[11px] text-gray-500">
+            <p className="text-[11px] text-gray-400">
               © {new Date().getFullYear()} CartNOW Inc. All rights reserved.
             </p>
-            <p className="text-[10px] text-gray-600">
+            <p className="text-[10px] text-gray-400">
               Secure processed payments. Sandbox simulated environments.
             </p>
           </div>

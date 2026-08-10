@@ -109,9 +109,9 @@ const TestimonialCard = ({ item, idx, direction }) => {
 
             <div className="leading-tight">
               <div className="flex items-center gap-1.5 flex-wrap">
-                <h4 className="font-extrabold text-[14.5px] text-slate-800 dark:text-slate-200 tracking-tight">
+                <h3 className="font-extrabold text-[14.5px] text-slate-800 dark:text-slate-200 tracking-tight">
                   {item.name}
-                </h4>
+                </h3>
                 {/* Country flag */}
                 {item.flag && <span className="text-sm select-none" title={`Verified purchase from ${item.flag}`}>{item.flag}</span>}
 
@@ -164,9 +164,9 @@ const TestimonialCard = ({ item, idx, direction }) => {
 
         {/* Review Content */}
         <div className="mb-4">
-          <h5 className="font-extrabold text-[14px] text-slate-800 dark:text-slate-100 mb-2 tracking-tight">
+          <h4 className="font-extrabold text-[14px] text-slate-800 dark:text-slate-100 mb-2 tracking-tight">
             {item.title || "Highly Recommended"}
-          </h5>
+          </h4>
           <p className="text-[13px] text-slate-600 dark:text-slate-300 font-medium leading-relaxed line-clamp-4 select-text">
             "{cleanReviewText(item.review)}"
           </p>
@@ -343,16 +343,20 @@ const CustomerTestimonials = () => {
         {/* Carousel Arrows */}
         <div className="flex gap-2 shrink-0">
           <button
+            type="button"
             onClick={handlePrevTestimonial}
             disabled={isAnimating}
+            aria-label="Previous testimonial"
             className={`h-9 w-9 rounded-md border border-slate-200 dark:border-[#242A3B] bg-white dark:bg-[#1B2030] flex items-center justify-center text-slate-600 dark:text-slate-300 shadow-sm transition duration-300 ${isAnimating ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50 dark:hover:bg-[#242A3B] cursor-pointer"
               }`}
           >
             <ChevronLeft size={18} />
           </button>
           <button
+            type="button"
             onClick={handleNextTestimonial}
             disabled={isAnimating}
+            aria-label="Next testimonial"
             className={`h-9 w-9 rounded-md border border-slate-200 dark:border-[#242A3B] bg-white dark:bg-[#1B2030] flex items-center justify-center text-slate-600 dark:text-slate-300 shadow-sm transition duration-300 ${isAnimating ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50 dark:hover:bg-[#242A3B] cursor-pointer"
               }`}
           >
@@ -387,10 +391,11 @@ const CustomerTestimonials = () => {
       </div>
 
       {/* Dot Indicators */}
-      <div className="flex justify-center gap-1.5 mt-6">
+      <div className="flex justify-center gap-1 mt-6">
         {testimonials.map((_, i) => (
           <button
             key={i}
+            type="button"
             disabled={isAnimating}
             onClick={() => {
               if (isAnimating || testimonialIdx === i) return;
@@ -398,9 +403,14 @@ const CustomerTestimonials = () => {
               setDirection(i > testimonialIdx ? "next" : "prev");
               setTestimonialIdx(i);
             }}
-            className={`h-2 rounded-sm transition-all duration-300 ${isAnimating ? "cursor-not-allowed opacity-50" : "cursor-pointer"
-              } ${testimonialIdx === i ? "w-6 bg-blue-600 dark:bg-[#2D3550]" : "w-2 bg-slate-200 dark:bg-[#1B2030]"}`}
-          />
+            aria-label={`Go to testimonial ${i + 1}`}
+            className="p-2 cursor-pointer border-none bg-transparent flex items-center justify-center outline-none"
+          >
+            <span
+              className={`h-2 rounded-sm block transition-all duration-300 ${isAnimating ? "opacity-50" : ""
+                } ${testimonialIdx === i ? "w-6 bg-blue-600 dark:bg-[#2D3550]" : "w-3 bg-slate-300 dark:bg-[#1B2030]"}`}
+            />
+          </button>
         ))}
       </div>
     </section>
