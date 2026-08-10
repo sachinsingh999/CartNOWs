@@ -161,28 +161,30 @@ const Home = () => {
     const token = localStorage.getItem("token") || "";
     if (product.stock === 0) return;
 
-    // 1. Check if product already exists in user's cart
     let guestCart = {};
     try {
       guestCart = JSON.parse(localStorage.getItem("cart") || "{}");
     } catch (err) {}
 
-    const keyPrefix = `${product._id}_`;
-    let alreadyInCart = false;
-    for (const k in guestCart) {
-      if ((k === `${product._id}_${size}` || k.startsWith(keyPrefix)) && guestCart[k] > 0) {
-        alreadyInCart = true;
-        break;
+    // Only check guest localStorage if user is not logged in
+    if (!token) {
+      const keyPrefix = `${product._id}_`;
+      let alreadyInCart = false;
+      for (const k in guestCart) {
+        if ((k === `${product._id}_${size}` || k.startsWith(keyPrefix)) && guestCart[k] > 0) {
+          alreadyInCart = true;
+          break;
+        }
+      }
+
+      if (alreadyInCart) {
+        toast.info("Product is already in your cart");
+        navigate("/cart");
+        return;
       }
     }
 
-    if (alreadyInCart) {
-      toast.info("Product is already in your cart");
-      navigate("/cart");
-      return;
-    }
-
-    // 2. Lock button & set loading state
+    // Lock button & set loading state
     setAddingIds(prev => ({ ...prev, [product._id]: true }));
 
     if (!token) {
@@ -201,8 +203,6 @@ const Home = () => {
         );
 
         if (res.data.success) {
-          guestCart[`${product._id}_${size}`] = qty || 1;
-          localStorage.setItem("cart", JSON.stringify(guestCart));
           window.dispatchEvent(new Event("cartUpdate"));
           toast.success("Added to cart! 🛍️");
           setAddingIds(prev => ({ ...prev, [product._id]: false }));

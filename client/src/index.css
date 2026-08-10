@@ -57,63 +57,90 @@ body {
   }
 }
 
-/* ── Toast type accent borders ── */
+/* ── Glassmorphic Premium Toast Notifications ── */
+.Toastify__toast-container {
+  padding: 0 16px 16px !important;
+  z-index: 999999 !important;
+}
+
+.Toastify__toast {
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5), 0 0 20px -3px rgba(255, 255, 255, 0.05) !important;
+  border-radius: 16px !important;
+}
+
 .Toastify__toast--success {
-  border-left: 3px solid #22c55e !important;
+  border: 1px solid rgba(16, 185, 129, 0.4) !important;
+  box-shadow: 0 16px 40px -8px rgba(16, 185, 129, 0.35), 0 0 20px rgba(16, 185, 129, 0.2) !important;
+  background: linear-gradient(135deg, rgba(6, 78, 59, 0.95), rgba(15, 23, 42, 0.98)) !important;
 }
 
 .Toastify__toast--error {
-  border-left: 3px solid #ef4444 !important;
+  border: 1px solid rgba(244, 63, 94, 0.4) !important;
+  box-shadow: 0 16px 40px -8px rgba(244, 63, 94, 0.35), 0 0 20px rgba(244, 63, 94, 0.2) !important;
+  background: linear-gradient(135deg, rgba(136, 19, 55, 0.95), rgba(15, 23, 42, 0.98)) !important;
 }
 
 .Toastify__toast--warning {
-  border-left: 3px solid #f59e0b !important;
+  border: 1px solid rgba(245, 158, 11, 0.4) !important;
+  box-shadow: 0 16px 40px -8px rgba(245, 158, 11, 0.35), 0 0 20px rgba(245, 158, 11, 0.2) !important;
+  background: linear-gradient(135deg, rgba(120, 53, 15, 0.95), rgba(15, 23, 42, 0.98)) !important;
 }
 
 .Toastify__toast--info {
-  border-left: 3px solid #6366f1 !important;
+  border: 1px solid rgba(99, 102, 241, 0.4) !important;
+  box-shadow: 0 16px 40px -8px rgba(99, 102, 241, 0.35), 0 0 20px rgba(99, 102, 241, 0.2) !important;
+  background: linear-gradient(135deg, rgba(30, 27, 75, 0.95), rgba(15, 23, 42, 0.98)) !important;
 }
 
-/* Success progress bar */
+/* Vibrant Progress Bars */
+.Toastify__progress-bar {
+  height: 3.5px !important;
+  border-radius: 999px !important;
+  bottom: 0 !important;
+}
+
 .Toastify__toast--success .Toastify__progress-bar {
-  background: linear-gradient(to right, #22c55e, #4ade80) !important;
+  background: linear-gradient(90deg, #10b981, #34d399, #a7f3d0) !important;
 }
 
-/* Error progress bar */
 .Toastify__toast--error .Toastify__progress-bar {
-  background: linear-gradient(to right, #ef4444, #f87171) !important;
+  background: linear-gradient(90deg, #f43f5e, #fb7185, #fecdd3) !important;
 }
 
-/* Warning progress bar */
 .Toastify__toast--warning .Toastify__progress-bar {
-  background: linear-gradient(to right, #f59e0b, #fbbf24) !important;
+  background: linear-gradient(90deg, #f59e0b, #fbbf24, #fef08a) !important;
 }
 
-/* Info progress bar */
 .Toastify__toast--info .Toastify__progress-bar {
-  background: linear-gradient(to right, #6366f1, #818cf8) !important;
+  background: linear-gradient(90deg, #6366f1, #818cf8, #c7d2fe) !important;
 }
 
-/* Icon color per type */
+/* Enhanced SVG Icons with glowing filter drop shadows */
+.Toastify__toast-icon {
+  width: 22px !important;
+  height: 22px !important;
+  margin-right: 10px !important;
+  flex-shrink: 0 !important;
+}
+
 .Toastify__toast--success .Toastify__toast-icon svg {
-  fill: #22c55e;
+  fill: #34d399 !important;
+  filter: drop-shadow(0 0 8px rgba(52, 211, 153, 0.8));
 }
 
 .Toastify__toast--error .Toastify__toast-icon svg {
-  fill: #ef4444;
+  fill: #fb7185 !important;
+  filter: drop-shadow(0 0 8px rgba(251, 113, 133, 0.8));
 }
 
 .Toastify__toast--warning .Toastify__toast-icon svg {
-  fill: #f59e0b;
+  fill: #fbbf24 !important;
+  filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.8));
 }
 
 .Toastify__toast--info .Toastify__toast-icon svg {
-  fill: #6366f1;
-}
-
-/* Remove default toastify background so our custom class controls it */
-.Toastify__toast-container {
-  padding: 0 12px 12px !important;
+  fill: #818cf8 !important;
+  filter: drop-shadow(0 0 8px rgba(129, 140, 248, 0.8));
 }
 
 :root {

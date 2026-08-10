@@ -40,8 +40,7 @@ const FlashDeals = ({ deals = [], onQuickView, onAddToCart, onToggleFavorite, wi
       <div className="flex flex-col h-full">
         <div className="hidden lg:block h-[46px]" />
         <div 
-          style={{ borderRadius: "0px", backgroundColor: "#020617" }}
-          className="relative p-5 text-slate-100 dark:text-white flex-col justify-between shadow-xl shadow-indigo-500/5 dark:shadow-black/50 flex-1 flex min-h-[390px] text-left border border-slate-800/80"
+          className="relative p-5 text-slate-100 dark:text-white flex-col justify-between shadow-xl shadow-indigo-500/5 dark:shadow-black/50 flex-1 flex min-h-[390px] text-left border border-slate-800/80 rounded-md overflow-hidden bg-[#020617]"
         >
           {/* Glowing Mesh Animation */}
           <div className="absolute top-[-30%] left-[-30%] w-[100%] h-[100%] bg-gradient-to-tr from-orange-500/15 to-transparent rounded-full blur-[90px] pointer-events-none animate-pulse" style={{ animationDuration: "8s" }} />
@@ -66,7 +65,7 @@ const FlashDeals = ({ deals = [], onQuickView, onAddToCart, onToggleFavorite, wi
               { label: "mins", val: timeLeft.minutes },
               { label: "secs", val: timeLeft.seconds }
             ].map((item, idx) => (
-              <div key={idx} className="flex flex-col items-center justify-center bg-slate-900/60 backdrop-blur-xs border border-white/5 py-2.5 rounded-none shadow-sm relative">
+              <div key={idx} className="flex flex-col items-center justify-center bg-slate-900/60 backdrop-blur-xs border border-white/5 py-2.5 rounded-md shadow-sm relative">
                 <span className="text-base font-black text-slate-100 dark:text-white">{String(item.val).padStart(2, "0")}</span>
                 <span className="text-[7px] font-black uppercase text-amber-400/80 tracking-wider mt-0.5">{item.label}</span>
               </div>
@@ -91,7 +90,7 @@ const FlashDeals = ({ deals = [], onQuickView, onAddToCart, onToggleFavorite, wi
 
           <button
             onClick={() => navigate("/product")}
-            className="group relative w-full py-3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-slate-100 dark:text-white font-extrabold text-[10px] uppercase tracking-wider rounded-none shadow-lg shadow-orange-500/20 hover:shadow-orange-500/35 hover:scale-[1.02] active:scale-95 transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 border-none z-10"
+            className="group relative w-full py-3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-slate-100 dark:text-white font-extrabold text-[10px] uppercase tracking-wider rounded-md shadow-lg shadow-orange-500/20 hover:shadow-orange-500/35 hover:scale-[1.02] active:scale-95 transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 border-none z-10"
           >
             <span>View All Deals</span>
             <ArrowRight size={12} className="transition-transform duration-200 group-hover:translate-x-1" />

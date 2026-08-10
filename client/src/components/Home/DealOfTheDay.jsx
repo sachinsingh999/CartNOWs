@@ -104,7 +104,7 @@ const DealOfTheDay = ({ deals = [], activeDeal = null, onAddToCart }) => {
   };
 
   return (
-    <div className="group relative bg-gradient-to-br from-[#0c0f1d] via-[#070913] to-[#030409] border border-white/[0.08] text-slate-100 dark:text-white rounded-none p-6 sm:p-8 shadow-2xl flex flex-col sm:flex-row lg:flex-col xl:flex-row gap-6 justify-between min-h-[500px] text-left transition-all duration-300 hover:border-white/20 overflow-hidden col-span-1 select-none">
+    <div className="group relative bg-gradient-to-br from-[#0c0f1d] via-[#070913] to-[#030409] border border-white/[0.08] text-slate-100 dark:text-white rounded-md p-6 sm:p-8 shadow-2xl flex flex-col sm:flex-row lg:flex-col xl:flex-row gap-6 justify-between min-h-[500px] text-left transition-all duration-300 hover:border-white/20 overflow-hidden col-span-1 select-none">
 
       {/* Custom inline style for keyframes to support advanced float */}
       <style>{`

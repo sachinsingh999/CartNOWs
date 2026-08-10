@@ -6,14 +6,14 @@ const SellerSpotlight = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-none p-6 shadow-[0_8px_30px_rgba(0,0,0,0.015)] flex flex-col justify-between min-h-[500px]">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-md p-6 shadow-[0_8px_30px_rgba(0,0,0,0.015)] flex flex-col justify-between min-h-[500px]">
       <div className="space-y-4">
         <h3 className="text-sm font-black text-slate-900 dark:text-slate-100 uppercase tracking-wider">
           Seller Spotlight
         </h3>
 
         <div className="flex items-center gap-4 py-2 border-b border-slate-100 dark:border-slate-800/80">
-          <div className="w-16 h-16 rounded-none overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm shrink-0 bg-slate-50 dark:bg-slate-950">
+          <div className="w-16 h-16 rounded-md overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm shrink-0 bg-slate-50 dark:bg-slate-955">
             <img
               src="https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=120&auto=format&fit=crop&q=80"
               alt="Seller Spotlight"
@@ -52,7 +52,7 @@ const SellerSpotlight = () => {
 
       <button
         onClick={() => navigate("/product?search=Apple")}
-        className="w-full mt-4 py-4 bg-slate-900 hover:bg-black dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-100 dark:text-white font-extrabold text-xs uppercase tracking-wider rounded-none shadow-md transition cursor-pointer border-none"
+        className="w-full mt-4 py-4 bg-slate-900 hover:bg-black dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-100 dark:text-white font-extrabold text-xs uppercase tracking-wider rounded-md shadow-md transition cursor-pointer border-none"
       >
         Explore Store
       </button>

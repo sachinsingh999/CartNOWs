@@ -33,8 +33,7 @@ const RecommendedProducts = ({ recommended = [], trending = [], topRated = [], n
       <div className="flex flex-col h-full">
         <div className="hidden lg:block h-[46px]" />
         <div 
-          style={{ borderRadius: "0px", backgroundColor: "#020617" }}
-          className="relative p-5 text-slate-100 dark:text-white flex flex-col justify-between shadow-xl shadow-purple-500/5 dark:shadow-black/50 flex-1 min-h-[390px] h-full text-left border border-slate-800/80"
+          className="relative p-5 text-slate-100 dark:text-white flex flex-col justify-between shadow-xl shadow-purple-500/5 dark:shadow-black/50 flex-1 min-h-[390px] h-full text-left border border-slate-800/80 rounded-md overflow-hidden bg-[#020617]"
         >
           {/* Glowing Mesh Animation */}
           <div className="absolute top-[-30%] left-[-30%] w-[100%] h-[100%] bg-gradient-to-tr from-purple-500/15 to-transparent rounded-full blur-[90px] pointer-events-none animate-pulse" style={{ animationDuration: "9s" }} />
@@ -62,7 +61,7 @@ const RecommendedProducts = ({ recommended = [], trending = [], topRated = [], n
               <button
                 key={tab.id}
                 onClick={() => setActiveRecommendedTab(tab.id)}
-                className={`flex items-center gap-3 px-4 py-2 rounded-none text-[11px] font-bold uppercase tracking-wider text-left transition-all duration-200 cursor-pointer ${activeRecommendedTab === tab.id ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-slate-100 dark:text-white shadow-md hover:brightness-105 active:scale-[0.98]" : "bg-slate-900/40 text-slate-400 hover:bg-slate-900/60 hover:text-white border border-white/5"}`}
+                className={`flex items-center gap-3 px-4 py-2 rounded-md text-[11px] font-bold uppercase tracking-wider text-left transition-all duration-200 cursor-pointer ${activeRecommendedTab === tab.id ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-slate-100 dark:text-white shadow-md hover:brightness-105 active:scale-[0.98]" : "bg-slate-900/40 text-slate-400 hover:bg-slate-900/60 hover:text-white border border-white/5"}`}
               >
                 {React.createElement(tab.icon, { size: 13, className: `${tab.iconColor} shrink-0` })}
                 <span>{tab.label}</span>
@@ -72,7 +71,7 @@ const RecommendedProducts = ({ recommended = [], trending = [], topRated = [], n
 
           <button
             onClick={() => navigate("/product")}
-            className="group relative w-full py-3 bg-slate-900 hover:bg-slate-800 text-slate-100 dark:text-white font-extrabold text-[10px] uppercase tracking-wider rounded-none shadow-md transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 border border-white/5 z-10"
+            className="group relative w-full py-3 bg-slate-900 hover:bg-slate-800 text-slate-100 dark:text-white font-extrabold text-[10px] uppercase tracking-wider rounded-md shadow-md transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 border border-white/5 z-10"
           >
             <span>Explore Catalog</span>
             <ArrowRight size={12} className="transition-transform duration-200 group-hover:translate-x-1" />

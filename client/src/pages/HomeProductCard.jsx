@@ -77,19 +77,22 @@ const HomeProductCard = ({ product, onQuickView }) => {
       guestCart = JSON.parse(localStorage.getItem("cart") || "{}");
     } catch (err) {}
 
-    const keyPrefix = `${product._id}_`;
-    let alreadyInCart = false;
-    for (const k in guestCart) {
-      if ((k === `${product._id}_${size}` || k.startsWith(keyPrefix)) && guestCart[k] > 0) {
-        alreadyInCart = true;
-        break;
+    // Only check guest localStorage if user is not logged in
+    if (!token) {
+      const keyPrefix = `${product._id}_`;
+      let alreadyInCart = false;
+      for (const k in guestCart) {
+        if ((k === `${product._id}_${size}` || k.startsWith(keyPrefix)) && guestCart[k] > 0) {
+          alreadyInCart = true;
+          break;
+        }
       }
-    }
 
-    if (alreadyInCart) {
-      toast.info("Product is already in your cart");
-      navigate("/cart");
-      return;
+      if (alreadyInCart) {
+        toast.info("Product is already in your cart");
+        navigate("/cart");
+        return;
+      }
     }
 
     setIsAdding(true);
@@ -110,8 +113,6 @@ const HomeProductCard = ({ product, onQuickView }) => {
         );
 
         if (res.data.success) {
-          guestCart[`${product._id}_${size}`] = 1;
-          localStorage.setItem("cart", JSON.stringify(guestCart));
           window.dispatchEvent(new Event("cartUpdate"));
           toast.success("Added to cart! 🛍️");
           setIsAdding(false);

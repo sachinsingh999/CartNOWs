@@ -50,24 +50,25 @@ const App = () => {
       <ErrorBoundary>
         <ToastContainer
           position="bottom-right"
-          autoClose={1800}
+          autoClose={2200}
           hideProgressBar={false}
           newestOnTop
           closeOnClick
-          pauseOnHover={false}
+          pauseOnHover
           pauseOnFocusLoss={false}
           draggable
           transition={Slide}
           toastClassName={() =>
-            "relative flex items-center gap-3 min-h-[52px] w-[340px] rounded-2xl border border-white/10 bg-slate-900 dark:bg-slate-800 text-white shadow-2xl shadow-black/30 px-4 py-3 mb-2 overflow-hidden cursor-pointer select-none"
+            "relative flex items-center justify-between gap-3.5 min-h-[56px] w-[350px] max-w-[calc(100vw-32px)] rounded-2xl p-3.5 mb-2.5 cursor-pointer select-none transition-all duration-300 hover:scale-[1.02] active:scale-[0.99] backdrop-blur-xl"
           }
           bodyClassName={() =>
-            "flex-1 text-[13px] font-semibold leading-snug text-slate-100"
+            "flex-1 text-xs font-bold leading-relaxed text-white tracking-wide flex items-center gap-2"
           }
           closeButton={({ closeToast }) => (
             <button
               onClick={closeToast}
-              className="ml-1 shrink-0 flex items-center justify-center h-5 w-5 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition cursor-pointer text-xs font-black"
+              className="ml-2 shrink-0 flex items-center justify-center h-6 w-6 rounded-full bg-white/10 hover:bg-white/25 text-slate-300 hover:text-white transition-all cursor-pointer text-xs font-black active:scale-90"
+              aria-label="Close notification"
             >
               ✕
             </button>

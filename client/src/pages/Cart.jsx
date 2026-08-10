@@ -52,9 +52,9 @@ const Cart = () => {
   const [couponsDrawerOpen, setCouponsDrawerOpen] = useState(false);
   const [copiedCouponId, setCopiedCouponId] = useState(null);
 
-  const fetchCart = async () => {
+  const fetchCart = async (silent = false) => {
     try {
-      setPageLoading(true);
+      if (!silent) setPageLoading(true);
       let cartData = {};
       if (token) {
         const cartRes = await axios.post(
@@ -96,6 +96,8 @@ const Cart = () => {
         }
       }
 
+      const unselectedKeys = JSON.parse(localStorage.getItem("unselectedCartItems") || "[]");
+
       for (const key in cartData) {
         const firstUnderscoreIdx = key.indexOf("_");
         const itemId = firstUnderscoreIdx !== -1 ? key.substring(0, firstUnderscoreIdx) : key;
@@ -127,6 +129,7 @@ const Cart = () => {
               }
             }
 
+            const itemKey = `${itemId}_${size}`;
             items.push({
               itemId,
               size,
@@ -135,7 +138,7 @@ const Cart = () => {
               price: itemPrice,
               stock: itemStock,
               sku: itemSku,
-              selected: true,
+              selected: !unselectedKeys.includes(itemKey),
             });
           }
         }
@@ -146,7 +149,7 @@ const Cart = () => {
     } catch (error) {
       console.log("CART FETCH ERROR:", error);
     } finally {
-      setPageLoading(false);
+      if (!silent) setPageLoading(false);
     }
   };
 
@@ -235,7 +238,9 @@ const Cart = () => {
       delete guestCart[key];
       localStorage.setItem("cart", JSON.stringify(guestCart));
       
-      setCartItems(cartItems.filter((_, i) => i !== index));
+      const updated = cartItems.filter((_, i) => i !== index);
+      setCartItems(updated);
+      saveUnselectedState(updated);
       return;
     }
 
@@ -251,17 +256,27 @@ const Cart = () => {
       );
 
       if (res.data.success) {
-        setCartItems(cartItems.filter((_, i) => i !== index));
+        const updated = cartItems.filter((_, i) => i !== index);
+        setCartItems(updated);
+        saveUnselectedState(updated);
       }
     } catch (error) {
       console.log(error);
     }
   };
 
+  const saveUnselectedState = (items) => {
+    const unselectedKeys = items
+      .filter((item) => !item.selected)
+      .map((item) => `${item.itemId}_${item.size}`);
+    localStorage.setItem("unselectedCartItems", JSON.stringify(unselectedKeys));
+  };
+
   const toggleSelectItem = (index) => {
     const updated = [...cartItems];
     updated[index].selected = !updated[index].selected;
     setCartItems(updated);
+    saveUnselectedState(updated);
   };
 
   const toggleSelectAll = () => {
@@ -271,6 +286,7 @@ const Cart = () => {
       selected: !allSelected,
     }));
     setCartItems(updated);
+    saveUnselectedState(updated);
   };
 
   // Add Item to Cart (from recommendations)
@@ -285,7 +301,7 @@ const Cart = () => {
       localStorage.setItem("cart", JSON.stringify(guestCart));
       window.dispatchEvent(new Event("cartUpdate"));
       toast.success("Added to cart! 🛍️");
-      fetchCart();
+      fetchCart(true);
       return;
     }
 
@@ -298,7 +314,7 @@ const Cart = () => {
       if (res.data.success) {
         window.dispatchEvent(new Event("cartUpdate"));
         toast.success("Added to cart! 🛍️");
-        fetchCart();
+        fetchCart(true);
       } else {
         toast.error(res.data.message);
       }

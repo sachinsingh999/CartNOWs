@@ -10,97 +10,125 @@ import { ProductGridSkeleton } from "../components/SkeletonLoader";
 const CatalogDetail = ({ type }) => {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+
+  // Parse cached catalog products from sessionStorage for 0ms instant display
+  const getInitialProducts = () => {
+    try {
+      const cacheKey = `cached_catalog_${type}_${slug}`;
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) return JSON.parse(cached);
+    } catch (e) {}
+    return [];
+  };
+
+  const initialProducts = getInitialProducts();
+  const [products, setProducts] = useState(initialProducts);
+  const [loading, setLoading] = useState(initialProducts.length === 0);
 
   useEffect(() => {
     const fetchProducts = async () => {
-      setLoading(true);
+      // Only trigger visible skeleton loading if we don't have cached initial products
+      if (products.length === 0) {
+        setLoading(true);
+      }
       try {
-        const res = await axios.get(`${backendUrl}/api/product/list`);
-        if (res.data.success) {
-          let filtered = res.data.products;
+        let apiUrl = `${backendUrl}/api/product/list`;
+        if (type === "category" && slug) {
+          apiUrl += `?category=${encodeURIComponent(slug)}`;
+        } else if (type === "brand" && slug) {
+          apiUrl += `?brand=${encodeURIComponent(slug)}`;
+        }
 
-          if (type === "category") {
-            filtered = filtered.filter(
-              (p) => (p.category || "").toLowerCase() === slug.toLowerCase()
-            );
-          } else if (type === "brand") {
-            filtered = filtered.filter(
-              (p) => (p.brand || "").toLowerCase() === slug.toLowerCase()
-            );
-          } else if (type === "collection") {
-            const cleanSlug = slug ? slug.toLowerCase().trim() : "";
+        let res = await axios.get(apiUrl);
+        let filtered = res.data.success ? res.data.products : [];
 
-            // Strict domain-based collection filtering logic
-            if (cleanSlug.includes("gaming") || cleanSlug.includes("gamer") || cleanSlug.includes("playstation") || cleanSlug.includes("xbox")) {
-              // Gaming Setup: strictly tech, laptops, electronics, monitors, keyboards, mice, audio
-              filtered = filtered.filter(p => {
-                const cat = (p.category || "").toLowerCase();
-                const sub = (p.subCategory || "").toLowerCase();
-                const name = (p.name || "").toLowerCase();
-                return cat === "electronics" || cat === "computers" || sub.includes("gaming") || sub.includes("tech") || name.includes("laptop") || name.includes("dell") || name.includes("hp") || name.includes("macbook") || name.includes("headphone") || name.includes("keyboard") || name.includes("mouse") || name.includes("monitor") || name.includes("pc");
+        // If targeted category/brand query returned 0 products, try fetching full list as a fallback
+        if (filtered.length === 0) {
+          const fallbackRes = await axios.get(`${backendUrl}/api/product/list`);
+          if (fallbackRes.data.success) {
+            const allProds = fallbackRes.data.products;
+
+            if (type === "category") {
+              const cleanSlug = slug ? slug.toLowerCase().replace(/-/g, " ") : "";
+              filtered = allProds.filter((p) => {
+                const cat = (p.category || "").toLowerCase().replace(/-/g, " ");
+                return cat === cleanSlug || cat.includes(cleanSlug) || cleanSlug.includes(cat);
               });
-            } else if (cleanSlug.includes("festiv") || cleanSlug.includes("offer") || cleanSlug.includes("deal") || cleanSlug.includes("sale") || cleanSlug.includes("discount")) {
-              filtered = filtered.filter(p => (p.originalPrice && p.originalPrice > p.price) || p.isBestSeller || (p.rating && p.rating >= 4.5));
-            } else if (cleanSlug.includes("electro") || cleanSlug.includes("tech") || cleanSlug.includes("gadget")) {
-              filtered = filtered.filter(p => (p.category || "").toLowerCase() === "electronics" || (p.subCategory || "").toLowerCase().includes("tech"));
-            } else if (cleanSlug.includes("fashion") || cleanSlug.includes("lifestyle") || cleanSlug.includes("wear") || cleanSlug.includes("cloth")) {
-              filtered = filtered.filter(p => ["fashion", "shoes", "watches", "men", "women"].includes((p.category || "").toLowerCase()));
-            } else if (cleanSlug.includes("home") || cleanSlug.includes("living") || cleanSlug.includes("decor") || cleanSlug.includes("kitchen")) {
-              filtered = filtered.filter(p => ["home-kitchen", "furniture", "home"].includes((p.category || "").toLowerCase()));
-            } else if (cleanSlug.includes("beauty") || cleanSlug.includes("glow") || cleanSlug.includes("skin") || cleanSlug.includes("care")) {
-              filtered = filtered.filter(p => ["beauty", "skincare", "skin"].includes((p.category || "").toLowerCase()));
-            } else if (cleanSlug.includes("sport") || cleanSlug.includes("sneaker") || cleanSlug.includes("shoe") || cleanSlug.includes("active")) {
-              filtered = filtered.filter(p => ["sports", "shoes", "sneakers"].includes((p.category || "").toLowerCase()));
-            } else if (cleanSlug.includes("accessory") || cleanSlug.includes("luxur") || cleanSlug.includes("chrono") || cleanSlug.includes("watch")) {
-              filtered = filtered.filter(p => ["accessories", "watches"].includes((p.category || "").toLowerCase()) || (p.price && p.price >= 2000));
-            } else {
-              const words = cleanSlug.split(/[-_\s]+/).filter(w => w.length > 2);
-              filtered = filtered.filter(p => {
-                const pCat = (p.category || "").toLowerCase();
-                const pSub = (p.subCategory || "").toLowerCase();
-                const pCol = (p.collection || "").toLowerCase();
-                const pCols = (p.collections || []).map(c => String(c).toLowerCase());
-                const pName = (p.name || "").toLowerCase();
+            } else if (type === "brand") {
+              filtered = allProds.filter(
+                (p) => (p.brand || "").toLowerCase() === slug.toLowerCase()
+              );
+            } else if (type === "collection") {
+              const cleanSlug = slug ? slug.toLowerCase().trim() : "";
 
-                if (pCol === cleanSlug || pCol.includes(cleanSlug) || pCols.includes(cleanSlug)) return true;
-                if (words.length > 0) {
-                  return words.some(w => pCat.includes(w) || pSub.includes(w) || pName.includes(w));
-                }
-                return pCat === cleanSlug;
-              });
-            }
-
-            // Category-domain aware fallbacks if 0 items matched (prevents domain mixing like clothes in gaming)
-            if (filtered.length === 0 && res.data.products?.length > 0) {
-              if (cleanSlug.includes("gaming") || cleanSlug.includes("electro") || cleanSlug.includes("tech") || cleanSlug.includes("gadget")) {
-                filtered = res.data.products.filter(p => (p.category || "").toLowerCase() === "electronics");
-              } else if (cleanSlug.includes("fashion") || cleanSlug.includes("wear") || cleanSlug.includes("cloth")) {
-                filtered = res.data.products.filter(p => ["fashion", "shoes", "watches"].includes((p.category || "").toLowerCase()));
-              } else if (cleanSlug.includes("home") || cleanSlug.includes("living") || cleanSlug.includes("decor")) {
-                filtered = res.data.products.filter(p => ["home-kitchen", "furniture"].includes((p.category || "").toLowerCase()));
-              } else if (cleanSlug.includes("beauty") || cleanSlug.includes("skin")) {
-                filtered = res.data.products.filter(p => (p.category || "").toLowerCase() === "beauty");
+              // Strict domain-based collection filtering logic
+              if (cleanSlug.includes("gaming") || cleanSlug.includes("gamer") || cleanSlug.includes("playstation") || cleanSlug.includes("xbox")) {
+                filtered = allProds.filter(p => {
+                  const cat = (p.category || "").toLowerCase();
+                  const sub = (p.subCategory || "").toLowerCase();
+                  const name = (p.name || "").toLowerCase();
+                  return cat === "electronics" || cat === "computers" || sub.includes("gaming") || sub.includes("tech") || name.includes("laptop") || name.includes("dell") || name.includes("hp") || name.includes("macbook") || name.includes("headphone") || name.includes("keyboard") || name.includes("mouse") || name.includes("monitor") || name.includes("pc");
+                });
+              } else if (cleanSlug.includes("festiv") || cleanSlug.includes("offer") || cleanSlug.includes("deal") || cleanSlug.includes("sale") || cleanSlug.includes("discount")) {
+                filtered = allProds.filter(p => (p.originalPrice && p.originalPrice > p.price) || p.isBestSeller || (p.rating && p.rating >= 4.5));
+              } else if (cleanSlug.includes("electro") || cleanSlug.includes("tech") || cleanSlug.includes("gadget")) {
+                filtered = allProds.filter(p => (p.category || "").toLowerCase() === "electronics" || (p.subCategory || "").toLowerCase().includes("tech"));
+              } else if (cleanSlug.includes("fashion") || cleanSlug.includes("lifestyle") || cleanSlug.includes("wear") || cleanSlug.includes("cloth")) {
+                filtered = allProds.filter(p => ["fashion", "shoes", "watches", "men", "women"].includes((p.category || "").toLowerCase()));
+              } else if (cleanSlug.includes("home") || cleanSlug.includes("living") || cleanSlug.includes("decor") || cleanSlug.includes("kitchen")) {
+                filtered = allProds.filter(p => ["home-kitchen", "furniture", "home"].includes((p.category || "").toLowerCase()));
+              } else if (cleanSlug.includes("beauty") || cleanSlug.includes("glow") || cleanSlug.includes("skin") || cleanSlug.includes("care")) {
+                filtered = allProds.filter(p => ["beauty", "skincare", "skin"].includes((p.category || "").toLowerCase()));
+              } else if (cleanSlug.includes("sport") || cleanSlug.includes("sneaker") || cleanSlug.includes("shoe") || cleanSlug.includes("active")) {
+                filtered = allProds.filter(p => ["sports", "shoes", "sneakers"].includes((p.category || "").toLowerCase()));
+              } else if (cleanSlug.includes("accessory") || cleanSlug.includes("luxur") || cleanSlug.includes("chrono") || cleanSlug.includes("watch")) {
+                filtered = allProds.filter(p => ["accessories", "watches"].includes((p.category || "").toLowerCase()) || (p.price && p.price >= 2000));
               } else {
-                filtered = res.data.products.slice(0, 8);
+                const words = cleanSlug.split(/[-_\s]+/).filter(w => w.length > 2);
+                filtered = allProds.filter(p => {
+                  const pCat = (p.category || "").toLowerCase();
+                  const pSub = (p.subCategory || "").toLowerCase();
+                  const pCol = (p.collection || "").toLowerCase();
+                  const pCols = (p.collections || []).map(c => String(c).toLowerCase());
+                  const pName = (p.name || "").toLowerCase();
+
+                  if (pCol === cleanSlug || pCol.includes(cleanSlug) || pCols.includes(cleanSlug)) return true;
+                  if (words.length > 0) {
+                    return words.some(w => pCat.includes(w) || pSub.includes(w) || pName.includes(w));
+                  }
+                  return pCat === cleanSlug;
+                });
+              }
+
+              if (filtered.length === 0 && allProds.length > 0) {
+                if (cleanSlug.includes("gaming") || cleanSlug.includes("electro") || cleanSlug.includes("tech") || cleanSlug.includes("gadget")) {
+                  filtered = allProds.filter(p => (p.category || "").toLowerCase() === "electronics");
+                } else if (cleanSlug.includes("fashion") || cleanSlug.includes("wear") || cleanSlug.includes("cloth")) {
+                  filtered = allProds.filter(p => ["fashion", "shoes", "watches"].includes((p.category || "").toLowerCase()));
+                } else if (cleanSlug.includes("home") || cleanSlug.includes("living") || cleanSlug.includes("decor")) {
+                  filtered = allProds.filter(p => ["home-kitchen", "furniture"].includes((p.category || "").toLowerCase()));
+                } else if (cleanSlug.includes("beauty") || cleanSlug.includes("skin")) {
+                  filtered = allProds.filter(p => (p.category || "").toLowerCase() === "beauty");
+                } else {
+                  filtered = allProds.slice(0, 8);
+                }
+              }
+
+              if (cleanSlug.includes("festiv") || cleanSlug.includes("offer") || cleanSlug.includes("deal")) {
+                filtered.sort((a, b) => {
+                  const savA = (a.originalPrice || a.price) - a.price;
+                  const savB = (b.originalPrice || b.price) - b.price;
+                  return savB - savA;
+                });
               }
             }
-
-            // Sort festive offer items by highest savings
-            if (cleanSlug.includes("festiv") || cleanSlug.includes("offer") || cleanSlug.includes("deal")) {
-              filtered.sort((a, b) => {
-                const savA = (a.originalPrice || a.price) - a.price;
-                const savB = (b.originalPrice || b.price) - b.price;
-                return savB - savA;
-              });
-            }
           }
-          
-          setProducts(filtered);
-        } else {
-          toast.error(res.data.message);
         }
+        
+        setProducts(filtered);
+        try {
+          sessionStorage.setItem(`cached_catalog_${type}_${slug}`, JSON.stringify(filtered));
+        } catch (e) {}
       } catch (err) {
         toast.error(err.message);
       } finally {
@@ -168,26 +196,26 @@ const CatalogDetail = ({ type }) => {
   const HeaderIcon = meta.icon;
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 px-6 sm:px-12 lg:px-20 py-12 text-left transition-colors duration-350">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 px-3 sm:px-6 lg:px-10 py-4 text-left transition-colors duration-350">
       {/* Back button */}
       <button
         onClick={() => navigate(meta.backPath)}
-        className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors border-none bg-transparent cursor-pointer mb-6"
+        className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors border-none bg-transparent cursor-pointer mb-2"
       >
-        <ArrowLeft size={14} className="stroke-[2.5]" />
+        <ArrowLeft size={13} className="stroke-[2.5]" />
         <span>{meta.backLabel}</span>
       </button>
 
       {/* Header section */}
-      <div className="mb-10">
-        <span className={`inline-flex items-center gap-1.5 text-[9.5px] font-black uppercase tracking-wider px-3 py-1 rounded-md mb-2 ${meta.badgeColor}`}>
-          <HeaderIcon size={11} className="stroke-[2.5]" />
+      <div className="mb-4">
+        <span className={`inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md mb-1 ${meta.badgeColor}`}>
+          <HeaderIcon size={10} className="stroke-[2.5]" />
           {meta.badgeLabel}
         </span>
-        <h1 className="text-4xl font-black text-slate-800 dark:text-slate-100 capitalize">
+        <h1 className="text-2xl sm:text-3xl font-black text-slate-800 dark:text-slate-100 capitalize leading-tight">
           {meta.title}
         </h1>
-        <p className="text-xs font-bold text-slate-500 mt-1">
+        <p className="text-[11px] font-bold text-slate-500 mt-0.5">
           {meta.subtitle}
         </p>
       </div>
@@ -195,15 +223,15 @@ const CatalogDetail = ({ type }) => {
       {loading ? (
         <ProductGridSkeleton count={8} />
       ) : products.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 border border-dashed border-slate-200 dark:border-slate-800 rounded-[32px] bg-white dark:bg-slate-900 text-center animate-fade-in">
-          <SlidersHorizontal size={36} className="text-slate-300 dark:text-slate-600 mb-3 animate-bounce" />
-          <h3 className="text-base font-black text-slate-800 dark:text-white">No Products Found</h3>
-          <p className="text-xs text-slate-400 dark:text-slate-500 font-bold max-w-[320px] mt-1 leading-normal">
+        <div className="flex flex-col items-center justify-center py-16 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-center animate-fade-in">
+          <SlidersHorizontal size={32} className="text-slate-300 dark:text-slate-600 mb-2 animate-bounce" />
+          <h3 className="text-sm font-black text-slate-800 dark:text-white">No Products Found</h3>
+          <p className="text-xs text-slate-400 dark:text-slate-500 font-bold max-w-[320px] mt-0.5 leading-normal">
             {meta.emptyText}
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-in">
           {products.map((p) => (
             <ProductCard key={p._id} product={p} />
           ))}

@@ -137,7 +137,7 @@ const ShopByCollections = ({ trendingCollections = [] }) => {
         {collections.map((col) => (
           <div
             key={col.id}
-            className={`group rounded-none border p-4 flex flex-col justify-between transition-all duration-300 hover:shadow-[0_20px_40px_rgba(0,0,0,0.03)] hover:-translate-y-1 ${col.colorClass}`}
+            className={`group rounded-md border p-4 flex flex-col justify-between transition-all duration-300 hover:shadow-[0_20px_40px_rgba(0,0,0,0.03)] hover:-translate-y-1 ${col.colorClass}`}
           >
             {/* Top row: Badge + Favorite */}
             <div className="flex justify-between items-center mb-3">
@@ -163,7 +163,7 @@ const ShopByCollections = ({ trendingCollections = [] }) => {
               {col.tags.map((tag) => (
                 <span
                   key={tag.name}
-                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-none text-[10px] font-extrabold border transition-colors cursor-pointer ${col.pillsColor}`}
+                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-extrabold border transition-colors cursor-pointer ${col.pillsColor}`}
                 >
                   {React.createElement(tag.icon, { size: 10, className: "shrink-0 stroke-[2]" })}
                   {tag.name}
@@ -172,12 +172,12 @@ const ShopByCollections = ({ trendingCollections = [] }) => {
             </div>
 
             {/* Image Visual Container */}
-            <div className="relative rounded-none overflow-hidden aspect-[16/10] bg-white/50 dark:bg-slate-950/20 p-1.5 mb-4 flex items-center justify-center border border-white/40 dark:border-slate-800/40 shadow-inner">
+            <div className="relative rounded-md overflow-hidden aspect-[16/10] bg-white/50 dark:bg-slate-955/20 p-1.5 mb-4 flex items-center justify-center border border-white/40 dark:border-slate-800/40 shadow-inner">
               <img
                 src={col.image}
                 alt={col.title}
                 loading="lazy"
-                className="max-h-[95%] max-w-[95%] object-contain rounded-none transition-transform duration-500 group-hover:scale-105"
+                className="max-h-[95%] max-w-[95%] object-contain rounded-md transition-transform duration-500 group-hover:scale-105"
               />
               {col.overlayBadge && (
                 <span className={`absolute top-3 left-3 bg-white/95 dark:bg-slate-900/95 text-[8.5px] font-black uppercase tracking-widest px-2 py-0.5 rounded shadow-sm border border-slate-100/50 flex items-center gap-1 ${col.overlayBadge.color}`}>
@@ -190,7 +190,7 @@ const ShopByCollections = ({ trendingCollections = [] }) => {
             {/* CTA Button */}
             <button
               onClick={() => navigate(`/collections/${col.id}`)}
-              className={`w-full py-3 bg-gradient-to-r ${col.btnGradient} text-slate-100 dark:text-white font-extrabold text-[11px] uppercase tracking-widest rounded-none shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-1.5 border-none cursor-pointer`}
+              className={`w-full py-3 bg-gradient-to-r ${col.btnGradient} text-slate-100 dark:text-white font-extrabold text-[11px] uppercase tracking-widest rounded-md shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-1.5 border-none cursor-pointer`}
             >
               <ShoppingBag size={12} className="stroke-[2.5]" />
               <span>Shop Collection</span>

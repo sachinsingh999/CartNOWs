@@ -144,15 +144,13 @@ const AiRobotChat = () => {
 
   return (
     <div 
-      style={{ borderRadius: "0px" }}
-      className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-none p-6 shadow-[0_12px_40px_rgba(0,0,0,0.03)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.25)] flex flex-col min-h-[500px] transition-all duration-300 hover:shadow-[0_16px_48px_rgba(99,102,241,0.05)] text-left"
+      className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-md p-6 shadow-[0_12px_40px_rgba(0,0,0,0.03)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.25)] flex flex-col min-h-[500px] transition-all duration-300 hover:shadow-[0_16px_48px_rgba(99,102,241,0.05)] text-left overflow-hidden"
     >
       {/* Header */}
       <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800/50 text-left">
         <div className="flex items-center gap-3">
           <div 
-            style={{ borderRadius: "0px" }}
-            className="relative flex items-center justify-center w-10 h-10 rounded-none bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100/50 dark:border-indigo-900/50 shadow-sm"
+            className="relative flex items-center justify-center w-10 h-10 rounded-md bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100/50 dark:border-indigo-900/50 shadow-sm"
           >
             <Sparkles className="w-5 h-5 text-indigo-600 dark:text-indigo-400 animate-pulse" />
             <span className="absolute -bottom-0.5 -right-0.5 flex h-2.5 w-2.5">

@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import productModel from "../models/productModel.js";
 import userModel from "../models/userModel.js";
+import categoryModel from "../models/categoryModel.js";
 import categoryAttributeModel from "../models/categoryAttributeModel.js";
 import listingAttributeValueModel from "../models/listingAttributeValueModel.js";
 import listingMediaModel from "../models/listingMediaModel.js";
@@ -248,10 +249,13 @@ const listProducts = async (req, res) => {
             { audience: new RegExp(`^${category}$`, "i") }
           ];
         } else {
-          query.category = new RegExp(`^${category}$`, "i");
+          const cleanPattern = category.replace(/-/g, "[\\s-]*");
+          query.category = new RegExp(`^${cleanPattern}$`, "i");
         }
       }
     }
+
+    res.setHeader("Cache-Control", "public, max-age=60, s-maxage=300, stale-while-revalidate=600");
 
     // Subcategory filter (comma-separated or single)
     if (subCategory) {
@@ -1026,29 +1030,38 @@ const generateDescription = async (req, res) => {
   }
 };
 
+let categoryCountMapCache = null;
+let categoryCountMapCacheTime = 0;
+
 const getCategoriesPublic = async (req, res) => {
   try {
-    const categoryModel = (await import("../models/categoryModel.js")).default;
-    const categories = await categoryModel.find({ status: "active" }).sort({ displayOrder: 1, name: 1 });
+    res.set("Cache-Control", "public, max-age=60, s-maxage=300, stale-while-revalidate=600");
+    const categories = await categoryModel.find({ status: "active" }).sort({ displayOrder: 1, name: 1 }).lean();
     
-    // Aggregate product counts
-    const counts = await productModel.aggregate([
-      { $match: { isDeleted: { $ne: true }, status: "approved" } },
-      { $group: { _id: "$category", count: { $sum: 1 } } }
-    ]);
-    
-    const countMap = {};
-    counts.forEach(c => {
-      if (c._id) {
-        countMap[c._id.toLowerCase()] = c.count;
-      }
-    });
+    const now = Date.now();
+    let countMap = categoryCountMapCache;
 
-    const enrichedCategories = categories.map(cat => {
-      const catObj = cat.toObject();
-      catObj.count = countMap[cat.name.toLowerCase()] || 0;
-      return catObj;
-    });
+    if (!countMap || now - categoryCountMapCacheTime > 120000) {
+      const counts = await productModel.aggregate([
+        { $match: { isDeleted: { $ne: true }, status: "approved" } },
+        { $group: { _id: "$category", count: { $sum: 1 } } }
+      ]);
+      
+      countMap = {};
+      counts.forEach(c => {
+        if (c._id) {
+          countMap[c._id.toLowerCase()] = c.count;
+        }
+      });
+
+      categoryCountMapCache = countMap;
+      categoryCountMapCacheTime = now;
+    }
+
+    const enrichedCategories = categories.map(cat => ({
+      ...cat,
+      count: countMap[cat.name.toLowerCase()] || 0
+    }));
 
     res.json({ success: true, categories: enrichedCategories });
   } catch (error) {

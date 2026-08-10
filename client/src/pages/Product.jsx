@@ -730,29 +730,31 @@ const Product = () => {
     const token = localStorage.getItem("token") || "";
     const chosenSize = size || quickViewSelectedSize || "standard";
 
-    // 1. Check if product already exists in user's cart
     let guestCart = {};
     try {
       guestCart = JSON.parse(localStorage.getItem("cart") || "{}");
     } catch (err) {}
 
-    const keyPrefix = `${prod._id}_`;
-    let alreadyInCart = false;
-    for (const k in guestCart) {
-      if ((k === `${prod._id}_${chosenSize}` || k.startsWith(keyPrefix)) && guestCart[k] > 0) {
-        alreadyInCart = true;
-        break;
+    // Only check guest localStorage if user is not logged in
+    if (!token) {
+      const keyPrefix = `${prod._id}_`;
+      let alreadyInCart = false;
+      for (const k in guestCart) {
+        if ((k === `${prod._id}_${chosenSize}` || k.startsWith(keyPrefix)) && guestCart[k] > 0) {
+          alreadyInCart = true;
+          break;
+        }
+      }
+
+      if (alreadyInCart) {
+        toast.info("Product is already in your cart");
+        setQuickViewProduct(null);
+        navigate("/cart");
+        return;
       }
     }
 
-    if (alreadyInCart) {
-      toast.info("Product is already in your cart");
-      setQuickViewProduct(null);
-      navigate("/cart");
-      return;
-    }
-
-    // 2. Lock button & set loading state
+    // Lock button & set loading state
     setIsQuickViewAdding(true);
 
     if (!token) {
@@ -772,8 +774,6 @@ const Product = () => {
         );
 
         if (res.data.success) {
-          guestCart[`${prod._id}_${chosenSize}`] = 1;
-          localStorage.setItem("cart", JSON.stringify(guestCart));
           window.dispatchEvent(new Event("cartUpdate"));
           toast.success("Added to cart! 🛍️");
           setIsQuickViewAdding(false);
@@ -790,9 +790,11 @@ const Product = () => {
     }
   };
 
-  const handleQuickViewBuyNow = async () => {
-    await handleQuickViewAddToCart();
-    navigate("/cart");
+  const handleQuickViewBuyNow = () => {
+    if (!quickViewProduct) return;
+    const prodId = quickViewProduct._id;
+    setQuickViewProduct(null);
+    navigate(`/product/${prodId}`);
   };
 
   return (
@@ -1131,6 +1133,7 @@ const Product = () => {
           )}
         </div>
       </div>
+
       {/* ── Quick View Modal overlay ── */}
       <AnimatePresence>
         {quickViewProduct && (
@@ -1140,18 +1143,18 @@ const Product = () => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.3, ease: "easeOut" }}
-              className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/80 rounded-[32px] max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl p-6 md:p-8 relative flex flex-col md:flex-row gap-8 text-left scrollbar-hide"
+              className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/80 rounded-md max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl p-6 md:p-8 relative flex flex-col md:flex-row gap-8 text-left scrollbar-hide"
             >
               <button
                 onClick={() => setQuickViewProduct(null)}
-                className="absolute top-4 right-4 h-9 w-9 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white transition cursor-pointer z-20 shadow-xs border border-slate-200/20"
+                className="absolute top-4 right-4 h-8 w-8 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md flex items-center justify-center text-slate-400 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white transition cursor-pointer z-20 shadow-xs border border-slate-200/20"
               >
                 <X size={16} />
               </button>
 
               {/* Left side: Images gallery with spotlight background */}
               <div className="flex-1 flex flex-col gap-4">
-                <div className="h-80 w-full bg-radial from-slate-100/50 via-slate-50 to-white dark:from-slate-900/50 dark:via-slate-950 dark:to-slate-900 rounded-2xl flex items-center justify-center p-6 relative overflow-hidden border border-slate-200/40 dark:border-slate-800/80">
+                <div className="h-80 w-full bg-radial from-slate-100/50 via-slate-50 to-white dark:from-slate-900/50 dark:via-slate-955 dark:to-slate-900 rounded-md flex items-center justify-center p-6 relative overflow-hidden border border-slate-200/40 dark:border-slate-800/80">
                   <div className="absolute inset-0 bg-indigo-500/5 blur-[50px] pointer-events-none" />
                   <img
                     src={quickViewActiveImg}
@@ -1169,7 +1172,7 @@ const Product = () => {
                       <button
                         key={index}
                         onClick={() => setQuickViewActiveImg(url)}
-                        className={`h-14 w-14 rounded-xl overflow-hidden bg-slate-50 dark:bg-slate-900 p-1 border shrink-0 transition-all duration-200 cursor-pointer ${ isSelected ? "border-indigo-600 dark:border-indigo-500 scale-105 ring-2 ring-indigo-500/20" : "border-slate-200 dark:border-slate-800 hover:border-indigo-300" }`}
+                        className={`h-14 w-14 rounded-md overflow-hidden bg-slate-50 dark:bg-slate-900 p-1 border shrink-0 transition-all duration-200 cursor-pointer ${ isSelected ? "border-indigo-600 dark:border-indigo-500 scale-105 ring-2 ring-indigo-500/20" : "border-slate-200 dark:border-slate-800 hover:border-indigo-300" }`}
                       >
                         <img src={url} alt={`thumbnail-${index}`} className="w-full h-full object-contain" />
                       </button>
@@ -1186,7 +1189,7 @@ const Product = () => {
                       {quickViewProduct.brand || "CartNOW Curated"}
                     </span>
                     {quickViewProduct.stock > 0 && quickViewProduct.stock <= 5 && (
-                      <span className="text-[9px] font-black text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/15 uppercase tracking-wide">
+                      <span className="text-[9px] font-black text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded-md border border-rose-500/15 uppercase tracking-wide">
                         Only {quickViewProduct.stock} Left
                       </span>
                     )}
@@ -1245,7 +1248,7 @@ const Product = () => {
                             <button
                               key={sz}
                               onClick={() => setQuickViewSelectedSize(sz)}
-                              className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all duration-200 cursor-pointer capitalize active:scale-95 ${ isSel ? "border-indigo-600 bg-indigo-600 text-slate-100 dark:text-white shadow-md shadow-indigo-900/15" : "border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-400 bg-white dark:bg-slate-900 hover:bg-slate-50" }`}
+                              className={`px-3 py-1.5 rounded-md text-xs font-bold border transition-all duration-200 cursor-pointer capitalize active:scale-95 ${ isSel ? "border-indigo-600 bg-indigo-600 text-slate-100 dark:text-white shadow-md shadow-indigo-900/15" : "border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-400 bg-white dark:bg-slate-900 hover:bg-slate-50" }`}
                             >
                               {sz}
                             </button>
@@ -1256,7 +1259,7 @@ const Product = () => {
                   )}
 
                   {/* Free Delivery Tag */}
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/5 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[11px] font-black select-none border border-emerald-500/10">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-emerald-500/5 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[11px] font-black select-none border border-emerald-500/10">
                     <span>✓</span>
                     <span>Free Delivery Tomorrow</span>
                   </div>
@@ -1267,7 +1270,7 @@ const Product = () => {
                   {/* Wishlist Icon Button */}
                   <button
                     onClick={toggleQuickViewFavorite}
-                    className="h-12 w-12 rounded-2xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 flex items-center justify-center transition-all duration-200 active:scale-90"
+                    className="h-11 w-11 rounded-md bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 flex items-center justify-center transition-all duration-200 active:scale-90"
                     title="Add to Wishlist"
                   >
                     <Heart 
@@ -1278,7 +1281,7 @@ const Product = () => {
 
                   <button
                     onClick={handleQuickViewAddToCart}
-                    className="flex-1 py-3 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs font-black uppercase tracking-wider active:scale-95 transition-all duration-200 flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+                    className="flex-1 py-3 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 rounded-md text-xs font-black uppercase tracking-wider active:scale-95 transition-all duration-200 flex items-center justify-center gap-2 shadow-xs cursor-pointer"
                   >
                     <ShoppingCart size={13} className="stroke-[2.5]" />
                     <span>Add To Cart</span>
@@ -1286,7 +1289,7 @@ const Product = () => {
 
                   <button
                     onClick={handleQuickViewBuyNow}
-                    className="flex-1 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:brightness-110 text-slate-100 dark:text-white rounded-2xl text-xs font-black uppercase tracking-wider active:scale-95 transition-all duration-200 flex items-center justify-center gap-2 shadow-md shadow-indigo-900/15 cursor-pointer border-none"
+                    className="flex-1 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:brightness-110 text-slate-100 dark:text-white rounded-md text-xs font-black uppercase tracking-wider active:scale-95 transition-all duration-200 flex items-center justify-center gap-2 shadow-md shadow-indigo-900/15 cursor-pointer border-none"
                   >
                     <span>Buy Now</span>
                     <ArrowRight size={13} className="stroke-[2.5]" />
