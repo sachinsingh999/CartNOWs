@@ -393,13 +393,9 @@ const Orderdetail = () => {
   };
 
   const downloadInvoice = (orderId) => {
-    const inv = invoices.find((i) => String(i.orderId?._id || i.orderId) === String(orderId));
-    if (inv) {
-      window.open(`${backendUrl}/api/invoice/download/${inv._id}?token=${token}`, "_blank");
-    } else {
-      toast.info("Compiling invoice PDF... Please check details page.");
-      navigate(`/order/${orderId}`);
-    }
+    toast.info("Downloading Invoice PDF... 📄");
+    const downloadUrl = `${backendUrl}/api/invoice/download/${orderId}?token=${token}`;
+    window.open(downloadUrl, "_blank");
   };
 
   if (loading) {
@@ -742,21 +738,25 @@ const Orderdetail = () => {
 
             return (
               <div key={order.orderId || index} className="space-y-2">
-                {/* SINGLE ORDER CARD */}
+                {/* SINGLE ORDER CARD - Clean Light Design with Subtle Amber Accent */}
                 <div
-                  className={`order-group-${order.orderId} group rounded-md border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#0C0F16] overflow-hidden text-left shadow-sm hover:shadow-md transition-all duration-300 ${ isHighlighted ? "ring-2 ring-[#10B981]/50" : "" }`}
+                  className={`order-group-${order.orderId} group rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#0C0F16] overflow-hidden text-left shadow-xs hover:shadow-md transition-all duration-300 relative ${ isHighlighted ? "ring-2 ring-amber-400/80" : "" }`}
                 >
+                  {/* Subtle Light Amber Top Accent Strip */}
+                  <div className="h-[2px] w-full bg-gradient-to-r from-amber-400/80 via-yellow-400/80 to-amber-500/80 z-10 relative" />
+
                   {/* CARD HEADER */}
-                  <div className="px-5 py-3.5 border-b border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between bg-slate-50/80 dark:bg-[#0F131C]">
+                  <div className="px-5 py-3.5 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between bg-slate-50/70 dark:bg-[#0F131C]">
                     <div className="flex items-center gap-3">
-                      <span className="text-xs font-black text-slate-700 dark:text-slate-200 uppercase tracking-wider">
+                      <span className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+                        <Tag size={13} className="text-amber-500" />
                         ORDER #{String(order.orderNumber || order.orderId).slice(-8).toUpperCase()}
                       </span>
-                      <span className={`px-2.5 py-0.5 rounded-sm text-[9px] font-black uppercase tracking-wider ${
+                      <span className={`px-2.5 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider ${
                         order.status === "Delivered" 
-                          ? "bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 border border-emerald-500/25" 
+                          ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25" 
                           : order.status === "Cancelled" 
-                          ? "bg-rose-500/10 text-rose-500 dark:text-rose-400 border border-rose-500/25" 
+                          ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/25" 
                           : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25"
                       }`}>
                         {order.status}
@@ -777,218 +777,219 @@ const Orderdetail = () => {
                     )}
                   </div>
 
-                  {/* CARD BODY */}
-                  <div className="p-5 lg:p-6 grid grid-cols-1 lg:grid-cols-[1.2fr_0.92fr_1fr] gap-6 lg:gap-8 bg-white dark:bg-[#0C0F16] border-b border-slate-200/80 dark:border-slate-800/80 items-stretch">
+                  {/* CARD BODY: Clean Master-Detail Layout */}
+                  <div className="p-5 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 bg-white dark:bg-[#0C0F16] border-b border-slate-100 dark:border-slate-800/80 items-start">
                     
-                    {/* Left Col - Product Info */}
-                    <div className="flex flex-col gap-4 min-w-0 justify-center">
-                      <div className="flex gap-4 min-w-0">
-                        {/* Product Image */}
-                        <Link
-                          to={`/product/${firstItem.productId}`}
-                          className="h-24 w-24 rounded-md bg-slate-50 dark:bg-[#111827] border border-slate-200/80 dark:border-slate-800 p-2 shrink-0 flex items-center justify-center cursor-pointer hover:border-[#10B981] transition-all shadow-2xs group-hover:scale-[1.02]"
-                        >
-                          <img 
-                            src={firstItem.image?.startsWith("http") ? firstItem.image : `${backendUrl}/${firstItem.image}`} 
-                            alt={firstItem.name} 
-                            className="h-full w-full object-contain rounded-sm" 
-                          />
-                        </Link>
-
-                        {/* Product Text Details */}
-                        <div className="min-w-0 flex flex-col justify-between py-0.5">
-                          <div className="text-left">
-                            <Link
-                              to={`/product/${firstItem.productId}`}
-                              className="text-sm font-black text-[#121217] dark:text-white hover:text-[#10B981] transition line-clamp-1"
-                            >
-                              {firstItem.name}
-                            </Link>
-                            
-                            {/* Deterministic Rating Row */}
-                            <div className="flex items-center gap-2 mt-1.5">
-                              {renderStars(ratingInfo.rating)}
-                              <span className="text-[10px] font-bold text-slate-400 mt-0.5">
-                                {ratingInfo.rating} &nbsp;
-                                <span className="text-slate-500">({ratingInfo.reviews})</span>
-                              </span>
-                            </div>
-
-                            {/* Metadata chip labels */}
-                            <div className="flex flex-wrap items-center gap-1.5 mt-2 text-[10px] text-slate-400 font-bold">
-                              <span>Qty: {firstItem.qty}</span>
-                              <span>•</span>
-                              <span>Color: {itemColor}</span>
-                              <span>•</span>
-                              <span>Size: {firstItem.size}</span>
-                            </div>
-                          </div>
-
-                          {/* Pricing details */}
-                          <div className="text-left flex flex-wrap items-end gap-2 mt-3">
-                            <span className="text-base font-black text-[#121217] dark:text-white leading-none">₹{firstItem.price?.toLocaleString("en-IN")}</span>
-                            <span className="text-xs text-slate-500 line-through leading-none">₹{(firstItem.price * 1.3).toLocaleString("en-IN", { maximumFractionDigits: 0 })}</span>
-                            <span className="text-[9px] font-black px-1.5 py-0.5 bg-emerald-500/10 text-emerald-400 rounded-sm border border-emerald-500/20 leading-none">
-                              23% OFF
+                    {/* Left Col (7/12) - Purchased Products List */}
+                    <div className="lg:col-span-7 flex flex-col gap-4 min-w-0">
+                      
+                      {/* Sub-header for Multi-item Orders */}
+                      {items.length > 1 && (
+                        <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800/60">
+                          <div className="flex items-center gap-2">
+                            <ShoppingBag size={14} className="text-amber-500" />
+                            <span className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                              Package Items ({items.length})
                             </span>
                           </div>
-
-                          {/* Seller */}
-                          <div className="text-left mt-2.5 text-[10px] font-bold text-slate-500 leading-none">
-                            Seller: <span className="text-emerald-600 dark:text-[#10B981] font-extrabold">{firstItem.shopName}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Render Expanded Other Products */}
-                      <AnimatePresence initial={false}>
-                        {isExpanded && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                            className="overflow-hidden space-y-4"
+                          <button
+                            onClick={() => toggleOrderExpand(order.orderId)}
+                            className="text-[11px] font-extrabold text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1 cursor-pointer"
                           >
-                            {items.slice(1).map((item, idx) => {
-                              const itemRating = getProductRating(item.productId, item.name);
-                              const itemColorSeed = String(item.productId).charCodeAt(0) || 0;
-                              const otherItemColor = item.color || colors[itemColorSeed % colors.length];
-                              return (
-                                <div key={item._id || idx} className="flex gap-4 min-w-0 pt-4 border-t border-slate-200/80 dark:border-slate-800/50">
-                                  {/* Product Image */}
-                                  <Link
-                                    to={`/product/${item.productId}`}
-                                    className="h-20 w-20 rounded-md bg-slate-50 dark:bg-[#111827] border border-slate-200/80 dark:border-slate-800 p-1.5 shrink-0 flex items-center justify-center cursor-pointer hover:border-[#10B981] transition shadow-2xs"
-                                  >
-                                    <img 
-                                      src={item.image?.startsWith("http") ? item.image : `${backendUrl}/${item.image}`} 
-                                      alt={item.name} 
-                                      className="h-full w-full object-contain rounded-sm" 
-                                    />
-                                  </Link>
+                            <span>{isExpanded ? "Collapse List" : "View All Items"}</span>
+                            {isExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                          </button>
+                        </div>
+                      )}
 
-                                  {/* Product Text Details */}
-                                  <div className="min-w-0 flex flex-col justify-between py-0.5">
-                                    <div className="text-left">
-                                      <Link
-                                        to={`/product/${item.productId}`}
-                                        className="text-xs font-black text-[#121217] dark:text-white hover:text-[#10B981] transition line-clamp-1"
-                                      >
-                                        {item.name}
-                                      </Link>
-                                      
-                                      <div className="flex items-center gap-1 mt-1">
-                                        {renderStars(itemRating.rating)}
-                                        <span className="text-[9px] font-bold text-slate-400">
-                                          {itemRating.rating}
-                                        </span>
-                                      </div>
+                      {/* Display Items List */}
+                      <div className="space-y-3.5">
+                        {(isExpanded || items.length === 1 ? items : items.slice(0, 2)).map((item, idx) => {
+                          const itemRating = getProductRating(item.productId, item.name);
+                          const itemColorSeed = String(item.productId).charCodeAt(0) || 0;
+                          const currentItemColor = item.color || colors[itemColorSeed % colors.length];
 
-                                      <div className="flex flex-wrap items-center gap-1.5 mt-1.5 text-[9px] text-slate-400 font-bold">
-                                        <span>Qty: {item.qty}</span>
-                                        <span>•</span>
-                                        <span>Color: {otherItemColor}</span>
-                                        <span>•</span>
-                                        <span>Size: {item.size}</span>
-                                      </div>
-                                    </div>
+                          return (
+                            <div 
+                              key={item._id || idx} 
+                              className={`flex flex-col sm:flex-row gap-4 p-4 rounded-xl border transition-colors ${
+                                items.length > 1 
+                                  ? "bg-slate-50/60 dark:bg-[#111622]/40 border-slate-200/60 dark:border-slate-800/60 hover:border-slate-300 dark:hover:border-slate-700" 
+                                  : "border-transparent p-0 bg-transparent"
+                              }`}
+                            >
+                              {/* Product Image */}
+                              <Link
+                                to={`/product/${item.productId}`}
+                                className="h-22 w-22 sm:h-24 sm:w-24 rounded-lg bg-white dark:bg-[#111827] border border-slate-200/80 dark:border-slate-800 p-2 shrink-0 flex items-center justify-center cursor-pointer hover:border-amber-400 transition-all shadow-2xs group-hover:scale-[1.02]"
+                              >
+                                <img 
+                                  src={item.image?.startsWith("http") ? item.image : `${backendUrl}/${item.image}`} 
+                                  alt={item.name} 
+                                  className="h-full w-full object-contain rounded-sm" 
+                                />
+                              </Link>
 
-                                    <div className="text-left flex flex-wrap items-end gap-2 mt-2">
-                                      <span className="text-sm font-black text-[#121217] dark:text-white leading-none">₹{item.price?.toLocaleString("en-IN")}</span>
-                                    </div>
+                              {/* Product Details */}
+                              <div className="min-w-0 flex-1 flex flex-col justify-between py-0.5 text-left">
+                                <div>
+                                  <div className="flex items-start justify-between gap-2">
+                                    <Link
+                                      to={`/product/${item.productId}`}
+                                      className="text-sm font-black text-slate-900 dark:text-white hover:text-amber-600 dark:hover:text-amber-400 transition line-clamp-1"
+                                    >
+                                      {item.name}
+                                    </Link>
+
+                                    {/* Individual Item Status Pill */}
+                                    {items.length > 1 && item.status && item.status.toLowerCase() !== order.status.toLowerCase() && (
+                                      <span className={`px-2 py-0.5 rounded-sm text-[9px] font-black uppercase tracking-wider shrink-0 ${
+                                        item.status === "Cancelled" 
+                                          ? "bg-rose-500/10 text-rose-500 dark:text-rose-400 border border-rose-500/25" 
+                                          : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25"
+                                      }`}>
+                                        {item.status}
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  {/* Star Rating Row */}
+                                  <div className="flex items-center gap-2 mt-1">
+                                    {renderStars(itemRating.rating)}
+                                    <span className="text-[10px] font-bold text-slate-400">
+                                      {itemRating.rating} &nbsp;
+                                      <span className="text-slate-500">({itemRating.reviews})</span>
+                                    </span>
+                                  </div>
+
+                                  {/* Specs Badges */}
+                                  <div className="flex flex-wrap items-center gap-1.5 mt-2 text-[10px] text-slate-500 dark:text-slate-400 font-bold">
+                                    <span className="bg-slate-200/60 dark:bg-slate-800/80 px-2 py-0.5 rounded text-slate-700 dark:text-slate-300">Qty: {item.qty}</span>
+                                    <span className="bg-slate-200/60 dark:bg-slate-800/80 px-2 py-0.5 rounded text-slate-700 dark:text-slate-300">Color: {currentItemColor}</span>
+                                    <span className="bg-slate-200/60 dark:bg-slate-800/80 px-2 py-0.5 rounded text-slate-700 dark:text-slate-300">Size: {item.size}</span>
                                   </div>
                                 </div>
-                              );
-                            })}
-                          </motion.div>
+
+                                {/* Price & Seller Footer */}
+                                <div className="flex flex-wrap items-center justify-between gap-2 mt-3 pt-2 border-t border-slate-200/40 dark:border-slate-800/40">
+                                  <div className="flex items-baseline gap-2">
+                                    <span className="text-base font-black text-slate-900 dark:text-white leading-none">₹{item.price?.toLocaleString("en-IN")}</span>
+                                    <span className="text-xs text-slate-400 line-through leading-none">₹{(item.price * 1.3).toLocaleString("en-IN", { maximumFractionDigits: 0 })}</span>
+                                    <span className="text-[9px] font-black px-1.5 py-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-sm border border-amber-500/20 leading-none">
+                                      23% OFF
+                                    </span>
+                                  </div>
+
+                                  <div className="text-[10px] font-bold text-slate-500">
+                                    Seller: <span className="text-amber-600 dark:text-amber-400 font-extrabold">{item.shopName}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+
+                        {/* Collapsed Items Count Indicator */}
+                        {!isExpanded && items.length > 2 && (
+                          <button
+                            onClick={() => toggleOrderExpand(order.orderId)}
+                            className="w-full py-2.5 px-4 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-black text-amber-600 dark:text-amber-400 flex items-center justify-center gap-2 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                          >
+                            <span>+ {items.length - 2} more product{items.length - 2 > 1 ? "s" : ""} in this order</span>
+                            <ChevronDown size={14} />
+                          </button>
                         )}
-                      </AnimatePresence>
+                      </div>
                     </div>
 
-                    {/* Middle Col - Order Info Panel (No vertical line borders) */}
-                    <div className="flex flex-col gap-3.5 justify-center bg-slate-50/60 dark:bg-[#111622]/60 p-4 rounded-md border border-slate-200/50 dark:border-slate-800/40">
-                      {/* Order Placed */}
-                      <div className="flex items-center gap-3">
-                        <div className="h-9 w-9 rounded-md bg-white dark:bg-[#1A202C] border border-slate-200/80 dark:border-slate-800 flex items-center justify-center shrink-0 text-slate-500 dark:text-slate-400 shadow-2xs">
-                          <CalendarDays size={16} />
-                        </div>
-                        <div className="text-left">
-                          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block leading-none">Order Placed</span>
-                          <span className="text-xs font-bold text-slate-800 dark:text-slate-100 mt-2 block leading-none">
-                            {formatDateCompact(order.date)} &nbsp;
-                            <span className="text-slate-500 dark:text-slate-400 font-semibold">{new Date(order.date).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}</span>
+                    {/* Right Col (5/12) - Operations Side Panel */}
+                    <div className="lg:col-span-5 flex flex-col gap-4">
+                      
+                      {/* Delivery Stepper Block */}
+                      <div className="bg-slate-50/60 dark:bg-[#111622]/40 p-4 rounded-xl border border-slate-200/60 dark:border-slate-800/60">
+                        {renderStepper(order)}
+                      </div>
+
+                      {/* Summary Data Grid */}
+                      <div className="bg-slate-50/60 dark:bg-[#111622]/40 p-4 rounded-xl border border-slate-200/60 dark:border-slate-800/60 grid grid-cols-2 gap-3.5 text-left">
+                        
+                        {/* Order Placed */}
+                        <div className="space-y-1">
+                          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                            <CalendarDays size={12} />
+                            <span>Placed</span>
+                          </span>
+                          <span className="text-xs font-bold text-slate-800 dark:text-slate-100 block">
+                            {formatDateCompact(order.date)}
                           </span>
                         </div>
-                      </div>
 
-                      {/* Total Amount */}
-                      <div className="flex items-center gap-3">
-                        <div className="h-9 w-9 rounded-md bg-white dark:bg-[#1A202C] border border-slate-200/80 dark:border-slate-800 flex items-center justify-center shrink-0 text-slate-500 dark:text-slate-400 shadow-2xs">
-                          <CreditCard size={16} />
+                        {/* Order Total */}
+                        <div className="space-y-1">
+                          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                            <CreditCard size={12} />
+                            <span>Total</span>
+                          </span>
+                          <span className="text-xs font-black text-slate-800 dark:text-slate-100 block">
+                            ₹{order.amount?.toLocaleString("en-IN")}
+                          </span>
                         </div>
-                        <div className="text-left">
-                          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block leading-none">Total Amount</span>
-                          <span className="text-xs font-black text-slate-800 dark:text-slate-100 mt-2 block leading-none">₹{order.amount?.toLocaleString("en-IN")}</span>
-                        </div>
-                      </div>
 
-                      {/* Order ID */}
-                      <div className="flex items-center gap-3">
-                        <div className="h-9 w-9 rounded-md bg-white dark:bg-[#1A202C] border border-slate-200/80 dark:border-slate-800 flex items-center justify-center shrink-0 text-slate-500 dark:text-slate-400 shadow-2xs">
-                          <Tag size={16} />
-                        </div>
-                        <div className="text-left">
-                          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block leading-none">Order ID</span>
-                          <span className="text-xs font-black text-emerald-600 dark:text-[#10B981] mt-2 block leading-none uppercase tracking-wide">
+                        {/* Order ID */}
+                        <div className="space-y-1">
+                          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                            <Tag size={12} />
+                            <span>Order ID</span>
+                          </span>
+                          <span className="text-xs font-black text-amber-600 dark:text-amber-400 block uppercase tracking-wide">
                             #{String(order.orderNumber || order.orderId).slice(-8).toUpperCase()}
                           </span>
                         </div>
+
+                        {/* Payment Method */}
+                        <div className="space-y-1">
+                          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                            <ShieldCheck size={12} />
+                            <span>Payment</span>
+                          </span>
+                          <span className="text-xs font-bold text-slate-800 dark:text-slate-100 block uppercase">
+                            {order.paymentMethod} ({order.payment ? "Paid" : "COD"})
+                          </span>
+                        </div>
+
                       </div>
-                    </div>
 
-                    {/* Right Col - Delivery Progress Panel (No vertical line borders) */}
-                    <div className="flex flex-col justify-between gap-4 bg-slate-50/60 dark:bg-[#111622]/60 p-4 rounded-md border border-slate-200/50 dark:border-slate-800/40">
-                      {renderStepper(order)}
-
-                      {/* Delivery verification / verificationCode details */}
-                      {order.verificationCode && order.status !== "Delivered" && order.status !== "Cancelled" ? (
-                        <div className="p-3 bg-white dark:bg-[#0C0F16] border border-slate-200/80 dark:border-slate-800 rounded-md flex items-center justify-between gap-3 shadow-2xs">
+                      {/* Delivery Verification Key Banner */}
+                      {order.verificationCode && order.status !== "Delivered" && order.status !== "Cancelled" && (
+                        <div className="p-3.5 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-center justify-between gap-3 shadow-2xs">
                           <div className="flex items-center gap-2.5">
-                            <div className="h-8 w-8 rounded bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
+                            <div className="h-8 w-8 rounded-lg bg-amber-500/15 text-amber-500 flex items-center justify-center shrink-0">
                               <KeyRound size={15} className="animate-pulse" />
                             </div>
                             <div className="text-left">
-                              <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 block leading-tight">Delivery Key</span>
-                              <span className="font-mono font-black text-sm tracking-widest text-amber-500 block leading-tight mt-0.5">{order.verificationCode}</span>
+                              <span className="text-[9px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400 block leading-tight">Delivery Key</span>
+                              <span className="font-mono font-black text-base tracking-widest text-amber-600 dark:text-amber-400 block leading-tight mt-0.5">{order.verificationCode}</span>
                             </div>
                           </div>
                           <button
                             onClick={() => copyToClipboard(order.verificationCode, order.orderId)}
-                            className="flex items-center gap-1.5 text-[10px] font-black text-slate-600 dark:text-slate-300 hover:text-[#10B981] px-2.5 py-1.5 rounded hover:bg-emerald-500/10 transition cursor-pointer shrink-0 border border-slate-200/80 dark:border-slate-800 hover:border-emerald-500/30"
+                            className="flex items-center gap-1.5 text-[10px] font-black text-amber-600 dark:text-amber-400 px-3 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 transition cursor-pointer shrink-0 border border-amber-500/20"
                           >
-                            <span>{copiedCodeId === order.orderId ? "Copied!" : "Tap to copy"}</span>
+                            <span>{copiedCodeId === order.orderId ? "Copied!" : "Copy Key"}</span>
                             <Copy size={12} />
                           </button>
                         </div>
-                      ) : (
-                        <div className="p-3 bg-white dark:bg-[#0C0F16] border border-slate-200/80 dark:border-slate-800 rounded-md text-left shadow-2xs">
-                          <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 block">Payment Method</span>
-                          <span className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-1 block uppercase">
-                            {order.paymentMethod} &nbsp;
-                            <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">({order.payment ? "Paid" : "Pending"})</span>
-                          </span>
-                        </div>
                       )}
+
                     </div>
 
                   </div>
 
                   {/* CARD ACTIONS FOOTER */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 p-3.5 sm:p-4 bg-slate-50/80 dark:bg-[#0A0D14]">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 p-3.5 sm:p-4 bg-slate-50/60 dark:bg-[#0A0D14] border-t border-slate-100 dark:border-slate-800/80">
                     <button
                       onClick={() => navigate(`/track/${order.orderId}`)}
-                      className="px-4 py-2.5 rounded border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-xs font-black text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-2 transition cursor-pointer active:scale-95 shadow-2xs"
+                      className="px-4 py-2.5 rounded-xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-xs font-black text-amber-600 dark:text-amber-400 flex items-center justify-center gap-2 transition cursor-pointer active:scale-95 shadow-2xs"
                     >
                       <Truck size={15} />
                       <span>Track Order</span>
@@ -996,7 +997,7 @@ const Orderdetail = () => {
 
                     <button
                       onClick={() => navigate(`/order/${order.orderId}#chat`)}
-                      className="px-4 py-2.5 rounded border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#111827] hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-black text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white flex items-center justify-center gap-2 transition cursor-pointer active:scale-95 shadow-2xs"
+                      className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-black text-slate-700 dark:text-slate-300 flex items-center justify-center gap-2 transition cursor-pointer active:scale-95 shadow-2xs"
                     >
                       <MessageSquare size={15} />
                       <span>Order Chat</span>
@@ -1004,7 +1005,7 @@ const Orderdetail = () => {
 
                     <button
                       onClick={() => downloadInvoice(order.orderId)}
-                      className="px-4 py-2.5 rounded border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-[#111827] hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-black text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white flex items-center justify-center gap-2 transition cursor-pointer active:scale-95 shadow-2xs"
+                      className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-black text-slate-700 dark:text-slate-300 flex items-center justify-center gap-2 transition cursor-pointer active:scale-95 shadow-2xs"
                     >
                       <FileText size={15} />
                       <span>Invoice</span>
@@ -1013,13 +1014,13 @@ const Orderdetail = () => {
                     {isCancellable ? (
                       <button
                         onClick={() => openCancelModal(order.orderId)}
-                        className="px-4 py-2.5 rounded border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs font-black text-rose-600 dark:text-rose-400 flex items-center justify-center gap-2 transition cursor-pointer active:scale-95 shadow-2xs"
+                        className="px-4 py-2.5 rounded-xl border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-xs font-black text-rose-600 dark:text-rose-400 flex items-center justify-center gap-2 transition cursor-pointer active:scale-95 shadow-2xs"
                       >
                         <XCircle size={15} />
                         <span>Cancel Order</span>
                       </button>
                     ) : (
-                      <span className="px-4 py-2.5 rounded border border-rose-500/20 bg-rose-500/5 opacity-60 text-xs font-black text-rose-600 dark:text-rose-400 flex items-center justify-center gap-2 select-none">
+                      <span className="px-4 py-2.5 rounded-xl border border-rose-500/20 bg-rose-500/5 opacity-70 text-xs font-black text-rose-600 dark:text-rose-400 flex items-center justify-center gap-2 select-none">
                         <XCircle size={15} />
                         <span>{order.status === "Cancelled" ? "Cancelled" : "Completed"}</span>
                       </span>

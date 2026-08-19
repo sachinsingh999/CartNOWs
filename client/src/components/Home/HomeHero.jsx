@@ -175,35 +175,56 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
     }
   ];
 
-  // Dynamic Image Preloader for the Active Hero Slide to boost LCP (Largest Contentful Paint)
+  // Compute active slides dynamically to adjust tags and copies under Dark Theme
+  const activeSlides = useMemo(() => {
+    const baseList = slides.length > 0 ? slides : (isDark ? fallbackSlidesDark : fallbackSlides);
+    if (isDark) {
+      return baseList.map(slide => {
+        let name = slide.name;
+        let tagline = slide.tagline;
+        const cat = (slide.category || "").toLowerCase();
+        if (cat.includes("women")) {
+          name = "Midnight Luxury Line";
+          tagline = "Obsidian Tailoring & Refined Modern Silhouettes";
+        } else if (cat.includes("men")) {
+          name = "Noir Silhouette Edit";
+          tagline = "Dark-Theme Tailored Classics & Heavy Knitwear";
+        } else if (cat.includes("sneakers") || cat.includes("shoes")) {
+          name = "Cyber Sneakers Campaign";
+          tagline = "Neon Accents. Infinite Speed & Composite Outsoles.";
+        } else if (cat.includes("electronics") || cat.includes("sound")) {
+          name = "Obsidian Sound Systems";
+          tagline = "Pure Sound. Zero Outside Noise. Studio Accuracy.";
+        } else if (cat.includes("beauty") || cat.includes("skin")) {
+          name = "Nocturnal Beauty Edit";
+          tagline = "Midnight Cellular Restoration & Plant Peptides";
+        } else if (cat.includes("accessories")) {
+          name = "Dark Chrome Accents";
+          tagline = "Refined Full-Grain Leather & Matte Chrome Details";
+        } else if (cat.includes("sport") || cat.includes("active")) {
+          name = "Neon Activewear Line";
+          tagline = "Engineered Aerodynamics For Night Performance";
+        }
+        return { ...slide, name, tagline };
+      });
+    }
+    return baseList;
+  }, [slides, isDark]);
+
+  // Comprehensive Image Preloader for All Hero Slides to eliminate transition flicker & boost performance
   useEffect(() => {
-    let preloadUrl = "";
-    if (showBanners && customBanners.length > 0) {
-      const banner = customBanners[slideIdx];
-      preloadUrl = banner?.modelImage
-        ? (banner.modelImage.startsWith("http") ? banner.modelImage : `${backendUrl}${banner.modelImage}`)
-        : (banner?.image
-          ? (banner.image.startsWith("http") ? banner.image : `${backendUrl}${banner.image}`)
-          : "");
-    } else if (slides.length > 0) {
-      preloadUrl = slides[slideIdx]?.imageUrl;
-    } else {
-      const activeList = isDark ? fallbackSlidesDark : fallbackSlides;
-      preloadUrl = activeList[slideIdx]?.imageUrl;
-    }
+    const list = showBanners && customBanners.length > 0 ? customBanners : activeSlides;
+    if (!list || list.length === 0) return;
 
-    if (preloadUrl) {
-      const link = document.createElement("link");
-      link.rel = "preload";
-      link.as = "image";
-      link.href = preloadUrl;
-      document.head.appendChild(link);
-
-      return () => {
-        document.head.removeChild(link);
-      };
-    }
-  }, [slideIdx, slides, customBanners, showBanners, isDark]);
+    list.forEach((item) => {
+      let url = item.imageUrl || item.modelImage || item.image;
+      if (url) {
+        const fullUrl = url.startsWith("http") || url.startsWith("/") ? url : `${backendUrl}${url}`;
+        const img = new Image();
+        img.src = fullUrl;
+      }
+    });
+  }, [showBanners, customBanners, activeSlides]);
 
   // Fetch campaign slideshow assets and banners from server in parallel
   useEffect(() => {
@@ -246,42 +267,6 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
     };
     fetchHeroData();
   }, []);
-
-  // Compute active slides dynamically to adjust tags and copies under Dark Theme
-  const activeSlides = useMemo(() => {
-    const baseList = slides.length > 0 ? slides : (isDark ? fallbackSlidesDark : fallbackSlides);
-    if (isDark) {
-      return baseList.map(slide => {
-        let name = slide.name;
-        let tagline = slide.tagline;
-        const cat = (slide.category || "").toLowerCase();
-        if (cat.includes("women")) {
-          name = "Midnight Luxury Line";
-          tagline = "Obsidian Tailoring & Refined Modern Silhouettes";
-        } else if (cat.includes("men")) {
-          name = "Noir Silhouette Edit";
-          tagline = "Dark-Theme Tailored Classics & Heavy Knitwear";
-        } else if (cat.includes("sneakers") || cat.includes("shoes")) {
-          name = "Cyber Sneakers Campaign";
-          tagline = "Neon Accents. Infinite Speed & Composite Outsoles.";
-        } else if (cat.includes("electronics") || cat.includes("sound")) {
-          name = "Obsidian Sound Systems";
-          tagline = "Pure Sound. Zero Outside Noise. Studio Accuracy.";
-        } else if (cat.includes("beauty") || cat.includes("skin")) {
-          name = "Nocturnal Beauty Edit";
-          tagline = "Midnight Cellular Restoration & Plant Peptides";
-        } else if (cat.includes("accessories")) {
-          name = "Dark Chrome Accents";
-          tagline = "Refined Full-Grain Leather & Matte Chrome Details";
-        } else if (cat.includes("sport") || cat.includes("active")) {
-          name = "Neon Activewear Line";
-          tagline = "Engineered Aerodynamics For Night Performance";
-        }
-        return { ...slide, name, tagline };
-      });
-    }
-    return baseList;
-  }, [slides, isDark]);
 
   // 10 second banner transition timer
   useEffect(() => {
@@ -504,16 +489,16 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
             
             {/* Banner Main Card */}
             <div className="relative w-full h-[360px] md:h-[400px] rounded-none overflow-visible shadow-2xl border border-slate-200/50 dark:border-white/10 text-slate-100 dark:text-white">
-              <AnimatePresence>
-                {customBanners.map((banner, index) => {
-                  if (index !== slideIdx) return null;
+              <AnimatePresence initial={false}>
+                {customBanners[slideIdx] && (() => {
+                  const banner = customBanners[slideIdx];
                   return (
                     <motion.div
-                      key={index}
-                      initial={{ opacity: 0, scale: shouldReduceMotion ? 1 : 0.985 }}
+                      key={slideIdx}
+                      initial={{ opacity: 0, scale: shouldReduceMotion ? 1 : 1.02 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: shouldReduceMotion ? 1 : 1.015 }}
-                      transition={shouldReduceMotion ? { duration: 0.3 } : { duration: 0.9, ease: [0.25, 1, 0.5, 1] }}
+                      exit={{ opacity: 0, scale: shouldReduceMotion ? 1 : 0.98 }}
+                      transition={shouldReduceMotion ? { duration: 0.3 } : { duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
                       className={`absolute inset-0 w-full h-full flex flex-row items-center text-slate-100 dark:text-white overflow-visible ${banner.backgroundTheme || 'bg-gradient-to-r from-slate-900 to-indigo-950'}`}
                     >
                       {/* Glassmorphic sheen layout layers */}
@@ -689,7 +674,7 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
                       </div>
                     </motion.div>
                   );
-                })}
+                })()}
               </AnimatePresence>
             </div>
 
@@ -764,32 +749,29 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
 
           {/* Responsive Model Background Image for Mobile & Tablet (< lg) */}
           <div className="absolute inset-0 block lg:hidden z-0 pointer-events-none overflow-hidden select-none">
-            <AnimatePresence mode="wait">
-              {activeSlides.map((slide, idx) => {
-                if (idx !== slideIdx) return null;
-                return (
-                  <motion.div
-                    key={idx}
-                    initial={idx === 0 ? false : { opacity: 0, scale: 1.05 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.98 }}
-                    transition={shouldReduceMotion ? { duration: 0.3 } : { duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                    className="absolute inset-0 w-full h-full flex items-end justify-end pointer-events-none"
-                  >
-                    {/* High opacity model background image positioned on right */}
-                    <img
-                      src={slide.imageUrl}
-                      alt={slide.name}
-                      fetchPriority="high"
-                      decoding="sync"
-                      className="h-[95%] w-auto max-w-[85%] sm:max-w-[65%] object-contain object-bottom select-none z-0 filter drop-shadow-2xl opacity-90 dark:opacity-85"
-                    />
+            <AnimatePresence initial={false}>
+              {activeSlides[slideIdx] && (
+                <motion.div
+                  key={slideIdx}
+                  initial={{ opacity: 0, scale: shouldReduceMotion ? 1 : 1.03 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: shouldReduceMotion ? 1 : 0.97 }}
+                  transition={shouldReduceMotion ? { duration: 0.3 } : { duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                  className="absolute inset-0 w-full h-full flex items-end justify-end pointer-events-none"
+                >
+                  {/* High opacity model background image positioned on right */}
+                  <img
+                    src={activeSlides[slideIdx].imageUrl}
+                    alt={activeSlides[slideIdx].name}
+                    fetchPriority="high"
+                    decoding="sync"
+                    className="h-[95%] w-auto max-w-[85%] sm:max-w-[65%] object-contain object-bottom select-none z-0 filter drop-shadow-2xl opacity-90 dark:opacity-85"
+                  />
 
-                    {/* Soft legibility gradient overlay ONLY on the left half where text sits */}
-                    <div className="absolute inset-y-0 left-0 w-full sm:w-2/3 bg-gradient-to-r from-white via-white/70 to-transparent dark:from-slate-950 dark:via-slate-950/70 dark:to-transparent z-10 pointer-events-none" />
-                  </motion.div>
-                );
-              })}
+                  {/* Soft legibility gradient overlay ONLY on the left half where text sits */}
+                  <div className="absolute inset-y-0 left-0 w-full sm:w-2/3 bg-gradient-to-r from-white via-white/70 to-transparent dark:from-slate-950 dark:via-slate-950/70 dark:to-transparent z-10 pointer-events-none" />
+                </motion.div>
+              )}
             </AnimatePresence>
           </div>
 
@@ -978,65 +960,65 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
               <div className="absolute w-[75%] h-[75%] max-w-[380px] max-h-[380px] rounded-full bg-[#3B82F6]/[0.02] dark:bg-indigo-500/[0.03] blur-[30px] z-0" />
 
               {/* Cross-fading Slideshow Container with Parallax and Float */}
-              <AnimatePresence mode="wait">
-                {activeSlides.map((slide, idx) => {
-                  if (idx !== slideIdx) return null;
-                  return (
+              <AnimatePresence initial={false}>
+                {activeSlides[slideIdx] && (
+                  <motion.div
+                    key={slideIdx}
+                    initial={{ 
+                      opacity: 0, 
+                      scale: shouldReduceMotion ? 1 : 1.03,
+                      filter: "blur(2px)"
+                    }}
+                    animate={{ 
+                      opacity: 1, 
+                      scale: 1,
+                      filter: "blur(0px)"
+                    }}
+                    exit={{ 
+                      opacity: 0, 
+                      scale: shouldReduceMotion ? 1 : 0.97,
+                      filter: "blur(2px)"
+                    }}
+                    transition={shouldReduceMotion ? { duration: 0.3 } : { duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                    className="absolute inset-0 w-full h-full flex items-end justify-center overflow-visible"
+                  >
+                    {/* Floating Model Container (shifted by mouse parallax) */}
                     <motion.div
-                      key={idx}
-                      initial={idx === 0 ? false : { 
-                        opacity: 0, 
-                        scale: shouldReduceMotion ? 1 : 0.97
+                      animate={{
+                        x: shouldReduceMotion ? 0 : mousePosition.x * 0.8,
+                        y: shouldReduceMotion ? 0 : mousePosition.y * 0.8
                       }}
-                      animate={{ 
-                        opacity: 1, 
-                        scale: 1
-                      }}
-                      exit={{ 
-                        opacity: 0, 
-                        scale: shouldReduceMotion ? 1 : 1.02
-                      }}
-                      transition={shouldReduceMotion ? { duration: 0.3 } : { duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                      className="absolute inset-0 w-full h-full flex items-end justify-center overflow-visible"
+                      transition={{ type: "spring", stiffness: 120, damping: 18 }}
+                      className="absolute bottom-0 inset-x-0 h-[88%] w-full flex items-end justify-center select-none cursor-pointer z-10"
+                      onClick={() => handleModelClick(activeSlides[slideIdx].category)}
                     >
-                      {/* Floating Model Container (shifted by mouse parallax) */}
                       <motion.div
-                        animate={{
-                          x: shouldReduceMotion ? 0 : mousePosition.x * 0.8,
-                          y: shouldReduceMotion ? 0 : mousePosition.y * 0.8
+                        animate={shouldReduceMotion ? {} : {
+                          y: [0, -10, 0]
                         }}
-                        transition={{ type: "spring", stiffness: 120, damping: 18 }}
-                        className="absolute bottom-0 inset-x-0 h-[88%] w-full flex items-end justify-center select-none cursor-pointer z-10"
-                        onClick={() => handleModelClick(slide.category)}
+                        transition={{
+                          duration: 6,
+                          repeat: Infinity,
+                          ease: "easeInOut"
+                        }}
+                        className="h-full w-full flex items-end justify-center"
                       >
-                        <motion.div
-                          animate={shouldReduceMotion ? {} : {
-                            y: [0, -10, 0]
+                        <img
+                          src={activeSlides[slideIdx].imageUrl}
+                          alt={activeSlides[slideIdx].name}
+                          width="600"
+                          height="600"
+                          fetchPriority="high"
+                          decoding="sync"
+                          style={{
+                            WebkitMaskImage: "linear-gradient(to top, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 10%)",
                           }}
-                          transition={{
-                            duration: 6,
-                            repeat: Infinity,
-                            ease: "easeInOut"
-                          }}
-                          className="h-full w-full flex items-end justify-center"
-                        >
-                          <img
-                            src={slide.imageUrl}
-                            alt={slide.name}
-                            width="600"
-                            height="600"
-                            fetchPriority="high"
-                            decoding="sync"
-                            style={{
-                              WebkitMaskImage: "linear-gradient(to top, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 10%)",
-                            }}
-                            className={`h-full max-h-full object-contain object-bottom select-none z-10 transition-transform duration-700 ${slide.scaleClass || "scale-100"}`}
-                          />
-                        </motion.div>
+                          className={`h-full max-h-full object-contain object-bottom select-none z-10 transition-transform duration-700 ${activeSlides[slideIdx].scaleClass || "scale-100"}`}
+                        />
                       </motion.div>
                     </motion.div>
-                  );
-                })}
+                  </motion.div>
+                )}
               </AnimatePresence>
 
               {/* Fixed Glassmorphic AI recommendation snippet floating on left */}

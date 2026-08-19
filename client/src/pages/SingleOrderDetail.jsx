@@ -212,6 +212,16 @@ const SingleOrderDetail = () => {
           {/* Quick Action Suite */}
           <div className="flex items-center gap-2">
             <button
+              onClick={() => {
+                toast.info("Downloading Invoice PDF... 📄");
+                window.open(`${backendUrl}/api/invoice/download/${order._id}?token=${token}`, "_blank");
+              }}
+              className="px-3.5 py-2 rounded-sm bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 transition cursor-pointer flex items-center gap-1.5 border border-slate-200 dark:border-slate-700"
+            >
+              <FileText size={13} />
+              <span>Invoice PDF</span>
+            </button>
+            <button
               onClick={() => navigate(`/track/${order._id}`)}
               className="px-3.5 py-2 rounded-sm bg-indigo-600 hover:bg-indigo-700 text-xs font-bold text-white transition cursor-pointer flex items-center gap-1.5 shadow-xs"
             >
