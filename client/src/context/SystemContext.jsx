@@ -22,36 +22,54 @@ export const SystemProvider = ({ children }) => {
   const [showSplash, setShowSplash] = useState(true);
   const [canDismissSplash, setCanDismissSplash] = useState(false);
 
-  // Fetch maintenance settings on mount
+  // Fetch maintenance settings on mount with fast timeout and safety fallback
   useEffect(() => {
+    let isMounted = true;
+
+    // Safety fallback: Never let splash wait more than 800ms for maintenance check
+    const safetyTimer = setTimeout(() => {
+      if (isMounted) {
+        setLoadingMaintenance(false);
+      }
+    }, 800);
+
     const checkMaintenance = async () => {
       try {
-        const { data } = await axios.get(`${backendUrl}/api/system/maintenance`);
-        if (data.success) {
+        const { data } = await axios.get(`${backendUrl}/api/system/maintenance`, { timeout: 1000 });
+        if (data.success && isMounted) {
           setMaintenanceSettings(data.settings);
           try {
             sessionStorage.setItem("cached_maintenance_settings", JSON.stringify(data.settings));
           } catch (e) {}
         }
       } catch (err) {
-        console.error("Failed to fetch maintenance settings:", err);
+        // Silently catch network timeouts / sleeping backend
       } finally {
-        setLoadingMaintenance(false);
+        if (isMounted) {
+          clearTimeout(safetyTimer);
+          setLoadingMaintenance(false);
+        }
       }
     };
+
     checkMaintenance();
+
+    return () => {
+      isMounted = false;
+      clearTimeout(safetyTimer);
+    };
   }, []);
 
   const handleSplashComplete = () => {
     setCanDismissSplash(true);
   };
 
-  // Only dismiss splash screen when BOTH the loader animation finishes and maintenance check completes
+  // Dismiss splash screen promptly when loader completes
   useEffect(() => {
-    if (canDismissSplash && !loadingMaintenance) {
+    if (canDismissSplash) {
       setShowSplash(false);
     }
-  }, [canDismissSplash, loadingMaintenance]);
+  }, [canDismissSplash]);
 
   const isMaintenanceActive =
     !loadingMaintenance &&

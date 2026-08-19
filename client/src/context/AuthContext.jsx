@@ -112,7 +112,8 @@ export const AuthProvider = ({ children }) => {
       try {
         if (role === "customer") {
           const res = await axios.get(`${backendUrl}/api/user/profile`, {
-            headers: { Authorization: `Bearer ${token}` }
+            headers: { Authorization: `Bearer ${token}` },
+            timeout: 3000,
           });
           if (res.data.success) {
             setUser(res.data.user);
@@ -122,7 +123,8 @@ export const AuthProvider = ({ children }) => {
           }
         } else if (role === "seller") {
           const res = await axios.get(`${backendUrl}/api/seller/profile`, {
-            headers: { token: token }
+            headers: { token: token },
+            timeout: 3000,
           });
           if (res.data.success) {
             setUser(res.data.seller);
@@ -132,11 +134,10 @@ export const AuthProvider = ({ children }) => {
           }
         } else if (role === "agent") {
           const res = await axios.get(`${backendUrl}/api/deliveryman/stats`, {
-            headers: { token: token }
+            headers: { token: token },
+            timeout: 3000,
           });
-          if (res.data.success) {
-            // Stats call was successful, auth is valid
-          } else {
+          if (!res.data.success) {
             logout();
           }
         } else if (role === "admin") {
@@ -146,8 +147,11 @@ export const AuthProvider = ({ children }) => {
           }
         }
       } catch (err) {
-        console.error("Token verification failed:", err);
-        logout();
+        console.warn("Token background verification warning:", err.message);
+        // Only logout if explicit 401/403 unauthorized, not on network timeout / cold start!
+        if (err.response?.status === 401 || err.response?.status === 403) {
+          logout();
+        }
       } finally {
         setLoading(false);
       }
