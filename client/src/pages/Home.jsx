@@ -189,7 +189,7 @@ const Home = () => {
     let guestCart = {};
     try {
       guestCart = JSON.parse(localStorage.getItem("cart") || "{}");
-    } catch (err) {}
+    } catch (err) { }
 
     // Only check guest localStorage if user is not logged in
     if (!token) {
@@ -420,10 +420,10 @@ const Home = () => {
           className="w-full px-4 sm:px-8 lg:px-12 py-2 select-none"
         >
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-left">
-            <DealOfTheDay 
-              deals={homepageData.dealsOfDay} 
-              activeDeal={activeDeal} 
-              onAddToCart={onAddToCart} 
+            <DealOfTheDay
+              deals={homepageData.dealsOfDay}
+              activeDeal={activeDeal}
+              onAddToCart={onAddToCart}
             />
 
             <SellerSpotlight />

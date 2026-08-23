@@ -7,6 +7,9 @@ export default defineConfig({
   base: '/',
   plugins: [react(), tailwindcss()],
   server: { port: 5173 },
+  optimizeDeps: {
+    include: ['@react-oauth/google', 'react-router-dom', 'framer-motion', 'axios', 'lucide-react']
+  },
   build: {
     cssCodeSplit: true,
     cssMinify: 'esbuild',

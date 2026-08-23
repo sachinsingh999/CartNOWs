@@ -86,6 +86,23 @@ const orderSchema = new mongoose.Schema(
       ref: "deliveryman",
       default: null,
     },
+    stockRestored: {
+      type: Boolean,
+      default: false,
+    },
+    rewardsProcessed: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    cashbackEarned: {
+      type: Number,
+      default: 0,
+    },
+    pointsEarned: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );

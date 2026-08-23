@@ -161,6 +161,10 @@ const orderItemSchema = new mongoose.Schema(
       enum: ["none", "pending", "processed", "failed"],
       default: "none",
     },
+    stockRestored: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

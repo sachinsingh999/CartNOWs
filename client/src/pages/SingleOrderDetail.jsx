@@ -131,11 +131,11 @@ const SingleOrderDetail = () => {
   });
 
   // Billing math
-  const platformFee = 20;
-  const shippingFee = order.amount > 519 ? 0 : 40; // Align with place order logic!
-  const discount = order.discount || 0;
-  const subtotal = Math.max(0, order.amount - shippingFee - platformFee + discount);
-  const savedAmount = Math.max(0, Math.round(subtotal * 0.25)); // Estimate original savings
+  const shippingFee = order.shippingFee ?? (order.amount > 519 ? 0 : 40);
+  const subtotal = order.subtotal || (order.items || []).reduce((sum, item) => sum + (item.unitPrice || item.price || 0) * (item.quantity || item.qty || 1), 0);
+  const tax = order.tax || Math.round(subtotal * 0.05);
+  const totalOriginalPrice = (order.items || []).reduce((sum, item) => sum + (item.originalPrice || Math.round((item.unitPrice || item.price || 0) * 1.25)) * (item.quantity || item.qty || 1), 0);
+  const savedAmount = Math.max(0, totalOriginalPrice - subtotal);
 
   const openCancelModal = (orderItemId) => {
     setCancelModal({ open: true, orderItemId });
@@ -533,6 +533,12 @@ const SingleOrderDetail = () => {
                 <span>Items Subtotal</span>
                 <span className="text-slate-800 dark:text-[#CFCFD8] font-bold">₹{subtotal.toLocaleString("en-IN")}</span>
               </div>
+              {tax > 0 && (
+                <div className="flex justify-between">
+                  <span>Taxes & GST (5%)</span>
+                  <span className="text-slate-800 dark:text-[#CFCFD8] font-bold">₹{tax.toLocaleString("en-IN")}</span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span>Shipping Charges</span>
                 <span className="text-slate-800 dark:text-[#CFCFD8] font-bold">₹{shippingFee}</span>
@@ -543,10 +549,12 @@ const SingleOrderDetail = () => {
               </div>
               
               {/* You saved green highlight alert tag */}
-              <div className="mt-4 bg-emerald-500/[0.04] text-emerald-600 border border-emerald-500/10 rounded p-2.5 text-[10px] font-bold flex items-center gap-1.5">
-                <Tag size={11} className="text-emerald-500" />
-                <span>You saved ₹{savedAmount.toLocaleString("en-IN")} on this order!</span>
-              </div>
+              {savedAmount > 0 && (
+                <div className="mt-4 bg-emerald-500/[0.04] text-emerald-600 border border-emerald-500/10 rounded p-2.5 text-[10px] font-bold flex items-center gap-1.5">
+                  <Tag size={11} className="text-emerald-500" />
+                  <span>You saved ₹{savedAmount.toLocaleString("en-IN")} off retail price on this order!</span>
+                </div>
+              )}
             </div>
           </div>
 

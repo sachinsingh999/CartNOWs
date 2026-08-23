@@ -2,23 +2,27 @@ import jwt from "jsonwebtoken";
 
 const authUser = (req, res, next) => {
   try {
+    let token = "";
     const authHeader = req.headers.authorization;
 
-    // 1️⃣ Check header
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      token = authHeader.split(" ")[1];
+    } else if (req.headers.token) {
+      token = req.headers.token;
+    } else if (req.headers.authorization) {
+      token = req.headers.authorization;
+    }
+
+    if (!token) {
       return res.status(401).json({
         success: false,
         message: "Unauthorized",
       });
     }
 
-    // 2️⃣ Extract token
-    const token = authHeader.split(" ")[1];
-
-    // 3️⃣ Verify token
+    // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // 4️⃣ Attach user (🔥 MUST be _id)
     req.user = {
       _id: decoded._id || decoded.id,
     };

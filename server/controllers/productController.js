@@ -174,7 +174,6 @@ const listProducts = async (req, res) => {
     
     // Category filter
     if (categories) {
-      const categoryModel = (await import("../models/categoryModel.js")).default;
       const adminCats = await categoryModel.find({ status: "active" });
       const categoryIdList = categories.split(",").map(id => id.trim()).filter(id => mongoose.Types.ObjectId.isValid(id));
       

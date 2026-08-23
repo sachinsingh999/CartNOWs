@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import notificationModel from "../models/notificationModel.js";
 import { validateEmail, validatePassword, validateName, validatePhone } from "../utils/validation.js";
+import { recalculateUserVIPStatus } from "../services/vipService.js";
 
 const createToken=(id)=>{
   return jwt.sign({id},process.env.JWT_SECRET)
@@ -153,6 +154,8 @@ const getUserProfile = async (req, res) => {
       await user.save();
     }
 
+    const vipInfo = await recalculateUserVIPStatus(user._id);
+
     const userProfile = {
       _id: user._id,
       name: user.name,
@@ -161,6 +164,9 @@ const getUserProfile = async (req, res) => {
       deliveryVerificationKey: user.deliveryVerificationKey,
       addresses: user.addresses || [],
       appReview: user.appReview || null,
+      walletBalance: user.walletBalance || 0,
+      rewardPoints: user.rewardPoints || 0,
+      membership: vipInfo
     };
 
     res.json({
@@ -173,6 +179,22 @@ const getUserProfile = async (req, res) => {
       success: false,
       message: error.message,
     });
+  }
+};
+
+/* ================= GET USER MEMBERSHIP ================= */
+const getUserMembership = async (req, res) => {
+  try {
+    const vipInfo = await recalculateUserVIPStatus(req.user._id);
+    if (!vipInfo) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    res.json({
+      success: true,
+      membership: vipInfo
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -549,11 +571,263 @@ const googleLogin = async (req, res) => {
   }
 };
 
+/* ================= VIP CARD SECURITY CONTROLLERS ================= */
+
+const generateUnmaskedMembershipId = (userId) => {
+  if (!userId) return "4532 8910 4729 B5D5";
+  const idStr = userId.toString();
+  let hash = 0;
+  for (let i = 0; i < idStr.length; i++) {
+    hash = (hash << 5) - hash + idStr.charCodeAt(i);
+    hash |= 0;
+  }
+  const strHash = Math.abs(hash).toString().padStart(8, "89104729");
+  const p1 = strHash.slice(0, 4);
+  const p2 = strHash.slice(4, 8);
+  const last4 = idStr.slice(-4).toUpperCase();
+  return `4532 ${p1} ${p2} ${last4}`;
+};
+
+// GET /api/user/vip-security/status
+const getVipSecurityStatus = async (req, res) => {
+  try {
+    const user = await userModel.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    const vipSec = user.vipSecurity || {};
+    const now = Date.now();
+    const isLocked = !!(vipSec.lockUntil && new Date(vipSec.lockUntil).getTime() > now);
+    const remainingLockSeconds = isLocked ? Math.ceil((new Date(vipSec.lockUntil).getTime() - now) / 1000) : 0;
+
+    res.json({
+      success: true,
+      enabled: !!vipSec.enabled,
+      isLocked,
+      remainingLockSeconds
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// POST /api/user/vip-security/set-code
+const setVipSecurityCode = async (req, res) => {
+  try {
+    const { code } = req.body || {};
+    if (!code || !/^\d{4,6}$/.test(code.toString())) {
+      return res.status(400).json({ success: false, message: "Security code must be 4 to 6 numeric digits" });
+    }
+
+    const user = await userModel.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    const codeHash = await bcrypt.hash(code.toString(), 10);
+    user.vipSecurity = {
+      codeHash,
+      enabled: true,
+      updatedAt: new Date(),
+      failedAttempts: 0,
+      lockUntil: null
+    };
+
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "VIP Card Security Code created successfully"
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// POST /api/user/vip-security/verify
+const verifyVipSecurityCode = async (req, res) => {
+  try {
+    const { code } = req.body || {};
+    if (!code) {
+      return res.status(400).json({ success: false, message: "Security code is required" });
+    }
+
+    const user = await userModel.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    const vipSec = user.vipSecurity || {};
+    if (!vipSec.enabled || !vipSec.codeHash) {
+      return res.status(400).json({ success: false, message: "VIP Security Code is not configured" });
+    }
+
+    const now = Date.now();
+    if (vipSec.lockUntil && new Date(vipSec.lockUntil).getTime() > now) {
+      const remainingSecs = Math.ceil((new Date(vipSec.lockUntil).getTime() - now) / 1000);
+      return res.status(429).json({
+        success: false,
+        message: `Too many failed attempts. Locked temporarily for ${remainingSecs} seconds.`
+      });
+    }
+
+    const isMatch = await bcrypt.compare(code.toString(), vipSec.codeHash);
+
+    if (isMatch) {
+      // Reset attempts on successful verification
+      user.vipSecurity.failedAttempts = 0;
+      user.vipSecurity.lockUntil = null;
+      await user.save();
+
+      // Generate a short-lived 5-minute unlock token
+      const unlockToken = jwt.sign(
+        { id: user._id, type: "vip_card_unlock" },
+        process.env.JWT_SECRET,
+        { expiresIn: "5m" }
+      );
+
+      const unmaskedMembershipId = generateUnmaskedMembershipId(user._id);
+
+      return res.json({
+        success: true,
+        message: "VIP Card Security Verified",
+        unlockToken,
+        unmaskedMembershipId,
+        expiresInSeconds: 300
+      });
+    } else {
+      // Increment failed attempts
+      user.vipSecurity.failedAttempts = (user.vipSecurity.failedAttempts || 0) + 1;
+      
+      if (user.vipSecurity.failedAttempts >= 5) {
+        user.vipSecurity.lockUntil = new Date(Date.now() + 15 * 60 * 1000); // 15 minute lock
+      }
+
+      await user.save();
+
+      return res.status(401).json({
+        success: false,
+        message: "Incorrect security code."
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// POST /api/user/vip-security/change-code
+const changeVipSecurityCode = async (req, res) => {
+  try {
+    const { currentCode, newCode, confirmNewCode } = req.body || {};
+
+    if (!currentCode || !newCode || !confirmNewCode) {
+      return res.status(400).json({ success: false, message: "All fields are required" });
+    }
+
+    if (!/^\d{4,6}$/.test(newCode.toString())) {
+      return res.status(400).json({ success: false, message: "New security code must be 4 to 6 numeric digits" });
+    }
+
+    if (newCode !== confirmNewCode) {
+      return res.status(400).json({ success: false, message: "New security code and confirmation do not match" });
+    }
+
+    if (currentCode === newCode) {
+      return res.status(400).json({ success: false, message: "New security code must be different from current code" });
+    }
+
+    const user = await userModel.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    const vipSec = user.vipSecurity || {};
+    if (!vipSec.enabled || !vipSec.codeHash) {
+      return res.status(400).json({ success: false, message: "VIP Security Code is not set up" });
+    }
+
+    const isMatch = await bcrypt.compare(currentCode.toString(), vipSec.codeHash);
+    if (!isMatch) {
+      return res.status(401).json({ success: false, message: "Current security code is incorrect" });
+    }
+
+    const newHash = await bcrypt.hash(newCode.toString(), 10);
+    user.vipSecurity = {
+      codeHash: newHash,
+      enabled: true,
+      updatedAt: new Date(),
+      failedAttempts: 0,
+      lockUntil: null
+    };
+
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "VIP Security Code updated successfully"
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// POST /api/user/vip-security/reset-code (Forgot Code Flow)
+const resetVipSecurityCode = async (req, res) => {
+  try {
+    const { password, newCode, confirmNewCode } = req.body || {};
+
+    if (!password || !newCode || !confirmNewCode) {
+      return res.status(400).json({ success: false, message: "Account password and new security code are required" });
+    }
+
+    if (!/^\d{4,6}$/.test(newCode.toString())) {
+      return res.status(400).json({ success: false, message: "New security code must be 4 to 6 numeric digits" });
+    }
+
+    if (newCode !== confirmNewCode) {
+      return res.status(400).json({ success: false, message: "New security code and confirmation do not match" });
+    }
+
+    const user = await userModel.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Re-verify identity with user password
+    if (user.provider === "local") {
+      const isPasswordMatch = await bcrypt.compare(password, user.password);
+      if (!isPasswordMatch) {
+        return res.status(401).json({ success: false, message: "Invalid account password. Security verification failed." });
+      }
+    }
+
+    const newHash = await bcrypt.hash(newCode.toString(), 10);
+    user.vipSecurity = {
+      codeHash: newHash,
+      enabled: true,
+      updatedAt: new Date(),
+      failedAttempts: 0,
+      lockUntil: null
+    };
+
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "VIP Security Code reset successfully"
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 export {
   loginUser,
   registerUser,
   adminLogin,
   getUserProfile,
+  getUserMembership,
   updateUserProfile,
   addUserAddress,
   deleteUserAddress,
@@ -562,4 +836,9 @@ export {
   addUserAppReview,
   getAllAppReviews,
   googleLogin,
+  getVipSecurityStatus,
+  setVipSecurityCode,
+  verifyVipSecurityCode,
+  changeVipSecurityCode,
+  resetVipSecurityCode,
 };

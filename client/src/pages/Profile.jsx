@@ -37,13 +37,20 @@ import {
   Percent,
   ShoppingBag,
   Info,
-  Star
+  Star,
+  Wifi,
+  Cpu,
+  Gift,
+  Crown,
+  Tag
 } from "lucide-react";
 import { backendUrl } from "../config";
 import { useLanguage } from "../context/LanguageContext";
 import { cachedGet } from "../utils/apiCache";
 import { toast } from "react-toastify";
 import { ProfileSkeleton } from "../components/SkeletonLoader";
+import VipCreditCard from "../components/VipCreditCard";
+import VipCodeSettingsModal from "../components/VipCodeSettingsModal";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Luxury Preset Avatars for SaaS Dashboard
@@ -80,6 +87,10 @@ const Profile = () => {
 
   // Tab State: dashboard | addresses | settings
   const [activeProfileTab, setActiveProfileTab] = useState("dashboard");
+
+  // VIP Security Code Modal state
+  const [isVipCodeModalOpen, setIsVipCodeModalOpen] = useState(false);
+  const [vipCodeModalMode, setVipCodeModalMode] = useState("change");
 
   // Address States
   const [showAddressModal, setShowAddressModal] = useState(false);
@@ -665,13 +676,13 @@ const Profile = () => {
         }
       `}</style>
 
-      <div className="w-full max-w-none space-y-8 relative z-10">
+      <div className="w-full max-w-7xl mx-auto space-y-8 relative z-10">
 
         {/* Main Grid Wrapper */}
         <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8">
           
           {/* LEFT SIDEBAR: PROFILE SUMMARY */}
-          <div className="rounded-md bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 p-5 space-y-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col justify-between">
+          <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-6 space-y-6 shadow-sm flex flex-col justify-between">
             <div className="space-y-6">
               {/* User Details */}
               <div className="flex flex-col items-center text-center space-y-3.5">
@@ -851,52 +862,29 @@ const Profile = () => {
                   {/* Mid-section Grid split (40% Member, 60% Orders) */}
                   <div className="grid grid-cols-1 xl:grid-cols-[1.5fr_2fr] gap-6 items-start">
                     
-                    {/* VIP Member Centerpiece Card */}
-                    <div className="rounded-md bg-[#6366f1] text-white p-6 shadow-[0_15px_30px_-5px_rgba(99,102,241,0.25)] flex flex-col justify-between h-[300px] relative overflow-hidden">
-                      <div className="absolute inset-0 bg-gradient-to-tr from-indigo-700 via-indigo-600 to-purple-600 opacity-90 z-0" />
-                      
-                      <span className="absolute right-[-40px] bottom-[-20px] text-[200px] font-black text-white/[0.04] uppercase leading-none select-none pointer-events-none z-0">
-                        VIP
-                      </span>
+                    {/* DYNAMIC SERVER-AUTHORITATIVE VIP CREDIT CARD & PROGRESS BAR */}
+                    <div className="space-y-4">
+                      <VipCreditCard user={user} token={localStorage.getItem("token") || ""} />
 
-                      <div className="flex justify-between items-start relative z-10">
-                        <div className="text-left space-y-1">
-                          <div className="flex items-center gap-1.5">
-                            <Award size={16} className="text-amber-300" />
-                            <span className="text-sm font-black tracking-wide uppercase">{tier.name}</span>
-                            <span className="text-[8px] font-black px-1.5 py-0.5 rounded bg-white/20 uppercase tracking-widest leading-none">VIP</span>
+                      {/* VIP Tier Progress Bar */}
+                      <div className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 space-y-2">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="font-bold text-slate-700 dark:text-slate-300">
+                            Qualifying Spend: <span className="font-mono font-black text-slate-900 dark:text-white">₹{((user.membership || {}).qualifyingSpend || 0).toLocaleString("en-IN")}</span>
+                          </span>
+                          <span className="font-mono font-bold text-amber-500">
+                            {(user.membership || {}).nextLevelName ? `₹${((user.membership || {}).amountToNextLevel || 0).toLocaleString("en-IN")} more for ${(user.membership || {}).nextLevelName}` : "Max Level Unlocked 💎"}
+                          </span>
+                        </div>
+
+                        {(user.membership || {}).nextLevelName && (
+                          <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden border border-slate-200 dark:border-slate-700">
+                            <div 
+                              className="bg-gradient-to-r from-teal-400 via-amber-400 to-cyan-400 h-full rounded-full transition-all duration-500" 
+                              style={{ width: `${Math.min(100, Math.max(0, (user.membership || {}).progressPercent || 0))}%` }} 
+                            />
                           </div>
-                          <p className="text-[11px] text-white/70 font-semibold">You are enjoying our highest membership tier.</p>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4 relative z-10 text-left mt-4">
-                        <div>
-                          <p className="text-[8px] font-black tracking-wider uppercase text-white/50 leading-none">Reward Points</p>
-                          <div className="flex items-center gap-1.5 mt-2">
-                            <span className="h-3 w-3 rounded-full bg-amber-400 flex items-center justify-center border border-amber-300"><Star size={7} className="fill-amber-900 text-amber-900" /></span>
-                            <span className="font-mono text-base sm:text-lg font-black tracking-wide">{Math.floor(totalSpent * 0.5).toLocaleString("en-IN")}</span>
-                          </div>
-                        </div>
-                        <div>
-                          <p className="text-[8px] font-black tracking-wider uppercase text-white/50 leading-none">Cashback Rate</p>
-                          <p className="text-base sm:text-lg font-mono font-black text-emerald-350 mt-1.5">
-                            {totalSpent > 30000 ? "8.0%" : totalSpent > 15000 ? "5.0%" : totalSpent > 5000 ? "3.0%" : "1.0%"}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="space-y-2 relative z-10 text-left pt-3">
-                        <div className="flex justify-between items-baseline text-[9.5px] font-bold text-white/80">
-                          <span>Next Tier: {progressInfo.nextTierName}</span>
-                          <span className="font-mono font-black">{progressInfo.progressPercent.toFixed(0)}%</span>
-                        </div>
-                        <div className="w-full bg-white/20 rounded-full h-1.5 overflow-hidden">
-                          <div className="bg-white h-full rounded-md transition-all duration-500" style={{ width: `${progressInfo.progressPercent}%` }} />
-                        </div>
-                        <p className="text-[9px] text-white/60 font-semibold tracking-wide">
-                          {progressInfo.rewardPreview}
-                        </p>
+                        )}
                       </div>
                     </div>
 
@@ -1362,6 +1350,47 @@ const Profile = () => {
                     </div>
                   </div>
 
+                  {/* VIP CARD SECURITY SETTINGS SECTION */}
+                  <div className="rounded-md border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-xs font-black uppercase text-slate-900 dark:text-white tracking-wider flex items-center gap-2">
+                          <Lock size={14} className="text-cyan-500" />
+                          VIP Card Security Code
+                        </h4>
+                        <p className="text-[10.5px] text-slate-400 dark:text-slate-500 font-bold mt-1">
+                          Protect sensitive VIP membership card information with a 4–6 digit security PIN.
+                        </p>
+                      </div>
+                      <span className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-500 border border-cyan-500/20">
+                        ENABLED
+                      </span>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-3 pt-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setVipCodeModalMode("change");
+                          setIsVipCodeModalOpen(true);
+                        }}
+                        className="py-2.5 px-4 rounded-lg bg-slate-900 dark:bg-slate-800 text-white text-xs font-black uppercase tracking-wider hover:bg-slate-800 transition cursor-pointer border border-slate-700"
+                      >
+                        Change Security Code
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setVipCodeModalMode("reset");
+                          setIsVipCodeModalOpen(true);
+                        }}
+                        className="py-2.5 px-4 rounded-lg bg-transparent text-cyan-500 hover:text-cyan-400 text-xs font-black uppercase tracking-wider transition cursor-pointer border border-cyan-500/30"
+                      >
+                        Forgot Security Code?
+                      </button>
+                    </div>
+                  </div>
+
                   {/* App rating comment feedback section */}
                   <div className="rounded-md border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 space-y-6">
                     <div>
@@ -1570,6 +1599,14 @@ const Profile = () => {
           </div>
         </div>
       )}
+
+      {/* VIP CODE SETTINGS & RESET MODAL */}
+      <VipCodeSettingsModal
+        isOpen={isVipCodeModalOpen}
+        onClose={() => setIsVipCodeModalOpen(false)}
+        mode={vipCodeModalMode}
+        token={localStorage.getItem("token") || ""}
+      />
     </div>
   );
 };

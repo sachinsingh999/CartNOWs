@@ -108,6 +108,34 @@ const userSchema = new mongoose.Schema({
   following: {
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
     default: []
+  },
+
+  walletBalance: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+
+  rewardPoints: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+
+  membership: {
+    level: { type: String, default: "MEMBER" },
+    periodStart: { type: Date, default: Date.now },
+    periodEnd: { type: Date },
+    qualifyingSpend: { type: Number, default: 0, min: 0 },
+    upgradedAt: { type: Date, default: Date.now }
+  },
+
+  vipSecurity: {
+    codeHash: { type: String, default: "" },
+    enabled: { type: Boolean, default: false },
+    updatedAt: { type: Date },
+    failedAttempts: { type: Number, default: 0 },
+    lockUntil: { type: Date, default: null }
   }
 
 },{ minimize:false });

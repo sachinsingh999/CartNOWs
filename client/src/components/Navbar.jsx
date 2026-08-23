@@ -343,13 +343,13 @@ const Navbar = () => {
     };
     window.addEventListener("storage", handleCartUpdate);
     window.addEventListener("cartUpdate", handleCartUpdate);
-    
+
     const handleCartBounce = () => {
       setIsCartBouncing(true);
       setTimeout(() => setIsCartBouncing(false), 800);
     };
     window.addEventListener("cartAddAnimComplete", handleCartBounce);
-    
+
     return () => {
       window.removeEventListener("storage", handleCartUpdate);
       window.removeEventListener("cartUpdate", handleCartUpdate);

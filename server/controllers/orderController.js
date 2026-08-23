@@ -6,6 +6,7 @@ import userModel from "../models/userModel.js";
 import productModel from "../models/productModel.js";
 import sellerModel from "../models/sellerModel.js";
 import chatRoomModel from "../models/chatRoomModel.js";
+import idempotencyModel from "../models/idempotencyModel.js";
 import { autoAssignDeliveryAgent } from "../utils/assignmentHelper.js";
 import Stripe from "stripe";
 import Razorpay from "razorpay";
@@ -15,6 +16,9 @@ import { checkAndGenerateInvoice } from "../utils/invoicePdfGenerator.js";
 import deliveryAssignmentModel from "../models/deliveryAssignmentModel.js";
 import { trackPurchase } from "../utils/analyticsHelper.js";
 import { calculateParentOrderStatus, syncParentOrderStatus } from "../utils/orderStatusHelper.js";
+import { runInTransaction } from "../utils/transactionHelper.js";
+import { reserveInventoryAndValidateOrder, restoreItemStockSafely, InventoryError } from "../services/inventoryService.js";
+import { processOrderRewards, revertOrderRewards, recalculateUserVIPStatus } from "../services/vipService.js";
 
 // Initialize payment integrations
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY || "sk_test_placeholder";
@@ -60,6 +64,43 @@ const cleanUserCart = async (userId, items) => {
   }
 };
 
+const getIdempotencyKey = (req) => {
+  return (
+    req.headers["idempotency-key"] ||
+    req.headers["x-idempotency-key"] ||
+    req.body.idempotencyKey ||
+    null
+  );
+};
+
+const createChatRoomForOrder = async (order) => {
+  try {
+    if (!order || !order._id) return null;
+    let room = await chatRoomModel.findOne({ orderId: order._id });
+    if (!room) {
+      const sellerIds = [];
+      if (order.items && Array.isArray(order.items)) {
+        order.items.forEach((item) => {
+          const sId = item.sellerId || item.product?.sellerId;
+          if (sId && !sellerIds.includes(sId.toString())) {
+            sellerIds.push(sId);
+          }
+        });
+      }
+      room = await chatRoomModel.create({
+        orderId: order._id,
+        customerId: order.userId,
+        deliverymanId: order.deliverymanId || null,
+        sellerIds,
+      });
+    }
+    return room;
+  } catch (error) {
+    console.log("createChatRoomForOrder Error:", error.message);
+    return null;
+  }
+};
+
 const createOrderAndItems = async ({
   userId,
   items,
@@ -67,23 +108,31 @@ const createOrderAndItems = async ({
   address,
   paymentMethod,
   paymentStatus = "pending",
+  orderStatus = "Processing",
   couponCode = null,
   discount = 0,
+  session = null,
 }) => {
+  // 1. Reserve Inventory & Validate Order Server-Side
+  const {
+    validatedItems,
+    subtotal,
+    discount: discountVal,
+    shippingFee,
+    tax,
+    totalAmount,
+  } = await reserveInventoryAndValidateOrder({ items, discount, session });
+
   let orderNumber = generateOrderNumber();
-  let existing = await orderModel.findOne({ orderNumber });
+  const queryOrder = orderModel.findOne({ orderNumber });
+  if (session) queryOrder.session(session);
+  let existing = await queryOrder;
   while (existing) {
     orderNumber = generateOrderNumber();
-    existing = await orderModel.findOne({ orderNumber });
+    const q = orderModel.findOne({ orderNumber });
+    if (session) q.session(session);
+    existing = await q;
   }
-
-  const subtotal = (items || []).reduce(
-    (sum, item) => sum + (Number(item.price) || 0) * (Number(item.qty) || 1),
-    0
-  );
-  const discountVal = Number(discount) || 0;
-  const shippingFee = amount > 519 ? 0 : 40;
-  const tax = Math.round(subtotal * 0.05);
 
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let verificationCode = "";
@@ -91,47 +140,44 @@ const createOrderAndItems = async ({
     verificationCode += chars.charAt(Math.floor(Math.random() * chars.length));
   }
 
-  // 1. Create Parent Order
-  const order = await orderModel.create({
-    orderNumber,
-    userId,
-    amount,
-    subtotal,
-    tax,
-    shippingFee,
-    discount: discountVal,
-    address,
-    shippingAddress: address,
-    paymentMethod,
-    paymentStatus,
-    orderStatus: "Processing",
-    verificationCode,
-    couponCode: couponCode || null,
-  });
+  // Create Parent Order
+  const createOptions = session ? { session } : {};
+  const [order] = await orderModel.create(
+    [
+      {
+        orderNumber,
+        userId,
+        amount: totalAmount,
+        subtotal,
+        tax,
+        shippingFee,
+        discount: discountVal,
+        address,
+        shippingAddress: address,
+        paymentMethod,
+        paymentStatus,
+        orderStatus,
+        verificationCode,
+        couponCode: couponCode || null,
+        stockRestored: false,
+      },
+    ],
+    createOptions
+  );
 
-  // 2. Create Child OrderItems
+  // Create Child OrderItems
   const createdItems = [];
-  for (const item of items || []) {
-    const prodId = item.productId || item._id || item.id || item.itemId;
-    let sellerId = item.sellerId || item.product?.sellerId;
-    let shopName = item.shopName;
-    let sellerName = item.sellerName;
-    let sellerEmail = item.sellerEmail;
-    let sellerPhone = item.sellerPhone;
-
-    if (prodId && mongoose.Types.ObjectId.isValid(prodId)) {
-      const prod = await productModel.findById(prodId).lean();
-      if (prod) {
-        if (prod.sellerId) sellerId = prod.sellerId;
-        // Reserve/deduct stock
-        await productModel.findByIdAndUpdate(prodId, {
-          $inc: { stock: -Math.abs(Number(item.qty) || 1) },
-        });
-      }
-    }
+  for (const item of validatedItems) {
+    let sellerId = item.sellerId;
+    let shopName = "Platform Store";
+    let sellerName = "Direct Store";
+    let sellerEmail = "";
+    let sellerPhone = "";
 
     if (sellerId && mongoose.Types.ObjectId.isValid(sellerId)) {
-      const seller = await sellerModel.findById(sellerId).lean();
+      const querySeller = sellerModel.findById(sellerId).lean();
+      if (session) querySeller.session(session);
+      const seller = await querySeller;
       if (seller) {
         shopName = seller.shopName || shopName;
         sellerName = seller.name || sellerName;
@@ -140,10 +186,9 @@ const createOrderAndItems = async ({
       }
     }
 
-    const itemQty = Number(item.qty) || 1;
-    const unitPrice = Number(item.price) || 0;
-    const originalPrice =
-      item.product?.originalPrice || item.originalPrice || Math.round(unitPrice * 1.25);
+    const itemQty = item.qty;
+    const unitPrice = item.unitPrice;
+    const originalPrice = item.originalPrice;
     const itemSubtotal = unitPrice * itemQty;
     const itemDiscount = subtotal > 0 ? Math.round((itemSubtotal / subtotal) * discountVal) : 0;
     const finalPrice = Math.max(0, itemSubtotal - itemDiscount);
@@ -151,37 +196,43 @@ const createOrderAndItems = async ({
     const estDate = new Date();
     estDate.setDate(estDate.getDate() + 3);
 
-    const orderItem = await orderItemModel.create({
-      orderId: order._id,
-      orderNumber: order.orderNumber,
-      userId,
-      productId: prodId,
-      productName: item.name || item.product?.name || "Product",
-      productImage: item.image || item.images?.[0] || item.product?.images?.[0] || "",
-      sellerId: sellerId || null,
-      sellerName: sellerName || "Direct Store",
-      shopName: shopName || "Platform Store",
-      sellerEmail: sellerEmail || "",
-      sellerPhone: sellerPhone || "",
-      variant: {
-        size: item.size || "Standard",
-        sku: item.sku || "",
-        attributes: item.selectedAttributes || {},
-      },
-      quantity: itemQty,
-      unitPrice,
-      originalPrice,
-      tax: Math.round(finalPrice * 0.05),
-      discount: itemDiscount,
-      finalPrice,
-      status: "Confirmed",
-      expectedDeliveryDate: estDate,
-    });
+    const [orderItem] = await orderItemModel.create(
+      [
+        {
+          orderId: order._id,
+          orderNumber: order.orderNumber,
+          userId,
+          productId: item.productId,
+          productName: item.name,
+          productImage: item.image,
+          sellerId: sellerId || null,
+          sellerName,
+          shopName,
+          sellerEmail,
+          sellerPhone,
+          variant: {
+            size: item.size || "Standard",
+            sku: item.sku || "",
+            attributes: item.selectedAttributes || {},
+          },
+          quantity: itemQty,
+          unitPrice,
+          originalPrice,
+          tax: Math.round(finalPrice * 0.05),
+          discount: itemDiscount,
+          finalPrice,
+          status: "Confirmed",
+          expectedDeliveryDate: estDate,
+          stockRestored: false,
+        },
+      ],
+      createOptions
+    );
 
     createdItems.push(orderItem);
   }
 
-  // Populate parent order items array for zero-breakage backward compatibility
+  // Populate parent order items array for backward compatibility
   order.items = createdItems.map((i) => ({
     _id: i.productId,
     orderItemId: i._id,
@@ -200,7 +251,7 @@ const createOrderAndItems = async ({
   }));
 
   order.orderStatus = calculateParentOrderStatus(createdItems);
-  await order.save();
+  await order.save(createOptions);
 
   return { order, createdItems };
 };
@@ -269,33 +320,6 @@ export const enrichOrdersWithSellerDetails = async (orders) => {
   });
 };
 
-const createChatRoomForOrder = async (order) => {
-  try {
-    const existing = await chatRoomModel.findOne({ orderId: order._id });
-    if (existing) return existing;
-
-    const sellerIds = [];
-    if (order.items && Array.isArray(order.items)) {
-      order.items.forEach((item) => {
-        const sId = item.sellerId;
-        if (sId) {
-          const sIdStr = sId.toString();
-          if (!sellerIds.includes(sIdStr)) sellerIds.push(sIdStr);
-        }
-      });
-    }
-
-    return await chatRoomModel.create({
-      orderId: order._id,
-      customerId: order.userId,
-      deliverymanId: order.deliverymanId || null,
-      sellerIds,
-    });
-  } catch (err) {
-    console.error("Error auto-creating chat room:", err.message);
-  }
-};
-
 /* ================= PLACE ORDER (COD) ================= */
 const placeOrder = async (req, res) => {
   try {
@@ -304,15 +328,37 @@ const placeOrder = async (req, res) => {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
 
-    const { order } = await createOrderAndItems({
-      userId: req.user._id,
-      items,
-      amount,
-      address,
-      paymentMethod,
-      paymentStatus: "pending",
-      couponCode,
-      discount,
+    const idempotencyKey = getIdempotencyKey(req);
+    if (idempotencyKey) {
+      const existingKey = await idempotencyModel.findOne({ key: idempotencyKey, userId: req.user._id });
+      if (existingKey) {
+        if (existingKey.status === "completed") {
+          return res.status(existingKey.statusCode || 200).json(existingKey.response);
+        }
+        if (existingKey.status === "processing") {
+          return res.status(409).json({
+            success: false,
+            code: "CONCURRENT_REQUEST",
+            message: "A checkout request with this key is currently being processed.",
+          });
+        }
+      }
+      await idempotencyModel.create({ key: idempotencyKey, userId: req.user._id, status: "processing" });
+    }
+
+    const { order } = await runInTransaction(async (session) => {
+      return await createOrderAndItems({
+        userId: req.user._id,
+        items,
+        amount,
+        address,
+        paymentMethod: paymentMethod || "cod",
+        paymentStatus: "pending",
+        orderStatus: "Processing",
+        couponCode,
+        discount,
+        session,
+      });
     });
 
     await cleanUserCart(req.user._id, items);
@@ -320,9 +366,25 @@ const placeOrder = async (req, res) => {
     await autoAssignDeliveryAgent(order._id);
     await createChatRoomForOrder(order);
 
-    res.json({ success: true, order });
+    const responsePayload = { success: true, order };
+    if (idempotencyKey) {
+      await idempotencyModel.updateOne(
+        { key: idempotencyKey, userId: req.user._id },
+        { status: "completed", response: responsePayload, statusCode: 200 }
+      );
+    }
+
+    res.json(responsePayload);
   } catch (error) {
     console.log("ORDER ERROR 👉", error);
+    if (error.name === "InventoryError") {
+      return res.status(409).json({
+        success: false,
+        code: error.code || "ITEM_SOLD_OUT",
+        message: error.message,
+        details: error.details || {},
+      });
+    }
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -333,81 +395,122 @@ const placeOrderStripe = async (req, res) => {
     const { items, amount, address, couponCode, discount } = req.body;
     const userId = req.user._id;
 
-    const { order } = await createOrderAndItems({
-      userId,
-      items,
-      amount,
-      address,
-      paymentMethod: "Stripe",
-      paymentStatus: "pending",
-      couponCode,
-      discount,
+    const idempotencyKey = getIdempotencyKey(req);
+    if (idempotencyKey) {
+      const existingKey = await idempotencyModel.findOne({ key: idempotencyKey, userId });
+      if (existingKey) {
+        if (existingKey.status === "completed") {
+          return res.status(existingKey.statusCode || 200).json(existingKey.response);
+        }
+        if (existingKey.status === "processing") {
+          return res.status(409).json({
+            success: false,
+            code: "CONCURRENT_REQUEST",
+            message: "A checkout request with this key is currently being processed.",
+          });
+        }
+      }
+      await idempotencyModel.create({ key: idempotencyKey, userId, status: "processing" });
+    }
+
+    const { order } = await runInTransaction(async (session) => {
+      return await createOrderAndItems({
+        userId,
+        items,
+        amount,
+        address,
+        paymentMethod: "Stripe",
+        paymentStatus: "pending",
+        orderStatus: "Payment Pending",
+        couponCode,
+        discount,
+        session,
+      });
     });
 
     const origin = req.headers.origin || "http://localhost:5173";
 
+    let responsePayload;
+
     if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY.includes("placeholder")) {
-      return res.json({
+      responsePayload = {
         success: true,
         session_url: `${origin}/verify?success=true&orderId=${order._id}&method=stripe&demo=true`,
-      });
-    }
+      };
+    } else {
+      try {
+        const discountVal = discount ? Number(discount) : 0;
+        const totalItemsPrice = items.reduce((sum, item) => sum + (Number(item.price) || 0) * (Number(item.qty) || 1), 0);
+        let discountLeft = discountVal;
 
-    try {
-      const discountVal = discount ? Number(discount) : 0;
-      const totalItemsPrice = items.reduce((sum, item) => sum + item.price * item.qty, 0);
-      let discountLeft = discountVal;
-
-      const line_items = items.map((item, index) => {
-        let itemTotal = item.price * item.qty;
-        let itemDiscount = 0;
-        if (totalItemsPrice > 0) {
-          if (index === items.length - 1) {
-            itemDiscount = discountLeft;
-          } else {
-            itemDiscount = Math.round((itemTotal / totalItemsPrice) * discountVal * 100) / 100;
+        const line_items = items.map((item, index) => {
+          let itemTotal = (Number(item.price) || 0) * (Number(item.qty) || 1);
+          let itemDiscount = 0;
+          if (totalItemsPrice > 0) {
+            if (index === items.length - 1) {
+              itemDiscount = discountLeft;
+            } else {
+              itemDiscount = Math.round((itemTotal / totalItemsPrice) * discountVal * 100) / 100;
+            }
           }
-        }
-        itemDiscount = Math.min(itemDiscount, itemTotal);
-        discountLeft -= itemDiscount;
-        const adjustedTotal = itemTotal - itemDiscount;
-        const unitPriceINR = adjustedTotal / item.qty;
+          itemDiscount = Math.min(itemDiscount, itemTotal);
+          discountLeft -= itemDiscount;
+          const adjustedTotal = itemTotal - itemDiscount;
+          const unitPriceINR = adjustedTotal / (Number(item.qty) || 1);
 
-        return {
+          return {
+            price_data: {
+              currency: "inr",
+              product_data: { name: item.name },
+              unit_amount: Math.max(0, Math.round(unitPriceINR * 100)),
+            },
+            quantity: Number(item.qty) || 1,
+          };
+        });
+
+        line_items.push({
           price_data: {
             currency: "inr",
-            product_data: { name: item.name },
-            unit_amount: Math.max(0, Math.round(unitPriceINR * 100)),
+            product_data: { name: "Shipping Charges" },
+            unit_amount: Math.round(10 * 100),
           },
-          quantity: item.qty,
+          quantity: 1,
+        });
+
+        const stripeSession = await stripe.checkout.sessions.create({
+          payment_method_types: ["card"],
+          line_items,
+          mode: "payment",
+          success_url: `${origin}/verify?success=true&orderId=${order._id}&method=stripe`,
+          cancel_url: `${origin}/verify?success=false&orderId=${order._id}&method=stripe`,
+        });
+
+        responsePayload = { success: true, session_url: stripeSession.url };
+      } catch (stripeError) {
+        responsePayload = {
+          success: true,
+          session_url: `${origin}/verify?success=true&orderId=${order._id}&method=stripe&demo=true&error=${encodeURIComponent(stripeError.message)}`,
         };
-      });
+      }
+    }
 
-      line_items.push({
-        price_data: {
-          currency: "inr",
-          product_data: { name: "Shipping Charges" },
-          unit_amount: Math.round(10 * 100),
-        },
-        quantity: 1,
-      });
+    if (idempotencyKey) {
+      await idempotencyModel.updateOne(
+        { key: idempotencyKey, userId },
+        { status: "completed", response: responsePayload, statusCode: 200 }
+      );
+    }
 
-      const session = await stripe.checkout.sessions.create({
-        payment_method_types: ["card"],
-        line_items,
-        mode: "payment",
-        success_url: `${origin}/verify?success=true&orderId=${order._id}&method=stripe`,
-        cancel_url: `${origin}/verify?success=false&orderId=${order._id}&method=stripe`,
-      });
-
-      res.json({ success: true, session_url: session.url });
-    } catch (stripeError) {
-      res.json({
-        success: true,
-        session_url: `${origin}/verify?success=true&orderId=${order._id}&method=stripe&demo=true&error=${encodeURIComponent(stripeError.message)}`,
+    res.json(responsePayload);
+  } catch (error) {
+    if (error.name === "InventoryError") {
+      return res.status(409).json({
+        success: false,
+        code: error.code || "ITEM_SOLD_OUT",
+        message: error.message,
+        details: error.details || {},
       });
     }
-  } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -417,7 +520,7 @@ const verifyStripe = async (req, res) => {
   try {
     const { orderId, success } = req.body;
     if (success === "true") {
-      await orderModel.findByIdAndUpdate(orderId, { paymentStatus: "paid" });
+      await orderModel.findByIdAndUpdate(orderId, { paymentStatus: "paid", orderStatus: "Processing" });
       const order = await orderModel.findById(orderId);
       if (order) {
         await cleanUserCart(order.userId, order.items);
@@ -425,12 +528,25 @@ const verifyStripe = async (req, res) => {
         await autoAssignDeliveryAgent(orderId);
         await createChatRoomForOrder(order);
         await checkAndGenerateInvoice(orderId);
+        await processOrderRewards(orderId);
       }
       res.json({ success: true, message: "Payment Verified Successfully" });
     } else {
-      await orderModel.findByIdAndDelete(orderId);
-      await orderItemModel.deleteMany({ orderId });
-      res.json({ success: false, message: "Payment Cancelled" });
+      // Payment Cancelled/Failed: Release reserved stock safely exactly once
+      await runInTransaction(async (session) => {
+        const order = await orderModel.findById(orderId).session(session);
+        if (order && !order.stockRestored) {
+          const items = await orderItemModel.find({ orderId: order._id }).session(session);
+          for (const item of items) {
+            await restoreItemStockSafely(item, session);
+          }
+          order.paymentStatus = "failed";
+          order.orderStatus = "Cancelled";
+          order.stockRestored = true;
+          await order.save({ session });
+        }
+      });
+      res.json({ success: false, message: "Payment Cancelled and Inventory Released" });
     }
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -443,48 +559,89 @@ const placeOrderRazorpay = async (req, res) => {
     const { items, amount, address, couponCode, discount } = req.body;
     const userId = req.user._id;
 
-    const { order } = await createOrderAndItems({
-      userId,
-      items,
-      amount,
-      address,
-      paymentMethod: "Razorpay",
-      paymentStatus: "pending",
-      couponCode,
-      discount,
+    const idempotencyKey = getIdempotencyKey(req);
+    if (idempotencyKey) {
+      const existingKey = await idempotencyModel.findOne({ key: idempotencyKey, userId });
+      if (existingKey) {
+        if (existingKey.status === "completed") {
+          return res.status(existingKey.statusCode || 200).json(existingKey.response);
+        }
+        if (existingKey.status === "processing") {
+          return res.status(409).json({
+            success: false,
+            code: "CONCURRENT_REQUEST",
+            message: "A checkout request with this key is currently being processed.",
+          });
+        }
+      }
+      await idempotencyModel.create({ key: idempotencyKey, userId, status: "processing" });
+    }
+
+    const { order } = await runInTransaction(async (session) => {
+      return await createOrderAndItems({
+        userId,
+        items,
+        amount,
+        address,
+        paymentMethod: "Razorpay",
+        paymentStatus: "pending",
+        orderStatus: "Payment Pending",
+        couponCode,
+        discount,
+        session,
+      });
     });
+
+    let responsePayload;
 
     if (
       !process.env.RAZORPAY_KEY_ID ||
       process.env.RAZORPAY_KEY_ID.includes("placeholder")
     ) {
-      return res.json({
+      responsePayload = {
         success: true,
         key_id: "rzp_test_placeholder",
         orderId: order._id,
         rzpOrder: {
           id: `order_mock_${Date.now()}`,
-          amount: Math.round(amount * 100),
+          amount: Math.round(order.amount * 100),
           currency: "INR",
           isMock: true,
         },
-      });
+      };
+    } else {
+      const options = {
+        amount: Math.round(order.amount * 100),
+        currency: "INR",
+        receipt: order._id.toString(),
+      };
+
+      const rzpOrder = await razorpayInstance.orders.create(options);
+      responsePayload = {
+        success: true,
+        key_id: process.env.RAZORPAY_KEY_ID,
+        orderId: order._id,
+        rzpOrder,
+      };
     }
 
-    const options = {
-      amount: Math.round(amount * 100),
-      currency: "INR",
-      receipt: order._id.toString(),
-    };
+    if (idempotencyKey) {
+      await idempotencyModel.updateOne(
+        { key: idempotencyKey, userId },
+        { status: "completed", response: responsePayload, statusCode: 200 }
+      );
+    }
 
-    const rzpOrder = await razorpayInstance.orders.create(options);
-    res.json({
-      success: true,
-      key_id: process.env.RAZORPAY_KEY_ID,
-      orderId: order._id,
-      rzpOrder,
-    });
+    res.json(responsePayload);
   } catch (error) {
+    if (error.name === "InventoryError") {
+      return res.status(409).json({
+        success: false,
+        code: error.code || "ITEM_SOLD_OUT",
+        message: error.message,
+        details: error.details || {},
+      });
+    }
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -492,21 +649,26 @@ const placeOrderRazorpay = async (req, res) => {
 /* ================= RAZORPAY VERIFY ================= */
 const verifyRazorpay = async (req, res) => {
   try {
-    const { orderId, isMock } = req.body;
-    if (isMock === true || isMock === "true") {
-      await orderModel.findByIdAndUpdate(orderId, { paymentStatus: "paid" });
-      const order = await orderModel.findById(orderId);
-      if (order) {
-        await cleanUserCart(order.userId, order.items);
-        await trackPurchase(order.items);
-        await autoAssignDeliveryAgent(orderId);
-        await createChatRoomForOrder(order);
-        await checkAndGenerateInvoice(orderId);
-      }
-      return res.json({ success: true, message: "Payment Verified Successfully" });
+    const { orderId, isMock, success } = req.body;
+    if (success === false || success === "false") {
+      // Payment Failed/Cancelled: Release reserved stock safely
+      await runInTransaction(async (session) => {
+        const order = await orderModel.findById(orderId).session(session);
+        if (order && !order.stockRestored) {
+          const items = await orderItemModel.find({ orderId: order._id }).session(session);
+          for (const item of items) {
+            await restoreItemStockSafely(item, session);
+          }
+          order.paymentStatus = "failed";
+          order.orderStatus = "Cancelled";
+          order.stockRestored = true;
+          await order.save({ session });
+        }
+      });
+      return res.json({ success: false, message: "Payment Failed and Inventory Released" });
     }
 
-    await orderModel.findByIdAndUpdate(orderId, { paymentStatus: "paid" });
+    await orderModel.findByIdAndUpdate(orderId, { paymentStatus: "paid", orderStatus: "Processing" });
     const order = await orderModel.findById(orderId);
     if (order) {
       await cleanUserCart(order.userId, order.items);
@@ -514,6 +676,7 @@ const verifyRazorpay = async (req, res) => {
       await autoAssignDeliveryAgent(orderId);
       await createChatRoomForOrder(order);
       await checkAndGenerateInvoice(orderId);
+      await processOrderRewards(orderId);
     }
     res.json({ success: true, message: "Payment Verified Successfully" });
   } catch (error) {
@@ -647,14 +810,10 @@ const cancelOrderItem = async (req, res) => {
     item.cancelledAt = new Date();
     item.refundAmount = item.finalPrice;
     item.refundStatus = "pending";
-    await item.save();
 
-    // Restore product stock
-    if (item.productId) {
-      await productModel.findByIdAndUpdate(item.productId, {
-        $inc: { stock: item.quantity },
-      });
-    }
+    // Restore product stock safely exactly once
+    await restoreItemStockSafely(item);
+    await item.save();
 
     // Re-evaluate parent order status & sync embedded items
     const parentStatus = await syncParentOrderStatus(item.orderId);
@@ -705,14 +864,12 @@ const cancelOrder = async (req, res) => {
 
     const items = await orderItemModel.find({ orderId: order._id });
     for (const item of items) {
-      if (!["shipped", "out for delivery", "delivered"].includes((item.status || "").toLowerCase())) {
+      if (!["shipped", "out for delivery", "delivered", "cancelled"].includes((item.status || "").toLowerCase())) {
         item.status = "Cancelled";
         item.cancelReason = reason || "Customer cancellation request";
         item.cancelledAt = new Date();
+        await restoreItemStockSafely(item);
         await item.save();
-        if (item.productId) {
-          await productModel.findByIdAndUpdate(item.productId, { $inc: { stock: item.quantity } });
-        }
       }
     }
 
@@ -724,6 +881,7 @@ const cancelOrder = async (req, res) => {
 
     // Update parent order status and embedded items
     order.orderStatus = "Cancelled";
+    order.stockRestored = true;
     if (order.items && Array.isArray(order.items)) {
       order.items = order.items.map((embItem) => ({
         ...embItem,
@@ -733,6 +891,7 @@ const cancelOrder = async (req, res) => {
     await order.save();
 
     await syncParentOrderStatus(order._id);
+    await revertOrderRewards(order._id);
 
     res.json({ success: true, message: "Order cancelled successfully", orderStatus: "Cancelled" });
   } catch (error) {

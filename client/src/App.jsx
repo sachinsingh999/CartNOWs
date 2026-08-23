@@ -1,6 +1,7 @@
 import React, { Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import { ToastContainer, Slide } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // Context providers
 import { SystemProvider } from "./context/SystemContext";
@@ -48,8 +49,8 @@ const App = () => {
     <SystemProvider>
       <ErrorBoundary>
         <ToastContainer
-          position="bottom-right"
-          autoClose={2200}
+          position="top-right"
+          autoClose={3000}
           hideProgressBar={false}
           newestOnTop
           closeOnClick
@@ -57,16 +58,28 @@ const App = () => {
           pauseOnFocusLoss={false}
           draggable
           transition={Slide}
-          toastClassName={() =>
-            "relative flex items-center justify-between gap-3.5 min-h-[56px] w-[350px] max-w-[calc(100vw-32px)] rounded-2xl p-3.5 mb-2.5 cursor-pointer select-none transition-all duration-300 hover:scale-[1.02] active:scale-[0.99] backdrop-blur-xl"
-          }
+          style={{ zIndex: 999999 }}
+          toastClassName={(context) => {
+            const type = context?.type || "default";
+            let bgClasses = "bg-slate-900/95 text-white border-slate-700/80 shadow-slate-950/60";
+            if (type === "success") {
+              bgClasses = "bg-slate-900/95 text-emerald-400 border-emerald-500/50 shadow-emerald-950/50";
+            } else if (type === "error") {
+              bgClasses = "bg-slate-900/95 text-rose-400 border-rose-500/50 shadow-rose-950/50";
+            } else if (type === "info") {
+              bgClasses = "bg-slate-900/95 text-sky-400 border-sky-500/50 shadow-sky-950/50";
+            } else if (type === "warning") {
+              bgClasses = "bg-slate-900/95 text-amber-400 border-amber-500/50 shadow-amber-950/50";
+            }
+            return `relative flex items-center justify-between gap-3 min-h-[56px] w-[360px] max-w-[calc(100vw-32px)] rounded-2xl p-4 mb-3 cursor-pointer select-none transition-all duration-300 hover:scale-[1.02] active:scale-[0.99] border backdrop-blur-2xl shadow-2xl ${bgClasses}`;
+          }}
           bodyClassName={() =>
-            "flex-1 text-xs font-bold leading-relaxed text-white tracking-wide flex items-center gap-2"
+            "flex-1 text-xs font-bold leading-relaxed text-slate-100 tracking-wide flex items-center gap-2"
           }
           closeButton={({ closeToast }) => (
             <button
               onClick={closeToast}
-              className="ml-2 shrink-0 flex items-center justify-center h-6 w-6 rounded-full bg-white/10 hover:bg-white/25 text-slate-300 hover:text-white transition-all cursor-pointer text-xs font-black active:scale-90"
+              className="ml-2 shrink-0 flex items-center justify-center h-6 w-6 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition-all cursor-pointer text-xs font-black active:scale-90"
               aria-label="Close notification"
             >
               ✕
