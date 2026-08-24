@@ -6,8 +6,26 @@ import exchangeModel from "../models/exchangeModel.js";
 import orderModel from "../models/orderModel.js";
 import orderItemModel from "../models/orderItemModel.js";
 import productModel from "../models/productModel.js";
+import Stripe from "stripe";
 import { createNotification } from "../utils/notificationHelper.js";
 import { syncParentOrderStatus } from "../utils/orderStatusHelper.js";
+
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY || "sk_test_placeholder";
+const stripe = new Stripe(stripeSecretKey);
+
+// Helper: Emit Socket.IO Event for RMA Rooms
+const emitRmaSocketEvent = (req, rmaId, event, data) => {
+  try {
+    const io = req.app.get("socketio");
+    if (io && rmaId) {
+      const roomName = `rma_${rmaId}`;
+      io.to(roomName).emit(event, data);
+      console.log(`[RMA Socket] Emitted "${event}" to room ${roomName}`);
+    }
+  } catch (err) {
+    console.error("[RMA Socket Error]", err.message);
+  }
+};
 
 // Helper: Generate Unique Serial Number
 const generateSerial = (prefix) => {
@@ -104,6 +122,19 @@ export const createReturnRequest = async (req, res) => {
       return res.status(400).json({ success: false, message: "Returns can only be requested for delivered items" });
     }
 
+    // Enforce 7-Day Return Window Policy
+    const deliveryDate = new Date(order.deliveredAt || order.updatedAt || order.date || order.createdAt);
+    if (!isNaN(deliveryDate.getTime())) {
+      const now = new Date();
+      const diffInDays = (now - deliveryDate) / (1000 * 60 * 60 * 24);
+      if (diffInDays > 7) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "The 7-day return window for this order has expired." 
+        });
+      }
+    }
+
     // Check if an existing request already exists
     const existingReq = await returnRequestModel.findOne({
       $or: [
@@ -118,7 +149,11 @@ export const createReturnRequest = async (req, res) => {
     }
 
     const requestNumber = generateSerial("REQ");
-    const requestedReturnType = returnType === "Exchange" ? "Exchange" : "Refund";
+    const validReturnTypes = ["Refund", "Replacement", "Exchange"];
+    if (!validReturnTypes.includes(returnType)) {
+      return res.status(400).json({ success: false, message: `Invalid return type "${returnType}". Must be one of: ${validReturnTypes.join(", ")}` });
+    }
+    const requestedReturnType = returnType;
 
     const reasonMap = {
       "wrong item delivered": "Wrong Item Delivered",
@@ -255,6 +290,9 @@ export const reviewReturnRequest = async (req, res) => {
     if (status === "Approved") {
       // Fetch original order for pickup address
       const order = await orderModel.findById(request.orderId).session(session);
+      const assignedDriver = req.body.deliverymanId || order?.deliverymanId || null;
+      request.deliverymanId = assignedDriver;
+      await request.save({ session });
       const rmaNumber = generateSerial("RMA");
       const pickupVerificationCode = generateVerificationCode();
 
@@ -273,6 +311,7 @@ export const reviewReturnRequest = async (req, res) => {
             quantity: request.quantity,
             amount: request.amount,
             returnType: request.returnType,
+            deliverymanId: req.body.deliverymanId || order?.deliverymanId || null,
             pickupAddress: order?.shippingAddress || order?.address || {},
             pickupVerificationCode,
             status: "RMA Created",
@@ -292,7 +331,7 @@ export const reviewReturnRequest = async (req, res) => {
 
       const createdRma = returnOrder[0];
 
-      // Create linked Refund or Exchange entity
+      // Create linked Refund, Replacement, or Exchange entity
       if (request.returnType === "Refund") {
         const refundObj = await refundModel.create(
           [
@@ -311,18 +350,71 @@ export const reviewReturnRequest = async (req, res) => {
         );
         createdRma.refundId = refundObj[0]._id;
         await createdRma.save({ session });
-      } else if (request.returnType === "Exchange") {
+      } else if (request.returnType === "Exchange" || request.returnType === "Replacement") {
+        // ATOMIC INVENTORY RESERVATION
+        const targetSize = request.returnType === "Exchange"
+          ? (request.exchangeDetails?.requestedSize || request.variant?.size || "Standard")
+          : (request.variant?.size || "Standard");
+
+        const requestedQty = request.quantity || 1;
+        const updateOptions = { new: true, session };
+
+        let updatedProduct = null;
+        if (targetSize && targetSize !== "Standard") {
+          updatedProduct = await productModel.findOneAndUpdate(
+            {
+              _id: request.productId,
+              status: "approved",
+              isDeleted: { $ne: true },
+              "variants.Size": targetSize,
+              "variants.stock": { $gte: requestedQty }
+            },
+            {
+              $inc: {
+                "variants.$.stock": -requestedQty,
+                stock: -requestedQty
+              }
+            },
+            updateOptions
+          );
+        }
+
+        if (!updatedProduct) {
+          updatedProduct = await productModel.findOneAndUpdate(
+            {
+              _id: request.productId,
+              status: "approved",
+              isDeleted: { $ne: true },
+              stock: { $gte: requestedQty }
+            },
+            {
+              $inc: { stock: -requestedQty }
+            },
+            updateOptions
+          );
+        }
+
+        if (!updatedProduct) {
+          await session.abortTransaction();
+          session.endSession();
+          return res.status(409).json({
+            success: false,
+            message: `Inventory Reservation Failed: Variant size "${targetSize}" does not have ${requestedQty} available unit(s).`
+          });
+        }
+
         const exchangeObj = await exchangeModel.create(
           [
             {
-              exchangeNumber: generateSerial("EXC"),
+              exchangeNumber: generateSerial(request.returnType === "Replacement" ? "RPL" : "EXC"),
               rmaId: createdRma._id,
               originalOrderId: request.orderId,
               productId: request.productId,
               replacementVariant: {
-                size: request.exchangeDetails?.requestedSize || "Standard",
+                size: targetSize,
+                sku: request.exchangeDetails?.requestedSku || request.variant?.sku || "",
               },
-              quantity: request.quantity,
+              quantity: requestedQty,
               deliveryStatus: "Reserved",
             },
           ],
@@ -331,6 +423,12 @@ export const reviewReturnRequest = async (req, res) => {
         createdRma.exchangeId = exchangeObj[0]._id;
         await createdRma.save({ session });
       }
+
+      emitRmaSocketEvent(req, createdRma._id, "rma:status_updated", {
+        rmaId: createdRma._id,
+        status: createdRma.status,
+        timestamp: new Date()
+      });
 
       await createNotification(
         request.customerId,
@@ -472,7 +570,59 @@ export const getRMADetails = async (req, res) => {
       return res.status(404).json({ success: false, message: "Return Order (RMA) not found" });
     }
 
-    res.json({ success: true, rma });
+    // Ownership Authorization Check
+    const authUserId = String(req.user?._id || "");
+    const authSellerId = String(req.seller?._id || "");
+    const authDriverId = String(req.deliveryman?.id || "");
+    const isAdmin = Boolean(req.isAdmin || (req.user && req.user.role === "admin"));
+
+    const rmaCustomerId = String(rma.customerId?._id || rma.customerId || "");
+    const rmaSellerId = String(rma.sellerId?._id || rma.sellerId || "");
+    const rmaDriverId = String(rma.deliverymanId?._id || rma.deliverymanId || "");
+
+    const isAuthorized =
+      isAdmin ||
+      (authUserId && authUserId === rmaCustomerId) ||
+      (authSellerId && authSellerId === rmaSellerId) ||
+      (authDriverId && authDriverId === rmaDriverId);
+
+    if (!isAuthorized) {
+      return res.status(403).json({ success: false, message: "Forbidden: You are not authorized to view this RMA" });
+    }
+
+    const returnType = rma.returnType || rma.requestId?.returnType || "Refund";
+    const requestedVariant = rma.exchangeId?.replacementVariant || rma.requestId?.exchangeDetails || { size: rma.variant?.size || "Standard" };
+
+    const formattedRma = {
+      ...rma,
+      returnType,
+      rmaStatus: rma.status,
+      requestedVariant,
+      refund: rma.refundId
+        ? {
+            id: rma.refundId._id || rma.refundId,
+            refundNumber: rma.refundId.refundNumber || "",
+            amount: rma.refundId.amount || rma.amount,
+            status: rma.refundId.refundStatus || "Pending",
+            gatewayRefundId: rma.refundId.gatewayRefundId || "",
+            gatewayTransactionId: rma.refundId.gatewayTransactionId || "",
+            completedAt: rma.refundId.completedAt || null,
+          }
+        : null,
+      shipment: rma.exchangeId
+        ? {
+            id: rma.exchangeId._id || rma.exchangeId,
+            type: returnType,
+            status: rma.exchangeId.deliveryStatus || "Reserved",
+            courierName: rma.exchangeId.courierName || "",
+            trackingNumber: rma.exchangeId.trackingNumber || "",
+            shippedAt: rma.exchangeId.shippedAt || null,
+            deliveredAt: rma.exchangeId.deliveredAt || null,
+          }
+        : null,
+    };
+
+    res.json({ success: true, rma: formattedRma });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -586,18 +736,28 @@ export const verifyPickup = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid verification code" });
     }
 
-    rma.status = "Completed";
+    rma.status = status || "Picked Up";
     rma.pickupCompletedDate = new Date();
 
+    if (rma.requestId) {
+      await returnRequestModel.findByIdAndUpdate(rma.requestId, { status: rma.status });
+    }
+
     rma.timeline.push({
-      status: "Completed",
-      description: "Item picked up from customer and verified.",
+      status: rma.status,
+      description: `Item pickup completed & verified via customer OTP (${rma.status}).`,
       actorRole: "deliveryman",
       actorId: driverId || null,
       timestamp: new Date(),
     });
 
     await rma.save();
+
+    emitRmaSocketEvent(req, rma._id, "rma:status_updated", {
+      rmaId: rma._id,
+      status: rma.status,
+      timestamp: new Date()
+    });
 
     await createNotification(
       rma.customerId,
@@ -655,7 +815,7 @@ export const updateWarehouseInspection = async (req, res) => {
           actorRole: "system",
           timestamp: new Date(),
         });
-      } else if (rma.returnType === "Exchange" && rma.exchangeId) {
+      } else if ((rma.returnType === "Exchange" || rma.returnType === "Replacement") && rma.exchangeId) {
         await exchangeModel.findByIdAndUpdate(rma.exchangeId, {
           deliveryStatus: "Packing",
         });
@@ -680,6 +840,19 @@ export const updateWarehouseInspection = async (req, res) => {
 
     await rma.save();
 
+    emitRmaSocketEvent(req, rma._id, "rma:qc_updated", {
+      rmaId: rma._id,
+      inspectionStatus: rma.inspectionStatus,
+      status: rma.status,
+      timestamp: new Date()
+    });
+
+    emitRmaSocketEvent(req, rma._id, "rma:status_updated", {
+      rmaId: rma._id,
+      status: rma.status,
+      timestamp: new Date()
+    });
+
     res.json({ success: true, message: `Inspection status updated to ${inspectionStatus}`, rma });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -691,40 +864,114 @@ export const processRefund = async (req, res) => {
   try {
     const { rmaId, gatewayTransactionId, gatewayRefundId } = req.body;
 
-    const rma = await returnOrderModel.findById(rmaId).populate("refundId");
+    let rma = await returnOrderModel.findById(rmaId).populate("refundId");
+    if (!rma) {
+      rma = await returnOrderModel.findOne({ requestId: rmaId }).populate("refundId");
+    }
+    if (!rma) {
+      rma = await returnOrderModel.findOne({ orderId: rmaId }).populate("refundId");
+    }
+
     if (!rma) {
       return res.status(404).json({ success: false, message: "RMA not found" });
     }
 
-    if (!rma.refundId) {
-      return res.status(400).json({ success: false, message: "No refund ledger associated with this RMA" });
+    let refund = null;
+    if (rma.refundId) {
+      refund = await refundModel.findById(rma.refundId._id || rma.refundId);
     }
 
-    const refund = await refundModel.findById(rma.refundId._id || rma.refundId);
+    // Auto-create refund record if missing
     if (!refund) {
-      return res.status(404).json({ success: false, message: "Refund record not found" });
+      const refundNum = "RFD-" + Date.now().toString(36).toUpperCase() + "-" + Math.random().toString(36).substring(2, 6).toUpperCase();
+      refund = await refundModel.create({
+        rmaId: rma._id,
+        orderId: rma.orderId,
+        customerId: rma.customerId,
+        sellerId: rma.sellerId,
+        refundNumber: refundNum,
+        amount: rma.amount || 0,
+        refundStatus: "Pending",
+        reason: rma.reason || "Customer Return Refund"
+      });
+      rma.refundId = refund._id;
     }
 
+    // Idempotency Check: Return existing completed refund safely
     if (refund.refundStatus === "Successful") {
-      return res.status(400).json({ success: false, message: "Refund has already been completed" });
+      rma.status = "Completed";
+      rma.inspectionStatus = "Passed";
+      await rma.save();
+      if (rma.requestId) {
+        await returnRequestModel.findByIdAndUpdate(rma.requestId, { status: "Completed" });
+      }
+      return res.json({ success: true, message: "Refund has already been completed", refund, rma });
+    }
+
+    const order = await orderModel.findById(rma.orderId);
+    let realGatewayRefundId = gatewayRefundId;
+    let realTransactionId = gatewayTransactionId || order?.paymentIntentId || order?.transactionId || `TXN-${Date.now()}`;
+
+    // Execute Real Payment Gateway Refund if Stripe Payment Intent exists
+    if (order && order.paymentMethod === "Stripe" && process.env.STRIPE_SECRET_KEY && !process.env.STRIPE_SECRET_KEY.includes("placeholder")) {
+      const intentId = order.paymentIntentId || order.transactionId;
+      if (intentId && intentId.startsWith("pi_")) {
+        try {
+          const stripeRefund = await stripe.refunds.create({
+            payment_intent: intentId,
+            amount: Math.round(refund.amount * 100),
+            reason: "requested_by_customer"
+          });
+          realGatewayRefundId = stripeRefund.id;
+          realTransactionId = stripeRefund.payment_intent || realTransactionId;
+        } catch (stripeErr) {
+          console.error("[Stripe Refund Gateway Error]", stripeErr.message);
+          refund.refundStatus = "Failed";
+          refund.failureReason = stripeErr.message;
+          await refund.save();
+          return res.status(502).json({ success: false, message: `Stripe Refund Gateway Failed: ${stripeErr.message}`, refund });
+        }
+      }
+    }
+
+    if (!realGatewayRefundId) {
+      realGatewayRefundId = `RFD-GATEWAY-${Date.now()}`;
     }
 
     refund.refundStatus = "Successful";
-    refund.gatewayTransactionId = gatewayTransactionId || `TXN-${Date.now()}`;
-    refund.gatewayRefundId = gatewayRefundId || `RFD-GATEWAY-${Date.now()}`;
+    refund.gatewayTransactionId = realTransactionId;
+    refund.gatewayRefundId = realGatewayRefundId;
     refund.completedAt = new Date();
-    refund.processedBy = req.user?._id || null;
+    refund.processedBy = req.seller?._id || req.user?._id || null;
     await refund.save();
 
     rma.status = "Completed";
+    rma.inspectionStatus = "Passed";
     rma.timeline.push({
       status: "Refund Completed",
-      description: `Refund of ₹${refund.amount} completed. Transaction ID: ${refund.gatewayRefundId}`,
-      actorRole: "admin",
-      actorId: req.user?._id || null,
+      description: `Refund of ₹${refund.amount} completed and credited. Transaction ID: ${refund.gatewayRefundId}`,
+      actorRole: req.seller ? "seller" : "admin",
+      actorId: req.seller?._id || req.user?._id || null,
       timestamp: new Date(),
     });
     await rma.save();
+
+    if (rma.requestId) {
+      await returnRequestModel.findByIdAndUpdate(rma.requestId, { status: "Completed" });
+    }
+
+    emitRmaSocketEvent(req, rma._id, "rma:refund_updated", {
+      rmaId: rma._id,
+      refundStatus: refund.refundStatus,
+      gatewayRefundId: refund.gatewayRefundId,
+      timestamp: new Date()
+    });
+
+    emitRmaSocketEvent(req, rma._id, "rma:status_updated", {
+      rmaId: rma._id,
+      status: rma.status,
+      timestamp: new Date()
+    });
 
     await createNotification(
       rma.customerId,
@@ -733,7 +980,7 @@ export const processRefund = async (req, res) => {
       `Refund of ₹${refund.amount} for RMA ${rma.rmaNumber} has been processed successfully.`
     );
 
-    res.json({ success: true, message: "Refund processed successfully", refund, rma });
+    res.json({ success: true, message: "Refund processed and completed successfully", refund, rma });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -782,6 +1029,19 @@ export const createExchangeShipment = async (req, res) => {
     }
 
     await rma.save();
+
+    emitRmaSocketEvent(req, rma._id, "rma:shipment_updated", {
+      rmaId: rma._id,
+      deliveryStatus: exchange.deliveryStatus,
+      trackingNumber: exchange.trackingNumber,
+      timestamp: new Date()
+    });
+
+    emitRmaSocketEvent(req, rma._id, "rma:status_updated", {
+      rmaId: rma._id,
+      status: rma.status,
+      timestamp: new Date()
+    });
 
     await createNotification(
       rma.customerId,

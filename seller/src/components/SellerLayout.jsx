@@ -175,11 +175,8 @@ const SellerLayout = () => {
 
           <div 
             onClick={() => navigate("/")}
-            className="flex items-center gap-2.5 cursor-pointer group select-none"
+            className="flex items-center gap-2 cursor-pointer group select-none"
           >
-            <div className="h-9 w-9 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-500 shrink-0 group-hover:scale-105 transition-transform duration-200 shadow-xs">
-              <Logo variant="icon" className="h-full w-full p-1 text-orange-600 dark:text-orange-400" />
-            </div>
             <div className="flex flex-col text-left leading-none">
               <span className="text-sm font-black text-slate-900 dark:text-white tracking-tight">CartNOW</span>
               <span className="text-[9px] font-black text-orange-500 uppercase tracking-widest mt-0.5">Seller Hub</span>
@@ -272,61 +269,96 @@ const SellerLayout = () => {
 
         {/* Left Sidebar Under Navbar */}
         <aside 
-          className={`fixed top-16 bottom-0 left-0 z-30 bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-900 flex flex-col justify-between text-slate-600 dark:text-slate-300 shrink-0 transform transition-all duration-300 ease-in-out lg:static ${ isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0" } ${isSidebarCollapsed ? "lg:w-20" : "lg:w-64"} w-64 overscroll-y-contain overflow-hidden h-full`}
+          className={`fixed top-16 bottom-0 left-0 z-30 bg-white dark:bg-[#0B0F17] border-r border-slate-200/80 dark:border-slate-850 flex flex-col justify-between text-slate-600 dark:text-slate-300 shrink-0 transition-all duration-300 ease-in-out lg:static ${ isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0" } ${isSidebarCollapsed ? "lg:w-20" : "lg:w-64"} w-64 overscroll-y-contain overflow-hidden h-full shadow-2xs`}
         >
-          <div className={`p-3 ${isSidebarCollapsed ? "lg:px-3 lg:py-4" : "lg:p-4"} space-y-4 flex-1 flex flex-col min-h-0`}>
-            {/* Nav Links */}
-            <nav className="space-y-1 flex-1 overflow-y-auto pr-1 custom-scrollbar overscroll-y-contain">
+          <div className="p-3 space-y-4 flex-1 flex flex-col min-h-0 overflow-hidden">
+            {/* Nav Links Grouped */}
+            <nav className="space-y-3 flex-1 overflow-y-auto pr-0.5 custom-scrollbar overscroll-y-contain">
               {[
-                { label: "Dashboard", path: "/", icon: BarChart3, tab: "dashboard" },
-                { label: "Products", path: "/products", icon: Layers, tab: "products" },
-                { label: "Add Product", path: "/add-product", icon: PlusCircle, tab: "add-product" },
-                { label: "Orders", path: "/orders", icon: ShoppingBag, tab: "orders" },
-                { label: "Inventory", path: "/inventory", icon: Package, tab: "inventory" },
-                { label: "Revenue", path: "/revenue", icon: DollarSign, tab: "revenue" },
-                { label: "Analytics", path: "/analytics", icon: TrendingUp, tab: "analytics" },
-                { label: "Invoices", path: "/invoices", icon: FileText, tab: "invoices" },
-                { label: "Reviews", path: "/reviews", icon: MessageSquare, tab: "reviews" },
-                { label: "Returns", path: "/returns", icon: RotateCcw, tab: "returns" },
-                { label: "Notifications", path: "/notifications", icon: Bell, tab: "notifications" },
-                { label: "Settings", path: "/profile", icon: Settings, tab: "settings" },
-              ].map((item) => {
-                const Icon = item.icon;
-                const isActive = activeSubTab === item.tab;
-                return (
-                  <button
-                    key={item.label}
-                    onClick={() => {
-                      navigate(item.path);
-                      setIsMobileSidebarOpen(false);
-                    }}
-                    title={isSidebarCollapsed ? item.label : undefined}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all duration-300 ease-in-out cursor-pointer ${ isActive ? "bg-brand text-white shadow-md shadow-orange-600/25" : "hover:bg-slate-100 dark:hover:bg-slate-900/60 hover:text-slate-900 dark:hover:text-white text-slate-500 dark:text-slate-400" }`}
-                  >
-                    <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                      <Icon size={16} className="transition-transform duration-300" />
-                    </div>
-                    <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ease-in-out ${isSidebarCollapsed ? "max-w-0 opacity-0 translate-x-[-10px] pointer-events-none" : "max-w-xs opacity-100 translate-x-0"}`}>
-                      {item.label}
-                    </span>
-                  </button>
-                );
-              })}
+                {
+                  group: "Overview",
+                  items: [
+                    { label: "Dashboard", path: "/", icon: BarChart3, tab: "dashboard" },
+                    { label: "Analytics", path: "/analytics", icon: TrendingUp, tab: "analytics" },
+                  ]
+                },
+                {
+                  group: "Catalog & Inventory",
+                  items: [
+                    { label: "Products", path: "/products", icon: Layers, tab: "products" },
+                    { label: "Add Product", path: "/add-product", icon: PlusCircle, tab: "add-product" },
+                    { label: "Inventory", path: "/inventory", icon: Package, tab: "inventory" },
+                  ]
+                },
+                {
+                  group: "Sales & Fulfillment",
+                  items: [
+                    { label: "Orders", path: "/orders", icon: ShoppingBag, tab: "orders" },
+                    { label: "Returns", path: "/returns", icon: RotateCcw, tab: "returns" },
+                    { label: "Reviews", path: "/reviews", icon: MessageSquare, tab: "reviews" },
+                  ]
+                },
+                {
+                  group: "Finance & Config",
+                  items: [
+                    { label: "Revenue", path: "/revenue", icon: DollarSign, tab: "revenue" },
+                    { label: "Invoices", path: "/invoices", icon: FileText, tab: "invoices" },
+                    { label: "Notifications", path: "/notifications", icon: Bell, tab: "notifications" },
+                    { label: "Settings", path: "/profile", icon: Settings, tab: "settings" },
+                  ]
+                }
+              ].map((section) => (
+                <div key={section.group} className="space-y-1">
+                  <div className={`px-3 text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest transition-all duration-300 overflow-hidden whitespace-nowrap select-none ${isSidebarCollapsed ? "opacity-0 max-h-0 my-0 py-0" : "opacity-100 max-h-6 mt-2 mb-1"}`}>
+                    {section.group}
+                  </div>
+
+                  {section.items.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = activeSubTab === item.tab;
+                    return (
+                      <button
+                        key={item.label}
+                        onClick={() => {
+                          navigate(item.path);
+                          setIsMobileSidebarOpen(false);
+                        }}
+                        title={isSidebarCollapsed ? item.label : undefined}
+                        className={`group w-full flex items-center h-10 px-3 rounded-lg font-bold text-xs uppercase tracking-wider transition-colors duration-200 cursor-pointer relative overflow-hidden ${
+                          isActive
+                            ? "bg-orange-500/10 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 font-extrabold border border-orange-500/25 shadow-xs"
+                            : "hover:bg-slate-100 dark:hover:bg-slate-900/80 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-transparent"
+                        }`}
+                      >
+                        {isActive && (
+                          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 rounded-r bg-orange-500" />
+                        )}
+                        <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                          <Icon size={16} className={`transition-transform duration-200 ${isActive ? "text-orange-500 scale-110" : "text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-200"}`} />
+                        </div>
+                        <span className={`whitespace-nowrap transition-all duration-300 overflow-hidden ${isSidebarCollapsed ? "opacity-0 max-w-0" : "opacity-100 max-w-[180px] ml-3"}`}>
+                          {item.label}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
             </nav>
           </div>
 
           {/* Bottom Collapse/Expand Toggle */}
-          <div className="p-3 border-t border-slate-200 dark:border-slate-900">
+          <div className="p-3 border-t border-slate-200/80 dark:border-slate-850 overflow-hidden">
             <button
               type="button"
               onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-              className="hidden lg:flex w-full items-center gap-3 py-2.5 px-3 bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-bold transition-all duration-300 cursor-pointer border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden"
+              className="hidden lg:flex w-full items-center h-10 px-3 bg-slate-100/80 dark:bg-slate-900 hover:bg-slate-200/80 dark:hover:bg-slate-850 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-black uppercase tracking-wider transition-colors duration-200 cursor-pointer border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden relative"
               title={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
             >
               <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                <ChevronLeft size={16} className={`transition-transform duration-300 ${isSidebarCollapsed ? "rotate-180 text-orange-500" : "rotate-0"}`} />
+                <ChevronLeft size={16} className={`transition-transform duration-300 ${isSidebarCollapsed ? "rotate-180 text-orange-500" : "rotate-0 text-slate-500"}`} />
               </div>
-              <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ease-in-out ${isSidebarCollapsed ? "max-w-0 opacity-0 translate-x-[-10px] pointer-events-none" : "max-w-xs opacity-100 translate-x-0"}`}>
+              <span className={`whitespace-nowrap transition-all duration-300 overflow-hidden ${isSidebarCollapsed ? "opacity-0 max-w-0" : "opacity-100 max-w-[180px] ml-3"}`}>
                 Collapse Sidebar
               </span>
             </button>

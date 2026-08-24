@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { backendUrl } from "../config";
@@ -350,21 +350,34 @@ const ProductDetail = () => {
   const displayPrice = currentVariant ? currentVariant.price : (product ? product.price : 0);
   const displayStock = currentVariant ? currentVariant.stock : (product ? product.stock : 0);
   const displaySku = currentVariant ? (currentVariant.sku || product?.sku) : product?.sku;
-  const displayImages = currentVariant?.images && currentVariant.images.length > 0 ? currentVariant.images : (product?.images || []);
+  const displayImagesRaw = currentVariant?.images && currentVariant.images.length > 0 ? currentVariant.images : (product?.images || []);
+  
+  const [brokenImages, setBrokenImages] = useState(new Set());
+
+  const markImageBroken = useCallback((imgUrl) => {
+    if (!imgUrl) return;
+    setBrokenImages((prev) => {
+      if (prev.has(imgUrl)) return prev;
+      const next = new Set(prev);
+      next.add(imgUrl);
+      return next;
+    });
+  }, []);
+
+  const displayImages = displayImagesRaw.filter((img) => !brokenImages.has(img));
+
   const isAvailable = currentVariant 
     ? (currentVariant.availability !== false && currentVariant.stock > 0) 
     : (product ? (product.stock > 0) : false);
   const isPurchaseDisabled = !isAvailable || (hasDynamicAttrs && !currentVariant);
 
   useEffect(() => {
-    if (currentVariant && currentVariant.images && currentVariant.images.length > 0) {
-      setMainImg(currentVariant.images[0]);
-    } else if (product && product.images && product.images.length > 0) {
-      if (!product.images.includes(mainImg)) {
-        setMainImg(product.images[0]);
+    if (displayImages && displayImages.length > 0) {
+      if (!mainImg || brokenImages.has(mainImg) || !displayImages.includes(mainImg)) {
+        setMainImg(displayImages[0]);
       }
     }
-  }, [currentVariant, product]);
+  }, [displayImages, mainImg, brokenImages]);
 
   // High-fidelity lightbox and interactive states
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -866,6 +879,7 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
                         src={getOptimizedImageUrl(img.startsWith("http") ? img : `${backendUrl}/${img}`, { width: 200, quality: 75 })}
                         className="h-full w-full object-cover"
                         alt="thumbnail"
+                        onError={() => markImageBroken(img)}
                         loading="lazy"
                         decoding="async"
                       />
@@ -943,6 +957,7 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
                       transition={{ duration: 0.3 }}
                       src={activeMainImgSrc}
                       alt={product.name}
+                      onError={() => markImageBroken(mainImg)}
                       className="w-full h-full object-contain pointer-events-none transition-transform duration-150 ease-out"
                       style={{
                         transform: isZoomed ? "scale(1.85)" : "scale(1)",
@@ -1018,6 +1033,7 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
                     src={img.startsWith("http") ? img : `${backendUrl}/${img}`}
                     className="h-full w-full object-cover"
                     alt="thumbnail"
+                    onError={() => markImageBroken(img)}
                   />
                 </button>
               ))}

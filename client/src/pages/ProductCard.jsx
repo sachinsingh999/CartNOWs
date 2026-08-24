@@ -142,13 +142,17 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
   const reviewCount = getReviewCount(product);
 
   // Filter out null/undefined/empty string images to prevent rendering broken image frames
-  const images = (product.images?.length ? product.images : [product.image])
+  const rawImages = (product.images?.length ? product.images : [product.image])
     .filter(Boolean)
     .map(s => s.trim())
     .filter(s => s !== "");
 
+  const [failedUrls, setFailedUrls] = useState(new Set());
+
+  const images = rawImages.filter(img => !failedUrls.has(img));
+
   const getSrc = (idx = 0) => {
-    const s = images[idx] || images[0];
+    const s = images[idx] || images[0] || rawImages[0];
     if (!s) return "";
     const rawUrl = s.startsWith("http") ? s : `${backendUrl}/${s.startsWith("/") ? s.slice(1) : s}`;
     return getOptimizedImageUrl(rawUrl, { width: 350, quality: 80 });
@@ -254,7 +258,24 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
 
             {/* Active Center Image Panel */}
             <div className="w-[76%] h-[218px] z-10 flex items-center justify-center shrink-0 border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-md p-1.5 shadow-xs relative">
-              <img src={getSrc(imgIdx)} width="400" height="400" className="max-h-full max-w-full object-contain" alt={product.name || "Product"} onError={() => setImgError(true)} loading="lazy" decoding="async" />
+              <img
+                src={getSrc(imgIdx)}
+                width="400"
+                height="400"
+                className="max-h-full max-w-full object-contain"
+                alt={product.name || "Product"}
+                onError={() => {
+                  const currentSrc = images[imgIdx] || images[0];
+                  if (currentSrc) {
+                    setFailedUrls(prev => new Set(prev).add(currentSrc));
+                  }
+                  if (images.length <= 1) {
+                    setImgError(true);
+                  }
+                }}
+                loading="lazy"
+                decoding="async"
+              />
               
               {/* Wishlist Button Overlay */}
               <button

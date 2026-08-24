@@ -350,7 +350,7 @@ const Returns = ({ token }) => {
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="bg-orange-50 dark:bg-orange-950/60 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800 rounded-lg px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider">
-                            Type: {request.returnType || "Refund"}
+                            User Selection: {request.returnType || "Refund"}
                           </span>
                           <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border self-start ${getStatusBadgeStyle(request.status)}`}>
                             {request.status}

@@ -64,7 +64,7 @@ const returnRequestSchema = new mongoose.Schema(
     },
     returnType: {
       type: String,
-      enum: ["Refund", "Exchange"],
+      enum: ["Refund", "Replacement", "Exchange"],
       required: true,
       default: "Refund",
     },

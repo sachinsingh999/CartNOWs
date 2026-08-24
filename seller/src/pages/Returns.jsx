@@ -64,14 +64,35 @@ const Returns = ({ token }) => {
     fetchDrivers();
   }, [fetchReturns, fetchDrivers]);
 
+  const handleProcessRefund = async (requestId) => {
+    try {
+      const res = await axios.post(
+        `${backendUrl}/api/rms/refund/process`,
+        { rmaId: requestId },
+        { headers: { token, seller_token: token } }
+      );
+      if (res.data.success) {
+        toast.success(`Refund processed & completed successfully! ₹${res.data.refund?.amount || ''} credited to user.`);
+        fetchReturns();
+      } else {
+        toast.error(res.data.message || "Failed to process refund");
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Error processing refund");
+    }
+  };
+
   const handleStatusUpdate = async (requestId, status) => {
     try {
       const request = requests.find((r) => r._id === requestId);
-      
+      const originalDriverId = request?.orderId?.deliverymanId || request?.deliverymanId || "";
+      const deliverymanId = assignedDrivers[requestId] || originalDriverId || "";
+
       const payload = {
         requestId,
         status,
         sellerNotes: notes[requestId] ?? request?.adminNote ?? "",
+        deliverymanId,
       };
 
       const response = await axios.post(
@@ -81,7 +102,7 @@ const Returns = ({ token }) => {
       );
 
       if (response.data.success) {
-        toast.success(`Return request ${status.toLowerCase()} and Return Order (RMA) created.`);
+        toast.success(`Return request ${status.toLowerCase()} successfully.`);
         fetchReturns();
       } else {
         toast.error(response.data.message);
@@ -287,15 +308,18 @@ const Returns = ({ token }) => {
       ) : (
         <div className="space-y-5">
           {filteredRequests.map((request) => {
-            const currentType = types[request._id] ?? request.returnType ?? "Refund";
-            const currentDriver = assignedDrivers[request._id] ?? request.deliverymanId ?? "";
+            const userSelectedAction = request.returnType || "Refund";
+            const originalDriverId = request.orderId?.deliverymanId || request.deliverymanId || "";
+            const currentDriver = assignedDrivers[request._id] ?? originalDriverId ?? "";
+            const originalDriverObj = drivers.find(d => String(d._id) === String(originalDriverId));
+            const isPendingDecision = ["Requested", "Pending Approval", "Under Review", "Pending"].includes(request.status);
             
             return (
               <div
                 key={request._id}
                 className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 p-6 shadow-sm hover:shadow-md transition duration-200"
               >
-                <div className="grid gap-6 xl:grid-cols-[120px_1fr_300px]">
+                <div className="grid gap-6 xl:grid-cols-[120px_1fr_320px]">
                   {/* Image Section */}
                   <div className="h-28 w-28 mx-auto xl:mx-0 overflow-hidden rounded-xl border border-slate-100 bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-3 shadow-inner">
                     {request.itemImage ? (
@@ -318,13 +342,19 @@ const Returns = ({ token }) => {
                       <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
                         <div>
                           <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 tracking-tight">{request.itemName}</h3>
-                          <p className="text-xs font-medium text-slate-400 mt-1">
-                            Order ID: <span className="font-mono text-slate-700 dark:text-slate-300">{request.orderId}</span>
+                          <p className="text-xs font-medium text-slate-400 mt-1 flex flex-wrap items-center gap-2">
+                            <span>Order ID: <span className="font-mono text-slate-700 dark:text-slate-300">{request.orderId?._id || request.orderId}</span></span>
+                            {request.createdAt && (
+                              <>
+                                <span>•</span>
+                                <span>Requested on: <strong className="text-slate-700 dark:text-slate-300">{new Date(request.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })} at {new Date(request.createdAt).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true })}</strong></span>
+                              </>
+                            )}
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="bg-orange-50 dark:bg-orange-950/20 text-orange-700 dark:text-orange-400 border border-orange-100 dark:border-orange-900/50 rounded-lg px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider">
-                            Type: {request.returnType || "Refund"}
+                            User Selection: {userSelectedAction}
                           </span>
                           <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border self-start ${getStatusBadgeStyle(request.status)}`}>
                             {request.status}
@@ -341,9 +371,9 @@ const Returns = ({ token }) => {
                             Size {request.itemSize}
                           </span>
                         )}
-                        {request.returnType === "Exchange" && request.exchangeSize && (
+                        {request.returnType === "Exchange" && (request.exchangeSize || request.exchangeDetails?.requestedSize) && (
                           <span className="rounded-lg bg-indigo-50 dark:bg-indigo-950/20 text-indigo-700 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
-                            Exch Size {request.exchangeSize}
+                            Exch Size {request.exchangeSize || request.exchangeDetails?.requestedSize}
                           </span>
                         )}
                         <span className="rounded-lg bg-slate-900 px-2.5 py-0.5 text-[10px] font-bold text-slate-100 dark:text-white uppercase tracking-wider">
@@ -357,7 +387,7 @@ const Returns = ({ token }) => {
                           <FileText size={11} />
                           Reason for Return
                         </p>
-                        <p className="mt-1 text-slate-800 dark:text-slate-100 font-medium">{request.reason}</p>
+                        <p className="mt-1 text-slate-800 dark:text-slate-100 font-medium">{request.reason || request.returnReason}</p>
                       </div>
 
                       {request.feedback && (
@@ -394,71 +424,101 @@ const Returns = ({ token }) => {
                   </div>
 
                   {/* Settings Action Column */}
-                  <div className="space-y-3 pt-4 xl:pt-0 xl:border-l xl:border-slate-100 dark:xl:border-slate-800 xl:pl-6 flex flex-col justify-between text-xs">
+                  <div className="space-y-3.5 pt-4 xl:pt-0 xl:border-l xl:border-slate-100 dark:xl:border-slate-800 xl:pl-6 flex flex-col justify-between text-xs">
+                    
+                    {/* SET REQUEST STATUS: Approve or Reject ONLY */}
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Set Request Status</label>
-                      <select
-                        value={request.status}
-                        onChange={(event) => handleStatusUpdate(request._id, event.target.value)}
-                        className={`w-full border rounded-xl px-3 py-2.5 text-xs font-bold bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-105 outline-none transition ${getStatusBadgeStyle(request.status)} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900`}
-                      >
-                        <option value="Requested">Requested</option>
-                        <option value="Approved">Approved</option>
-                        <option value="Rejected">Rejected</option>
-                        <option value="Out for Pickup">Out for Pickup</option>
-                        <option value="Picked Up">Picked Up</option>
-                        <option value="Completed">Completed</option>
-                      </select>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Set Request Status (Seller Choice)</label>
+                      {isPendingDecision ? (
+                        <select
+                          value={request.status === "Approved" || request.status === "Rejected" ? request.status : "Requested"}
+                          onChange={(event) => {
+                            if (event.target.value === "Approved" || event.target.value === "Rejected") {
+                              handleStatusUpdate(request._id, event.target.value);
+                            }
+                          }}
+                          className="w-full border border-blue-200 dark:border-blue-800 rounded-xl px-3 py-2.5 text-xs font-extrabold bg-blue-50/60 dark:bg-blue-950/30 text-blue-800 dark:text-blue-200 outline-none cursor-pointer"
+                        >
+                          <option value="Requested" disabled>Pending Decision...</option>
+                          <option value="Approved">Approve Return Request</option>
+                          <option value="Rejected">Reject Return Request</option>
+                        </select>
+                      ) : (
+                        <div className={`w-full border rounded-xl px-3 py-2 text-xs font-extrabold ${getStatusBadgeStyle(request.status)}`}>
+                          Status: {request.status}
+                        </div>
+                      )}
                     </div>
 
+                    {/* RETURN ACTION: Read-Only User Selection */}
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Return Action</label>
-                      <select
-                        value={currentType}
-                        onChange={(e) => setTypes(prev => ({ ...prev, [request._id]: e.target.value }))}
-                        className="w-full border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                      >
-                        <option value="Refund">Refund</option>
-                        <option value="Replacement">Replacement</option>
-                        <option value="Exchange">Exchange</option>
-                      </select>
-                    </div>
-
-                    {currentType === "Exchange" && (
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Exchange Size</label>
-                        <input
-                          type="text"
-                          value={exchangeSizes[request._id] ?? request.exchangeSize ?? ""}
-                          onChange={(e) => setExchangeSizes(prev => ({ ...prev, [request._id]: e.target.value }))}
-                          placeholder="e.g. XL, M, L"
-                          className="w-full border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 outline-none"
-                        />
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Return Action (Customer Choice)</label>
+                      <div className="w-full border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-extrabold bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 flex items-center justify-between">
+                        <span>{userSelectedAction}</span>
+                        <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20">
+                          Customer Chosen
+                        </span>
                       </div>
-                    )}
+                      {request.returnType === "Exchange" && (request.exchangeSize || request.exchangeDetails?.requestedSize) && (
+                        <p className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold">Exchange Size: {request.exchangeSize || request.exchangeDetails?.requestedSize}</p>
+                      )}
+                    </div>
 
+                    {/* ASSIGN AGENT: Same Delivery Executive */}
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Assign Agent</label>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Pickup Agent (Same Delivery Agent)</label>
                       <select
                         value={currentDriver}
                         onChange={(e) => setAssignedDrivers(prev => ({ ...prev, [request._id]: e.target.value }))}
                         className="w-full border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 outline-none"
                       >
-                        <option value="">Unassigned</option>
-                        {drivers.map(d => (
-                          <option key={d._id} value={d._id}>
-                            {d.name} ({d.activeDeliveries || 0} active)
-                          </option>
-                        ))}
+                        <option value="">Select Agent...</option>
+                        {drivers.map(d => {
+                          const isOriginal = String(d._id) === String(originalDriverId);
+                          return (
+                            <option key={d._id} value={d._id}>
+                              {d.name} {isOriginal ? "★ (Original Delivery Agent)" : ""} ({d.activeDeliveries || 0} active)
+                            </option>
+                          );
+                        })}
                       </select>
+                      {originalDriverObj && (
+                        <p className="text-[9px] font-extrabold text-emerald-600 dark:text-emerald-400">
+                          ✓ Auto-selected original delivery executive: {originalDriverObj.name}
+                        </p>
+                      )}
                     </div>
 
-                    <button
-                      onClick={() => handleStatusUpdate(request._id, request.status)}
-                      className="w-full rounded-xl bg-orange-600 hover:bg-orange-700 text-slate-100 dark:text-white px-4 py-2.5 text-xs font-bold transition shadow-sm"
-                    >
-                      Save Return Settings
-                    </button>
+                    {/* Direct Action Buttons */}
+                    {isPendingDecision && (
+                      <div className="grid grid-cols-2 gap-2 pt-1">
+                        <button
+                          onClick={() => handleStatusUpdate(request._id, "Approved")}
+                          className="w-full rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 text-xs font-bold transition shadow-sm cursor-pointer"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => handleStatusUpdate(request._id, "Rejected")}
+                          className="w-full rounded-xl bg-rose-600 hover:bg-rose-700 text-white px-3 py-2 text-xs font-bold transition shadow-sm cursor-pointer"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Process Refund / Complete Return Button for Seller */}
+                    {request.status !== "Requested" && request.status !== "Rejected" && (
+                      <div className="pt-2">
+                        <button
+                          onClick={() => handleProcessRefund(request._id)}
+                          className="w-full rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2.5 text-xs font-black uppercase tracking-wider transition shadow-md cursor-pointer flex items-center justify-center gap-2 active:scale-95"
+                        >
+                          <CheckCircle size={15} />
+                          <span>Process Refund (₹{request.amount}) & Complete</span>
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

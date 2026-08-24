@@ -43,6 +43,7 @@ const MobileShowcase = React.lazy(() => import("./pages/MobileShowcase"));
 const SocialFeed = React.lazy(() => import("./pages/SocialFeed"));
 const SassHome = React.lazy(() => import("./pages/SassHome"));
 const RMADetail = React.lazy(() => import("./pages/RMADetail"));
+const TermsAndPolicy = React.lazy(() => import("./pages/TermsAndPolicy"));
 
 const App = () => {
   return (
@@ -117,6 +118,10 @@ const App = () => {
               <Route path="/mobile" element={<MobileShowcase />} />
               <Route path="/social" element={<SocialFeed />} />
               <Route path="/saas" element={<SassHome />} />
+              <Route path="/terms" element={<TermsAndPolicy />} />
+              <Route path="/privacy" element={<TermsAndPolicy />} />
+              <Route path="/policy" element={<TermsAndPolicy />} />
+              <Route path="/terms-and-policy" element={<TermsAndPolicy />} />
 
               {/* Auth Guest-Only Routes */}
               <Route element={<PublicRoute />}>

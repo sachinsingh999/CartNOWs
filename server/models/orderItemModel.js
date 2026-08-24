@@ -99,6 +99,8 @@ const orderItemSchema = new mongoose.Schema(
         "Cancel Requested",
         "Cancelled",
         "Return Requested",
+        "Return Pending",
+        "Return Approved",
         "Returned",
         "Refund Initiated",
         "Refunded",

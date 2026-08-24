@@ -81,4 +81,31 @@ export default function registerRoomHandlers(io, socket) {
       socket.emit("room_error", { message: "Failed to join order room." });
     }
   });
+
+  socket.on("join_rma_room", async ({ rmaId }) => {
+    try {
+      if (!rmaId) return socket.emit("room_error", { message: "Invalid RMA ID." });
+
+      const returnOrderModel = (await import("../models/returnOrderModel.js")).default;
+      const rma = await returnOrderModel.findById(rmaId);
+      if (!rma) return socket.emit("room_error", { message: "RMA not found." });
+
+      const userIdStr = String(socket.userId);
+      const isCustomer = String(rma.customerId) === userIdStr;
+      const isSeller = String(rma.sellerId) === userIdStr;
+      const isDeliveryman = rma.deliverymanId && String(rma.deliverymanId) === userIdStr;
+
+      if (!isCustomer && !isSeller && !isDeliveryman) {
+        return socket.emit("room_error", { message: "Access denied. Not authorized for this RMA room." });
+      }
+
+      const roomName = `rma_${rmaId}`;
+      socket.join(roomName);
+      console.log(`[Socket Room] Socket ${socket.id} joined RMA room: ${roomName}`);
+      socket.emit("rma_room_joined", { rmaId });
+    } catch (err) {
+      console.error("[Socket Room Error] join_rma_room failed:", err);
+      socket.emit("room_error", { message: "Failed to join RMA room." });
+    }
+  });
 }

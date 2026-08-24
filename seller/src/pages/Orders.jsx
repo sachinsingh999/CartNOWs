@@ -29,7 +29,9 @@ const Orders = ({ orders = [] }) => {
                   <h4 className="text-sm font-black text-slate-800 dark:text-slate-100 uppercase">#{order._id.slice(-8)}</h4>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-slate-405 dark:text-slate-400">{new Date(order.createdAt).toLocaleDateString()}</span>
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                    {new Date(order.createdAt || order.date || Date.now()).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })} at {new Date(order.createdAt || order.date || Date.now()).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true })}
+                  </span>
                   <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${ order.orderStatus === "Delivered" ? "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/50" : order.orderStatus === "Cancelled" ? "bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 border-red-100 dark:border-red-900/50" : "bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400 border-orange-100/50 dark:border-orange-900/40" }`}>
                     {order.orderStatus}
                   </span>

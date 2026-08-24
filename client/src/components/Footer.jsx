@@ -235,12 +235,12 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/help" className="hover:text-orange-400 hover:translate-x-1 transition-all duration-200 inline-block">
+                <Link to="/privacy" className="hover:text-orange-400 hover:translate-x-1 transition-all duration-200 inline-block">
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link to="/help" className="hover:text-orange-400 hover:translate-x-1 transition-all duration-200 inline-block">
+                <Link to="/terms" className="hover:text-orange-400 hover:translate-x-1 transition-all duration-200 inline-block">
                   Terms of Service
                 </Link>
               </li>

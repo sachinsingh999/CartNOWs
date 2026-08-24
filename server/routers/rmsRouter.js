@@ -77,7 +77,12 @@ rmsRouter.post("/rma/update-inspection", (req, res, next) => {
 });
 
 /* Financial Refund Execution */
-rmsRouter.post("/refund/process", adminAuth, processRefund);
+rmsRouter.post("/refund/process", (req, res, next) => {
+  if (req.headers.seller_token || req.headers.sellertoken || req.headers.token) {
+    return sellerAuth(req, res, () => processRefund(req, res, next));
+  }
+  return adminAuth(req, res, () => processRefund(req, res, next));
+});
 
 /* Exchange & Replacement Shipment */
 rmsRouter.post("/exchange/create-shipment", (req, res, next) => {

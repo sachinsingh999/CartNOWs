@@ -27,6 +27,8 @@ import {
   PackageCheck,
   KeyRound,
   Truck,
+  Store,
+  ExternalLink,
   Check,
   Copy,
   Mic,
@@ -1083,18 +1085,37 @@ const Navbar = () => {
                               { icon: Heart, label: "Wishlist", to: "/wishlist" },
                               { icon: Globe, label: "Social Feed", to: "/social" },
                               { icon: HelpCircle, label: "Help & Support", to: "/help" },
-                            ].map(({ icon: Icon, label, to }) => (
-                              <button
-                                key={to}
-                                onClick={() => { setOpen(false); navigate(to); }}
-                                className="flex w-full items-center justify-between px-3 py-1.5 rounded-sm text-left text-xs font-extrabold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors duration-150 cursor-pointer group border-none bg-transparent"
-                              >
-                                <div className="flex items-center gap-2.5">
-                                  <Icon size={14} className="text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors" />
-                                  <span>{label}</span>
-                                </div>
-                                <ChevronRight size={12} className="text-slate-400 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-150" />
-                              </button>
+                              { icon: Store, label: "Become a Seller", externalUrl: "https://cartnow-seller.vercel.app/", isExternal: true },
+                              { icon: Truck, label: "Join as Deliveryman", externalUrl: "https://cart-now-deliveryagent.vercel.app/", isExternal: true },
+                            ].map((item) => (
+                              item.isExternal ? (
+                                <a
+                                  key={item.label}
+                                  href={item.externalUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  onClick={() => setOpen(false)}
+                                  className="flex w-full items-center justify-between px-3 py-1.5 rounded-sm text-left text-xs font-extrabold text-orange-600 dark:text-orange-400 hover:bg-orange-500/10 transition-colors duration-150 cursor-pointer group"
+                                >
+                                  <div className="flex items-center gap-2.5">
+                                    <item.icon size={14} className="text-orange-500 group-hover:scale-110 transition-transform" />
+                                    <span>{item.label}</span>
+                                  </div>
+                                  <ExternalLink size={12} className="text-orange-400 opacity-60 group-hover:opacity-100 transition-opacity" />
+                                </a>
+                              ) : (
+                                <button
+                                  key={item.to}
+                                  onClick={() => { setOpen(false); navigate(item.to); }}
+                                  className="flex w-full items-center justify-between px-3 py-1.5 rounded-sm text-left text-xs font-extrabold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors duration-150 cursor-pointer group border-none bg-transparent"
+                                >
+                                  <div className="flex items-center gap-2.5">
+                                    <item.icon size={14} className="text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors" />
+                                    <span>{item.label}</span>
+                                  </div>
+                                  <ChevronRight size={12} className="text-slate-400 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-150" />
+                                </button>
+                              )
                             ))}
                           </div>
 

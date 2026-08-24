@@ -43,9 +43,9 @@ const mergeAndDeduplicate = (existingMessages, newMessages) => {
   });
 };
 
-const OrderCommunication = ({ orderId }) => {
+const OrderCommunication = ({ orderId, fullHeight = false }) => {
   const [status, setStatus] = useState(null);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [isOpen, setIsOpen] = useState(true);
@@ -1155,7 +1155,7 @@ const OrderCommunication = ({ orderId }) => {
   }
 
   return (
-    <div className="border border-slate-200/50 dark:border-slate-850 rounded-lg bg-white dark:bg-slate-955 overflow-hidden flex flex-col h-[490px] shadow-lg shadow-slate-100 dark:shadow-none select-none shrink-0 transition-all duration-350">
+    <div className={fullHeight ? "w-full h-full flex-1 flex flex-col min-h-0 bg-white dark:bg-slate-900 select-none overflow-hidden" : "border border-slate-200/50 dark:border-slate-850 rounded-lg bg-white dark:bg-slate-955 overflow-hidden flex flex-col h-[490px] shadow-lg shadow-slate-100 dark:shadow-none select-none shrink-0 transition-all duration-350"}>
       
       {/* 1. Header with details & call stub */}
       <div className="bg-linear-to-r from-indigo-600 via-indigo-700 to-indigo-800 text-white px-4.5 py-3 flex justify-between items-center shrink-0 shadow-md shadow-indigo-900/5">

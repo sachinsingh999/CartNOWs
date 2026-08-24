@@ -1594,7 +1594,11 @@ export const getSellerReturns = async (req, res) => {
   try {
     const products = await productModel.find({ sellerId: req.seller._id }).select("_id");
     const productIds = products.map(p => p._id);
-    const returns = await returnRequestModel.find({ productId: { $in: productIds } }).sort({ createdAt: -1 });
+    const returns = await returnRequestModel
+      .find({ productId: { $in: productIds } })
+      .populate({ path: "orderId", select: "deliverymanId items orderStatus" })
+      .sort({ createdAt: -1 })
+      .lean();
     res.json({ success: true, returns });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
