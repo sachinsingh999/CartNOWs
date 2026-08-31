@@ -679,7 +679,7 @@ const Categories = ({ token }) => {
   ];
 
   return (
-    <div className="space-y-6 text-left text-slate-800 dark:text-slate-100">
+    <div className="space-y-3.5 text-left text-slate-800 dark:text-slate-100">
       
       {/* ── Single Consolidated Container: Header, Stats & Search Bar ── */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-4 shadow-xs space-y-3.5 shrink-0">
@@ -761,7 +761,7 @@ const Categories = ({ token }) => {
 
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3.5 items-start">
         
         {/* LEFT COLUMN: HIERARCHICAL TREE DIRECTORY */}
         <div className="lg:col-span-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-3xl p-5 shadow-sm space-y-4">
@@ -789,10 +789,10 @@ const Categories = ({ token }) => {
         </div>
 
         {/* RIGHT COLUMN: WORKSPACE FOR SELECTED CATEGORY */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-4">
           
           {selectedCategory ? (
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-3xl p-6 shadow-sm space-y-6">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-3xl p-5 shadow-xs space-y-4">
               
               {/* Workspace Header */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800/85">

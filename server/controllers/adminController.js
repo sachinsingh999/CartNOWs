@@ -17,6 +17,7 @@ import categoryAttributeModel from "../models/categoryAttributeModel.js";
 import categoryAttributeOptionModel from "../models/categoryAttributeOptionModel.js";
 import categorySeoModel from "../models/categorySeoModel.js";
 import activityLogModel from "../models/activityLogModel.js";
+import helpRequestModel from "../models/helpRequestModel.js";
 import jwt from "jsonwebtoken";
 import deliveryAssignmentModel from "../models/deliveryAssignmentModel.js";
 import { enrichOrdersWithSellerDetails } from "./orderController.js";
@@ -821,6 +822,59 @@ export const getAuditLogs = async (req, res) => {
     const uniqueLogs = formattedLogs.slice(0, 150);
 
     res.json({ success: true, logs: uniqueLogs });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getDashboardSummary = async (req, res) => {
+  try {
+    const [
+      products,
+      orders,
+      returns,
+      support,
+      sellers,
+      customers,
+      agents,
+      logs,
+      financeSettings
+    ] = await Promise.all([
+      productModel.find({ isDeleted: { $ne: true } }).select("_id name sellerId stock price category status").lean(),
+      orderModel.find({}).select("_id amount orderStatus paymentStatus createdAt items deliverymanId address").lean(),
+      returnRequestModel.find({}).select("_id status orderId orderItemId productName createdAt").sort({ createdAt: -1 }).limit(100).lean(),
+      helpRequestModel.find({}).select("_id status subject priority createdAt").sort({ createdAt: -1 }).limit(100).lean(),
+      sellerModel.find({}).select("_id name shopName status commissionRate balance revenue").lean(),
+      userModel.find({}).select("_id name email createdAt isBlocked").lean(),
+      deliverymanModel.find({}).select("_id name email status phone").lean(),
+      auditLogModel.find({}).sort({ createdAt: -1 }).limit(50).lean(),
+      platformSettingModel.findOne({}).lean()
+    ]);
+
+    const formattedLogs = logs.map((log) => ({
+      _id: String(log._id),
+      role: "Admin",
+      actor: log.adminEmail || "System Admin",
+      action: log.action || "Admin Event",
+      target: log.target || "N/A",
+      details: log.details || "Administrative event logged",
+      createdAt: log.createdAt
+    }));
+
+    res.json({
+      success: true,
+      data: {
+        products,
+        orders,
+        returns,
+        support,
+        sellers,
+        customers,
+        agents,
+        logs: formattedLogs,
+        settings: financeSettings || { commissionPercentage: 10 }
+      }
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

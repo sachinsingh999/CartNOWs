@@ -63,7 +63,8 @@ import {
   restoreCategory,
   reorderCategoryAttributes,
   aiFillCategory,
-  aiFillCategoryTemplate
+  aiFillCategoryTemplate,
+  getDashboardSummary
 } from "../controllers/adminController.js";
 
 const adminRouter = express.Router();
@@ -166,5 +167,6 @@ adminRouter.get("/analytics/products", getAdminProductAnalytics);
 adminRouter.get("/analytics/sellers", getAdminSellerAnalytics);
 adminRouter.get("/analytics/customers", getAdminCustomerAnalytics);
 adminRouter.get("/analytics/delivery", getAdminDeliveryAnalytics);
+adminRouter.get("/dashboard-summary", getDashboardSummary);
 
 export default adminRouter;

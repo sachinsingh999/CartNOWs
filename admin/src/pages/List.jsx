@@ -12,7 +12,11 @@ import {
   CheckCircle2,
   Trash2,
   Tag,
-  Store
+  Store,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight
 } from "lucide-react";
 
 const List = ({ token }) => {
@@ -24,6 +28,10 @@ const List = ({ token }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const fetchList = async () => {
     setIsRefreshing(true);
@@ -123,6 +131,20 @@ const List = ({ token }) => {
   const outOfStock = list.filter((item) => (item.stock ?? 0) <= 0).length;
   const uniqueCategories = categoriesList.length;
   const inStockCount = totalProducts - outOfStock;
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedCategory, statusFilter, itemsPerPage]);
+
+  // Pagination calculation
+  const totalPages = Math.ceil(filteredList.length / itemsPerPage) || 1;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = Math.min(startIndex + itemsPerPage, filteredList.length);
+
+  const displayedItems = useMemo(() => {
+    return filteredList.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredList, startIndex, itemsPerPage]);
 
   return (
     <div className="space-y-4 animate-fadeIn text-slate-800 dark:text-slate-100">
@@ -254,7 +276,7 @@ const List = ({ token }) => {
             <p className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider font-semibold">Try adjusting filters or search keywords.</p>
           </div>
         ) : (
-          filteredList.map((item) => {
+          displayedItems.map((item) => {
             const isOutOfStock = (item.stock ?? 0) <= 0;
             const imageSrc = item.images?.[0] 
               ? (item.images[0].startsWith('http') ? item.images[0] : `${backendUrl}/${item.images[0]}`)
@@ -360,6 +382,99 @@ const List = ({ token }) => {
           })
         )}
       </div>
+
+      {/* Pagination Footer Controls */}
+      {filteredList.length > 0 && (
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-3.5 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+          
+          {/* Status info & Rows Selector */}
+          <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400 text-[11px] font-semibold">
+            <span>
+              Showing <strong className="text-slate-900 dark:text-white font-black">{filteredList.length > 0 ? startIndex + 1 : 0}</strong> to <strong className="text-slate-900 dark:text-white font-black">{endIndex}</strong> of <strong className="text-slate-900 dark:text-white font-black">{filteredList.length}</strong> items
+            </span>
+
+            <div className="flex items-center gap-1.5 border-l border-slate-200 dark:border-slate-800 pl-3">
+              <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider font-bold">Show:</span>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                className="px-2 py-1 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-md text-[10px] font-black text-slate-800 dark:text-slate-200 outline-none cursor-pointer"
+              >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Navigation Controls */}
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setCurrentPage(1)}
+              disabled={currentPage === 1}
+              className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition"
+              title="First Page"
+            >
+              <ChevronsLeft size={14} />
+            </button>
+
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition"
+              title="Previous Page"
+            >
+              <ChevronLeft size={14} />
+            </button>
+
+            {/* Page Numbers */}
+            <div className="flex items-center gap-1 px-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(page => page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1)
+                .map((page, idx, arr) => {
+                  const showEllipsis = idx > 0 && page - arr[idx - 1] > 1;
+                  return (
+                    <React.Fragment key={page}>
+                      {showEllipsis && (
+                        <span className="px-1 text-slate-400 dark:text-slate-600 font-bold text-[10px]">...</span>
+                      )}
+                      <button
+                        onClick={() => setCurrentPage(page)}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-black transition cursor-pointer ${
+                          currentPage === page
+                            ? "bg-blue-600 text-white shadow-xs"
+                            : "bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    </React.Fragment>
+                  );
+                })}
+            </div>
+
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition"
+              title="Next Page"
+            >
+              <ChevronRight size={14} />
+            </button>
+
+            <button
+              onClick={() => setCurrentPage(totalPages)}
+              disabled={currentPage === totalPages}
+              className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition"
+              title="Last Page"
+            >
+              <ChevronsRight size={14} />
+            </button>
+          </div>
+
+        </div>
+      )}
     </div>
   );
 };

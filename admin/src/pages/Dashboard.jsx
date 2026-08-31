@@ -37,39 +37,58 @@ const Dashboard = ({ token }) => {
   const fetchDashboardData = async () => {
     if (!token) return;
     try {
-      const [prodRes, orderRes, returnRes, supportRes, sellerRes, customerRes, agentRes, logRes, finRes] = await Promise.all([
-        axios.get(`${backendUrl}/api/product/list`),
-        axios.post(`${backendUrl}/api/order/list`, {}, { headers: { token } }),
-        axios.post(`${backendUrl}/api/service/returns/admin/list`, {}, { headers: { token } }),
-        axios.post(`${backendUrl}/api/service/help/admin/list`, {}, { headers: { token } }),
-        axios.get(`${backendUrl}/api/admin/sellers`, { headers: { token } }),
-        axios.get(`${backendUrl}/api/admin/customers`, { headers: { token } }),
-        axios.get(`${backendUrl}/api/admin/agents`, { headers: { token } }),
-        axios.get(`${backendUrl}/api/admin/logs`, { headers: { token } }),
-        axios.get(`${backendUrl}/api/admin/finance`, { headers: { token } }),
-      ]);
+      // Single fast summary call
+      const summaryRes = await axios.get(`${backendUrl}/api/admin/dashboard-summary`, { headers: { token } });
+      if (summaryRes.data && summaryRes.data.success && summaryRes.data.data) {
+        const { products, orders, returns, support, sellers, customers, agents, logs, settings } = summaryRes.data.data;
+        const fetchedOrders = orders || [];
+        setData({
+          products: products || [],
+          orders: fetchedOrders,
+          returns: returns || [],
+          support: support || [],
+          sellers: sellers || [],
+          customers: customers || [],
+          agents: agents || [],
+          logs: logs || [],
+        });
+        if (settings) {
+          setPlatformSettings(settings);
+        }
+        setSelectedOrder((prev) => {
+          if (!prev) return null;
+          return fetchedOrders.find(o => o._id === prev._id) || null;
+        });
+      } else {
+        // Fallback to individual requests if summary fails
+        const [prodRes, orderRes, returnRes, supportRes, sellerRes, customerRes, agentRes, logRes, finRes] = await Promise.all([
+          axios.get(`${backendUrl}/api/product/list`),
+          axios.post(`${backendUrl}/api/order/list`, {}, { headers: { token } }),
+          axios.post(`${backendUrl}/api/service/returns/admin/list`, {}, { headers: { token } }),
+          axios.post(`${backendUrl}/api/service/help/admin/list`, {}, { headers: { token } }),
+          axios.get(`${backendUrl}/api/admin/sellers`, { headers: { token } }),
+          axios.get(`${backendUrl}/api/admin/customers`, { headers: { token } }),
+          axios.get(`${backendUrl}/api/admin/agents`, { headers: { token } }),
+          axios.get(`${backendUrl}/api/admin/logs`, { headers: { token } }),
+          axios.get(`${backendUrl}/api/admin/finance`, { headers: { token } }),
+        ]);
 
-      const fetchedOrders = orderRes.data.success ? orderRes.data.orders : [];
-      setData({
-        products: prodRes.data.success ? prodRes.data.products : [],
-        orders: fetchedOrders,
-        returns: returnRes.data.success ? returnRes.data.returns : [],
-        support: supportRes.data.success ? supportRes.data.helpRequests : [],
-        sellers: sellerRes.data.success ? sellerRes.data.sellers : [],
-        customers: customerRes.data.success ? customerRes.data.customers : [],
-        agents: agentRes.data.success ? agentRes.data.agents : [],
-        logs: logRes.data.success ? logRes.data.logs : [],
-      });
+        const fetchedOrders = orderRes.data.success ? orderRes.data.orders : [];
+        setData({
+          products: prodRes.data.success ? prodRes.data.products : [],
+          orders: fetchedOrders,
+          returns: returnRes.data.success ? returnRes.data.returns : [],
+          support: supportRes.data.success ? supportRes.data.helpRequests : [],
+          sellers: sellerRes.data.success ? sellerRes.data.sellers : [],
+          customers: customerRes.data.success ? customerRes.data.customers : [],
+          agents: agentRes.data.success ? agentRes.data.agents : [],
+          logs: logRes.data.success ? logRes.data.logs : [],
+        });
 
-      if (finRes.data.success && finRes.data.settings) {
-        setPlatformSettings(finRes.data.settings);
+        if (finRes.data.success && finRes.data.settings) {
+          setPlatformSettings(finRes.data.settings);
+        }
       }
-
-      // Update selected order details inside drawer if open
-      setSelectedOrder((prev) => {
-        if (!prev) return null;
-        return fetchedOrders.find(o => o._id === prev._id) || null;
-      });
     } catch (error) {
       console.error(error);
       toast.error("Failed to load dashboard metrics");
@@ -80,7 +99,7 @@ const Dashboard = ({ token }) => {
 
   useEffect(() => {
     fetchDashboardData();
-    const interval = setInterval(fetchDashboardData, 10000);
+    const interval = setInterval(fetchDashboardData, 60000);
     return () => clearInterval(interval);
   }, [token]);
 

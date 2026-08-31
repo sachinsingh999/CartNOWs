@@ -138,7 +138,9 @@ const userSchema = new mongoose.Schema({
     lockUntil: { type: Date, default: null }
   }
 
-},{ minimize:false });
+},{ minimize:false, timestamps: true });
+
+userSchema.index({ createdAt: -1 });
 
 // Pre-save hook to generate unique delivery verification key for the user
 userSchema.pre("save", function (next) {

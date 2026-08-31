@@ -37,10 +37,12 @@ const sellerSchema = new mongoose.Schema(
     passwordResetToken: { type: String, default: null },
     passwordResetExpires: { type: Date, default: null },
     emailVerificationToken: { type: String, default: null },
-    isEmailVerified: { type: Boolean, default: false }
   },
   { timestamps: true }
 );
+
+sellerSchema.index({ status: 1, createdAt: -1 });
+sellerSchema.index({ createdAt: -1 });
 
 const sellerModel = mongoose.models.seller || mongoose.model("seller", sellerSchema);
 export default sellerModel;
