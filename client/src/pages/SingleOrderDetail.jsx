@@ -165,6 +165,35 @@ const SingleOrderDetail = () => {
     hour12: true
   });
 
+  const getStepTimestamp = (idx) => {
+    if (!order || !order.createdAt) return "";
+    const created = new Date(order.createdAt);
+    const updated = order.updatedAt ? new Date(order.updatedAt) : created;
+
+    const times = [
+      created,
+      new Date(created.getTime() + 2 * 60 * 60 * 1000),
+      new Date(created.getTime() + 24 * 60 * 60 * 1000),
+      new Date(created.getTime() + 42 * 60 * 60 * 1000),
+      new Date(created.getTime() + 48 * 60 * 60 * 1000)
+    ];
+
+    let targetDate = times[idx] || created;
+    if (idx <= currentStep && updated > created && idx === currentStep) {
+      targetDate = updated;
+    }
+
+    const isPastOrCurrent = idx <= currentStep;
+    const dateStr = targetDate.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    const timeStr = targetDate.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true });
+
+    if (isPastOrCurrent) {
+      return `${dateStr}, ${timeStr}`;
+    } else {
+      return `Est. ${dateStr}`;
+    }
+  };
+
   // Billing math
   const shippingFee = order.shippingFee ?? (order.amount > 519 ? 0 : 40);
   const subtotal = order.subtotal || (order.items || []).reduce((sum, item) => sum + (item.unitPrice || item.price || 0) * (item.quantity || item.qty || 1), 0);
@@ -203,98 +232,103 @@ const SingleOrderDetail = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#090D14] px-4 sm:px-6 lg:px-8 py-6 text-slate-800 dark:text-slate-100 transition-colors duration-200 text-left">
-      <div className="mx-auto max-w-[1350px]">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#070A12] px-2 sm:px-4 lg:px-6 py-8 text-slate-800 dark:text-slate-100 transition-colors duration-200 text-left">
+      <div className="w-full">
         
         {/* ── UNIFIED MASTER SINGLE CONTAINER CARD ── */}
-        <div className="bg-white dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-sm p-5 sm:p-6 shadow-xs space-y-6">
+        <div className="bg-white dark:bg-slate-900/90 backdrop-blur-2xl border border-slate-200/80 dark:border-slate-800/80 rounded-sm p-5 sm:p-7 shadow-xs space-y-7">
           
           {/* 1. MASTER HEADER BAR */}
-          <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-4 pb-5 border-b border-slate-100 dark:border-slate-800/80">
+            <div className="flex items-center gap-3.5">
               <button
                 onClick={() => navigate("/orderdetail")}
-                className="h-8 w-8 rounded-sm bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center justify-center transition cursor-pointer shrink-0 border border-slate-200/60 dark:border-slate-700/60"
+                className="h-9 w-9 rounded-sm bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center justify-center transition cursor-pointer shrink-0 border border-slate-200/60 dark:border-slate-700/60 hover:scale-[1.02] active:scale-95"
                 title="Back to Orders"
               >
-                <ArrowLeft size={16} />
+                <ArrowLeft size={17} />
               </button>
               <div>
-                <div className="flex items-center gap-2.5">
-                  <h1 className="text-lg font-black text-slate-900 dark:text-white tracking-tight">
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
                     Order #{String(order.orderNumber || order._id).slice(-8).toUpperCase()}
                   </h1>
-                  <span className={`px-2.5 py-0.5 rounded-sm text-[10px] font-black uppercase tracking-wider ${
+                  <span className={`px-2.5 py-0.5 rounded-sm text-[10px] font-black uppercase tracking-wider shadow-2xs border ${
                     matchedReq
-                      ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/30"
+                      ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/30"
                       : (order.orderStatus || "").toLowerCase() === "delivered"
-                      ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
+                      ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
                       : (order.orderStatus || "").toLowerCase() === "cancelled"
-                      ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/30"
-                      : "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30"
+                      ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30"
+                      : "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/30"
                   }`}>
                     {matchedReq ? `${matchedReq.returnType || "RETURN"} ${matchedReq.status || "PENDING"}` : (order.orderStatus || "Placed")}
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold mt-0.5">
-                  Placed on {formattedDate} at {formattedTime} · ID: <span className="font-mono text-slate-700 dark:text-slate-300 font-bold">{order._id}</span>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold mt-0.5 flex items-center gap-1.5 flex-wrap">
+                  <span>Placed on {formattedDate} at {formattedTime}</span>
+                  <span>·</span>
+                  <span>ID: <code className="font-mono text-slate-700 dark:text-slate-300 font-bold bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-sm text-[10px]">{order._id}</code></span>
                   <button
                     onClick={handleCopyId}
-                    className="ml-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition cursor-pointer inline-flex items-center"
+                    className="text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition cursor-pointer inline-flex items-center gap-0.5"
                     title="Copy Order ID"
                   >
-                    {copiedId ? <Check size={11} className="text-emerald-500" /> : <Copy size={11} />}
+                    {copiedId ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
                   </button>
                 </p>
               </div>
             </div>
 
             {/* Quick Actions */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
               <button
                 onClick={() => setChatSidebarState("open")}
                 title="Open Order Chat Support"
-                className="h-8 w-8 rounded-sm bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center justify-center transition cursor-pointer relative shadow-2xs"
+                className="h-9 px-3.5 rounded-sm bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-bold text-xs flex items-center gap-2 transition cursor-pointer relative shadow-2xs group hover:scale-[1.02] active:scale-95"
               >
-                <MessageSquare size={16} />
-                <span className="absolute -top-1 -right-1 h-2.5 w-2.5 bg-emerald-500 rounded-full animate-ping" />
-                <span className="absolute -top-1 -right-1 h-2.5 w-2.5 bg-emerald-500 rounded-full" />
+                <MessageSquare size={15} />
+                <span>Chat Support</span>
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                </span>
               </button>
               <button
                 onClick={() => {
                   toast.info("Downloading Invoice PDF... 📄");
                   window.open(`${backendUrl}/api/invoice/download/${order._id}?token=${token}`, "_blank");
                 }}
-                className="px-3 py-1.5 rounded-sm bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 transition cursor-pointer flex items-center gap-1.5 border border-slate-200/80 dark:border-slate-700"
+                className="h-9 px-3.5 rounded-sm bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 transition cursor-pointer flex items-center gap-1.5 border border-slate-200/80 dark:border-slate-700 hover:scale-[1.02] active:scale-95"
               >
-                <FileText size={13} />
+                <FileText size={14} />
                 <span>Invoice PDF</span>
               </button>
               <button
                 onClick={() => navigate(`/track/${order._id}`)}
-                className="px-3 py-1.5 rounded-sm bg-indigo-600 hover:bg-indigo-700 text-xs font-bold text-white transition cursor-pointer flex items-center gap-1.5 shadow-xs"
+                className="h-9 px-4 rounded-sm bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-xs font-bold text-white transition cursor-pointer flex items-center gap-1.5 shadow-xs hover:scale-[1.02] active:scale-95"
               >
-                <Truck size={13} />
+                <Truck size={14} />
                 <span>Track Package</span>
               </button>
             </div>
           </div>
 
-          {/* 2. COMPACT TIMELINE / RETURN BANNER STRIP */}
+          {/* 2. STUNNING VISUAL FULFILLMENT TIMELINE STEPPER / RETURN BANNER */}
           {matchedReq ? (
-            <div className={`p-4 rounded-sm border flex flex-wrap items-center justify-between gap-4 ${
+            <div className={`p-5 rounded-sm border flex flex-wrap items-center justify-between gap-4 shadow-xs ${
               matchedReq.status === "Completed"
-                ? "bg-emerald-500/10 dark:bg-emerald-950/20 border-emerald-500/30"
-                : "bg-orange-500/10 dark:bg-orange-950/20 border-orange-500/20"
+                ? "bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent dark:from-emerald-950/30 border-emerald-500/30"
+                : "bg-gradient-to-r from-orange-500/10 via-orange-500/5 to-transparent dark:from-orange-950/30 border-orange-500/30"
             }`}>
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <RotateCcw size={15} className={matchedReq.status === "Completed" ? "text-emerald-600 dark:text-emerald-400" : "text-orange-600 dark:text-orange-400"} />
+                  <RotateCcw size={16} className={matchedReq.status === "Completed" ? "text-emerald-600 dark:text-emerald-400" : "text-orange-600 dark:text-orange-400"} />
                   <span className={`text-xs font-black uppercase tracking-wider ${matchedReq.status === "Completed" ? "text-emerald-600 dark:text-emerald-400" : "text-orange-700 dark:text-orange-400"}`}>
                     {matchedReq.returnType || "RETURN"} {matchedReq.status === "Completed" ? "COMPLETED & CREDITED ✓" : `REQUEST (${matchedReq.status || "Approved"})`}
                   </span>
                 </div>
-                <p className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                   Claim Reason: {matchedReq.reason || matchedReq.returnReason || "Customer Return Request"}
                 </p>
               </div>
@@ -302,68 +336,130 @@ const SingleOrderDetail = () => {
               {matchedRMA && (
                 <button
                   onClick={() => navigate(`/rma/${matchedRMA._id}`)}
-                  className={`px-3.5 py-1.5 rounded-sm font-extrabold text-xs transition flex items-center gap-1.5 cursor-pointer shadow-xs ${
+                  className={`px-4 py-2 rounded-sm font-extrabold text-xs transition flex items-center gap-1.5 cursor-pointer shadow-xs ${
                     matchedReq.status === "Completed" ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-orange-600 hover:bg-orange-700 text-white"
                   }`}
                 >
-                  <Truck size={13} />
+                  <Truck size={14} />
                   <span>Open Return Dashboard</span>
-                  <ChevronRight size={13} />
+                  <ChevronRight size={14} />
                 </button>
               )}
             </div>
           ) : (
-            <div className="p-4 bg-slate-50 dark:bg-slate-950/60 rounded-sm border border-slate-200/80 dark:border-slate-800/80 space-y-3">
-              <div className="flex items-center justify-between pb-2 border-b border-slate-200/60 dark:border-slate-800">
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                  Fulfillment Stage
-                </span>
-                <span className="text-[11px] font-extrabold text-indigo-600 dark:text-indigo-400">
-                  {steps[currentStep]?.label || "Processing"}
-                </span>
+            <div className="p-5 sm:p-6 bg-gradient-to-br from-slate-50 via-white to-slate-50/80 dark:from-slate-900/90 dark:via-slate-900/60 dark:to-slate-950/80 rounded-sm border border-slate-200/80 dark:border-slate-800/80 shadow-xs space-y-6">
+              {/* Stepper Header */}
+              <div className="flex flex-wrap items-center justify-between gap-3 pb-3.5 border-b border-slate-200/60 dark:border-slate-800">
+                <div className="flex items-center gap-2.5">
+                  <div className="h-8 w-8 rounded-sm bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold">
+                    <Truck size={16} />
+                  </div>
+                  <div>
+                    <span className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">
+                      Fulfillment Stage & Live Tracking
+                    </span>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold">
+                      Real-time status updates for your order
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="relative flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+                  </span>
+                  <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-sm border border-emerald-500/20">
+                    Status: {steps[currentStep]?.label || "Processing"}
+                  </span>
+                </div>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 relative">
-                {steps.map((stg, idx) => {
-                  const isActive = idx <= currentStep;
-                  const StepIcon = stg.icon;
+              {/* Visual Horizontal Timeline Bar with Mathematically Precise Connecting Progress Line */}
+              <div className="relative px-0 py-2">
+                {/* Background Connecting Track Line (Center to Center of 1st and 5th node) */}
+                <div className="hidden sm:block absolute top-[20px] left-[10%] right-[10%] h-0.5 bg-slate-200 dark:bg-slate-800 z-0" />
+                
+                {/* Animated Progress Bar Fill */}
+                <div
+                  className="hidden sm:block absolute top-[20px] left-[10%] h-0.5 bg-indigo-600 dark:bg-indigo-500 z-0 transition-all duration-500 ease-out shadow-xs shadow-indigo-500/50"
+                  style={{ width: `${(currentStep / (steps.length - 1)) * 80}%` }}
+                />
 
-                  return (
-                    <div key={stg.label} className="flex items-center gap-2.5">
-                      <div className={`h-7 w-7 rounded-sm flex items-center justify-center text-xs font-black shrink-0 transition ${
-                        isActive
-                          ? "bg-indigo-600 text-white"
-                          : "bg-slate-200 dark:bg-slate-800 text-slate-400"
-                      }`}>
-                        <StepIcon size={13} />
+                {/* Steps Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 sm:gap-0 relative z-10">
+                  {steps.map((stg, idx) => {
+                    const isPassed = idx < currentStep;
+                    const isCurrent = idx === currentStep;
+                    const isUpcoming = idx > currentStep;
+                    const StepIcon = stg.icon;
+
+                    return (
+                      <div key={stg.label} className="flex sm:flex-col items-center sm:text-center gap-3 sm:gap-2">
+                        {/* Step Node Icon Box */}
+                        <div
+                          className={`h-10 w-10 rounded-md flex items-center justify-center shrink-0 transition-all duration-300 font-bold ${
+                            isCurrent
+                              ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/30 ring-4 ring-indigo-500/20 scale-105"
+                              : isPassed
+                              ? "bg-indigo-600 text-white shadow-xs"
+                              : "bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-800"
+                          }`}
+                        >
+                          {isPassed ? (
+                            <Check size={16} className="stroke-[3]" />
+                          ) : (
+                            <StepIcon size={16} className={isCurrent ? "animate-pulse" : ""} />
+                          )}
+                        </div>
+
+                        {/* Step Label & Subtext & Date/Time */}
+                        <div className="min-w-0 text-left sm:text-center">
+                          <p
+                            className={`text-[11px] font-black uppercase tracking-wider transition-colors ${
+                              isCurrent
+                                ? "text-indigo-600 dark:text-indigo-400"
+                                : isPassed
+                                ? "text-slate-900 dark:text-white"
+                                : "text-slate-400 dark:text-slate-500"
+                            }`}
+                          >
+                            {stg.label}
+                          </p>
+                          <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 mt-0.5 truncate hidden sm:block">
+                            {stg.subtext || stg.desc}
+                          </p>
+                          <p className={`text-[9.5px] font-mono font-bold mt-1 transition-colors ${
+                            isCurrent
+                              ? "text-indigo-600 dark:text-indigo-400"
+                              : isPassed
+                              ? "text-slate-600 dark:text-slate-300"
+                              : "text-slate-400 dark:text-slate-600"
+                          }`}>
+                            {getStepTimestamp(idx)}
+                          </p>
+                        </div>
                       </div>
-                      <div className="min-w-0">
-                        <p className={`text-xs font-black uppercase tracking-tight truncate ${
-                          isActive ? "text-slate-900 dark:text-white" : "text-slate-400 dark:text-slate-500"
-                        }`}>
-                          {stg.label}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             </div>
           )}
 
           {/* 3. BALANCED 2-COLUMN GRID (LEFT: PRODUCTS | RIGHT: SUMMARY & ADDRESS) */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-1">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-1">
             
             {/* LEFT COLUMN: PURCHASED PRODUCTS (7 COLS) */}
-            <div className="lg:col-span-7 space-y-4 pr-0 lg:pr-4 border-b lg:border-b-0 lg:border-r border-slate-100 dark:border-slate-800 pb-6 lg:pb-0">
-              <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+            <div className="lg:col-span-7 space-y-4 pr-0 lg:pr-4 border-b lg:border-b-0 lg:border-r border-slate-100 dark:border-slate-800/80 pb-6 lg:pb-0">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                 <h2 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
-                  <ShoppingBag size={15} className="text-indigo-600 dark:text-indigo-400" />
+                  <ShoppingBag size={16} className="text-indigo-600 dark:text-indigo-400" />
                   <span>Purchased Items ({(order.orderItems || order.items || []).length})</span>
                 </h2>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-3.5">
                 {(order.orderItems && order.orderItems.length > 0 ? order.orderItems : order.items).map((item, idx) => {
                   const img = item.productImage || item.image || item.images?.[0];
                   const imageUrl = img?.startsWith("http") ? img : `${backendUrl}/${img}`;
@@ -380,15 +476,15 @@ const SingleOrderDetail = () => {
                   return (
                     <div
                       key={item._id || idx}
-                      className="p-3.5 bg-slate-50 dark:bg-slate-950/60 rounded-sm border border-slate-200/80 dark:border-slate-800/80 space-y-3"
+                      className="p-4 bg-slate-50/80 dark:bg-slate-950/60 rounded-sm border border-slate-200/80 dark:border-slate-800/80 space-y-3.5 hover:border-slate-300 dark:hover:border-slate-700 transition"
                     >
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-3.5 min-w-0">
                           <Link
                             to={`/product/${item.productId}`}
-                            className="h-12 w-12 rounded-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-1 shrink-0 flex items-center justify-center hover:border-indigo-500 transition"
+                            className="h-14 w-14 rounded-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-1.5 shrink-0 flex items-center justify-center hover:border-indigo-500 transition shadow-2xs group"
                           >
-                            <img src={imageUrl} alt={itemTitle} className="h-full w-full object-contain rounded-sm" />
+                            <img src={imageUrl} alt={itemTitle} className="h-full w-full object-contain rounded-xs group-hover:scale-105 transition-transform" />
                           </Link>
 
                           <div className="min-w-0">
@@ -398,35 +494,44 @@ const SingleOrderDetail = () => {
                             >
                               {itemTitle}
                             </Link>
-                            <div className="flex items-center gap-2 text-[10px] font-bold text-slate-500 dark:text-slate-400 mt-0.5">
-                              <span>Qty: {itemQty}</span>
+                            <div className="flex items-center gap-2 text-[10px] font-bold text-slate-500 dark:text-slate-400 mt-1">
+                              <span className="bg-slate-200/60 dark:bg-slate-800 px-2 py-0.5 rounded-sm text-slate-700 dark:text-slate-300">Qty: {itemQty}</span>
                               <span>·</span>
-                              <span>Variant: {item.variant?.size || item.size || "Standard"}</span>
+                              <span className="bg-slate-200/60 dark:bg-slate-800 px-2 py-0.5 rounded-sm text-slate-700 dark:text-slate-300">Size: {item.variant?.size || item.size || "Standard"}</span>
                             </div>
                           </div>
                         </div>
 
                         <div className="text-right shrink-0">
-                          <span className={`px-2 py-0.5 rounded-sm text-[9px] font-black uppercase tracking-wider inline-block ${
-                            isDelivered ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : isCancelled ? "bg-rose-500/10 text-rose-600 dark:text-rose-400" : "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
+                          <span className={`px-2.5 py-0.5 rounded-sm text-[9px] font-black uppercase tracking-wider inline-block border ${
+                            isDelivered ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30" : isCancelled ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30" : "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/30"
                           }`}>
                             {itemStatus}
                           </span>
-                          <p className="text-xs font-black text-slate-900 dark:text-white mt-1">
+                          <p className="text-sm font-black text-slate-900 dark:text-white mt-1.5 font-mono">
                             ₹{(item.finalPrice || unitPrice * itemQty).toLocaleString("en-IN")}
                           </p>
                         </div>
                       </div>
 
                       {/* Action Bar */}
-                      <div className="flex items-center justify-between pt-2 border-t border-slate-200/60 dark:border-slate-800/80 text-[11px]">
-                        <span className="text-slate-500 dark:text-slate-400 font-semibold text-[10px]">
-                          Courier: {item.courierName || "Express Shipping"}
+                      <div className="flex items-center justify-between pt-2.5 border-t border-slate-200/60 dark:border-slate-800/80 text-[11px]">
+                        <span className="text-slate-500 dark:text-slate-400 font-semibold text-[10px] flex items-center gap-1">
+                          <Truck size={12} className="text-slate-400" />
+                          <span>Courier: {item.courierName || "Express Shipping"}</span>
                         </span>
                         <div className="flex items-center gap-2">
+                          {!isCancelled && currentStep < 2 && (
+                            <button
+                              onClick={() => openCancelModal(item._id)}
+                              className="px-2.5 py-1 bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50 text-[10px] font-extrabold uppercase rounded-sm hover:bg-rose-100 transition cursor-pointer"
+                            >
+                              Cancel Item
+                            </button>
+                          )}
                           <button
                             onClick={() => navigate(`/product/${item.productId}`)}
-                            className="px-2 py-0.5 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-900 text-[10px] font-extrabold uppercase rounded-sm hover:bg-indigo-100 transition"
+                            className="px-3 py-1 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-900 text-[10px] font-extrabold uppercase rounded-sm hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition cursor-pointer"
                           >
                             Buy Again
                           </button>
@@ -440,62 +545,62 @@ const SingleOrderDetail = () => {
             </div>
 
             {/* RIGHT COLUMN: UNIFIED ADDRESS, PAYMENT & BILL SUMMARY (5 COLS) */}
-            <div className="lg:col-span-5 space-y-5">
+            <div className="lg:col-span-5 space-y-6">
               
               {/* Section A: Delivery Address */}
-              <div className="space-y-2.5">
-                <div className="flex items-center justify-between pb-1.5 border-b border-slate-100 dark:border-slate-800">
-                  <div className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
-                    <MapPin size={14} />
+              <div className="p-5 bg-slate-50/80 dark:bg-slate-950/60 rounded-sm border border-slate-200/80 dark:border-slate-800/80 space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-200/60 dark:border-slate-800">
+                  <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+                    <MapPin size={15} />
                     <span>Delivery Address</span>
                   </div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase bg-slate-200/60 dark:bg-slate-800 px-2 py-0.5 rounded-sm">
                     {currentStep < 2 ? "Editable" : "Locked"}
                   </span>
                 </div>
                 <div className="text-xs space-y-1 text-slate-600 dark:text-slate-300 font-medium">
-                  <p className="font-black text-slate-900 dark:text-white">{order.address.firstName} {order.address.lastName}</p>
+                  <p className="font-black text-slate-900 dark:text-white text-sm">{order.address.firstName} {order.address.lastName}</p>
                   <p>{order.address.street}, {order.address.city}</p>
-                  <p>{order.address.state}, {order.address.country} - {order.address.pincode || "390001"}</p>
-                  <p className="text-slate-500 font-bold pt-0.5">📞 {order.address.phone}</p>
+                  <p>{order.address.state}, {order.address.country} - <span className="font-mono font-bold text-slate-800 dark:text-slate-200">{order.address.pincode || "390001"}</span></p>
+                  <p className="text-slate-500 font-bold pt-1 flex items-center gap-1">📞 {order.address.phone}</p>
                 </div>
               </div>
 
               {/* Section B: Bill Summary */}
-              <div className="space-y-2.5 pt-3 border-t border-slate-100 dark:border-slate-800">
-                <div className="flex items-center justify-between pb-1.5 border-b border-slate-100 dark:border-slate-800">
-                  <div className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                    <FileText size={14} />
+              <div className="p-5 bg-slate-50/80 dark:bg-slate-950/60 rounded-sm border border-slate-200/80 dark:border-slate-800/80 space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-200/60 dark:border-slate-800">
+                  <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                    <FileText size={15} />
                     <span>Bill Summary</span>
                   </div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase font-mono">
+                  <span className="text-[10px] font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-sm uppercase font-mono">
                     {order.paymentMethod === "cod" ? "COD" : "ONLINE"}
                   </span>
                 </div>
 
-                <div className="space-y-1.5 text-xs font-medium text-slate-600 dark:text-slate-300">
+                <div className="space-y-2 text-xs font-medium text-slate-600 dark:text-slate-300">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
-                    <span className="font-bold text-slate-900 dark:text-white">₹{subtotal.toLocaleString("en-IN")}</span>
+                    <span className="font-bold text-slate-900 dark:text-white font-mono">₹{subtotal.toLocaleString("en-IN")}</span>
                   </div>
                   {tax > 0 && (
                     <div className="flex justify-between">
                       <span>Taxes & GST (5%)</span>
-                      <span className="font-bold text-slate-900 dark:text-white">₹{tax.toLocaleString("en-IN")}</span>
+                      <span className="font-bold text-slate-900 dark:text-white font-mono">₹{tax.toLocaleString("en-IN")}</span>
                     </div>
                   )}
                   <div className="flex justify-between">
                     <span>Shipping Fee</span>
-                    <span className="font-bold text-slate-900 dark:text-white">₹{shippingFee}</span>
+                    <span className="font-bold text-slate-900 dark:text-white font-mono">₹{shippingFee}</span>
                   </div>
-                  <div className="border-t border-slate-100 dark:border-slate-800 pt-2 flex justify-between items-baseline font-black">
+                  <div className="border-t border-slate-200/80 dark:border-slate-800 pt-2.5 flex justify-between items-baseline font-black">
                     <span className="text-xs text-slate-900 dark:text-white">Total Amount</span>
-                    <span className="text-base text-emerald-600 dark:text-emerald-400 font-mono">₹{order.amount.toLocaleString("en-IN")}</span>
+                    <span className="text-lg text-emerald-600 dark:text-emerald-400 font-mono">₹{order.amount.toLocaleString("en-IN")}</span>
                   </div>
 
                   {savedAmount > 0 && (
-                    <div className="mt-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 p-2 rounded-sm text-[10px] font-bold flex items-center gap-1">
-                      <Tag size={11} />
+                    <div className="mt-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 p-2.5 rounded-sm text-[11px] font-bold flex items-center gap-1.5">
+                      <Tag size={13} />
                       <span>You saved ₹{savedAmount.toLocaleString("en-IN")} on this order!</span>
                     </div>
                   )}

@@ -6,24 +6,24 @@ import notificationModel from "../models/notificationModel.js";
 import { validateEmail, validatePassword, validateName, validatePhone } from "../utils/validation.js";
 import { recalculateUserVIPStatus } from "../services/vipService.js";
 
-const createToken=(id)=>{
-  return jwt.sign({id},process.env.JWT_SECRET)
+const createToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET)
 
 }
 
 //Route for user Login
-const loginUser=async(req,res)=>{
+const loginUser = async (req, res) => {
   try {
-    const {email,password}=req.body;
-    
+    const { email, password } = req.body;
+
     // Quick sanitization & validation
     const emailCheck = validateEmail(email);
     if (!emailCheck.isValid) {
       return res.status(400).json({ success: false, message: emailCheck.message });
     }
 
-    const user=await userModel.findOne({email: emailCheck.value});
-    if(!user){
+    const user = await userModel.findOne({ email: emailCheck.value });
+    if (!user) {
       return res.status(409).json({
         success: false,
         message: "User doesn't exists",
@@ -31,23 +31,23 @@ const loginUser=async(req,res)=>{
 
     }
 
-    const isMatch=await bcrypt.compare(password,user.password);
+    const isMatch = await bcrypt.compare(password, user.password);
 
-    if(isMatch){
-      const token=createToken(user._id);
-      res.json({success:true,token})
-    }else{
-      res.json({success:false,message:"invalid credentials"})
+    if (isMatch) {
+      const token = createToken(user._id);
+      res.json({ success: true, token })
+    } else {
+      res.json({ success: false, message: "invalid credentials" })
     }
 
-    
+
   } catch (error) {
     console.log(error);
     res.status(500).json({
       success: false,
       message: "Server error",
     });
-    
+
   }
 
 }
@@ -55,7 +55,7 @@ const loginUser=async(req,res)=>{
 // Route for user registration
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body||{};
+    const { name, email, password } = req.body || {};
 
     if (!name || !email || !password) {
       return res.status(400).json({
@@ -112,9 +112,9 @@ const registerUser = async (req, res) => {
 };
 
 
-const adminLogin=(async (req, res) => {
+const adminLogin = (async (req, res) => {
   try {
-    const {email,password}=req.body;
+    const { email, password } = req.body;
     if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
       const token = jwt.sign({ role: "admin", email }, process.env.JWT_SECRET, { expiresIn: "5d" });
       res.json({ success: true, token });
@@ -125,10 +125,10 @@ const adminLogin=(async (req, res) => {
       });
     }
   } catch (error) {
-    
+
     console.log(error);
-    res.json({success:false,message:error.message})
-    
+    res.json({ success: false, message: error.message })
+
   }
 
 
@@ -465,7 +465,7 @@ const getAllAppReviews = async (req, res) => {
         rating: user.appReview.rating,
         comment: user.appReview.comment,
         product: "Platform Experience",
-        date: user.appReview.createdAt 
+        date: user.appReview.createdAt
           ? new Date(user.appReview.createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" })
           : "Recently",
         initials: initials || "U",
@@ -553,9 +553,9 @@ const googleLogin = async (req, res) => {
     }
 
     const token = createToken(user._id);
-    res.json({ 
-      success: true, 
-      token, 
+    res.json({
+      success: true,
+      token,
       message: "Logged in with Google successfully",
       user: {
         name: user.name,
@@ -699,7 +699,7 @@ const verifyVipSecurityCode = async (req, res) => {
     } else {
       // Increment failed attempts
       user.vipSecurity.failedAttempts = (user.vipSecurity.failedAttempts || 0) + 1;
-      
+
       if (user.vipSecurity.failedAttempts >= 5) {
         user.vipSecurity.lockUntil = new Date(Date.now() + 15 * 60 * 1000); // 15 minute lock
       }
@@ -813,7 +813,7 @@ const resetVipSecurityCode = async (req, res) => {
 
     await user.save();
 
-    res.json({
+    return res.json({
       success: true,
       message: "VIP Security Code reset successfully"
     });
@@ -821,6 +821,338 @@ const resetVipSecurityCode = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+/**
+ * 1. Forgot Password - Send Reset OTP
+ * Generates 6-digit OTP, hashes it with bcrypt, saves to DB with 5-minute expiry, sends email.
+ * Enforces anti-account enumeration & 60s resend cooldown.
+ */
+const sendResetOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const emailCheck = validateEmail(email);
+    if (!emailCheck.isValid) {
+      return res.status(400).json({ success: false, message: emailCheck.message });
+    }
+
+    const cleanEmail = emailCheck.value;
+    const user = await userModel.findOne({ email: cleanEmail });
+
+    // Anti-account enumeration: Always return success message even if user does not exist
+    if (!user) {
+      return res.json({
+        success: true,
+        message: "If an account exists with this email, an OTP has been sent."
+      });
+    }
+
+    // Rate-limiting: 60-second cooldown check
+    if (user.resetOtp?.lastRequestedAt) {
+      const timeSinceLastRequest = (Date.now() - new Date(user.resetOtp.lastRequestedAt).getTime()) / 1000;
+      if (timeSinceLastRequest < 60) {
+        const remainingSeconds = Math.ceil(60 - timeSinceLastRequest);
+        return res.status(429).json({
+          success: false,
+          message: `Please wait ${remainingSeconds} seconds before requesting a new OTP.`
+        });
+      }
+    }
+
+    // Generate 6-digit OTP code safely
+    let otpCode;
+    try {
+      otpCode = crypto.randomInt(100000, 999999).toString();
+    } catch (err) {
+      otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    }
+
+    const otpHash = await bcrypt.hash(otpCode, 10);
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes expiration
+
+    // Atomically update user document in MongoDB
+    await userModel.updateOne(
+      { _id: user._id },
+      {
+        $set: {
+          resetOtp: {
+            codeHash: otpHash,
+            expiresAt,
+            createdAt: new Date(),
+            lastRequestedAt: new Date(),
+            attempts: 0
+          },
+          resetSession: { tokenHash: null, expiresAt: null }
+        }
+      }
+    );
+
+    // Send email via Nodemailer (with dev log fallback)
+    try {
+      await sendPasswordResetOtpEmail(cleanEmail, otpCode);
+    } catch (mailErr) {
+      console.error("Nodemailer error sending password reset OTP:", mailErr);
+    }
+
+    res.json({
+      success: true,
+      message: "If an account exists with this email, an OTP has been sent."
+    });
+  } catch (error) {
+    console.error("sendResetOtp error:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * 2. Resend Reset OTP
+ * Enforces 60-second rate-limiting cooldown and issues a fresh 6-digit OTP.
+ */
+const resendResetOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const emailCheck = validateEmail(email);
+    if (!emailCheck.isValid) {
+      return res.status(400).json({ success: false, message: emailCheck.message });
+    }
+
+    const cleanEmail = emailCheck.value;
+    const user = await userModel.findOne({ email: cleanEmail });
+
+    if (!user) {
+      return res.json({
+        success: true,
+        message: "If an account exists with this email, an OTP has been sent."
+      });
+    }
+
+    // 60-second cooldown rate-limiting check
+    if (user.resetOtp?.lastRequestedAt) {
+      const timeSinceLastRequest = (Date.now() - new Date(user.resetOtp.lastRequestedAt).getTime()) / 1000;
+      if (timeSinceLastRequest < 60) {
+        const remainingSeconds = Math.ceil(60 - timeSinceLastRequest);
+        return res.status(429).json({
+          success: false,
+          message: `Please wait ${remainingSeconds} seconds before requesting a new OTP.`
+        });
+      }
+    }
+
+    let otpCode;
+    try {
+      otpCode = crypto.randomInt(100000, 999999).toString();
+    } catch (err) {
+      otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    }
+
+    const otpHash = await bcrypt.hash(otpCode, 10);
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+    await userModel.updateOne(
+      { _id: user._id },
+      {
+        $set: {
+          resetOtp: {
+            codeHash: otpHash,
+            expiresAt,
+            createdAt: new Date(),
+            lastRequestedAt: new Date(),
+            attempts: 0
+          }
+        }
+      }
+    );
+
+    try {
+      await sendPasswordResetOtpEmail(cleanEmail, otpCode);
+    } catch (mailErr) {
+      console.error("Nodemailer error resending password reset OTP:", mailErr);
+    }
+
+    res.json({
+      success: true,
+      message: "A new OTP has been sent to your email address."
+    });
+  } catch (error) {
+    console.error("resendResetOtp error:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * 3. Verify Reset OTP
+ * Checks 5-minute expiration, tracks failed attempts (max 5), invalidates OTP on max failures.
+ * On success, generates a single-use resetSessionToken valid for 10 minutes.
+ */
+const verifyResetOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    const emailCheck = validateEmail(email);
+    if (!emailCheck.isValid) {
+      return res.status(400).json({ success: false, message: emailCheck.message });
+    }
+
+    if (!otp || typeof otp !== "string" || otp.trim().length !== 6) {
+      return res.status(400).json({ success: false, message: "Please enter a valid 6-digit OTP." });
+    }
+
+    const cleanEmail = emailCheck.value;
+    const cleanOtp = otp.trim();
+    const user = await userModel.findOne({ email: cleanEmail });
+
+    if (!user || !user.resetOtp || !user.resetOtp.codeHash) {
+      return res.status(400).json({ success: false, message: "Invalid or expired verification code." });
+    }
+
+    // Expiration check (5 minutes)
+    if (new Date() > new Date(user.resetOtp.expiresAt)) {
+      await userModel.updateOne(
+        { _id: user._id },
+        { $set: { resetOtp: { codeHash: null, expiresAt: null, createdAt: null, lastRequestedAt: null, attempts: 0 } } }
+      );
+      return res.status(400).json({ success: false, message: "OTP has expired. Please request a new code." });
+    }
+
+    // Max attempts check (5 attempts max)
+    if (user.resetOtp.attempts >= 5) {
+      await userModel.updateOne(
+        { _id: user._id },
+        { $set: { resetOtp: { codeHash: null, expiresAt: null, createdAt: null, lastRequestedAt: null, attempts: 0 } } }
+      );
+      return res.status(400).json({
+        success: false,
+        message: "Maximum verification attempts exceeded. Please request a new OTP."
+      });
+    }
+
+    // Verify hashed OTP
+    const isMatch = await bcrypt.compare(cleanOtp, user.resetOtp.codeHash);
+
+    if (!isMatch) {
+      const newAttempts = (user.resetOtp.attempts || 0) + 1;
+      const remainingAttempts = 5 - newAttempts;
+
+      if (remainingAttempts <= 0) {
+        await userModel.updateOne(
+          { _id: user._id },
+          { $set: { resetOtp: { codeHash: null, expiresAt: null, createdAt: null, lastRequestedAt: null, attempts: 0 } } }
+        );
+        return res.status(400).json({
+          success: false,
+          message: "Maximum verification attempts exceeded. Please request a new OTP."
+        });
+      }
+
+      await userModel.updateOne(
+        { _id: user._id },
+        { $set: { "resetOtp.attempts": newAttempts } }
+      );
+
+      return res.status(400).json({
+        success: false,
+        message: `Invalid OTP code. ${remainingAttempts} attempt${remainingAttempts === 1 ? "" : "s"} remaining.`
+      });
+    }
+
+    // Success! Generate single-use resetSessionToken (valid for 10 minutes)
+    const resetSessionToken = crypto.randomBytes(32).toString("hex");
+    const tokenHash = crypto.createHash("sha256").update(resetSessionToken).digest("hex");
+    const sessionExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+    await userModel.updateOne(
+      { _id: user._id },
+      {
+        $set: {
+          resetSession: { tokenHash, expiresAt: sessionExpiresAt },
+          resetOtp: { codeHash: null, expiresAt: null, createdAt: null, lastRequestedAt: null, attempts: 0 }
+        }
+      }
+    );
+
+    res.json({
+      success: true,
+      message: "OTP verified successfully. You may now set a new password.",
+      resetSessionToken
+    });
+  } catch (error) {
+    console.error("verifyResetOtp error:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/**
+ * 4. Reset Password with Verified OTP Token
+ * Validates reset session, matching passwords & validatePassword strength rules, hashes password with bcrypt.
+ */
+const resetPasswordWithOtp = async (req, res) => {
+  try {
+    const { email, resetSessionToken, newPassword, confirmPassword } = req.body;
+
+    const emailCheck = validateEmail(email);
+    if (!emailCheck.isValid) {
+      return res.status(400).json({ success: false, message: emailCheck.message });
+    }
+
+    if (!resetSessionToken) {
+      return res.status(400).json({ success: false, message: "Reset session token is missing. Please verify OTP again." });
+    }
+
+    if (!newPassword || !confirmPassword) {
+      return res.status(400).json({ success: false, message: "New password and confirmation password are required." });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ success: false, message: "Passwords do not match." });
+    }
+
+    const passwordCheck = validatePassword(newPassword);
+    if (!passwordCheck.isValid) {
+      return res.status(400).json({ success: false, message: passwordCheck.message });
+    }
+
+    const cleanEmail = emailCheck.value;
+    const tokenHash = crypto.createHash("sha256").update(resetSessionToken).digest("hex");
+
+    const user = await userModel.findOne({
+      email: cleanEmail,
+      "resetSession.tokenHash": tokenHash,
+      "resetSession.expiresAt": { $gt: new Date() }
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired password reset session. Please request a new OTP."
+      });
+    }
+
+    // Hash new password using bcrypt
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await userModel.updateOne(
+      { _id: user._id },
+      {
+        $set: {
+          password: hashedPassword,
+          resetSession: { tokenHash: null, expiresAt: null },
+          resetOtp: { codeHash: null, expiresAt: null, createdAt: null, lastRequestedAt: null, attempts: 0 },
+          resetPasswordToken: null,
+          resetPasswordExpires: null
+        }
+      }
+    );
+
+    res.json({
+      success: true,
+      message: "Password has been reset successfully. You can now log in with your new password."
+    });
+  } catch (error) {
+    console.error("resetPasswordWithOtp error:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const forgotPassword = sendResetOtp;
+const resetPassword = resetPasswordWithOtp;
 
 export {
   loginUser,
@@ -841,4 +1173,10 @@ export {
   verifyVipSecurityCode,
   changeVipSecurityCode,
   resetVipSecurityCode,
+  forgotPassword,
+  resetPassword,
+  sendResetOtp,
+  resendResetOtp,
+  verifyResetOtp,
+  resetPasswordWithOtp,
 };

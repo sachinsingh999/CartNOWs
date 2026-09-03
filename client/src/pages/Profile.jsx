@@ -676,7 +676,7 @@ const Profile = () => {
         }
       `}</style>
 
-      <div className="w-full max-w-7xl mx-auto space-y-8 relative z-10">
+      <div className="w-full relative z-10 space-y-8">
 
         {/* Main Grid Wrapper */}
         <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8">

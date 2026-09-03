@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
+import { Truck, ShieldCheck, RotateCcw } from "lucide-react";
 import Logo from "./Logo";
 
 const Footer = () => {
@@ -32,17 +33,15 @@ const Footer = () => {
   return (
     <footer className="relative bg-[#09090B] text-gray-300 overflow-hidden border-t border-[#242A3B]">
       {/* Subtle background glow */}
-      <div className="absolute left-1/2 top-0 -translate-x-1/2 w-full max-w-7xl h-[1px] bg-gradient-to-r from-transparent via-[#2D3550] to-transparent" />
+      <div className="absolute left-1/2 top-0 -translate-x-1/2 w-full h-[1px] bg-gradient-to-r from-transparent via-[#2D3550] to-transparent" />
       
       {/* ── Value Props Section ── */}
       <div className="border-b border-[#242A3B] bg-[#0F1117] py-4 sm:py-5">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 grid grid-cols-3 sm:grid-cols-3 gap-3 sm:gap-6 text-center sm:text-left">
+        <div className="w-full px-4 sm:px-8 lg:px-12 grid grid-cols-3 sm:grid-cols-3 gap-3 sm:gap-6 text-center sm:text-left">
           {/* Prop 1 */}
           <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-3 transition-all duration-300 hover:translate-y-[-1px]">
             <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg bg-[#151823] border border-[#242A3B] text-orange-400">
-              <svg className="h-4.5 w-4.5 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-              </svg>
+              <Truck className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
             </div>
             <div>
               <h4 className="font-semibold text-slate-100 dark:text-white text-[10px] sm:text-xs tracking-wider uppercase">Free Shipping</h4>
@@ -52,9 +51,7 @@ const Footer = () => {
           {/* Prop 2 */}
           <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-3 transition-all duration-300 hover:translate-y-[-1px]">
             <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg bg-[#151823] border border-[#242A3B] text-orange-400">
-              <svg className="h-4.5 w-4.5 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
+              <ShieldCheck className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
             </div>
             <div>
               <h4 className="font-semibold text-slate-100 dark:text-white text-[10px] sm:text-xs tracking-wider uppercase">Secure Pay</h4>
@@ -64,20 +61,18 @@ const Footer = () => {
           {/* Prop 3 */}
           <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-3 transition-all duration-300 hover:translate-y-[-1px]">
             <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg bg-[#151823] border border-[#242A3B] text-orange-400">
-              <svg className="h-4.5 w-4.5 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.5" />
-              </svg>
+              <RotateCcw className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
             </div>
             <div>
               <h4 className="font-semibold text-slate-100 dark:text-white text-[10px] sm:text-xs tracking-wider uppercase">Easy Returns</h4>
-              <p className="hidden sm:block text-[11px] text-gray-400 mt-0.5">Easy 30-day self-service pickups</p>
+              <p className="hidden sm:block text-[11px] text-gray-400 mt-0.5">Easy 7-day self-service pickups</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* ── Main Links & Newsletter ── */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 sm:py-10">
+      <div className="w-full px-4 sm:px-8 lg:px-12 py-8 sm:py-10">
         <div className="grid grid-cols-1 gap-5 md:grid-cols-3 lg:grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr_1.2fr] md:gap-8">
           {/* Identity */}
           <div className="space-y-4">

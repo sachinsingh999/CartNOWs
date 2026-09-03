@@ -8,6 +8,36 @@ html {
   scroll-padding-top: var(--navbar-height, 80px);
 }
 
+@keyframes marquee-left-to-right {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0%);
+  }
+}
+
+@keyframes slide-from-top {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-from-top {
+  animation: slide-from-top 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.category-marquee-track:hover {
+  animation-play-state: paused !important;
+}
+
+
+
 section,
 [id] {
   scroll-margin-top: var(--navbar-height, 80px);

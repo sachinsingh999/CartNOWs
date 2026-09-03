@@ -266,23 +266,35 @@ const listProducts = async (req, res) => {
 
     // Collection filter (matches both collection string, collections array, or audience fallback)
     if (collection && collection !== "all") {
-      const collRegex = new RegExp(`^${collection}$`, "i");
-      const orConditions = [
-        { collection: collRegex },
-        { collections: { $in: [collRegex] } }
-      ];
+      const cleanColl = collection.toLowerCase().trim();
+      if (["new-arrivals", "new-arrival", "newarrivals", "new_arrivals", "new arrival"].includes(cleanColl)) {
+        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+        if (!query.$and) query.$and = [];
+        query.$and.push({
+          $or: [
+            { createdAt: { $gte: sevenDaysAgo } },
+            { date: { $gte: sevenDaysAgo } }
+          ]
+        });
+      } else {
+        const collRegex = new RegExp(`^${collection}$`, "i");
+        const orConditions = [
+          { collection: collRegex },
+          { collections: { $in: [collRegex] } }
+        ];
 
-      if (["men", "women", "kids", "kid", "boys", "girls", "unisex"].includes(collection.toLowerCase())) {
-        let cleanAudience = collection.toLowerCase();
-        if (["kid", "boys", "girls"].includes(cleanAudience)) {
-          cleanAudience = "kids";
+        if (["men", "women", "kids", "kid", "boys", "girls", "unisex"].includes(collection.toLowerCase())) {
+          let cleanAudience = collection.toLowerCase();
+          if (["kid", "boys", "girls"].includes(cleanAudience)) {
+            cleanAudience = "kids";
+          }
+          orConditions.push({ audience: new RegExp(`^${cleanAudience}$`, "i") });
+          orConditions.push({ audience: collRegex });
         }
-        orConditions.push({ audience: new RegExp(`^${cleanAudience}$`, "i") });
-        orConditions.push({ audience: collRegex });
-      }
 
-      if (!query.$and) query.$and = [];
-      query.$and.push({ $or: orConditions });
+        if (!query.$and) query.$and = [];
+        query.$and.push({ $or: orConditions });
+      }
     }
 
     // Audience filter
@@ -1167,17 +1179,27 @@ const getCollectionsPublic = async (req, res) => {
       const colName = colObj.name || "";
       const colSlug = colObj.slug || colName.toLowerCase().replace(/\s+/g, "-");
 
+      const isNewArrivals = colSlug === "new-arrivals" || colSlug === "new-arrival" || colName.toLowerCase() === "new arrivals";
       const queryFilter = {
         isDeleted: { $ne: true },
-        status: "approved",
-        $or: [
+        status: "approved"
+      };
+
+      if (isNewArrivals) {
+        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+        queryFilter.$or = [
+          { createdAt: { $gte: sevenDaysAgo } },
+          { date: { $gte: sevenDaysAgo } }
+        ];
+      } else {
+        queryFilter.$or = [
           { collection: new RegExp(`^${colName}$`, "i") },
           { collection: new RegExp(`^${colSlug}$`, "i") },
           { collections: { $in: [new RegExp(`^${colName}$`, "i"), new RegExp(`^${colSlug}$`, "i")] } },
           { category: new RegExp(`^${colSlug}$`, "i") },
           { category: new RegExp(`^${colName}$`, "i") }
-        ]
-      };
+        ];
+      }
 
       const count = await productModel.countDocuments(queryFilter);
       const sampleProducts = await productModel.find(queryFilter)

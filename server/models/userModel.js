@@ -23,9 +23,9 @@ const addressSchema = new mongoose.Schema({
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
 
-  email: { 
-    type: String, 
-    required: true, 
+  email: {
+    type: String,
+    required: true,
     unique: true,
     validate: {
       validator: (v) => validateEmail(v).isValid,
@@ -33,9 +33,9 @@ const userSchema = new mongoose.Schema({
     }
   },
 
-  password: { 
-    type: String, 
-    required: function() { return this.provider === 'local'; }
+  password: {
+    type: String,
+    required: function () { return this.provider === 'local'; }
   },
 
   provider: {
@@ -58,9 +58,9 @@ const userSchema = new mongoose.Schema({
     default: ""
   },
 
-  cartData: { 
-    type: Object, 
-    default: {} 
+  cartData: {
+    type: Object,
+    default: {}
   },
 
   wishlistData: {
@@ -138,7 +138,7 @@ const userSchema = new mongoose.Schema({
     lockUntil: { type: Date, default: null }
   }
 
-},{ minimize:false, timestamps: true });
+}, { minimize: false, timestamps: true });
 
 userSchema.index({ createdAt: -1 });
 
@@ -152,7 +152,7 @@ userSchema.pre("save", function (next) {
   }
 });
 
-const userModel = mongoose.models.user 
+const userModel = mongoose.models.user
   || mongoose.model("user", userSchema);
 
 export default userModel;

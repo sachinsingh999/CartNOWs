@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Star, ShoppingCart, Eye, ArrowRight } from "lucide-react";
+import { Star, ShoppingCart, Eye, ArrowRight, Flame } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { backendUrl } from "../../config";
 import { getOptimizedImageUrl } from "../../utils/imageOptimizer";
@@ -74,7 +74,7 @@ const DealOfTheDay = ({ deals = [], activeDeal = null, onAddToCart }) => {
 
   const rawModelImg = isCampaignActive ? (activeDeal.modelImage || dealProduct.images?.[0] || "") : (dealProduct.images?.[0] || "");
   const rawModelUrl = rawModelImg?.startsWith("http") ? rawModelImg : `${backendUrl}/${rawModelImg}`;
-  const finalModelImgUrl = getOptimizedImageUrl(rawModelUrl, { width: 600, quality: 75 });
+  const finalModelImgUrl = getOptimizedImageUrl(rawModelUrl, { width: 1000, quality: 80 });
 
   const productImg = dealProduct.images?.[0] || "";
   const rawProdUrl = productImg?.startsWith("http") ? productImg : `${backendUrl}/${productImg}`;
@@ -99,7 +99,7 @@ const DealOfTheDay = ({ deals = [], activeDeal = null, onAddToCart }) => {
       return (
         <>
           {words.join(" ")}{" "}
-          <span className="text-[#f97316]">{lastWord}</span>
+          <span className="text-amber-400">{lastWord}</span>
         </>
       );
     }
@@ -107,100 +107,102 @@ const DealOfTheDay = ({ deals = [], activeDeal = null, onAddToCart }) => {
   };
 
   return (
-    <div className="group relative bg-gradient-to-br from-[#0c0f1d] via-[#070913] to-[#030409] border border-white/[0.08] text-slate-100 dark:text-white rounded-md p-6 sm:p-8 shadow-2xl flex flex-col sm:flex-row lg:flex-col xl:flex-row gap-6 justify-between min-h-[500px] text-left transition-all duration-300 hover:border-white/20 overflow-hidden col-span-1 select-none">
+    <div className="group relative w-full rounded-sm overflow-hidden border border-slate-800 text-white shadow-md flex flex-col justify-between min-h-[500px] transition-all duration-300 hover:border-slate-700 select-none p-6 sm:p-8">
 
-      {/* Custom inline style for keyframes to support advanced float */}
-      <style>{`
-        @keyframes custom-float {
-          0%, 100% { transform: translateY(0px) scale(1); }
-          50% { transform: translateY(-6px) scale(1.01); }
-        }
-        .animate-custom-float {
-          animation: custom-float 5s ease-in-out infinite;
-        }
-      `}</style>
+      {/* FULL CARD BACKGROUND COVER IMAGE */}
+      <img
+        src={finalModelImgUrl}
+        alt="Campaign Background"
+        loading="lazy"
+        decoding="async"
+        className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 z-0 pointer-events-none"
+      />
 
-      {/* Decorative Grid texture */}
-      <div className="absolute inset-0 bg-[radial-gradient(#ffffff04_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none rounded-none z-0" />
+      {/* DARK GRADIENT OVERLAY FOR HIGH CONTRAST READABILITY */}
+      <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/85 to-slate-950/40 z-0 pointer-events-none" />
 
-      {/* Ambient background decoration */}
-      <div className="absolute top-[-30px] right-[-30px] w-32 h-32 bg-orange-500/10 rounded-full blur-3xl pointer-events-none group-hover:scale-110 transition-transform duration-500 z-0" />
-      <div className="absolute bottom-[-20px] left-[-20px] w-24 h-24 bg-blue-500/[0.04] rounded-full blur-2xl pointer-events-none z-0" />
+      {/* FLOATING DISCOUNT BADGE TOP RIGHT */}
+      {discountLabel && (
+        <div className="absolute top-4 right-4 z-20 bg-amber-400 text-slate-950 text-[10px] font-black uppercase tracking-widest px-3.5 py-1.5 rounded-sm shadow-xl border border-amber-300 select-none">
+          {discountLabel}
+        </div>
+      )}
 
-      {/* LEFT CONTENT AREA */}
-      <div className="flex-1 flex flex-col justify-between space-y-5 relative z-10 w-full sm:w-1/2 lg:w-full xl:w-1/2">
-        <div className="space-y-3.5">
+      {/* INNER CONTENT OVERLAY */}
+      <div className="relative z-10 w-full lg:w-3/5 flex flex-col justify-between h-full space-y-6">
+        <div className="space-y-4">
           {/* Animated Badge */}
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange-500/10 border border-orange-500/25 text-orange-300 text-[9px] font-black uppercase tracking-widest w-fit animate-pulse">
-            🔥 DEAL OF THE DAY
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-sm bg-amber-500/10 border border-amber-500/25 text-amber-400 text-[10px] font-black uppercase tracking-widest w-fit">
+            <Flame size={13} className="fill-amber-500 text-amber-500" />
+            DEAL OF THE DAY
           </span>
 
-          {/* Campaign Title & Featured Sub-info */}
+          {/* Campaign Title */}
           <div className="space-y-1">
-            <h3 className="text-xl sm:text-2xl font-black text-slate-100 dark:text-white leading-tight tracking-tight group-hover:text-orange-400 transition-colors">
+            <h3 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white leading-tight tracking-tight group-hover:text-amber-400 transition-colors">
               {renderTitle()}
             </h3>
             {isCampaignActive && (
-              <p className="text-[9px] uppercase font-black tracking-wider text-slate-400">
+              <p className="text-[10px] uppercase font-black tracking-wider text-slate-400">
                 Featured: {dealProduct.name}
               </p>
             )}
           </div>
 
           {/* Campaign Subtitle */}
-          <p className="text-xs text-slate-300 font-semibold leading-relaxed line-clamp-3">
+          <p className="text-xs text-slate-300 font-medium leading-relaxed max-w-md">
             {subtitle}
           </p>
 
           {/* Price Box */}
-          <div className="space-y-1">
-            <span className="text-[8px] uppercase tracking-widest text-slate-400 font-black">Deal Price</span>
-            <div className="flex items-baseline gap-2">
-              <span className="font-black text-slate-100 dark:text-white text-xl">₹{displayPrice.toLocaleString("en-IN")}</span>
+          <div className="space-y-1 pt-1">
+            <span className="text-[9px] uppercase tracking-widest text-slate-400 font-black">Deal Price</span>
+            <div className="flex items-baseline gap-2.5">
+              <span className="font-black text-white text-2xl sm:text-3xl font-mono">₹{displayPrice.toLocaleString("en-IN")}</span>
               {displayOriginalPrice > displayPrice && (
-                <span className="text-xs text-slate-500 line-through font-medium">₹{displayOriginalPrice.toLocaleString("en-IN")}</span>
+                <span className="text-xs text-slate-500 line-through font-medium font-mono">₹{displayOriginalPrice.toLocaleString("en-IN")}</span>
               )}
             </div>
           </div>
 
           {/* Ratings & Reviews */}
-          <div className="flex items-center gap-1.5 text-[10.5px] text-amber-500 pt-0.5">
+          <div className="flex items-center gap-2 text-xs text-amber-500 pt-0.5">
             <div className="flex">
               {[...Array(5)].map((_, i) => {
                 const filled = i < Math.round(dealProduct.averageRating || (typeof dealProduct.rating === "object" ? dealProduct.rating?.average : dealProduct.rating) || 4.5);
                 return (
                   <Star
                     key={i}
-                    size={10}
-                    className={`${filled ? "fill-amber-400 text-amber-400" : "fill-white/10"} stroke-none`}
+                    size={12}
+                    className={`${filled ? "fill-amber-400 text-amber-400" : "fill-white/10 text-transparent"} stroke-none`}
                   />
                 );
               })}
             </div>
-            <span className="font-bold text-slate-400">({dealProduct.totalReviews || dealProduct.reviews?.length || 12} Reviews)</span>
+            <span className="font-bold text-slate-400 text-[11px]">({dealProduct.totalReviews || dealProduct.reviews?.length || 12} Reviews)</span>
           </div>
 
           {/* Real Countdown Timer */}
           {endDate && (
             <div className="space-y-2 pt-2">
-              <span className="text-[8px] uppercase tracking-widest text-slate-400 font-black">Ends In:</span>
+              <span className="text-[9px] uppercase tracking-widest text-slate-400 font-black">Ends In:</span>
               {timeLeft ? (
                 <div className="flex gap-2 items-center">
-                  <div className="flex flex-col items-center bg-white/[0.03] border border-white/[0.06] px-2.5 py-1.5 rounded-xl min-w-[38px] shadow-xs">
-                    <span className="text-xs font-black text-slate-100 dark:text-white">{formatNumber(timeLeft.hours)}</span>
-                    <span className="text-[6px] text-slate-400 font-bold uppercase tracking-wider">Hrs</span>
+                  <div className="flex flex-col items-center bg-white/5 border border-white/10 px-3 py-1.5 rounded-sm min-w-[42px] shadow-xs">
+                    <span className="text-xs font-black text-white font-mono">{formatNumber(timeLeft.hours)}</span>
+                    <span className="text-[7px] text-slate-400 font-bold uppercase tracking-wider">Hrs</span>
                   </div>
-                  <div className="flex flex-col items-center bg-white/[0.03] border border-white/[0.06] px-2.5 py-1.5 rounded-xl min-w-[38px] shadow-xs">
-                    <span className="text-xs font-black text-slate-100 dark:text-white">{formatNumber(timeLeft.minutes)}</span>
-                    <span className="text-[6px] text-slate-400 font-bold uppercase tracking-wider">Min</span>
+                  <div className="flex flex-col items-center bg-white/5 border border-white/10 px-3 py-1.5 rounded-sm min-w-[42px] shadow-xs">
+                    <span className="text-xs font-black text-white font-mono">{formatNumber(timeLeft.minutes)}</span>
+                    <span className="text-[7px] text-slate-400 font-bold uppercase tracking-wider">Min</span>
                   </div>
-                  <div className="flex flex-col items-center bg-white/[0.03] border border-white/[0.06] px-2.5 py-1.5 rounded-xl min-w-[38px] shadow-xs">
-                    <span className="text-xs font-black text-orange-400">{formatNumber(timeLeft.seconds)}</span>
-                    <span className="text-[6px] text-slate-400 font-bold uppercase tracking-wider">Sec</span>
+                  <div className="flex flex-col items-center bg-white/5 border border-white/10 px-3 py-1.5 rounded-sm min-w-[42px] shadow-xs">
+                    <span className="text-xs font-black text-amber-400 font-mono">{formatNumber(timeLeft.seconds)}</span>
+                    <span className="text-[7px] text-slate-400 font-bold uppercase tracking-wider">Sec</span>
                   </div>
                 </div>
               ) : (
-                <div className="text-[10px] font-black text-rose-500 bg-rose-500/10 border border-rose-500/20 px-3 py-1.5 rounded-xl w-fit uppercase tracking-wider animate-pulse">
+                <div className="text-[10px] font-black text-rose-500 bg-rose-500/10 border border-rose-500/20 px-3 py-1.5 rounded-sm w-fit uppercase tracking-wider">
                   Deal Ended
                 </div>
               )}
@@ -209,82 +211,49 @@ const DealOfTheDay = ({ deals = [], activeDeal = null, onAddToCart }) => {
         </div>
 
         {/* CTA Buttons Row */}
-        <div className="flex items-center gap-3 pt-2">
+        <div className="flex items-center gap-3 pt-4 max-w-md">
           <button
             onClick={handleAddToCart}
             disabled={dealProduct.stock === 0}
-            className={`flex-1 py-2.5 px-4 rounded-xl font-extrabold text-[10px] uppercase tracking-widest shadow-md transition-all border-none flex items-center justify-center gap-1.5 select-none ${dealProduct.stock === 0 ? "bg-white/5 text-white/30 cursor-not-allowed" : "bg-gradient-to-r from-[#ff0055] to-[#ff3377] hover:brightness-110 text-slate-100 dark:text-white cursor-pointer active:scale-95 shadow-xl shadow-pink-500/15"}`}
+            className={`flex-1 py-3 px-5 rounded-sm font-extrabold text-xs uppercase tracking-wider shadow-md transition-all border-none flex items-center justify-center gap-2 select-none cursor-pointer ${
+              dealProduct.stock === 0
+                ? "bg-white/5 text-white/30 cursor-not-allowed"
+                : "bg-white hover:bg-slate-100 text-slate-950 active:scale-95 shadow-sm"
+            }`}
           >
-            <ShoppingCart size={12} />
+            <ShoppingCart size={14} />
             <span>Shop Now</span>
           </button>
 
           <button
             onClick={handleViewProduct}
-            className="py-2.5 px-4 rounded-xl bg-transparent hover:bg-white/5 text-slate-100 dark:text-white font-extrabold text-[10px] uppercase tracking-widest transition-all cursor-pointer active:scale-95 border border-white/20 flex items-center justify-center gap-1.5 select-none"
+            className="py-3 px-5 rounded-sm bg-slate-900/80 hover:bg-slate-900 text-white font-extrabold text-xs uppercase tracking-wider transition-all cursor-pointer active:scale-95 border border-white/20 flex items-center justify-center gap-2 select-none backdrop-blur-md"
           >
-            <Eye size={12} />
+            <Eye size={14} />
             <span>View Product</span>
           </button>
         </div>
       </div>
 
-      {/* RIGHT SHOWCASE AREA */}
-      <div className="w-full sm:w-1/2 lg:w-full xl:w-1/2 h-60 sm:h-auto lg:h-52 xl:h-auto min-h-[220px] rounded-none relative overflow-hidden bg-gradient-to-br from-[#0c0f20] to-[#04050a] border border-white/[0.06] flex items-center justify-center shadow-inner group z-10">
-
-        {/* Soft background spotlight glow */}
-        <div className="absolute w-36 h-36 bg-orange-500/10 rounded-full blur-2xl pointer-events-none" />
-
-        {/* Custom model image with clipPath to avoid borders */}
-        <img
-          src={finalModelImgUrl}
-          alt="Campaign Visual"
-          loading="lazy"
-          decoding="async"
-          className="w-full h-full object-contain object-bottom transition-transform duration-500 group-hover:scale-[1.03] select-none pointer-events-none animate-custom-float relative z-0"
-          style={{ clipPath: "inset(3px)" }}
-        />
-
-        {/* Overlay gradient to keep elements legible */}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent pointer-events-none z-10" />
-
-        {/* Floating discount badge (top-left) */}
-        {discountLabel && (
-          <div className="absolute top-3 left-3 z-20 bg-gradient-to-r from-orange-500 to-pink-500 text-slate-100 dark:text-white text-[8px] font-black uppercase tracking-widest px-2.5 py-1.5 rounded-full shadow-lg border border-white/20 animate-pulse select-none">
-            {discountLabel}
-          </div>
-        )}
-
-        {/* Floating rating badge (bottom-left) */}
-        <div className="absolute bottom-3 left-3 z-20 bg-black/75 backdrop-blur-md border border-white/10 rounded-none px-2.5 py-1.5 shadow-xl scale-90">
-          <div className="flex items-center gap-1">
-            <Star size={10} className="fill-yellow-400 text-yellow-400" />
-            <span className="font-bold text-slate-100 dark:text-white text-[9px]">
-              {dealProduct.averageRating || (typeof dealProduct.rating === "object" ? dealProduct.rating?.average : dealProduct.rating) || 4.8}
-            </span>
+      {/* FLOATING PRODUCT PREVIEW CARD BOTTOM RIGHT */}
+      {finalProductImgUrl && (
+        <div
+          onClick={handleViewProduct}
+          className="absolute bottom-4 right-4 z-20 bg-slate-950/90 backdrop-blur-md border border-slate-700/80 p-2 rounded-sm flex items-center gap-2.5 shadow-xl hover:border-amber-400 cursor-pointer transition select-none active:scale-95"
+        >
+          <img
+            src={finalProductImgUrl}
+            alt={dealProduct.name}
+            loading="lazy"
+            decoding="async"
+            className="w-10 h-10 object-cover bg-slate-900 rounded-xs border border-slate-800 shrink-0"
+          />
+          <div className="text-[10px] font-bold text-white leading-tight pr-1 flex flex-col justify-center text-left">
+            <span className="text-slate-400 text-[8px] uppercase font-bold tracking-wider">PRODUCT</span>
+            <span className="font-bold truncate max-w-[120px]">{dealProduct.name}</span>
           </div>
         </div>
-
-        {/* Floating product thumbnail card (bottom-right) */}
-        {finalProductImgUrl && (
-          <div
-            onClick={handleViewProduct}
-            className="absolute bottom-3 right-3 z-20 bg-slate-950/80 backdrop-blur-md border border-white/10 p-1.5 rounded-none flex items-center gap-2 shadow-xl hover:border-orange-500/40 cursor-pointer transition select-none active:scale-95"
-          >
-            <img
-              src={finalProductImgUrl}
-              alt={dealProduct.name}
-              loading="lazy"
-              decoding="async"
-              className="w-7 h-7 object-contain bg-white dark:bg-slate-900 rounded-none p-0.5 border border-slate-200/50"
-            />
-            <div className="text-[7.5px] font-bold text-slate-100 dark:text-white leading-tight pr-1.5 flex flex-col justify-center text-left">
-              <span className="opacity-60 text-[5.5px] uppercase font-black tracking-widest">Product</span>
-              <span className="font-black truncate max-w-[70px]">{dealProduct.name}</span>
-            </div>
-          </div>
-        )}
-      </div>
+      )}
 
     </div>
   );

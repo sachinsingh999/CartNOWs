@@ -57,7 +57,7 @@ app.use(maintenanceMiddleware);
 
 //api end point
 app.use('/api/system', systemRouter);
-app.use('/api/user',userRouter);
+app.use('/api/user', userRouter);
 app.use('/uploads', express.static('uploads', {
   maxAge: '1y',
   setHeaders: (res) => {
@@ -65,13 +65,13 @@ app.use('/uploads', express.static('uploads', {
   }
 }));
 
-app.use('/api/product',productRouter);
-app.use('/api/products',productRouter);
+app.use('/api/product', productRouter);
+app.use('/api/products', productRouter);
 
-app.use('/api/cart',cartRouter);
-app.use('/api/order',orderRouter);
-app.use('/api/service',serviceRouter);
-app.use('/api/deliveryman',deliverymanRouter);
+app.use('/api/cart', cartRouter);
+app.use('/api/order', orderRouter);
+app.use('/api/service', serviceRouter);
+app.use('/api/deliveryman', deliverymanRouter);
 app.use('/api/ai', aiRouter);
 app.use('/api/sale', saleRouter);
 app.use('/api/wishlist', wishlistRouter);

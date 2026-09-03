@@ -12,12 +12,14 @@ import {
   SlidersHorizontal, 
   Laptop, 
   Flame,
+  Sparkles,
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
   ChevronsRight
 } from "lucide-react";
-import { ProductGridSkeleton } from "../components/SkeletonLoader";
+import NewArrivalsLanding from "../components/NewArrivalsLanding";
+import TrendingNowLanding from "../components/TrendingNowLanding";
 
 const CatalogDetail = ({ type }) => {
   const { slug } = useParams();
@@ -56,13 +58,46 @@ const CatalogDetail = ({ type }) => {
           apiUrl += `?category=${encodeURIComponent(slug)}`;
         } else if (type === "brand" && slug) {
           apiUrl += `?brand=${encodeURIComponent(slug)}`;
+        } else if (type === "collection" && slug) {
+          apiUrl += `?collection=${encodeURIComponent(slug)}`;
         }
 
         let res = await axios.get(apiUrl);
         let filtered = res.data.success ? res.data.products : [];
 
-        // If targeted category/brand query returned 0 products, try fetching full list as a fallback
-        if (filtered.length === 0) {
+        const isNewArrivalsSlug = (s) => {
+          const clean = (s || "").toLowerCase().trim();
+          return (
+            clean === "new-arrivals" ||
+            clean === "new-arrival" ||
+            clean === "new_arrivals" ||
+            clean === "newarrival" ||
+            clean === "new arrival" ||
+            clean === "new"
+          );
+        };
+
+        const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+        const now = Date.now();
+
+        // If collection is new-arrivals, filter strictly for products added in the last 7 days
+        if (type === "collection" && isNewArrivalsSlug(slug)) {
+          filtered = filtered.filter((p) => {
+            const pDate = p.createdAt || p.date || p.updatedAt;
+            if (!pDate) return false;
+            const pTime = new Date(pDate).getTime();
+            if (isNaN(pTime)) return false;
+            return now - pTime <= SEVEN_DAYS_MS;
+          });
+          filtered.sort((a, b) => {
+            const tA = new Date(a.createdAt || a.date || a.updatedAt || 0).getTime();
+            const tB = new Date(b.createdAt || b.date || b.updatedAt || 0).getTime();
+            return tB - tA;
+          });
+        }
+
+        // If targeted category/brand/collection query returned 0 products (and not new-arrivals), try fallback search
+        if (filtered.length === 0 && !isNewArrivalsSlug(slug)) {
           const fallbackRes = await axios.get(`${backendUrl}/api/product/list`);
           if (fallbackRes.data.success) {
             const allProds = fallbackRes.data.products;
@@ -119,7 +154,7 @@ const CatalogDetail = ({ type }) => {
                 });
               }
 
-              if (filtered.length === 0 && allProds.length > 0) {
+              if (filtered.length === 0 && allProds.length > 0 && !isNewArrivalsSlug(cleanSlug)) {
                 if (cleanSlug.includes("gaming") || cleanSlug.includes("electro") || cleanSlug.includes("tech") || cleanSlug.includes("gadget")) {
                   filtered = allProds.filter(p => (p.category || "").toLowerCase() === "electronics");
                 } else if (cleanSlug.includes("fashion") || cleanSlug.includes("wear") || cleanSlug.includes("cloth")) {
@@ -187,27 +222,44 @@ const CatalogDetail = ({ type }) => {
     } else if (type === "collection") {
       const isGaming = slug && (slug.includes("gaming") || slug.includes("gamer"));
       const isFestive = slug && (slug.includes("festiv") || slug.includes("offer") || slug.includes("deal"));
+      const isNewArrivals = slug && (
+        slug.toLowerCase().trim() === "new-arrivals" ||
+        slug.toLowerCase().trim() === "new-arrival" ||
+        slug.toLowerCase().trim() === "new_arrivals" ||
+        slug.toLowerCase().trim() === "newarrivals" ||
+        slug.toLowerCase().trim() === "new arrival" ||
+        slug.toLowerCase().trim() === "new"
+      );
+
       return {
-        icon: isGaming ? Laptop : isFestive ? Flame : Award,
+        icon: isGaming ? Laptop : isFestive ? Flame : isNewArrivals ? Sparkles : Award,
         badgeLabel: isGaming 
           ? "PRO GAMING BUNDLE CAPSULE" 
           : isFestive 
           ? "LIMITED TIME FESTIVAL OFFERS" 
+          : isNewArrivals
+          ? "FRESH DROPS (ADDED IN LAST 7 DAYS)"
           : "CURATED COLLECTION CAPSULE",
         badgeColor: isGaming
           ? "text-indigo-700 bg-indigo-50 border border-indigo-200 dark:text-indigo-300 dark:bg-indigo-950/60 dark:border-indigo-900/40"
           : isFestive 
           ? "text-rose-700 bg-rose-50 border border-rose-200 dark:text-rose-300 dark:bg-rose-950/60 dark:border-rose-900/40" 
+          : isNewArrivals
+          ? "text-emerald-700 bg-emerald-50 border border-emerald-200 dark:text-emerald-300 dark:bg-emerald-950/60 dark:border-emerald-900/40"
           : "text-purple-700 bg-purple-50 border border-purple-200 dark:text-purple-300 dark:bg-purple-950/60 dark:border-purple-900/40",
         backLabel: "All Collections",
         backPath: "/collections",
-        title: isGaming ? "Gaming Setup" : isFestive ? "Festival Offers & Mega Deals" : capitalizedSlug,
+        title: isGaming ? "Gaming Setup" : isFestive ? "Festival Offers & Mega Deals" : isNewArrivals ? "New Arrivals" : capitalizedSlug,
         subtitle: isGaming
           ? "Pro-grade laptops, high-refresh displays, precision peripherals, and hardware."
           : isFestive 
           ? "Exclusive festive discounts, bundle offers, and verified mega savings." 
+          : isNewArrivals
+          ? "Discover products added to our catalog within the last 7 days."
           : "Explore handpicked products curated for this lookbook collection.",
-        emptyText: `There are currently no matching products inside the "${slug}" collection.`
+        emptyText: isNewArrivals
+          ? "No products have been added in the last 7 days. Check back soon for fresh drops!"
+          : `There are currently no matching products inside the "${slug}" collection.`
       };
     } else {
       // Default: category
@@ -226,6 +278,55 @@ const CatalogDetail = ({ type }) => {
 
   const meta = getMetadata();
   const HeaderIcon = meta.icon;
+
+  const isNewArrivalsPage = type === "collection" && slug && (
+    slug.toLowerCase().trim() === "new-arrivals" ||
+    slug.toLowerCase().trim() === "new-arrival" ||
+    slug.toLowerCase().trim() === "new_arrivals" ||
+    slug.toLowerCase().trim() === "newarrivals" ||
+    slug.toLowerCase().trim() === "new arrival" ||
+    slug.toLowerCase().trim() === "new"
+  );
+
+  const isTrendingNowPage = type === "collection" && slug && (
+    slug.toLowerCase().trim() === "trending-now" ||
+    slug.toLowerCase().trim() === "trending" ||
+    slug.toLowerCase().trim() === "trending_now" ||
+    slug.toLowerCase().trim() === "trendingnow" ||
+    slug.toLowerCase().trim() === "trending-drops"
+  );
+
+  if (isNewArrivalsPage) {
+    return (
+      <NewArrivalsLanding
+        products={products}
+        loading={loading}
+        navigate={navigate}
+        meta={meta}
+        currentPage={currentPage}
+        itemsPerPage={itemsPerPage}
+        setItemsPerPage={setItemsPerPage}
+        setCurrentPage={setCurrentPage}
+        handlePageChange={handlePageChange}
+      />
+    );
+  }
+
+  if (isTrendingNowPage) {
+    return (
+      <TrendingNowLanding
+        products={products}
+        loading={loading}
+        navigate={navigate}
+        meta={meta}
+        currentPage={currentPage}
+        itemsPerPage={itemsPerPage}
+        setItemsPerPage={setItemsPerPage}
+        setCurrentPage={setCurrentPage}
+        handlePageChange={handlePageChange}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 px-3 sm:px-6 lg:px-10 py-4 text-left transition-colors duration-350">

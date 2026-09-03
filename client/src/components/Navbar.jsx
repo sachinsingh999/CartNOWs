@@ -501,28 +501,10 @@ const Navbar = () => {
                 />
               </Link>
 
-              {/* ── Delivery Location Widget (Amazon Style) ── */}
-              <button
-                type="button"
-                onClick={() => setPincodeOpen(true)}
-                className="hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded-sm hover:bg-slate-100 dark:hover:bg-slate-900 transition cursor-pointer text-left select-none shrink-0 border border-transparent hover:border-slate-200 dark:hover:border-slate-800 bg-transparent"
-              >
-                <MapPin size={17} className="text-amber-500 shrink-0 stroke-[2.5]" />
-                <div className="flex flex-col leading-none">
-                  <span className="text-[10px] text-slate-600 dark:text-slate-400 font-bold">
-                    Deliver to {username ? username.split(" ")[0] : "Sachin"}
-                  </span>
-                  <span className="text-xs font-black text-slate-800 dark:text-slate-100 flex items-center gap-0.5 leading-none mt-0.5">
-                    {locationLabel && locationLabel !== "Use location" ? locationLabel : "Vaghodia 391760"}
-                    <ChevronDown size={10} className="text-slate-400" />
-                  </span>
-                </div>
-              </button>
-
-              {/* ── Desktop Search (Minimalist Capsule) ── */}
+              {/* ── Desktop Search (Minimalist Capsule - Placed immediately next to Logo) ── */}
               <div
                 ref={searchRef}
-                className={`relative hidden md:flex flex-1 min-w-0 mx-2 lg:mx-4 transition-all duration-300 ease-in-out z-50 ${searchFocused ? "max-w-3xl" : "max-w-xl lg:max-w-2xl"}`}
+                className={`relative hidden md:flex flex-1 min-w-0 mx-2 lg:mx-3 transition-all duration-300 ease-in-out z-50 ${searchFocused ? "max-w-3xl" : "max-w-xl lg:max-w-2xl"}`}
               >
                 <form
                   onSubmit={(e) => { e.preventDefault(); submitSearch(); }}
@@ -727,6 +709,24 @@ const Navbar = () => {
 
               {/* ── Right Actions ── */}
               <div className="flex items-center gap-1.5 sm:gap-2 ml-auto lg:ml-0">
+
+                {/* ── Delivery Location Widget (Moved to the Right of Search Bar) ── */}
+                <button
+                  type="button"
+                  onClick={() => setPincodeOpen(true)}
+                  className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-sm hover:bg-slate-100 dark:hover:bg-slate-900 transition cursor-pointer text-left select-none shrink-0 border border-transparent hover:border-slate-200 dark:hover:border-slate-800 bg-transparent"
+                >
+                  <MapPin size={17} className="text-amber-500 shrink-0 stroke-[2.5]" />
+                  <div className="flex flex-col leading-none">
+                    <span className="text-[10px] text-slate-600 dark:text-slate-400 font-bold">
+                      Deliver to {username ? username.split(" ")[0] : "Sachin"}
+                    </span>
+                    <span className="text-xs font-black text-slate-800 dark:text-slate-100 flex items-center gap-0.5 leading-none mt-0.5">
+                      {locationLabel && locationLabel !== "Use location" ? locationLabel : "Vaghodia 391760"}
+                      <ChevronDown size={10} className="text-slate-400" />
+                    </span>
+                  </div>
+                </button>
 
                 {/* Language Selector */}
                 <button

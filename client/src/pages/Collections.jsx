@@ -91,6 +91,15 @@ const Collections = () => {
         categoryTag: "Sports & Footwear"
       };
     }
+    if (lower.includes("new") || lower.includes("arrival")) {
+      return {
+        colorClass: "bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-emerald-100 dark:border-emerald-900/40 hover:border-emerald-300 dark:hover:border-emerald-700",
+        badgeColor: "bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/40",
+        btnGradient: "from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700",
+        badgeIcon: Sparkles,
+        categoryTag: "Fresh Drops (7 Days)"
+      };
+    }
     return {
       colorClass: "bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-purple-100 dark:border-purple-900/40 hover:border-purple-300 dark:hover:border-purple-700",
       badgeColor: "bg-purple-50 dark:bg-purple-950/70 text-purple-700 dark:text-purple-300 border border-purple-200/60 dark:border-purple-800/40",

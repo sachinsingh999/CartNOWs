@@ -26,7 +26,7 @@ const loginLimiter = rateLimit(5, 60 * 1000); // Max 5 login tries per minute
 const registerLimiter = rateLimit(3, 60 * 1000); // Max 3 signups per minute
 const vipVerifyLimiter = rateLimit(5, 60 * 1000); // Max 5 verification tries per minute
 
-const userRouter=express.Router();
+const userRouter = express.Router();
 
 userRouter.post('/register', registerLimiter, registerUser);
 userRouter.post('/login', loginLimiter, loginUser);
