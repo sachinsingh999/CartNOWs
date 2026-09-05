@@ -9,8 +9,9 @@ import Logo from "./Logo";
 import { 
   User, BarChart3, Package, ShoppingBag, DollarSign, TrendingUp, 
   MessageSquare, Bell, Settings, Search, PlusCircle, Layers, 
-  FileText, Menu, ChevronLeft, Sun, Moon, RotateCcw
+  FileText, Menu, ChevronLeft, Sun, Moon, RotateCcw, X
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const SellerLayout = () => {
   const { token, seller, setSeller, logout } = useAuth();
@@ -25,6 +26,13 @@ const SellerLayout = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(typeof window !== "undefined" ? window.innerWidth < 768 : false);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   if (!token) {
     return <Navigate to="/" replace />;
@@ -162,118 +170,178 @@ const SellerLayout = () => {
   return (
     <div className="flex flex-col h-screen overflow-hidden relative bg-slate-50 dark:bg-slate-950 w-full">
       {/* Top Full-Width Header / Navigation Bar */}
-      <header className="h-16 border-b border-slate-200 dark:border-slate-900 bg-white dark:bg-slate-950 px-4 md:px-6 flex items-center justify-between shrink-0 shadow-xs z-40 relative">
+      <header className="h-14 md:h-16 bg-white/95 dark:bg-[#0B0F17]/95 backdrop-blur-md pl-1.5 sm:pl-3 pr-3 md:pr-6 flex items-center justify-between shrink-0 z-40 relative shadow-xs">
+        {/* Subtle Ambient Bottom Glow Line */}
+        <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-orange-500/30 to-transparent pointer-events-none" />
+
         {/* Left Side: Brand Logo & Navigation Title */}
         <div className="flex items-center gap-3">
-          <button 
-            onClick={() => setIsMobileSidebarOpen(true)}
-            className="lg:hidden p-1.5 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
-            title="Open Navigation"
-          >
-            <Menu size={18} />
-          </button>
-
           <div 
             onClick={() => navigate("/")}
-            className="flex items-center gap-2 cursor-pointer group select-none"
+            className="-ml-1 flex items-center gap-2 cursor-pointer group select-none"
           >
-            <div className="flex flex-col text-left leading-none">
-              <span className="text-sm font-black text-slate-900 dark:text-white tracking-tight">CartNOW</span>
-              <span className="text-[9px] font-black text-orange-500 uppercase tracking-widest mt-0.5">Seller Hub</span>
-            </div>
+            <Logo className="h-8 sm:h-10 w-32 sm:w-40 text-slate-900 dark:text-white group-hover:scale-105 transition-transform duration-200" />
           </div>
 
-          <div className="h-4 w-px bg-slate-200 dark:bg-slate-800 mx-1 hidden sm:block" />
-
-          <h1 className="text-xs font-black text-slate-500 dark:text-slate-400 tracking-wider uppercase hidden sm:block text-left">
-            {activeSubTab.replace("-", " ")}
-          </h1>
+          <div className="hidden sm:flex items-center gap-1.5">
+            <span className="px-2.5 py-1 bg-orange-500/10 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 font-extrabold text-[10px] uppercase tracking-wider rounded-lg flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse" />
+              {activeSubTab.replace("-", " ")}
+            </span>
+          </div>
         </div>
 
         {/* Center: Search */}
-        <div className="relative w-48 sm:w-72">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+        <div className="relative w-44 sm:w-80 group">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-orange-500 transition-colors" />
           <input
             type="text"
-            placeholder="Search references..."
-            className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 rounded-xl pl-8 pr-3.5 py-1.5 text-xs font-semibold outline-none transition focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+            placeholder="Search catalog, orders..."
+            className="w-full bg-slate-100/90 dark:bg-slate-900/90 text-slate-800 dark:text-slate-100 rounded-xl pl-9 pr-12 py-1.5 text-xs font-semibold outline-none transition-all duration-200 focus:bg-white dark:focus:bg-slate-950 focus:ring-2 focus:ring-orange-500/25"
           />
+          <kbd className="hidden sm:inline-flex absolute right-2.5 top-1/2 -translate-y-1/2 items-center gap-0.5 px-1.5 py-0.5 text-[9px] font-mono font-bold text-slate-400 bg-white dark:bg-slate-950 rounded-md shadow-2xs">
+            ⌘K
+          </kbd>
         </div>
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-3 font-semibold">
-          <button
-            onClick={toggleTheme}
-            className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-850 dark:hover:text-white transition cursor-pointer rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800"
-            title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
-          >
-            {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
-          </button>
-
-          <button
+        <div className="flex items-center gap-2.5 font-semibold">
+          {/* Notifications Button */}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => navigate("/notifications")}
-            className="relative p-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition cursor-pointer rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800"
-            title="Logs Feed"
+            className="relative p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-xl bg-slate-100/90 dark:bg-slate-900/90 hover:bg-slate-200/80 dark:hover:bg-slate-850 transition cursor-pointer"
+            title="Notifications"
           >
             <Bell size={16} />
-            <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-brand" />
-          </button>
+            <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-orange-500 ring-2 ring-white dark:ring-slate-950 animate-pulse" />
+          </motion.button>
 
+          {/* Theme Toggle Button */}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={toggleTheme}
+            className="p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-xl bg-slate-100/90 dark:bg-slate-900/90 hover:bg-slate-200/80 dark:hover:bg-slate-850 transition cursor-pointer"
+            title="Toggle Theme"
+          >
+            {theme === "dark" ? <Sun size={16} className="text-amber-400" /> : <Moon size={16} className="text-indigo-600" />}
+          </motion.button>
+
+          {/* Profile Dropdown Toggle */}
           <div className="relative">
-            <button
+            <motion.button 
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => setShowDropdown(!showDropdown)}
-              className="flex h-8 w-8 rounded-xl bg-slate-900 border border-slate-800 items-center justify-center text-slate-100 dark:text-white font-black text-xs uppercase cursor-pointer hover:bg-slate-800 transition shadow-xs"
+              className="flex items-center gap-2 p-1.5 pl-1.5 pr-3 rounded-xl bg-slate-100/90 dark:bg-slate-900/90 hover:bg-slate-200/80 dark:hover:bg-slate-850 transition cursor-pointer"
             >
-              {seller?.name ? seller.name[0] : "M"}
-            </button>
+              <div className="h-7 w-7 rounded-lg bg-gradient-to-tr from-orange-500 to-amber-500 text-white flex items-center justify-center font-black text-xs shadow-xs relative">
+                {seller?.name ? seller.name[0].toUpperCase() : "S"}
+                <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500 ring-1.5 ring-white dark:ring-slate-950" />
+              </div>
+              <span className="text-xs font-bold text-slate-800 dark:text-slate-200 hidden md:block max-w-[100px] truncate">
+                {seller?.shopName || seller?.name || "Merchant"}
+              </span>
+              <ChevronLeft size={13} className={`text-slate-400 transition-transform duration-200 hidden md:block ${showDropdown ? "rotate-90" : "-rotate-90"}`} />
+            </motion.button>
 
-            {showDropdown && (
-              <>
-                <div className="fixed inset-0 z-40" onClick={() => setShowDropdown(false)}></div>
-                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-lg z-50 text-slate-800 dark:text-slate-100 py-1.5 animate-fadeIn">
-                  <button
-                    onClick={() => {
-                      navigate("/profile");
-                      setShowDropdown(false);
-                    }}
-                    className="w-full text-left px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer flex items-center gap-2"
+            {/* Profile Menu Popup */}
+            <AnimatePresence>
+              {showDropdown && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowDropdown(false)} />
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.95, y: 5 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 5 }}
+                    transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
+                    className="absolute right-0 mt-2 w-52 bg-white dark:bg-slate-900 rounded-2xl shadow-xl py-1.5 z-50 text-left overflow-hidden"
                   >
-                    <User size={14} className="text-slate-450 dark:text-slate-500" />
-                    <span>Profile Settings</span>
-                  </button>
-                  <hr className="border-slate-100 dark:border-slate-800 my-1" />
-                  <button
-                    onClick={() => {
-                      logout();
-                      setShowDropdown(false);
-                    }}
-                    className="w-full text-left px-4 py-2 text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition cursor-pointer flex items-center gap-2"
-                  >
-                    <User size={14} className="text-red-500 dark:text-red-450" />
-                    <span>Sign Out</span>
-                  </button>
-                </div>
-              </>
-            )}
+                    <div className="px-4 py-2.5 bg-slate-50/50 dark:bg-slate-950/40">
+                      <p className="text-xs font-black text-slate-900 dark:text-slate-100 truncate">{seller?.name || "Merchant User"}</p>
+                      <p className="text-[10px] font-medium text-slate-400 truncate mt-0.5">{seller?.email}</p>
+                    </div>
+                    
+                    <button 
+                      onClick={() => { navigate("/profile"); setShowDropdown(false); }}
+                      className="w-full text-left px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition cursor-pointer flex items-center gap-2.5"
+                    >
+                      <Settings size={14} className="text-slate-400" />
+                      <span>Store Settings</span>
+                    </button>
+                    
+                    <button 
+                      onClick={() => { navigate("/notifications"); setShowDropdown(false); }}
+                      className="w-full text-left px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition cursor-pointer flex items-center gap-2.5"
+                    >
+                      <Bell size={14} className="text-slate-400" />
+                      <span>Notifications</span>
+                    </button>
+
+                    <div className="my-1" />
+
+                    <button 
+                      onClick={() => { logout(); setShowDropdown(false); }}
+                      className="w-full text-left px-4 py-2 text-xs font-extrabold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition cursor-pointer flex items-center gap-2.5"
+                    >
+                      <User size={14} className="text-red-500 dark:text-red-400" />
+                      <span>Sign Out</span>
+                    </button>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
           </div>
+
+          {/* Mobile Menu Toggle Button */}
+          <motion.button 
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setIsMobileSidebarOpen(true)}
+            className="md:hidden p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-xl bg-slate-100 dark:bg-slate-900 transition cursor-pointer shadow-2xs"
+            title="Open Navigation"
+          >
+            <Menu size={18} />
+          </motion.button>
         </div>
       </header>
 
       {/* Main Body Below Navbar */}
-      <div className="flex flex-1 h-[calc(100vh-64px)] overflow-hidden relative w-full">
+      <div className="flex flex-1 overflow-hidden relative w-full">
         {/* Mobile Overlay backdrop */}
         <div 
-          className={`fixed inset-0 top-16 z-30 bg-slate-950/45 backdrop-blur-xs transition-opacity lg:hidden ${ isMobileSidebarOpen ? "opacity-100 visible" : "opacity-0 invisible pointer-events-none" }`}
+          className={`fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-xs transition-opacity md:hidden ${ isMobileSidebarOpen ? "opacity-100 visible" : "opacity-0 invisible pointer-events-none" }`}
           onClick={() => setIsMobileSidebarOpen(false)}
         />
 
-        {/* Left Sidebar Under Navbar */}
-        <aside 
-          className={`fixed top-16 bottom-0 left-0 z-30 bg-white dark:bg-[#0B0F17] border-r border-slate-200/80 dark:border-slate-850 flex flex-col justify-between text-slate-600 dark:text-slate-300 shrink-0 transition-all duration-300 ease-in-out lg:static ${ isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0" } ${isSidebarCollapsed ? "lg:w-20" : "lg:w-64"} w-64 overscroll-y-contain overflow-hidden h-full shadow-2xs`}
+        {/* Sidebar Panel (Framer Motion Controlled Width & Collapse) */}
+        <motion.aside 
+          animate={{
+            width: isMobile 
+              ? (isMobileSidebarOpen ? 288 : 0) 
+              : (isSidebarCollapsed ? 72 : 240)
+          }}
+          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          className="fixed top-0 bottom-0 right-0 z-50 md:static bg-white dark:bg-[#0B0F17] flex flex-col justify-between text-slate-600 dark:text-slate-300 shrink-0 overflow-hidden h-full shadow-2xl md:shadow-none"
         >
-          <div className="p-3 space-y-4 flex-1 flex flex-col min-h-0 overflow-hidden">
+          <div className="p-2 space-y-2 flex-1 flex flex-col min-h-0 overflow-hidden">
+            {/* Mobile Header Inside Drawer */}
+            <div className="flex items-center justify-between px-1 pb-2 md:hidden">
+              <div className="flex items-center gap-2">
+                <Logo className="h-6 w-auto text-slate-900 dark:text-white" />
+              </div>
+              <button
+                onClick={() => setIsMobileSidebarOpen(false)}
+                className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
             {/* Nav Links Grouped */}
-            <nav className="space-y-3 flex-1 overflow-y-auto pr-0.5 custom-scrollbar overscroll-y-contain">
+            <nav className="space-y-1 flex-1 overflow-y-auto pr-0.5 custom-scrollbar overscroll-y-contain">
               {[
                 {
                   group: "Overview",
@@ -308,9 +376,21 @@ const SellerLayout = () => {
                   ]
                 }
               ].map((section) => (
-                <div key={section.group} className="space-y-1">
-                  <div className={`px-3 text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest transition-all duration-300 overflow-hidden whitespace-nowrap select-none ${isSidebarCollapsed ? "opacity-0 max-h-0 my-0 py-0" : "opacity-100 max-h-6 mt-2 mb-1"}`}>
-                    {section.group}
+                <div key={section.group} className="space-y-0.5">
+                  <div className="h-4 px-2.5 flex items-center overflow-hidden select-none my-1">
+                    <AnimatePresence initial={false}>
+                      {(!isSidebarCollapsed || isMobile) && (
+                        <motion.span
+                          initial={{ opacity: 0, width: 0 }}
+                          animate={{ opacity: 1, width: "auto" }}
+                          exit={{ opacity: 0, width: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest whitespace-nowrap"
+                        >
+                          {section.group}
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
                   </div>
 
                   {section.items.map((item) => {
@@ -323,22 +403,33 @@ const SellerLayout = () => {
                           navigate(item.path);
                           setIsMobileSidebarOpen(false);
                         }}
-                        title={isSidebarCollapsed ? item.label : undefined}
-                        className={`group w-full flex items-center h-10 px-3 rounded-lg font-bold text-xs uppercase tracking-wider transition-colors duration-200 cursor-pointer relative overflow-hidden ${
+                        title={isSidebarCollapsed && !isMobile ? item.label : undefined}
+                        className={`group w-full flex items-center h-8.5 px-2.5 rounded-lg font-bold text-xs uppercase tracking-wider transition-colors duration-200 cursor-pointer relative overflow-hidden ${
                           isActive
-                            ? "bg-orange-500/10 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 font-extrabold border border-orange-500/25 shadow-xs"
-                            : "hover:bg-slate-100 dark:hover:bg-slate-900/80 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-transparent"
+                            ? "bg-orange-500/10 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 font-extrabold shadow-xs"
+                            : "hover:bg-slate-100 dark:hover:bg-slate-900/80 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                         }`}
                       >
                         {isActive && (
-                          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 rounded-r bg-orange-500" />
+                          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-4 rounded-r bg-orange-500 transition-all duration-200" />
                         )}
                         <div className="w-5 h-5 flex items-center justify-center shrink-0">
                           <Icon size={16} className={`transition-transform duration-200 ${isActive ? "text-orange-500 scale-110" : "text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-200"}`} />
                         </div>
-                        <span className={`whitespace-nowrap transition-all duration-300 overflow-hidden ${isSidebarCollapsed ? "opacity-0 max-w-0" : "opacity-100 max-w-[180px] ml-3"}`}>
-                          {item.label}
-                        </span>
+                        
+                        <AnimatePresence initial={false}>
+                          {(!isSidebarCollapsed || isMobile) && (
+                            <motion.span
+                              initial={{ opacity: 0, width: 0 }}
+                              animate={{ opacity: 1, width: "auto" }}
+                              exit={{ opacity: 0, width: 0 }}
+                              transition={{ duration: 0.2 }}
+                              className="whitespace-nowrap overflow-hidden ml-2.5"
+                            >
+                              {item.label}
+                            </motion.span>
+                          )}
+                        </AnimatePresence>
                       </button>
                     );
                   })}
@@ -348,33 +439,48 @@ const SellerLayout = () => {
           </div>
 
           {/* Bottom Collapse/Expand Toggle */}
-          <div className="p-3 border-t border-slate-200/80 dark:border-slate-850 overflow-hidden">
+          <div className="p-2 overflow-hidden">
             <button
               type="button"
               onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-              className="hidden lg:flex w-full items-center h-10 px-3 bg-slate-100/80 dark:bg-slate-900 hover:bg-slate-200/80 dark:hover:bg-slate-850 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-black uppercase tracking-wider transition-colors duration-200 cursor-pointer border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden relative"
+              className="hidden md:flex w-full items-center h-8.5 px-2.5 bg-slate-100/80 dark:bg-slate-900 hover:bg-slate-200/80 dark:hover:bg-slate-850 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-black uppercase tracking-wider transition-colors duration-200 active:scale-[0.98] cursor-pointer shadow-xs overflow-hidden relative"
               title={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
             >
-              <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                <ChevronLeft size={16} className={`transition-transform duration-300 ${isSidebarCollapsed ? "rotate-180 text-orange-500" : "rotate-0 text-slate-500"}`} />
-              </div>
-              <span className={`whitespace-nowrap transition-all duration-300 overflow-hidden ${isSidebarCollapsed ? "opacity-0 max-w-0" : "opacity-100 max-w-[180px] ml-3"}`}>
-                Collapse Sidebar
-              </span>
+              <motion.div
+                animate={{ rotate: isSidebarCollapsed ? 180 : 0 }}
+                transition={{ duration: 0.3 }}
+                className="w-5 h-5 flex items-center justify-center shrink-0"
+              >
+                <ChevronLeft size={16} className={isSidebarCollapsed ? "text-orange-500" : "text-slate-500"} />
+              </motion.div>
+
+              <AnimatePresence initial={false}>
+                {!isSidebarCollapsed && (
+                  <motion.span
+                    initial={{ opacity: 0, width: 0 }}
+                    animate={{ opacity: 1, width: "auto" }}
+                    exit={{ opacity: 0, width: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="whitespace-nowrap overflow-hidden ml-2.5"
+                  >
+                    Collapse Sidebar
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </button>
           </div>
-        </aside>
+        </motion.aside>
 
         {/* Right Main Content */}
-        <main className="flex-1 min-w-0 overflow-y-auto custom-scrollbar bg-slate-50 dark:bg-slate-950 pb-16 sm:pb-0 p-4 md:p-8 h-full">
-          <div className="mx-auto w-full max-w-[1600px]">
+        <main className="flex-1 min-w-0 overflow-y-auto custom-scrollbar bg-slate-50 dark:bg-slate-950 pb-16 sm:pb-0 p-1.5 sm:p-2.5 h-full">
+          <div className="w-full">
             <Outlet context={contextValues} />
           </div>
         </main>
       </div>
 
       {/* Sticky Mobile Bottom Navigation Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex justify-around items-center py-2.5 shadow-lg sm:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-slate-900 flex justify-around items-center py-2.5 shadow-lg sm:hidden">
         {[
           { label: "Dashboard", path: "/", icon: BarChart3, tab: "dashboard" },
           { label: "Products", path: "/products", icon: Layers, tab: "products" },

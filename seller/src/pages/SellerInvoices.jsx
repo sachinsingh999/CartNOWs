@@ -74,8 +74,8 @@ const SellerInvoices = ({ token }) => {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 shrink-0">
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 rounded-2xl p-4 shadow-xs flex items-center gap-3.5">
-          <div className="h-10 w-10 rounded-xl bg-orange-50 dark:bg-orange-950/20 text-brand flex items-center justify-center border border-orange-100/50 dark:border-orange-900/40">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-xs flex items-center gap-3.5">
+          <div className="h-10 w-10 rounded-xl bg-orange-50 dark:bg-orange-950/20 text-brand flex items-center justify-center">
             <Receipt size={18} />
           </div>
           <div>
@@ -84,8 +84,8 @@ const SellerInvoices = ({ token }) => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 rounded-2xl p-4 shadow-xs flex items-center gap-3.5">
-          <div className="h-10 w-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 text-emerald-605 dark:text-emerald-400 flex items-center justify-center border border-emerald-100/50 dark:border-emerald-900/40">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-xs flex items-center gap-3.5">
+          <div className="h-10 w-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 text-emerald-605 dark:text-emerald-400 flex items-center justify-center">
             <DollarSign size={18} />
           </div>
           <div>
@@ -94,8 +94,8 @@ const SellerInvoices = ({ token }) => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 rounded-2xl p-4 shadow-xs flex items-center gap-3.5">
-          <div className="h-10 w-10 rounded-xl bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-100/50 dark:border-blue-900/40">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-xs flex items-center gap-3.5">
+          <div className="h-10 w-10 rounded-xl bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 flex items-center justify-center">
             <CheckCircle size={18} />
           </div>
           <div>
@@ -106,7 +106,7 @@ const SellerInvoices = ({ token }) => {
       </div>
 
       {/* Search & Filter Bar */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200/80 rounded-2xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 shadow-xs shrink-0">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 shadow-xs shrink-0">
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <div className="relative flex-1 sm:flex-none">
             <input
@@ -114,7 +114,7 @@ const SellerInvoices = ({ token }) => {
               placeholder="Search Invoice No / Order ID..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-full sm:w-64 pl-8 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 text-slate-800 dark:text-slate-100 outline-none transition focus:bg-white dark:focus:bg-slate-900 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+              className="w-full sm:w-64 pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50/50 dark:bg-slate-950/40 text-slate-800 dark:text-slate-100 outline-none transition focus:bg-white dark:focus:bg-slate-900 font-bold"
             />
             <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400" />
           </div>
@@ -125,7 +125,7 @@ const SellerInvoices = ({ token }) => {
           <select
             value={statusFilter}
             onChange={e => setStatusFilter(e.target.value)}
-            className="border border-slate-200 dark:border-slate-800 rounded-xl px-2.5 py-1.5 text-xs outline-none font-bold bg-slate-50/50 dark:bg-slate-900 text-slate-700 dark:text-slate-200 cursor-pointer"
+            className="rounded-xl px-2.5 py-1.5 text-xs outline-none font-bold bg-slate-50/50 dark:bg-slate-900 text-slate-700 dark:text-slate-200 cursor-pointer"
           >
             <option value="">All</option>
             <option value="Paid">Paid</option>
@@ -135,7 +135,7 @@ const SellerInvoices = ({ token }) => {
       </div>
 
       {/* Table Container */}
-      <div className="flex-1 bg-white dark:bg-slate-900 border border-slate-200/80 rounded-2xl overflow-hidden shadow-xs flex flex-col min-h-0">
+      <div className="flex-1 bg-white dark:bg-slate-900 rounded-2xl overflow-hidden shadow-xs flex flex-col min-h-0">
         <div className="flex-1 overflow-y-auto">
           {loading ? (
             <div className="h-full flex items-center justify-center text-slate-400 font-medium">
@@ -150,7 +150,7 @@ const SellerInvoices = ({ token }) => {
           ) : (
             <div className="overflow-x-auto min-w-full">
               <table className="w-full text-left border-collapse min-w-[800px]">
-              <thead className="bg-slate-50/75 dark:bg-slate-950/80 sticky top-0 border-b border-slate-200/40 dark:border-slate-800/40 z-10">
+              <thead className="bg-slate-50/75 dark:bg-slate-950/80 sticky top-0 z-10">
                 <tr className="text-[10px] font-black uppercase tracking-wider text-slate-400">
                   <th className="px-5 py-3.5">Invoice</th>
                   <th className="px-5 py-3.5">Order Ref</th>
@@ -161,7 +161,7 @@ const SellerInvoices = ({ token }) => {
                   <th className="px-5 py-3.5 text-right">Download</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200/40 dark:divide-slate-800/40 text-xs font-semibold text-slate-700 dark:text-slate-300">
+              <tbody className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                 {filteredInvoices.map(inv => (
                   <tr
                     key={inv._id}
@@ -178,7 +178,7 @@ const SellerInvoices = ({ token }) => {
                       #{String(inv.orderId?._id || inv.orderId).slice(-8).toUpperCase()}
                     </td>
                     <td className="px-5 py-4">
-                      <span className="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded px-1.5 py-0.5 text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400">
+                      <span className="bg-slate-100 dark:bg-slate-950 rounded px-1.5 py-0.5 text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400">
                         {inv.paymentMethod}
                       </span>
                     </td>
@@ -189,7 +189,7 @@ const SellerInvoices = ({ token }) => {
                       ₹{inv.grandTotal.toFixed(2)}
                     </td>
                     <td className="px-5 py-4">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-black border uppercase ${ inv.paymentStatus === "Paid" ? "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/50" : "bg-amber-50 dark:bg-amber-950/20 text-amber-705 dark:text-amber-400 border-amber-100 dark:border-amber-900/50" }`}>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${ inv.paymentStatus === "Paid" ? "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400" : "bg-amber-50 dark:bg-amber-950/20 text-amber-705 dark:text-amber-400" }`}>
                         {inv.paymentStatus}
                       </span>
                     </td>
@@ -198,7 +198,7 @@ const SellerInvoices = ({ token }) => {
                         href={`${backendUrl}/api/invoice/download/${inv._id}?token=${token}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex h-8 w-8 rounded-lg border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-white dark:hover:bg-slate-950 items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white transition active:scale-90"
+                        className="inline-flex h-8 w-8 rounded-lg hover:bg-white dark:hover:bg-slate-950 items-center justify-center text-slate-500 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white transition active:scale-90"
                       >
                         <Download size={13} />
                       </a>
@@ -223,10 +223,10 @@ const SellerInvoices = ({ token }) => {
           {selectedInvoice && (
             <>
               {/* Header */}
-              <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+              <div className="p-4 flex items-center justify-between">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-950 border border-transparent dark:border-slate-800/40 px-2 py-0.5 rounded">
+                    <span className="font-mono text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-950 px-2 py-0.5 rounded">
                       {selectedInvoice.invoiceNumber}
                     </span>
                   </div>
@@ -243,7 +243,7 @@ const SellerInvoices = ({ token }) => {
               {/* Body */}
               <div className="flex-1 overflow-y-auto p-5 space-y-6 text-xs">
                 {/* Status card */}
-                <div className="bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 rounded-xl p-4 flex items-center justify-between">
+                <div className="bg-slate-50 dark:bg-slate-950 rounded-xl p-4 flex items-center justify-between">
                   <div>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Billed Status</p>
                     <span className="font-black text-sm text-slate-900 dark:text-slate-100 mt-1 block">
@@ -264,7 +264,7 @@ const SellerInvoices = ({ token }) => {
                 {/* Details */}
                 <div className="space-y-2">
                   <p className="font-black text-[10px] uppercase tracking-widest text-slate-400">Metadata</p>
-                  <div className="bg-slate-50/50 dark:bg-slate-950/20 border border-slate-100 dark:border-slate-800 rounded-xl p-4 space-y-2.5">
+                  <div className="bg-slate-50/50 dark:bg-slate-950/20 rounded-xl p-4 space-y-2.5">
                     <div className="flex justify-between">
                       <span className="text-slate-550 dark:text-slate-400">Transaction:</span>
                       <span className="font-bold text-slate-800 dark:text-slate-100 uppercase">{selectedInvoice.paymentMethod}</span>
@@ -283,7 +283,7 @@ const SellerInvoices = ({ token }) => {
                 {/* Financial breakdown */}
                 <div className="space-y-2">
                   <p className="font-black text-[10px] uppercase tracking-widest text-slate-400">Order Totals</p>
-                  <div className="bg-slate-50/50 dark:bg-slate-950/20 border border-slate-100 dark:border-slate-800 rounded-xl p-4 space-y-2.5">
+                  <div className="bg-slate-50/50 dark:bg-slate-950/20 rounded-xl p-4 space-y-2.5">
                     <div className="flex justify-between">
                       <span className="text-slate-550 dark:text-slate-400">Order Subtotal:</span>
                       <span className="font-bold text-slate-800 dark:text-slate-100">₹{selectedInvoice.subtotal.toFixed(2)}</span>
@@ -302,7 +302,7 @@ const SellerInvoices = ({ token }) => {
                         <span>-₹{selectedInvoice.discount.toFixed(2)}</span>
                       </div>
                     )}
-                    <div className="border-t border-slate-200/60 dark:border-slate-800 pt-2 flex justify-between text-sm">
+                    <div className="pt-2 flex justify-between text-sm">
                       <span className="font-bold text-slate-700 dark:text-slate-350">Gross Total:</span>
                       <span className="font-black text-slate-900 dark:text-slate-100">₹{selectedInvoice.grandTotal.toFixed(2)}</span>
                     </div>

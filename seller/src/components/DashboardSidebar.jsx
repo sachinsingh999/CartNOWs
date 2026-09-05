@@ -23,9 +23,9 @@ const DashboardSidebar = ({
         initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        className="bg-white dark:bg-slate-900/35 border border-slate-200 dark:border-slate-800/80 rounded-[24px] p-6 backdrop-blur-xl shadow-2xl relative overflow-hidden"
+        className="bg-white dark:bg-slate-900/35 rounded-[24px] p-6 backdrop-blur-xl shadow-xs relative overflow-hidden"
       >
-        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4 text-left">
+        <div className="flex items-center justify-between pb-3 mb-4 text-left">
           <h3 className="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-wider">
             Store Health
           </h3>
@@ -108,9 +108,9 @@ const DashboardSidebar = ({
         initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.25 }}
-        className="bg-white dark:bg-slate-900/35 border border-slate-200 dark:border-slate-800/80 rounded-[24px] p-6 backdrop-blur-xl shadow-2xl relative overflow-hidden"
+        className="bg-white dark:bg-slate-900/35 rounded-[24px] p-6 backdrop-blur-xl shadow-xs relative overflow-hidden"
       >
-        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4 text-left">
+        <div className="flex items-center justify-between pb-3 mb-4 text-left">
           <h3 className="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-wider flex items-center gap-1.5">
             <ShieldAlert size={14} className="text-red-500 animate-pulse" />
             <span>Low Stock Warning</span>
@@ -128,11 +128,11 @@ const DashboardSidebar = ({
             {lowStockItems.slice(0, 3).map((item) => {
               const stockPercentage = Math.min((item.stock / 10) * 100, 100);
               return (
-                <div key={item._id} className="p-3 rounded-2xl border border-slate-200/50 dark:border-slate-800/60 bg-slate-50 dark:bg-slate-950/40 text-xs flex flex-col gap-2 relative">
+                <div key={item._id} className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-950/40 text-xs flex flex-col gap-2 relative shadow-2xs">
                   <div className="flex items-center justify-between gap-2.5">
                     <div className="flex items-center gap-2 text-left min-w-0">
                       {/* Product Image */}
-                      <div className="h-8 w-8 rounded-lg bg-white dark:bg-slate-950 border border-slate-200/40 dark:border-slate-800/40 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+                      <div className="h-8 w-8 rounded-lg bg-white dark:bg-slate-950 flex items-center justify-center overflow-hidden shrink-0 shadow-2xs">
                         {item.images?.[0] ? (
                           <img src={item.images[0]} alt="" className="h-full w-full object-contain" />
                         ) : (
@@ -173,12 +173,12 @@ const DashboardSidebar = ({
         initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.3 }}
-        className="bg-gradient-to-br from-indigo-950/20 to-purple-950/20 dark:from-indigo-950/40 dark:to-purple-950/40 border border-indigo-200 dark:border-indigo-900/60 rounded-[24px] p-6 backdrop-blur-xl shadow-2xl relative overflow-hidden"
+        className="bg-gradient-to-br from-indigo-950/20 to-purple-950/20 dark:from-indigo-950/40 dark:to-purple-950/40 rounded-[24px] p-6 backdrop-blur-xl shadow-xs relative overflow-hidden"
       >
         <div className="absolute top-0 right-0 h-14 w-14 bg-gradient-to-bl from-indigo-500/10 to-transparent rounded-full blur-lg pointer-events-none" />
         
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-indigo-100 dark:border-indigo-950 pb-3 mb-4 text-left">
+        <div className="flex items-center justify-between pb-3 mb-4 text-left">
           <h3 className="text-xs font-black text-indigo-750 dark:text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
             <BrainCircuit size={14} className="text-indigo-650 dark:text-indigo-400" />
             <span>Growth Intelligence</span>
@@ -192,7 +192,7 @@ const DashboardSidebar = ({
           </p>
           <button 
             onClick={() => navigate("/analytics")}
-            className="w-full flex items-center justify-center gap-1 text-[9.5px] font-black uppercase text-indigo-750 dark:text-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-300 transition py-2 bg-indigo-500/10 border border-indigo-500/20 hover:border-indigo-500/30 rounded-xl cursor-pointer"
+            className="w-full flex items-center justify-center gap-1 text-[9.5px] font-black uppercase text-indigo-750 dark:text-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-300 transition py-2 bg-indigo-500/10 rounded-xl cursor-pointer shadow-2xs"
           >
             <span>Analyze Growth Stream</span>
             <ArrowUpRight size={11} />

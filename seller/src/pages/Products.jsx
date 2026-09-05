@@ -295,7 +295,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
       }));
     };
 
-    const inputClass = "w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none focus:border-orange-500 bg-white dark:bg-slate-900 transition";
+    const inputClass = "w-full px-4 py-3 rounded-xl text-slate-800 dark:text-slate-100 text-sm outline-none focus:ring-1 focus:ring-orange-500 bg-white dark:bg-slate-900 transition";
 
     switch (field.fieldType) {
       case "Text Area":
@@ -326,7 +326,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
         );
       case "Multi Select":
         return (
-          <div className="flex flex-wrap gap-2.5 p-3 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-950">
+          <div className="flex flex-wrap gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-950">
             {field.selectOptions?.map(opt => {
               const currentArray = Array.isArray(value) ? value : [];
               const isChecked = currentArray.includes(opt);
@@ -341,7 +341,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                         : currentArray.filter(item => item !== opt);
                       onChange(updated);
                     }}
-                    className="rounded border-slate-300 text-orange-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                    className="rounded text-orange-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                   />
                   <span>{opt}</span>
                 </label>
@@ -351,7 +351,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
         );
       case "Radio Button":
         return (
-          <div className="flex flex-wrap gap-4 p-2 bg-slate-50/50 border border-slate-200/40 rounded-xl">
+          <div className="flex flex-wrap gap-4 p-2 bg-slate-50/50 rounded-xl">
             {field.selectOptions?.map(opt => (
               <label key={opt} className="flex items-center gap-1.5 text-xs text-slate-700 font-semibold cursor-pointer">
                 <input
@@ -448,7 +448,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
               type="color"
               value={value || "#ff0000"}
               onChange={(e) => onChange(e.target.value)}
-              className="w-10 h-10 border border-slate-200 dark:border-slate-800 rounded-lg cursor-pointer bg-white dark:bg-slate-900"
+              className="w-10 h-10 rounded-lg cursor-pointer bg-white dark:bg-slate-900 shadow-2xs"
             />
             <span className="text-xs text-slate-500 font-mono font-bold">{value || "#ff0000"}</span>
           </div>
@@ -534,9 +534,9 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
   return (
     <div className="space-y-6 animate-fadeIn pb-24 sm:pb-8">
       {/* Single Consolidated Product Catalog Control Panel */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 shadow-xs space-y-6">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-xs space-y-6">
         {/* 1. Header & Add Product Action */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4">
           <div>
             <h2 className="text-xl md:text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">Product Catalog</h2>
             <p className="text-xs text-slate-400 mt-0.5">Manage details, stocks, pricing, and visual representations.</p>
@@ -552,32 +552,32 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
 
         {/* 2. Mini Stats Metrics Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800 rounded-xl p-4 flex items-center justify-between transition-all hover:border-slate-300 dark:hover:border-slate-700">
+          <div className="bg-slate-50 dark:bg-slate-950 rounded-xl p-4 flex items-center justify-between transition-all">
             <div>
               <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Active Listings</span>
               <h4 className="text-base font-black text-slate-900 dark:text-slate-100 mt-0.5">{products.length} Items</h4>
             </div>
-            <div className="h-9 w-9 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500 border border-orange-500/20">
+            <div className="h-9 w-9 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500">
               <Package size={17} />
             </div>
           </div>
 
-          <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800 rounded-xl p-4 flex items-center justify-between transition-all hover:border-slate-300 dark:hover:border-slate-700">
+          <div className="bg-slate-50 dark:bg-slate-950 rounded-xl p-4 flex items-center justify-between transition-all">
             <div>
               <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Inventory Capital</span>
               <h4 className="text-base font-black text-slate-900 dark:text-slate-100 mt-0.5">₹{totalValue.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</h4>
             </div>
-            <div className="h-9 w-9 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20">
+            <div className="h-9 w-9 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500">
               <DollarSign size={17} />
             </div>
           </div>
 
-          <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800 rounded-xl p-4 flex items-center justify-between transition-all hover:border-slate-300 dark:hover:border-slate-700">
+          <div className="bg-slate-50 dark:bg-slate-950 rounded-xl p-4 flex items-center justify-between transition-all">
             <div>
               <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Low Stock Warnings</span>
               <h4 className="text-base font-black text-slate-900 dark:text-slate-100 mt-0.5">{lowStockCount} Products</h4>
             </div>
-            <div className="h-9 w-9 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500 border border-red-500/20">
+            <div className="h-9 w-9 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500">
               <AlertTriangle size={17} />
             </div>
           </div>
@@ -592,7 +592,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
               placeholder="Search products by title, details..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 text-sm outline-none transition font-semibold focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 text-sm outline-none transition font-semibold focus:outline-none focus:ring-2 focus:ring-orange-500/30"
             />
           </div>
           
@@ -601,7 +601,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs outline-none transition bg-slate-50 dark:bg-slate-950 font-bold cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-900"
+              className="px-3.5 py-2.5 rounded-xl text-slate-700 dark:text-slate-300 text-xs outline-none transition bg-slate-50 dark:bg-slate-950 font-bold cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-900"
             >
               <option value="All">All Categories</option>
               {categories.filter(c => c !== "All").map(cat => (
@@ -612,7 +612,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
             <select
               value={stockFilter}
               onChange={(e) => setStockFilter(e.target.value)}
-              className="px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs outline-none transition bg-slate-50 dark:bg-slate-950 font-bold cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-900"
+              className="px-3.5 py-2.5 rounded-xl text-slate-700 dark:text-slate-300 text-xs outline-none transition bg-slate-50 dark:bg-slate-950 font-bold cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-900"
             >
               <option value="All">All Stocks</option>
               <option value="Healthy">Healthy Stock</option>
@@ -623,7 +623,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs outline-none transition bg-slate-50 dark:bg-slate-950 font-bold cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-900"
+              className="px-3.5 py-2.5 rounded-xl text-slate-700 dark:text-slate-300 text-xs outline-none transition bg-slate-50 dark:bg-slate-950 font-bold cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-900"
             >
               <option value="name-asc">Sort: A-Z</option>
               <option value="price-asc">Price: Low to High</option>
@@ -647,7 +647,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
         <div className="flex md:hidden w-full gap-2 shrink-0 pt-1">
           <button
             onClick={() => setIsFilterDrawerOpen(true)}
-            className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 hover:bg-slate-100 text-xs font-extrabold text-slate-700 dark:text-slate-300 rounded-xl transition cursor-pointer"
+            className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-slate-50 dark:bg-slate-950 hover:bg-slate-100 text-xs font-extrabold text-slate-700 dark:text-slate-300 rounded-xl transition cursor-pointer"
           >
             <SlidersHorizontal size={14} />
             <span>Filters Drawer</span>
@@ -655,7 +655,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
           {(searchQuery || categoryFilter !== "All" || stockFilter !== "All" || sortBy !== "name-asc") && (
             <button
               onClick={handleClearFilters}
-              className="px-4 py-2.5 border border-orange-500/20 bg-orange-50 dark:bg-orange-950/20 text-xs font-extrabold text-orange-500 rounded-xl transition cursor-pointer"
+              className="px-4 py-2.5 bg-orange-50 dark:bg-orange-950/20 text-xs font-extrabold text-orange-500 rounded-xl transition cursor-pointer"
             >
               Reset
             </button>
@@ -671,7 +671,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
         />
         <div className={`absolute top-0 right-0 h-full w-80 bg-white dark:bg-slate-900 shadow-2xl p-6 flex flex-col justify-between transform transition-transform duration-300 ease-out ${isFilterDrawerOpen ? "translate-x-0" : "translate-x-full"}`}>
           <div className="space-y-6">
-            <div className="flex items-center justify-between border-b border-slate-200/40 dark:border-slate-800/40 pb-3">
+            <div className="flex items-center justify-between pb-3">
               <h3 className="font-black text-sm text-slate-900 dark:text-slate-100 uppercase tracking-wider">Refine Catalog</h3>
               <button onClick={() => setIsFilterDrawerOpen(false)} className="text-slate-400 hover:text-slate-800 p-1.5 rounded-none hover:bg-slate-50 dark:hover:bg-slate-800 transition">
                 <X size={18} />
@@ -684,7 +684,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                 <select
                   value={categoryFilter}
                   onChange={(e) => setCategoryFilter(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-xs outline-none bg-white dark:bg-slate-900 font-bold cursor-pointer"
+                  className="w-full px-3 py-2.5 rounded-none text-slate-800 dark:text-slate-100 text-xs outline-none bg-slate-50 dark:bg-slate-950 font-bold cursor-pointer"
                 >
                   <option value="All">All Categories</option>
                   {categories.filter(c => c !== "All").map(cat => (
@@ -698,7 +698,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                 <select
                   value={stockFilter}
                   onChange={(e) => setStockFilter(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-xs outline-none bg-white dark:bg-slate-900 font-bold cursor-pointer"
+                  className="w-full px-3 py-2.5 rounded-none text-slate-800 dark:text-slate-100 text-xs outline-none bg-slate-50 dark:bg-slate-950 font-bold cursor-pointer"
                 >
                   <option value="All">All Stocks</option>
                   <option value="Healthy">Healthy Stock</option>
@@ -712,7 +712,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-xs outline-none bg-white dark:bg-slate-900 font-bold cursor-pointer"
+                  className="w-full px-3 py-2.5 rounded-none text-slate-800 dark:text-slate-100 text-xs outline-none bg-slate-50 dark:bg-slate-950 font-bold cursor-pointer"
                 >
                   <option value="name-asc">Sort: A-Z</option>
                   <option value="price-asc">Price: Low to High</option>
@@ -724,13 +724,13 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
             </div>
           </div>
 
-          <div className="space-y-2.5 pt-4 border-t border-slate-200/40 dark:border-slate-800/40">
+          <div className="space-y-2.5 pt-4">
             <button
               onClick={() => {
                 handleClearFilters();
                 setIsFilterDrawerOpen(false);
               }}
-              className="w-full py-2.5 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-bold rounded-none text-xs uppercase transition cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800"
+              className="w-full py-2.5 text-slate-700 dark:text-slate-300 font-bold rounded-none text-xs uppercase transition cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 bg-slate-100 dark:bg-slate-800"
             >
               Clear Filters
             </button>
@@ -749,7 +749,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
         // Premium skeletons block
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="bg-white dark:bg-slate-900 border border-slate-200/40 dark:border-slate-800/40 rounded-none p-4.5 space-y-4 animate-pulse">
+            <div key={i} className="bg-white dark:bg-slate-900 rounded-none p-4.5 space-y-4 animate-pulse">
               <div className="h-40 bg-slate-100 dark:bg-slate-800 rounded-none" />
               <div className="space-y-2">
                 <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/3" />
@@ -761,8 +761,8 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
         </div>
       ) : filteredProducts.length === 0 ? (
         // Custom empty onboarding state
-        <div className="border border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-none p-12 text-center max-w-xl mx-auto space-y-4 shadow-xs">
-          <div className="mx-auto h-16 w-16 rounded-full bg-orange-50 border border-orange-100 flex items-center justify-center text-brand">
+        <div className="bg-white dark:bg-slate-900 rounded-none p-12 text-center max-w-xl mx-auto space-y-4 shadow-xs">
+          <div className="mx-auto h-16 w-16 rounded-full bg-orange-50 flex items-center justify-center text-brand">
             <Package size={28} />
           </div>
           <div className="space-y-1">
@@ -775,7 +775,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
             { (searchQuery || categoryFilter !== "All" || stockFilter !== "All" || sortBy !== "name-asc") ? (
               <button
                 onClick={handleClearFilters}
-                className="px-5 py-2.5 border border-slate-200 dark:border-slate-800 rounded-none text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"
+                className="px-5 py-2.5 rounded-none text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer bg-slate-100 dark:bg-slate-800"
               >
                 Clear Active Filters
               </button>
@@ -798,16 +798,16 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
               return (
                 <div 
                   key={item._id}
-                  className="bg-white dark:bg-slate-900 border border-slate-200/40 dark:border-slate-800/40 rounded-none p-4 shadow-sm hover:shadow-md transition flex flex-col justify-between gap-4"
+                  className="bg-white dark:bg-slate-900 rounded-none p-4 shadow-sm hover:shadow-md transition flex flex-col justify-between gap-4"
                 >
                   <div className="flex gap-4">
                     <img 
                       src={item.image?.[0] || item.images?.[0] || "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100"} 
                       alt={item.name} 
-                      className="h-20 w-20 object-cover rounded-none border border-slate-200/30 dark:border-slate-800/40 shadow-xs shrink-0" 
+                      className="h-20 w-20 object-cover rounded-none shadow-xs shrink-0" 
                     />
                     <div className="min-w-0 flex-1 space-y-1.5 text-left">
-                      <span className="inline-block text-[9px] font-black uppercase bg-slate-50 dark:bg-slate-950 text-slate-500 dark:text-slate-400 border border-slate-200/40 dark:border-slate-800 px-2 py-0.5 rounded-none">
+                      <span className="inline-block text-[9px] font-black uppercase bg-slate-50 dark:bg-slate-950 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-none">
                         {item.category}
                       </span>
                       <h4 className="text-sm font-extrabold text-slate-900 dark:text-slate-100 leading-snug truncate cursor-pointer" onClick={() => handleEditProductClick(item)}>
@@ -815,24 +815,24 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                       </h4>
                       <div className="flex justify-between items-center pt-1">
                         <span className="text-sm font-black text-slate-900 dark:text-slate-100">₹{item.price.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
-                        <span className={`inline-flex px-2 py-0.5 rounded-none text-[9px] font-bold uppercase tracking-wider border ${ stock === 0 ? "bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 border-red-100 dark:border-red-900/50" : stock < 10 ? "bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/50" : "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/50" }`}>
+                        <span className={`inline-flex px-2 py-0.5 rounded-none text-[9px] font-bold uppercase tracking-wider ${ stock === 0 ? "bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400" : stock < 10 ? "bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400" : "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400" }`}>
                           {stock === 0 ? "Out of Stock" : stock < 10 ? `${stock} Left` : `${stock} Units`}
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex gap-2 pt-3 border-t border-slate-200/40 dark:border-slate-800/40">
+                  <div className="flex gap-2 pt-3">
                     <button
                       onClick={() => handleEditProductClick(item)}
-                      className="flex-1 flex items-center justify-center gap-1 py-2 rounded-none bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 text-xs font-bold text-slate-700 dark:text-slate-300 transition cursor-pointer"
+                      className="flex-1 flex items-center justify-center gap-1 py-2 rounded-none bg-slate-50 dark:bg-slate-950 hover:bg-slate-100 text-xs font-bold text-slate-700 dark:text-slate-300 transition cursor-pointer"
                     >
                       <Edit3 size={13} />
                       <span>Edit</span>
                     </button>
                     <button
                       onClick={() => deleteProduct(item._id)}
-                      className="flex-1 flex items-center justify-center gap-1 py-2 rounded-none bg-red-50 border border-red-100 hover:bg-red-100/40 text-xs font-bold text-red-600 transition cursor-pointer"
+                      className="flex-1 flex items-center justify-center gap-1 py-2 rounded-none bg-red-50 hover:bg-red-100/40 text-xs font-bold text-red-600 transition cursor-pointer"
                     >
                       <Trash2 size={13} />
                       <span>Delete</span>
@@ -842,10 +842,10 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
               );
             })}
           </div>
-          <div className="hidden lg:block overflow-x-auto bg-white dark:bg-slate-900 border border-slate-200/40 dark:border-slate-800/40 rounded-none shadow-sm">
+          <div className="hidden lg:block overflow-x-auto bg-white dark:bg-slate-900 rounded-none shadow-sm">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-200/40 dark:border-slate-800/40 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-slate-50/50 dark:bg-slate-950/20">
+                <tr className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-slate-50/50 dark:bg-slate-950/20">
                   <th className="py-3.5 px-4 w-16">Item</th>
                   <th className="py-3.5 px-4">Product details</th>
                   <th className="py-3.5 px-4">Category</th>
@@ -858,12 +858,12 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                 {filteredProducts.map((item) => {
                   const stock = parseInt(item.stock) || 0;
                   return (
-                    <tr key={item._id} className="border-b border-slate-200/20 dark:border-slate-800/30 hover:bg-slate-50/40 dark:hover:bg-slate-950/20 transition duration-150">
+                    <tr key={item._id} className="hover:bg-slate-50/40 dark:hover:bg-slate-950/20 transition duration-150">
                       <td className="py-4 px-4">
                         <img 
                           src={item.image?.[0] || item.images?.[0] || "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100"} 
                           alt={item.name} 
-                          className="h-10 w-10 object-cover rounded-none border border-slate-200/40 dark:border-slate-800 shadow-sm" 
+                          className="h-10 w-10 object-cover rounded-none shadow-sm" 
                         />
                       </td>
                       <td className="py-4 px-4">
@@ -871,13 +871,13 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                         <p className="text-[10px] text-slate-400 mt-0.5 line-clamp-1 max-w-sm text-left">{item.description}</p>
                       </td>
                       <td className="py-4 px-4">
-                        <span className="text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-950 border border-slate-200/30 dark:border-slate-800/40 px-2.5 py-0.5 rounded-none">
+                        <span className="text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-950 px-2.5 py-0.5 rounded-none">
                           {item.category}
                         </span>
                       </td>
                       <td className="py-4 px-4 text-sm font-black text-slate-900 dark:text-slate-100 text-right">₹{item.price.toFixed(2)}</td>
                       <td className="py-4 px-4 text-center">
-                        <span className={`inline-flex px-2.5 py-0.5 rounded-none text-[10px] font-bold uppercase tracking-wider border ${ stock === 0 ? "bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 border-red-100 dark:border-red-900/50" : stock < 10 ? "bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-450 border-amber-100 dark:border-amber-900/50" : "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-450 border-emerald-100 dark:border-emerald-900/50" }`}>
+                        <span className={`inline-flex px-2.5 py-0.5 rounded-none text-[10px] font-bold uppercase tracking-wider ${ stock === 0 ? "bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400" : stock < 10 ? "bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-450" : "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-450" }`}>
                           {stock === 0 ? "Out of Stock" : stock < 10 ? `Low: ${stock} Left` : `${stock} Units`}
                         </span>
                       </td>
@@ -920,7 +920,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
       {/* Edit Product Modal */}
       {editingProduct && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-none p-6 md:p-8 flex flex-col max-h-[90vh] shadow-2xl relative border border-slate-200/40 dark:border-slate-800 animate-scaleUp">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-none p-6 md:p-8 flex flex-col max-h-[90vh] shadow-2xl relative animate-scaleUp">
             <button
               onClick={() => setEditingProduct(null)}
               className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-none transition cursor-pointer z-10"
@@ -928,7 +928,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
               <X size={20} />
             </button>
 
-            <div className="pb-4 border-b border-slate-200/40 dark:border-slate-800 shrink-0">
+            <div className="pb-4 shrink-0">
               <h2 className="text-xl font-black text-slate-900 dark:text-slate-100 tracking-tight">Edit Product Listing</h2>
               <p className="text-xs text-slate-400 mt-1">Update product specifications, details, and gallery images.</p>
             </div>
@@ -942,7 +942,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                       type="text"
                       value={editForm.name}
                       onChange={(e) => setEditForm({...editForm, name: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                       required
                     />
                   </div>
@@ -952,7 +952,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                     <select
                       value={editForm.category}
                       onChange={(e) => setEditForm({...editForm, category: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900 cursor-pointer"
+                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:ring-offset-2 dark:focus:ring-offset-slate-900 cursor-pointer"
                       required
                     >
                       <option value="">Select Category</option>
@@ -969,7 +969,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                     <select
                       value={editForm.collection}
                       onChange={(e) => setEditForm({...editForm, collection: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900 cursor-pointer"
+                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:ring-offset-2 dark:focus:ring-offset-slate-900 cursor-pointer"
                     >
                       <option value="General">General</option>
                       <option value="Women">Women</option>
@@ -985,7 +985,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                       type="text"
                       value={editForm.subCategory}
                       onChange={(e) => setEditForm({...editForm, subCategory: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     />
                   </div>
                 </div>
@@ -997,7 +997,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                       type="text"
                       value={editForm.brand}
                       onChange={(e) => setEditForm({...editForm, brand: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     />
                   </div>
 
@@ -1007,7 +1007,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                       type="text"
                       value={editForm.sku}
                       onChange={(e) => setEditForm({...editForm, sku: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     />
                   </div>
                 </div>
@@ -1020,7 +1020,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                       step="0.01"
                       value={editForm.price}
                       onChange={(e) => setEditForm({...editForm, price: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                       required
                     />
                   </div>
@@ -1031,7 +1031,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                       type="number"
                       value={editForm.stock}
                       onChange={(e) => setEditForm({...editForm, stock: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                     />
                   </div>
                 </div>
@@ -1042,7 +1042,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                     rows={3}
                     value={editForm.description}
                     onChange={(e) => setEditForm({...editForm, description: e.target.value})}
-                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition resize-none focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none text-slate-800 dark:text-slate-100 text-sm outline-none transition resize-none focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                   />
                 </div>
 
@@ -1052,7 +1052,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                     <select
                       value={editForm.audience}
                       onChange={(e) => setEditForm({...editForm, audience: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900 cursor-pointer"
+                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:ring-offset-2 dark:focus:ring-offset-slate-900 cursor-pointer"
                     >
                       <option value="Unisex">Unisex</option>
                       <option value="Men">Men</option>
@@ -1067,7 +1067,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                       type="text"
                       value={editForm.shortDescription}
                       onChange={(e) => setEditForm({...editForm, shortDescription: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                       placeholder="Short summary description"
                     />
                   </div>
@@ -1080,7 +1080,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                       type="text"
                       value={editForm.tags}
                       onChange={(e) => setEditForm({...editForm, tags: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                       placeholder="e.g. shoes, cotton, casual"
                     />
                   </div>
@@ -1091,7 +1091,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                       type="text"
                       value={editForm.keywords}
                       onChange={(e) => setEditForm({...editForm, keywords: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                       placeholder="e.g. nike sneakers, summer wear"
                     />
                   </div>
@@ -1104,7 +1104,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                       type="text"
                       value={editForm.highlights}
                       onChange={(e) => setEditForm({...editForm, highlights: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                       placeholder="e.g. Premium leather, Soft cushioning"
                     />
                   </div>
@@ -1115,14 +1115,14 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                       type="text"
                       value={editForm.careInstructions}
                       onChange={(e) => setEditForm({...editForm, careInstructions: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                       placeholder="e.g. Hand wash only, Lay flat to dry"
                     />
                   </div>
                 </div>
 
                 {/* Custom Dynamic Specifications Builder */}
-                <div className="space-y-4 pt-4 border-t border-slate-200/40 dark:border-slate-800 text-left animate-fade-in">
+                <div className="space-y-4 pt-4 text-left animate-fade-in">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5 text-xs font-black text-indigo-600 uppercase tracking-wider">
                       <Layers size={13} />
@@ -1139,13 +1139,13 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                   </div>
 
                   {editCustomAttributes.length === 0 ? (
-                    <div className="border border-dashed border-slate-200 dark:border-slate-800 rounded-none py-8 text-center text-slate-400 text-xs italic bg-slate-50/50 dark:bg-slate-950">
+                    <div className="rounded-none py-8 text-center text-slate-400 text-xs italic bg-slate-50/50 dark:bg-slate-950">
                       No attributes added yet. Click "Add Attribute" to add custom key-value specifications.
                     </div>
                   ) : (
                     <div className="space-y-3">
                       {editCustomAttributes.map((attr, idx) => (
-                        <div key={idx} className="flex items-center gap-2.5 p-3.5 border border-slate-200 dark:border-slate-800 rounded-none bg-white dark:bg-slate-900 shadow-sm transition hover:shadow-md">
+                        <div key={idx} className="flex items-center gap-2.5 p-3.5 rounded-none bg-white dark:bg-slate-900 shadow-sm transition hover:shadow-md">
                           <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div className="space-y-1">
                               <label className="text-[9px] font-bold text-slate-400 uppercase block">Attribute Name</label>
@@ -1161,7 +1161,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                                     return updated;
                                   });
                                 }}
-                                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 rounded-none text-slate-800 dark:text-slate-100 text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                               />
                             </div>
                             <div className="space-y-1">
@@ -1178,7 +1178,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                                     return updated;
                                   });
                                 }}
-                                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 rounded-none border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500/40 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 rounded-none text-slate-800 dark:text-slate-100 text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
                               />
                             </div>
                           </div>
@@ -1231,7 +1231,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                 </div>
 
                 {/* Gallery Image Manager */}
-                <div className="space-y-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <div className="space-y-3 pt-3">
                   <div className="flex items-center justify-between">
                     <div>
                       <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Product Gallery</label>
@@ -1264,7 +1264,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                   ) : (
                     <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
                       {editImages.map((imgObj, idx) => (
-                        <div key={imgObj._id} className="relative group border border-slate-200 dark:border-slate-800 rounded-none overflow-hidden p-1.5 flex flex-col gap-1.5 shadow-sm bg-slate-50 dark:bg-slate-950">
+                        <div key={imgObj._id} className="relative group rounded-none overflow-hidden p-1.5 flex flex-col gap-1.5 shadow-sm bg-slate-50 dark:bg-slate-950">
                           <img
                             src={imgObj.imageUrl}
                             alt="Product"
@@ -1288,7 +1288,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                               </button>
                             </div>
 
-                            <div className="flex items-center justify-between border-t border-slate-200/55 dark:border-slate-800 pt-1">
+                            <div className="flex items-center justify-between pt-1">
                               <button
                                 type="button"
                                 disabled={idx === 0}
@@ -1315,11 +1315,11 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-slate-200/40 dark:border-slate-800/40 shrink-0">
+              <div className="flex justify-end gap-3 pt-4 shrink-0">
                 <button
                   type="button"
                   onClick={() => setEditingProduct(null)}
-                  className="px-4 py-2 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 rounded-none text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"
+                  className="px-4 py-2 text-slate-700 dark:text-slate-300 rounded-none text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer bg-slate-100 dark:bg-slate-800"
                 >
                   Cancel
                 </button>

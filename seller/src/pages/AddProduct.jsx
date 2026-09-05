@@ -920,93 +920,171 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
         Color: ["Red", "White", "Black"]
       }
     }, null, 2));
-    toast.info("Example JSON loaded! Click Enrich below.");
+toast.info("Example JSON loaded! Click Enrich below.");
   };
 
   // Find subcategories list for selected category
   const selectedCatObj = categories.find(c => c.name === newProduct.category);
   const subCategoriesList = selectedCatObj ? selectedCatObj.subcategories : [];
+  
+  // Calculate Form Completeness Percentage
+  const requiredFields = [
+    Boolean(newProduct.name?.trim()),
+    Boolean(newProduct.price && parseFloat(newProduct.price) > 0),
+    Boolean(newProduct.category?.trim()),
+    Boolean(newProduct.stock !== "" && parseInt(newProduct.stock) >= 0),
+    Boolean(newProduct.description?.trim()),
+    Boolean(uploadedFiles.length > 0)
+  ];
+  const completedCount = requiredFields.filter(Boolean).length;
+  const completionPercentage = Math.round((completedCount / requiredFields.length) * 100);
 
   return (
-    <div className="space-y-6 text-left max-w-7xl mx-auto">
-      {/* Header section */}
-      <div className="border-b border-slate-200 dark:border-white/[0.08] pb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Smart Product Creation</h2>
-          <p className="text-xs text-slate-400 mt-1">Select your preferred mode: manually fill traditional forms, paste raw specs via Smart AI, or supply structured JSON layouts.</p>
+    <div className="w-full px-1 sm:px-2 py-1 space-y-3.5 text-left pb-12">
+      
+      {/* ==================== HERO HEADER & MODE SWITCHER ==================== */}
+      <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-xs relative overflow-hidden space-y-3">
+        <div className="absolute top-0 right-0 h-40 w-40 bg-gradient-to-bl from-orange-500/10 via-amber-500/5 to-transparent rounded-full blur-2xl pointer-events-none" />
+
+        {/* Top Header Row */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-10">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-[10px] font-black uppercase tracking-widest bg-orange-500/10 text-orange-500 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                <Sparkles size={10} /> Catalog Studio
+              </span>
+              <span className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                CartNOW Merchant Engine
+              </span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+              Create & Publish Product
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-2xl leading-relaxed">
+              Build your product listing using traditional form inputs, paste raw specs for instant AI extraction, or supply structured JSON schemas.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3 shrink-0">
+            <button
+              type="button"
+              onClick={() => setShowRightSidebar(prev => !prev)}
+              className="flex items-center gap-1.5 px-3.5 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold transition cursor-pointer shadow-2xs"
+            >
+              {showRightSidebar ? (
+                <>
+                  <EyeOff size={14} className="text-slate-500" />
+                  <span>Hide Preview</span>
+                </>
+              ) : (
+                <>
+                  <Eye size={14} className="text-orange-500" />
+                  <span>Show Preview</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
-        <button
-          type="button"
-          onClick={() => setShowRightSidebar(prev => !prev)}
-          className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold transition cursor-pointer shrink-0 border border-slate-200 dark:border-slate-700 shadow-xs"
-        >
-          {showRightSidebar ? (
-            <>
-              <EyeOff size={14} className="text-slate-500" />
-              <span>Hide Preview Box</span>
-            </>
-          ) : (
-            <>
-              <Eye size={14} className="text-indigo-500" />
-              <span>Show Preview Box</span>
-            </>
-          )}
-        </button>
+
+        {/* Progress & Mode Switcher Bar */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center pt-2 relative z-10">
+          
+          {/* Segmented Mode Control */}
+          <div className="md:col-span-7 flex bg-slate-100 dark:bg-slate-950 p-1.5 rounded-2xl w-full shadow-inner">
+            <button
+              type="button"
+              onClick={() => setActiveMode("form")}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-black uppercase tracking-wider transition cursor-pointer ${
+                activeMode === "form" 
+                  ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs" 
+                  : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300" 
+              }`}
+            >
+              <FileText size={14} />
+              <span>Form Mode</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveMode("ai")}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-black uppercase tracking-wider transition cursor-pointer ${
+                activeMode === "ai" 
+                  ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-xs" 
+                  : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300" 
+              }`}
+            >
+              <Sparkles size={14} className={activeMode === "ai" ? "animate-pulse" : ""} />
+              <span>Smart AI Mode</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveMode("json")}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-black uppercase tracking-wider transition cursor-pointer ${
+                activeMode === "json" 
+                  ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs" 
+                  : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300" 
+              }`}
+            >
+              <Code size={14} />
+              <span>JSON Mode</span>
+            </button>
+          </div>
+
+          {/* Real-time Listing Completeness Bar */}
+          <div className="md:col-span-5 bg-slate-50 dark:bg-slate-950/60 p-3 rounded-2xl flex flex-col gap-1.5 shadow-2xs">
+            <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-wider">
+              <span className="text-slate-400">Listing Readiness</span>
+              <span className={completionPercentage === 100 ? "text-emerald-500 font-extrabold" : "text-orange-500 font-extrabold"}>
+                {completionPercentage}% Complete ({completedCount}/6 Required)
+              </span>
+            </div>
+            <div className="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+              <div
+                className={`h-full transition-all duration-500 ${
+                  completionPercentage === 100 
+                    ? "bg-emerald-500" 
+                    : completionPercentage > 50 
+                    ? "bg-orange-500" 
+                    : "bg-amber-500"
+                }`}
+                style={{ width: `${completionPercentage}%` }}
+              />
+            </div>
+          </div>
+
+        </div>
       </div>
 
-      {/* Switcher Tab Layout */}
-      <div className="flex bg-slate-100 dark:bg-slate-900 p-1.5 rounded-none w-full max-w-md">
-        <button
-          onClick={() => setActiveMode("form")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-none text-xs font-bold transition cursor-pointer ${activeMode === "form" ? "bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-sm border border-slate-200/50 dark:border-white/[0.04]" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300" }`}
-        >
-          <FileText size={14} />
-          <span>Form Mode</span>
-        </button>
-        <button
-          onClick={() => setActiveMode("ai")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-none text-xs font-bold transition cursor-pointer ${activeMode === "ai" ? "bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-sm border border-slate-200/50 dark:border-white/[0.04]" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300" }`}
-        >
-          <Sparkles size={14} />
-          <span>Smart AI Mode</span>
-        </button>
-        <button
-          onClick={() => setActiveMode("json")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-none text-xs font-bold transition cursor-pointer ${activeMode === "json" ? "bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-sm border border-slate-200/50 dark:border-white/[0.04]" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300" }`}
-        >
-          <Code size={14} />
-          <span>JSON Mode</span>
-        </button>
-      </div>
-
-      {/* Main split dashboard layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start transition-all duration-500 ease-in-out">
-        {/* Left Side: Creation Forms & Textareas */}
-        <div className={`space-y-6 transition-all duration-500 ease-in-out ${showRightSidebar ? "lg:col-span-7" : "lg:col-span-12"}`}>
-          {/* Smart AI Mode Textarea Block */}
+      {/* ==================== MAIN SPLIT DASHBOARD LAYOUT ==================== */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 items-start">
+        
+        {/* LEFT SIDE: CREATION CARDS & FORMS */}
+        <div className={`space-y-3 transition-all duration-500 ease-in-out ${showRightSidebar ? "lg:col-span-7" : "lg:col-span-12"}`}>
+          
+          {/* SMART AI MODE PANEL */}
           {activeMode === "ai" && (
-            <div className="bg-white dark:bg-slate-900 border border-slate-200/40 dark:border-white/[0.08] rounded-none p-5 shadow-sm space-y-4">
-              <div className="flex justify-between items-center border-b border-slate-100 dark:border-white/[0.06] pb-3">
-                <div className="flex items-center gap-2 text-violet-600 dark:text-violet-400 font-extrabold uppercase text-xs tracking-wider">
-                  <Sparkles size={14} className="animate-pulse" />
-                  <span>AI Document Parser</span>
+            <div className="bg-gradient-to-br from-violet-950/20 via-indigo-950/20 to-slate-900 rounded-2xl p-4 shadow-xs space-y-3 relative overflow-hidden">
+              <div className="flex justify-between items-center pb-2">
+                <div className="flex items-center gap-2 text-violet-400 font-black uppercase text-xs tracking-wider">
+                  <Sparkles size={16} className="animate-pulse text-violet-400" />
+                  <span>AI Product Document Extractor</span>
                 </div>
                 <button
+                  type="button"
                   onClick={pasteExampleText}
-                  className="text-[10px] font-black text-indigo-600 bg-indigo-50 dark:text-indigo-400 dark:bg-slate-950 px-2 py-1 rounded-none transition hover:bg-indigo-100/50 cursor-pointer"
+                  className="text-[10px] font-black text-indigo-300 bg-indigo-500/20 px-3 py-1 rounded-xl transition hover:bg-indigo-500/30 cursor-pointer shadow-2xs"
                 >
-                  Load Example Info
+                  Load Sample Info
                 </button>
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Paste Product Information</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Paste Product Details or Raw Text</label>
                 <textarea
-                  rows={10}
+                  rows={8}
                   value={aiText}
                   onChange={(e) => setAiText(e.target.value)}
-                  placeholder="Paste product details here (e.g. descriptions, tags, specifications copied from other websites, brochures, or raw notes)..."
-                  className="w-full px-4 py-3 rounded-none border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition resize-y font-sans leading-relaxed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                  placeholder="Paste specs, descriptions, features copied from website notes, PDF specification sheets, or supplier catalogs..."
+                  className="w-full px-4 py-3 rounded-2xl bg-slate-950 text-slate-100 text-xs outline-none transition resize-y font-sans leading-relaxed focus:ring-2 focus:ring-violet-500 shadow-2xs"
                 />
               </div>
 
@@ -1014,41 +1092,43 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                 type="button"
                 onClick={handleAIParseText}
                 disabled={loaders.parseText}
-                className="w-full py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-slate-100 dark:text-white rounded-none text-xs font-black uppercase tracking-wider transition hover:shadow-lg hover:shadow-violet-600/20 active:scale-98 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="w-full py-3.5 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 shadow-md shadow-violet-600/20 active:scale-98 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 <Sparkles size={14} className={loaders.parseText ? "animate-spin" : ""} />
-                <span>{loaders.parseText ? "Extracting Structured Product Catalog..." : "AI Parse & Populate"}</span>
+                <span>{loaders.parseText ? "Extracting Structured Product Catalog..." : "AI Parse & Populate Form"}</span>
               </button>
             </div>
           )}
 
-          {/* JSON Mode Editor Block */}
+          {/* JSON MODE EDITOR PANEL */}
           {activeMode === "json" && (
-            <div className="bg-white dark:bg-slate-900 border border-slate-200/40 dark:border-white/[0.08] rounded-none p-5 shadow-sm space-y-4">
-              <div className="flex justify-between items-center border-b border-slate-100 dark:border-white/[0.06] pb-3">
-                <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-extrabold uppercase text-xs tracking-wider">
-                  <Code size={14} />
-                  <span>JSON Editor & Validator</span>
+            <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-xs space-y-3">
+              <div className="flex justify-between items-center pb-2">
+                <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-black uppercase text-xs tracking-wider">
+                  <Code size={16} />
+                  <span>JSON Editor & Schema Validator</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
+                    type="button"
                     onClick={() => setShowJsonGuide(!showJsonGuide)}
-                    className="text-[10px] font-black text-slate-600 bg-slate-100 hover:bg-slate-200/60 dark:text-slate-300 dark:bg-slate-900/60 dark:hover:bg-slate-800/80 px-2.5 py-1 rounded-none transition flex items-center gap-1 cursor-pointer"
+                    className="text-[10px] font-black text-slate-600 bg-slate-100 hover:bg-slate-200 dark:text-slate-300 dark:bg-slate-800 px-3 py-1 rounded-xl transition flex items-center gap-1 cursor-pointer shadow-2xs"
                   >
                     <HelpCircle size={11} />
                     <span>{showJsonGuide ? "Hide Guidelines" : "JSON Guidelines"}</span>
                   </button>
                   <button
+                    type="button"
                     onClick={pasteExampleJson}
-                    className="text-[10px] font-black text-indigo-600 bg-indigo-50 dark:text-indigo-400 dark:bg-slate-950 px-2 py-1 rounded-none transition hover:bg-indigo-100/50 cursor-pointer"
+                    className="text-[10px] font-black text-indigo-600 bg-indigo-50 dark:text-indigo-400 dark:bg-slate-950 px-3 py-1 rounded-xl transition hover:bg-indigo-100/50 cursor-pointer shadow-2xs"
                   >
-                    Load Example JSON
+                    Load Sample JSON
                   </button>
                 </div>
               </div>
 
               {showJsonGuide && (
-                <div className="bg-slate-50 dark:bg-slate-950/40 border border-slate-200/60 dark:border-slate-800 rounded-none p-4 text-[11px] text-slate-600 dark:text-slate-400 space-y-3 leading-relaxed text-left">
+                <div className="bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-4 text-[11px] text-slate-600 dark:text-slate-400 space-y-3 leading-relaxed text-left shadow-2xs">
                   <h4 className="font-extrabold text-slate-800 dark:text-white uppercase tracking-wider text-[10px] flex items-center gap-1">
                     <HelpCircle size={12} className="text-indigo-500" />
                     <span>JSON Schema Rules & Format</span>
@@ -1059,32 +1139,8 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                     <ul className="list-disc pl-4 space-y-0.5 text-[10px]">
                       <li><code className="text-pink-600 dark:text-pink-400 font-bold">name</code> (string): Product title.</li>
                       <li><code className="text-pink-600 dark:text-pink-400 font-bold">price</code> (number): Positive price number.</li>
-                      <li><code className="text-pink-600 dark:text-pink-400 font-bold">category</code> (string): Parent department (e.g. Footwear).</li>
-                      <li><code className="text-pink-600 dark:text-pink-400 font-bold">subCategory</code> (string): Division (e.g. Sneakers).</li>
-                      <li><code className="text-pink-600 dark:text-pink-400 font-bold">images</code> (array of strings): Image URLs.</li>
+                      <li><code className="text-pink-600 dark:text-pink-400 font-bold">category</code> (string): Department name.</li>
                     </ul>
-                  </div>
-
-                  <div>
-                    <span className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Dynamic Attributes (Selectable Options):</span>
-                    <p className="mb-1">Options the customer selects before adding to cart go in <code className="text-indigo-600 dark:text-indigo-400 font-bold">"attributes"</code>:</p>
-                    <pre className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 p-2 rounded text-[10px] font-mono">
-                      {`"attributes": {
-  "Color": ["Black", "Blue"],
-  "Size": ["S", "M", "L"]
-}`}
-                    </pre>
-                  </div>
-
-                  <div>
-                    <span className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Static Specifications (Information Only):</span>
-                    <p className="mb-1">Specifications (details that don't need configuration) go in <code className="text-indigo-600 dark:text-indigo-400 font-bold">"specifications"</code>:</p>
-                    <pre className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 p-2 rounded text-[10px] font-mono">
-                      {`"specifications": [
-  { "key": "Material", "value": "304 Stainless Steel" },
-  { "key": "Capacity", "value": "750ml" }
-]`}
-                    </pre>
                   </div>
                 </div>
               )}
@@ -1093,7 +1149,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                 <div className="flex justify-between items-center">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Paste Product JSON Schema</label>
                   {jsonText.trim() && (
-                    <span className={`text-[9px] font-bold px-2 py-0.5 rounded flex items-center gap-1 ${jsonError ? "bg-red-50 text-red-500 dark:bg-red-950/20" : "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/20" }`}>
+                    <span className={`text-[9px] font-black px-2 py-0.5 rounded flex items-center gap-1 ${jsonError ? "bg-red-50 text-red-500 dark:bg-red-950/20" : "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/20" }`}>
                       {jsonError ? <AlertTriangle size={10} /> : <Check size={10} />}
                       {jsonError ? "Syntax Error" : "Syntax Valid"}
                     </span>
@@ -1104,8 +1160,8 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                   rows={10}
                   value={jsonText}
                   onChange={(e) => setJsonText(e.target.value)}
-                  placeholder={`{\n  "name": "OPPO Reno 14 5G",\n  "price": 32999\n}`}
-                  className={`w-full px-4 py-3 rounded-none border dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition font-mono ${jsonError ? "border-red-400" : "border-slate-200 dark:border-white/[0.08]"} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900`}
+                  placeholder={`{\n  "name": "Samsung Galaxy S25 Ultra",\n  "price": 129999,\n  "category": "Mobiles"\n}`}
+                  className="w-full px-4 py-3 rounded-2xl bg-slate-950 text-indigo-300 text-xs outline-none transition font-mono focus:ring-2 focus:ring-indigo-500 shadow-2xs"
                 />
                 {jsonError && (
                   <p className="text-[10px] text-red-500 font-bold mt-1 pl-1">Error: {jsonError}</p>
@@ -1116,54 +1172,60 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                 type="button"
                 onClick={handleGenerateProduct}
                 disabled={loaders.enrichJson || !!jsonError}
-                className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-slate-100 dark:text-white rounded-none text-xs font-black uppercase tracking-wider transition hover:shadow-lg hover:shadow-indigo-600/20 active:scale-98 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="w-full py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 shadow-md shadow-indigo-600/20 active:scale-98 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 <Package size={14} className={loaders.enrichJson ? "animate-spin" : ""} />
-                <span>{loaders.enrichJson ? "Generating Product..." : "Generate Product"}</span>
+                <span>{loaders.enrichJson ? "Generating Product..." : "Generate Product From JSON"}</span>
               </button>
             </div>
           )}
 
-          {/* Form Mode Inputs (Available always or showing filled fields) */}
-          <form onSubmit={handleCreateProduct} className="space-y-5 bg-white dark:bg-slate-900 border border-slate-200/40 dark:border-white/[0.08] rounded-none p-5 shadow-sm">
-            <div className="flex justify-between items-center border-b border-slate-100 dark:border-white/[0.06] pb-3">
-              <h3 className="text-sm font-black text-slate-800 dark:text-white tracking-tight">Product Specifications Form</h3>
-              {activeMode !== "form" && (
-                <span className="text-[9px] font-black text-violet-600 bg-violet-50 dark:bg-slate-950 px-2 py-0.5 rounded-none uppercase tracking-wider flex items-center gap-1 animate-pulse">
-                  <Sparkles size={10} />
-                  AI populated
-                </span>
-              )}
-            </div>
+          {/* MAIN FORM CONTAINER */}
+          <form onSubmit={handleCreateProduct} className="space-y-3">
+            
+            {/* CARD 1: GENERAL PRODUCT IDENTITY */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-xs space-y-3 text-left">
+              <div className="flex justify-between items-center pb-2">
+                <div className="flex items-center gap-2">
+                  <div className="h-7 w-7 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center font-bold text-xs">
+                    1
+                  </div>
+                  <h3 className="text-sm font-black text-slate-800 dark:text-white tracking-tight">General Product Identity</h3>
+                </div>
+                {activeMode !== "form" && (
+                  <span className="text-[9px] font-black text-violet-600 bg-violet-50 dark:bg-slate-950 px-2 py-0.5 rounded-lg uppercase tracking-wider flex items-center gap-1 animate-pulse">
+                    <Sparkles size={10} />
+                    AI populated
+                  </span>
+                )}
+              </div>
 
-            {/* Core details */}
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Product Title *</label>
                   <input
                     type="text"
-                    placeholder="Samsung Galaxy S25 Ultra"
+                    placeholder="Samsung Galaxy S25 Ultra 5G"
                     value={newProduct.name}
                     onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
-                    className="w-full px-4 py-3 rounded-none border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                    className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none transition focus:ring-2 focus:ring-blue-500 shadow-2xs"
                     required
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Brand</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Brand Name</label>
                   <input
                     type="text"
                     placeholder="Samsung, Apple, Nike"
                     value={newProduct.brand}
                     onChange={(e) => setNewProduct({ ...newProduct, brand: e.target.value })}
-                    className="w-full px-4 py-3 rounded-none border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                    className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none transition focus:ring-2 focus:ring-blue-500 shadow-2xs"
                   />
                 </div>
               </div>
 
-              {/* Category selector */}
+              {/* Category & Subcategory */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <div className="flex justify-between items-center">
@@ -1182,14 +1244,14 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                       placeholder="e.g. Smart Electronics"
                       value={newProduct.category}
                       onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
-                      className="w-full px-4 py-3 rounded-none border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                      className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none transition focus:ring-2 focus:ring-blue-500 shadow-2xs"
                       required
                     />
                   ) : (
                     <select
                       value={newProduct.category}
                       onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value, subCategory: "" })}
-                      className="w-full px-4 py-3 rounded-none border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                      className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none transition cursor-pointer focus:ring-2 focus:ring-blue-500 shadow-2xs font-medium"
                       required
                     >
                       <option value="">Choose Category</option>
@@ -1217,13 +1279,13 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                       placeholder="e.g. Mobile Phones"
                       value={newProduct.subCategory}
                       onChange={(e) => setNewProduct({ ...newProduct, subCategory: e.target.value })}
-                      className="w-full px-4 py-3 rounded-none border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                      className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none transition focus:ring-2 focus:ring-blue-500 shadow-2xs"
                     />
                   ) : (
                     <select
                       value={newProduct.subCategory}
                       onChange={(e) => setNewProduct({ ...newProduct, subCategory: e.target.value })}
-                      className="w-full px-4 py-3 rounded-none border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                      className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none transition cursor-pointer focus:ring-2 focus:ring-blue-500 shadow-2xs font-medium"
                     >
                       <option value="">Choose Subcategory</option>
                       {subCategoriesList.map((sub, idx) => (
@@ -1234,49 +1296,6 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                 </div>
               </div>
 
-              {/* Price & Stock */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Price (₹ INR) *</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    placeholder="29999.00"
-                    value={newProduct.price}
-                    onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
-                    className="w-full px-4 py-3 rounded-none border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                    required
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Initial Stock *</label>
-                  <input
-                    type="number"
-                    placeholder="10"
-                    value={newProduct.stock}
-                    onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })}
-                    className="w-full px-4 py-3 rounded-none border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                    required
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Target Audience</label>
-                  <select
-                    value={newProduct.audience}
-                    onChange={(e) => setNewProduct({ ...newProduct, audience: e.target.value })}
-                    className="w-full px-4 py-3 rounded-none border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                  >
-                    <option value="Unisex">Unisex</option>
-                    <option value="Men">Men</option>
-                    <option value="Women">Women</option>
-                    <option value="Kids">Kids</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* SKU & Search Meta */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Seller SKU Reference</label>
@@ -1285,7 +1304,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                     placeholder="e.g. SAM-S25-ULTRA"
                     value={newProduct.sku}
                     onChange={(e) => setNewProduct({ ...newProduct, sku: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                    className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none transition focus:ring-2 focus:ring-blue-500 shadow-2xs"
                   />
                 </div>
 
@@ -1307,12 +1326,556 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                     placeholder="android, galaxy, smartphone"
                     value={newProduct.tags}
                     onChange={(e) => setNewProduct({ ...newProduct, tags: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                    className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none transition focus:ring-2 focus:ring-blue-500 shadow-2xs"
                   />
                 </div>
               </div>
+            </div>
 
-              {/* Description Textarea */}
+            {/* CARD 2: PRICING & INVENTORY */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-xs space-y-3 text-left">
+              <div className="flex justify-between items-center pb-2">
+                <div className="flex items-center gap-2">
+                  <div className="h-7 w-7 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center font-bold text-xs">
+                    2
+                  </div>
+                  <h3 className="text-sm font-black text-slate-800 dark:text-white tracking-tight">Pricing & Inventory Control</h3>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Base Selling Price (₹ INR) *</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    placeholder="129999.00"
+                    value={newProduct.price}
+                    onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
+                    className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none transition focus:ring-2 focus:ring-blue-500 shadow-2xs font-semibold"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Initial Base Stock *</label>
+                  <input
+                    type="number"
+                    placeholder="10"
+                    value={newProduct.stock}
+                    onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })}
+                    className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none transition focus:ring-2 focus:ring-blue-500 shadow-2xs font-semibold"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Target Audience</label>
+                  <select
+                    value={newProduct.audience}
+                    onChange={(e) => setNewProduct({ ...newProduct, audience: e.target.value })}
+                    className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none transition cursor-pointer focus:ring-2 focus:ring-blue-500 shadow-2xs font-medium"
+                  >
+                    <option value="Unisex">Unisex</option>
+                    <option value="Men">Men</option>
+                    <option value="Women">Women</option>
+                    <option value="Kids">Kids</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* CARD 3: MEDIA & VISUAL ASSETS */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-xs space-y-3 text-left">
+              <div className="flex justify-between items-center pb-2">
+                <div className="flex items-center gap-2">
+                  <div className="h-7 w-7 rounded-lg bg-orange-500/10 text-orange-500 flex items-center justify-center font-bold text-xs">
+                    3
+                  </div>
+                  <h3 className="text-sm font-black text-slate-800 dark:text-white tracking-tight">Product Media & Gallery *</h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleAIGenerateImage}
+                  disabled={loaders.generateImage || !newProduct.name?.trim()}
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-[9px] font-black uppercase tracking-wider transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-2xs"
+                  title={!newProduct.name?.trim() ? "Enter a product name to enable image generation" : "Generate image using AI"}
+                >
+                  <Sparkles size={11} className={loaders.generateImage ? "animate-spin" : ""} />
+                  <span>{loaders.generateImage ? "Generating..." : "Generate AI Image"}</span>
+                </button>
+              </div>
+
+              {/* Upload Dropzone */}
+              <div
+                onDragEnter={handleDrag}
+                onDragOver={handleDrag}
+                onDragLeave={handleDrag}
+                onDrop={handleDrop}
+                className={`w-full py-4.5 rounded-2xl flex flex-col items-center justify-center gap-1 cursor-pointer transition ${dragActive ? "bg-orange-500/10" : "bg-slate-50 dark:bg-slate-950/60 hover:bg-slate-100 dark:hover:bg-slate-950" } shadow-2xs`}
+                onClick={() => document.getElementById("file-upload-input").click()}
+              >
+                <Upload size={22} className="text-slate-400 mb-1" />
+                <p className="text-[11px] font-bold text-slate-700 dark:text-slate-300">Drag & drop product photos here</p>
+                <p className="text-[9px] text-slate-400">Support high quality JPG, PNG, WEBP files</p>
+                <input
+                  type="file"
+                  id="file-upload-input"
+                  multiple
+                  accept="image/*"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+              </div>
+
+              {/* File Preview Cards Grid */}
+              {uploadedFiles.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+                  {uploadedFiles.map((fileObj, idx) => (
+                    <div key={idx} className="relative group rounded-2xl overflow-hidden p-1.5 flex flex-col gap-1.5 bg-slate-50 dark:bg-slate-950 shadow-2xs">
+                      <img
+                        src={fileObj.preview}
+                        alt=""
+                        className="w-full h-20 object-contain bg-white dark:bg-slate-900 rounded-xl"
+                      />
+                      <div className="flex justify-between items-center text-[8px] gap-1 px-1">
+                        <button
+                          type="button"
+                          onClick={() => setCoverFile(idx)}
+                          className={`px-2 py-0.5 rounded-md font-black transition cursor-pointer ${fileObj.isCover ? "bg-orange-500 text-white" : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300" }`}
+                        >
+                          {fileObj.isCover ? "Cover" : "Set Cover"}
+                        </button>
+
+                        <div className="flex gap-0.5">
+                          <button
+                            type="button"
+                            onClick={() => moveUploadedFile(idx, -1)}
+                            disabled={idx === 0}
+                            className="p-1 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800 rounded disabled:opacity-30 cursor-pointer"
+                          >
+                            <ArrowLeft size={10} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => moveUploadedFile(idx, 1)}
+                            disabled={idx === uploadedFiles.length - 1}
+                            className="p-1 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800 rounded disabled:opacity-30 cursor-pointer"
+                          >
+                            <ArrowRight size={10} />
+                          </button>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => removeUploadedFile(idx)}
+                          className="text-red-500 hover:bg-red-50 p-1 rounded-md transition cursor-pointer"
+                        >
+                          <Trash2 size={10} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* CARD 4: DYNAMIC ATTRIBUTES & MULTI-VARIANT GENERATOR */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-xs space-y-3 text-left">
+              <div className="flex justify-between items-center pb-2">
+                <div className="flex items-center gap-2">
+                  <div className="h-7 w-7 rounded-lg bg-violet-500/10 text-violet-500 flex items-center justify-center font-bold text-xs">
+                    4
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black text-slate-800 dark:text-white tracking-tight">Dynamic Attributes & Variant Matrix</h3>
+                    <p className="text-[10px] text-slate-400">Specify configurable attributes like Size, Color, or Capacity to automatically generate matrix combinations.</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setProductAttributes(prev => [...prev, { name: "", values: "", displayType: "pill" }])}
+                  className="flex items-center gap-1 px-3 py-1.5 bg-violet-600 hover:bg-violet-500 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition cursor-pointer shadow-2xs"
+                >
+                  <Plus size={12} />
+                  <span>Add Attribute</span>
+                </button>
+              </div>
+
+              {/* Attributes Builder Items */}
+              <div className="space-y-2">
+                {productAttributes.map((attr, idx) => (
+                  <div key={idx} className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-950/60 space-y-2 shadow-2xs">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Attribute Name</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Color, Size, Storage"
+                          value={attr.name}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setProductAttributes(prev => {
+                              const updated = [...prev];
+                              updated[idx].name = val;
+                              return updated;
+                            });
+                          }}
+                          className="w-full px-3 py-2 bg-white dark:bg-slate-900 rounded-xl text-xs text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-violet-500 shadow-2xs font-semibold"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Values (Comma Separated)</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Black, White, Titanium"
+                          value={attr.values}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setProductAttributes(prev => {
+                              const updated = [...prev];
+                              updated[idx].values = val;
+                              return updated;
+                            });
+                          }}
+                          className="w-full px-3 py-2 bg-white dark:bg-slate-900 rounded-xl text-xs text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-violet-500 shadow-2xs"
+                        />
+                      </div>
+
+                      <div className="flex items-end gap-2">
+                        <div className="flex-1">
+                          <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Display Type</label>
+                          <select
+                            value={attr.displayType}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setProductAttributes(prev => {
+                                const updated = [...prev];
+                                updated[idx].displayType = val;
+                                return updated;
+                              });
+                            }}
+                            className="w-full px-3 py-2 bg-white dark:bg-slate-900 rounded-xl text-xs text-slate-800 dark:text-white outline-none cursor-pointer focus:ring-2 focus:ring-violet-500 shadow-2xs font-medium"
+                          >
+                            <option value="pill">Option Pill</option>
+                            <option value="dropdown">Dropdown Select</option>
+                            <option value="color">Color Swatch</option>
+                          </select>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => setProductAttributes(prev => prev.filter((_, i) => i !== idx))}
+                          className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl transition cursor-pointer"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Variant Matrix Table */}
+              {productVariants.length > 0 && (() => {
+                const prices = productVariants.map(v => v.price || 0);
+                const minPrice = prices.length ? Math.min(...prices) : 0;
+                const maxPrice = prices.length ? Math.max(...prices) : 0;
+                const totalStock = productVariants.reduce((sum, v) => sum + (v.stock || 0), 0);
+
+                const attrSummary = {};
+                productVariants.forEach(v => {
+                  Object.entries(v.attributes || {}).forEach(([k, val]) => {
+                    if (!attrSummary[k]) attrSummary[k] = new Set();
+                    attrSummary[k].add(val);
+                  });
+                });
+
+                const displayedVariants = showAllVariants ? productVariants : productVariants.slice(0, 5);
+
+                return (
+                  <div className="space-y-4 pt-2">
+                    {/* Variant Recap Bar */}
+                    <div className="bg-gradient-to-r from-slate-900 to-indigo-950 text-white rounded-2xl p-4 shadow-2xs">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <Package className="w-4 h-4 text-indigo-400" />
+                            <span className="text-xs font-black uppercase tracking-wider text-slate-200">
+                              Variant Matrix Summary ({productVariants.length} Combinations)
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-300">
+                            <span>Price Range: <strong className="text-emerald-400">₹{minPrice}{minPrice !== maxPrice ? ` - ₹${maxPrice}` : ''}</strong></span>
+                            <span className="text-slate-500">•</span>
+                            <span>Total Combined Stock: <strong className="text-indigo-300">{totalStock} units</strong></span>
+                          </div>
+                        </div>
+
+                        {/* Bulk stock updater */}
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            placeholder="Bulk Stock"
+                            value={bulkStockInput}
+                            onChange={(e) => setBulkStockInput(e.target.value)}
+                            className="w-24 px-3 py-1.5 bg-slate-950 rounded-xl text-xs text-white placeholder-slate-500 outline-none shadow-2xs"
+                          />
+                          <button
+                            type="button"
+                            onClick={handleApplyBulkStock}
+                            className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold cursor-pointer transition shadow-2xs"
+                          >
+                            Apply Bulk
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Live Formatted Variant JSON Code Snippet Box */}
+                    <div className="bg-slate-950 rounded-2xl p-4 space-y-2 text-left shadow-2xs">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <Code className="w-4 h-4 text-emerald-400" />
+                          <span className="text-xs font-black uppercase tracking-wider text-slate-200">
+                            Formatted Variant JSON Snippet
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const formatted = productVariants.map((v, idx) => {
+                                const colorVal = v.Color || v.color || v.attributes?.Color || v.attributes?.color || "";
+                                const sizeVal = v.Size || v.size || v.attributes?.Size || v.attributes?.size || "";
+                                const obj = {};
+                                if (colorVal) obj.Color = colorVal;
+                                if (sizeVal) obj.Size = sizeVal;
+                                if (v.attributes) {
+                                  Object.entries(v.attributes).forEach(([k, val]) => {
+                                    if (k !== "Color" && k !== "Size" && k !== "color" && k !== "size") {
+                                      obj[k] = val;
+                                    }
+                                  });
+                                }
+                                obj.sku = v.sku || `SKU-${idx + 1}`;
+                                obj.price = Number(v.price || 0);
+                                obj.stock = Number(v.stock || 0);
+                                return obj;
+                              });
+                              navigator.clipboard.writeText(JSON.stringify(formatted, null, 2));
+                              toast.success("Variant JSON copied to clipboard!");
+                            }}
+                            className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-[10px] font-bold cursor-pointer flex items-center gap-1 transition"
+                          >
+                            <Copy size={11} /> Copy JSON
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleOpenVariantJsonModal}
+                            className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-[10px] font-bold cursor-pointer flex items-center gap-1 transition"
+                          >
+                            <Code size={11} /> Edit JSON
+                          </button>
+                        </div>
+                      </div>
+                      <pre className="p-3 bg-slate-900 rounded-xl text-emerald-400 text-[11px] font-mono overflow-x-auto max-h-36 no-scrollbar">
+                        {JSON.stringify(productVariants.map((v, idx) => {
+                          const colorVal = v.Color || v.color || v.attributes?.Color || v.attributes?.color || "";
+                          const sizeVal = v.Size || v.size || v.attributes?.Size || v.attributes?.size || "";
+                          const obj = {};
+                          if (colorVal) obj.Color = colorVal;
+                          if (sizeVal) obj.Size = sizeVal;
+                          if (v.attributes) {
+                            Object.entries(v.attributes).forEach(([k, val]) => {
+                              if (k !== "Color" && k !== "Size" && k !== "color" && k !== "size") {
+                                obj[k] = val;
+                              }
+                            });
+                          }
+                          obj.sku = v.sku || `SKU-${idx + 1}`;
+                          obj.price = Number(v.price || 0);
+                          obj.stock = Number(v.stock || 0);
+                          return obj;
+                        }), null, 2)}
+                      </pre>
+                    </div>
+
+                    {/* Matrix Table */}
+                    <div className="overflow-x-auto rounded-2xl bg-slate-50 dark:bg-slate-950/60 p-2 shadow-2xs">
+                      <table className="w-full text-left border-collapse">
+                        <thead>
+                          <tr className="bg-white dark:bg-slate-900 text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                            <th className="px-3 py-2.5 rounded-l-xl">Combination</th>
+                            <th className="px-3 py-2.5">SKU</th>
+                            <th className="px-3 py-2.5">Price (₹)</th>
+                            <th className="px-3 py-2.5">Stock</th>
+                            <th className="px-3 py-2.5">Images</th>
+                            <th className="px-3 py-2.5">Barcode</th>
+                            <th className="px-3 py-2.5 text-center rounded-r-xl">Avail.</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200/40 dark:divide-slate-900/60">
+                          {displayedVariants.map((variant, idx) => {
+                            const realIdx = showAllVariants ? idx : idx;
+                            return (
+                              <tr key={idx} className="hover:bg-white/60 dark:hover:bg-slate-900/40 transition">
+                                <td className="px-3 py-2.5 text-xs font-medium text-slate-800 dark:text-slate-200">
+                                  <div className="flex flex-wrap gap-1">
+                                    {Object.entries(variant.attributes).map(([k, v]) => (
+                                      <span key={k} className="px-2 py-0.5 bg-white dark:bg-slate-800 rounded-md text-[10px] font-bold text-slate-600 dark:text-slate-300 shadow-2xs">
+                                        {k}: {v}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </td>
+                                <td className="px-3 py-2.5">
+                                  <input
+                                    type="text"
+                                    value={variant.sku}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      setProductVariants(prev => {
+                                        const updated = [...prev];
+                                        updated[realIdx].sku = val;
+                                        return updated;
+                                      });
+                                    }}
+                                    className="w-full min-w-[120px] px-2.5 py-1.5 bg-white dark:bg-slate-900 rounded-xl text-xs font-medium text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 shadow-2xs"
+                                  />
+                                </td>
+                                <td className="px-3 py-2.5">
+                                  <input
+                                    type="number"
+                                    value={variant.price}
+                                    onChange={(e) => {
+                                      const val = parseFloat(e.target.value) || 0;
+                                      setProductVariants(prev => {
+                                        const updated = [...prev];
+                                        updated[realIdx].price = val;
+                                        return updated;
+                                      });
+                                    }}
+                                    className="w-full min-w-[80px] px-2.5 py-1.5 bg-white dark:bg-slate-900 rounded-xl text-xs font-semibold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 shadow-2xs"
+                                  />
+                                </td>
+                                <td className="px-3 py-2.5">
+                                  <input
+                                    type="number"
+                                    value={variant.stock}
+                                    onChange={(e) => {
+                                      const val = parseInt(e.target.value) || 0;
+                                      setProductVariants(prev => {
+                                        const updated = [...prev];
+                                        updated[realIdx].stock = val;
+                                        return updated;
+                                      });
+                                    }}
+                                    className="w-full min-w-[70px] px-2.5 py-1.5 bg-white dark:bg-slate-900 rounded-xl text-xs font-semibold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 shadow-2xs"
+                                  />
+                                </td>
+                                <td className="px-3 py-2.5">
+                                  <div className="flex gap-1.5 overflow-x-auto py-0.5 max-w-[160px]">
+                                    {uploadedFiles.map((fileObj, fIdx) => {
+                                      const isSelected = (variant.images || []).includes(fIdx);
+                                      return (
+                                        <button
+                                          key={fIdx}
+                                          type="button"
+                                          onClick={() => toggleVariantImage(realIdx, fIdx)}
+                                          className={`relative w-7 h-7 rounded-lg overflow-hidden transition-all flex-shrink-0 cursor-pointer ${isSelected ? "ring-2 ring-indigo-600 dark:ring-indigo-400 scale-105 shadow-2xs" : "opacity-60 hover:opacity-100" }`}
+                                          title={isSelected ? "Selected for variant" : "Click to select image"}
+                                        >
+                                          <img 
+                                            src={fileObj.preview} 
+                                            alt={`Thumb ${fIdx + 1}`} 
+                                            className="w-full h-full object-cover bg-slate-100 dark:bg-slate-900" 
+                                          />
+                                          {isSelected && (
+                                            <div className="absolute inset-0 bg-indigo-600/30 flex items-center justify-center">
+                                              <Check size={12} className="text-white stroke-[3]" />
+                                            </div>
+                                          )}
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                </td>
+                                <td className="px-3 py-2.5">
+                                  <input
+                                    type="text"
+                                    value={variant.barcode || ""}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      setProductVariants(prev => {
+                                        const updated = [...prev];
+                                        updated[realIdx].barcode = val;
+                                        return updated;
+                                      });
+                                    }}
+                                    placeholder="Barcode"
+                                    className="w-full min-w-[90px] px-2.5 py-1.5 bg-white dark:bg-slate-900 rounded-xl text-xs font-medium text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 shadow-2xs"
+                                  />
+                                </td>
+                                <td className="px-3 py-2.5 text-center">
+                                  <input
+                                    type="checkbox"
+                                    checked={variant.availability !== false}
+                                    onChange={(e) => {
+                                      const val = e.target.checked;
+                                      setProductVariants(prev => {
+                                        const updated = [...prev];
+                                        updated[realIdx].availability = val;
+                                        return updated;
+                                      });
+                                    }}
+                                    className="w-4 h-4 text-indigo-600 rounded cursor-pointer focus:ring-indigo-500"
+                                  />
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+
+                      {/* Expand / Collapse Footer */}
+                      {productVariants.length > 5 && (
+                        <div className="p-3 bg-white dark:bg-slate-900 rounded-xl flex items-center justify-between text-xs mt-2">
+                          <span className="text-slate-500 dark:text-slate-400 font-bold text-[11px]">
+                            Showing <strong>{displayedVariants.length}</strong> of <strong>{productVariants.length}</strong> variants
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setShowAllVariants(prev => !prev)}
+                            className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 transition cursor-pointer shadow-2xs"
+                          >
+                            {showAllVariants ? (
+                              <>Show Fewer (5) <ChevronUp size={14} /></>
+                            ) : (
+                              <>Show All ({productVariants.length}) <ChevronDown size={14} /></>
+                            )}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* CARD 5: DESCRIPTION & SPECIFICATIONS */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-xs space-y-3 text-left">
+              <div className="flex justify-between items-center pb-2">
+                <div className="flex items-center gap-2">
+                  <div className="h-7 w-7 rounded-lg bg-sky-500/10 text-sky-500 flex items-center justify-center font-bold text-xs">
+                    5
+                  </div>
+                  <h3 className="text-sm font-black text-slate-800 dark:text-white tracking-tight">Description & Technical Specifications</h3>
+                </div>
+              </div>
+
+              {/* Description */}
               <div className="space-y-1">
                 <div className="flex justify-between items-center">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Product Description *</label>
@@ -1323,39 +1886,39 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                     className="text-[9px] font-extrabold text-violet-600 dark:text-violet-400 flex items-center gap-1 cursor-pointer disabled:opacity-50"
                   >
                     {loaders.description ? <RefreshCw size={10} className="animate-spin" /> : <Sparkles size={10} />}
-                    <span>✨ Improve Description</span>
+                    <span>✨ AI Enhance Description</span>
                   </button>
                 </div>
                 <textarea
                   rows={4}
-                  placeholder="Enter details about this product. Mention specifications, key highlights, build details..."
+                  placeholder="Enter detailed description. Mention specifications, key highlights, build quality, warranty details..."
                   value={newProduct.description}
                   onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition resize-y focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                  className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none transition resize-y focus:ring-2 focus:ring-blue-500 shadow-2xs font-sans leading-relaxed"
                   required
                 />
               </div>
 
-              {/* Specifications / Attributes section */}
-              <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-white/[0.04]">
+              {/* Key/Value Specifications */}
+              <div className="space-y-3 pt-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Product Specifications</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Technical Specification Rows</span>
                   <div className="flex gap-2">
                     <button
                       type="button"
                       onClick={() => handleAIImproveField("specifications")}
                       disabled={loaders.specifications}
-                      className="flex items-center gap-1 px-2.5 py-1 bg-violet-50 hover:bg-violet-100 dark:bg-slate-950 dark:hover:bg-slate-900 text-violet-700 dark:text-violet-400 rounded-lg text-[9px] font-black uppercase tracking-wider transition cursor-pointer disabled:opacity-50"
+                      className="flex items-center gap-1 px-3 py-1 bg-violet-50 hover:bg-violet-100 dark:bg-slate-950 dark:hover:bg-slate-900 text-violet-700 dark:text-violet-400 rounded-xl text-[9px] font-black uppercase tracking-wider transition cursor-pointer disabled:opacity-50 shadow-2xs"
                     >
-                      {loaders.specifications ? <RefreshCw size={8} className="animate-spin" /> : <Sparkles size={8} />}
+                      {loaders.specifications ? <RefreshCw size={10} className="animate-spin" /> : <Sparkles size={10} />}
                       <span>✨ Complete Specs</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => setCustomAttributes(prev => [...prev, { key: "", value: "" }])}
-                      className="flex items-center gap-1 px-2.5 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-white rounded-lg text-[9px] font-black uppercase tracking-wider transition cursor-pointer"
+                      className="flex items-center gap-1 px-3 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-white rounded-xl text-[9px] font-black uppercase tracking-wider transition cursor-pointer shadow-2xs"
                     >
-                      <Plus size={10} />
+                      <Plus size={12} />
                       <span>Add Attribute</span>
                     </button>
                   </div>
@@ -1366,7 +1929,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                     <div key={idx} className="flex items-center gap-2">
                       <input
                         type="text"
-                        placeholder="Key (e.g. RAM)"
+                        placeholder="Key (e.g. RAM, Material)"
                         value={attr.key}
                         onChange={(e) => {
                           const val = e.target.value;
@@ -1376,11 +1939,11 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                             return updated;
                           });
                         }}
-                        className="flex-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                        className="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs font-semibold"
                       />
                       <input
                         type="text"
-                        placeholder="Value (e.g. 12GB)"
+                        placeholder="Value (e.g. 12GB LPDDR5X)"
                         value={attr.value}
                         onChange={(e) => {
                           const val = e.target.value;
@@ -1390,670 +1953,45 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                             return updated;
                           });
                         }}
-                        className="flex-1 px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                        className="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none focus:ring-2 focus:ring-blue-500 shadow-2xs font-medium"
                       />
                       <button
                         type="button"
                         onClick={() => setCustomAttributes(prev => prev.filter((_, i) => i !== idx))}
-                        className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition cursor-pointer"
+                        className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl transition cursor-pointer"
                       >
-                        <Trash2 size={12} />
+                        <Trash2 size={14} />
                       </button>
                     </div>
                   ))}
-                  {customAttributes.length === 0 && (
-                    <p className="text-[10px] text-slate-400 dark:text-slate-500 italic">No specifications added yet. Add custom specifications manually or use AI Complete.</p>
-                  )}
                 </div>
               </div>
+            </div>
 
-              {/* Dynamic Selection Attributes & Variants Section */}
-              <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-white/[0.04]">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Dynamic Product Attributes</span>
-                    <p className="text-[10px] text-slate-400 mt-0.5">Define attributes (e.g. Size, Color) and behavior rules to structure product variants, specifications, features, and badges.</p>
+            {/* CARD 6: COLLECTIONS & SEO META */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-xs space-y-3 text-left">
+              <div className="flex justify-between items-center pb-2">
+                <div className="flex items-center gap-2">
+                  <div className="h-7 w-7 rounded-lg bg-rose-500/10 text-rose-500 flex items-center justify-center font-bold text-xs">
+                    6
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setProductAttributes(prev => [...prev, { name: "", displayType: "variant", inputType: "Dropdown", value: "", values: "" }])}
-                    className="flex items-center gap-1 px-2.5 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-white rounded-lg text-[9px] font-black uppercase tracking-wider transition cursor-pointer shrink-0"
-                  >
-                    <Plus size={10} />
-                    <span>Add Dynamic Attribute</span>
-                  </button>
+                  <h3 className="text-sm font-black text-slate-800 dark:text-white tracking-tight">Collections & Search Engine Optimization</h3>
                 </div>
-
-                <div className="space-y-3">
-                  {productAttributes.map((attr, idx) => {
-                    const displayType = attr.displayType || "variant";
-                    return (
-                      <div key={idx} className="flex items-start gap-2 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-white/[0.04]">
-                        <div className="flex-1 space-y-3">
-                          {/* First row: Name and DisplayType Selector */}
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <div>
-                              <label className="text-[9px] font-black uppercase text-slate-400 pl-1 tracking-wider block mb-1">Attribute Name</label>
-                              <input
-                                type="text"
-                                placeholder="e.g. Color, Storage, Waterproof"
-                                value={attr.name}
-                                onChange={(e) => {
-                                  const val = e.target.value;
-                                  setProductAttributes(prev => {
-                                    const updated = [...prev];
-                                    updated[idx].name = val;
-                                    return updated;
-                                  });
-                                }}
-                                className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                              />
-                            </div>
-                            <div>
-                              <label className="text-[9px] font-black uppercase text-slate-400 pl-1 tracking-wider block mb-1">Display Type</label>
-                              <select
-                                value={displayType}
-                                onChange={(e) => {
-                                  const val = e.target.value;
-                                  setProductAttributes(prev => {
-                                    const updated = [...prev];
-                                    updated[idx].displayType = val;
-                                    // Reset default values based on type
-                                    if (val === "variant") {
-                                      updated[idx].inputType = "Dropdown";
-                                      updated[idx].values = "";
-                                      updated[idx].value = "";
-                                    } else if (val === "feature") {
-                                      updated[idx].inputType = "Boolean";
-                                      updated[idx].value = "false";
-                                      updated[idx].values = "";
-                                    } else {
-                                      updated[idx].inputType = "Text";
-                                      updated[idx].value = "";
-                                      updated[idx].values = "";
-                                    }
-                                    return updated;
-                                  });
-                                }}
-                                className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                              >
-                                <option value="variant">Variant (Multiple Values)</option>
-                                <option value="specification">Specification (Single Value)</option>
-                                <option value="feature">Feature (Boolean or Text)</option>
-                                <option value="badge">Badge (Label/Tag)</option>
-                                <option value="hidden">Hidden (Internal Metadata)</option>
-                              </select>
-                            </div>
-                          </div>
-
-                          {/* Second row: Dynamically rendered inputs based on Display Type */}
-                          <div className="bg-white dark:bg-slate-950 p-3 rounded-lg border border-slate-100 dark:border-white/[0.02]">
-                            {displayType === "variant" && (
-                              <div className="space-y-3">
-                                <div>
-                                  <label className="text-[9px] font-black uppercase text-slate-400 pl-1 tracking-wider block mb-1">Variant Options (Comma-separated)</label>
-                                  <input
-                                    type="text"
-                                    placeholder="e.g. Red, Blue, Green or S, M, L, XL"
-                                    value={attr.values || ""}
-                                    onChange={(e) => {
-                                      const val = e.target.value;
-                                      setProductAttributes(prev => {
-                                        const updated = [...prev];
-                                        updated[idx].values = val;
-                                        return updated;
-                                      });
-                                    }}
-                                    className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                                  />
-                                </div>
-                                <div className="grid grid-cols-2 gap-3">
-                                  <div>
-                                    <label className="text-[9px] font-black uppercase text-slate-400 pl-1 tracking-wider block mb-1">Input Field Style</label>
-                                    <select
-                                      value={attr.inputType || "Dropdown"}
-                                      onChange={(e) => {
-                                        const val = e.target.value;
-                                        setProductAttributes(prev => {
-                                          const updated = [...prev];
-                                          updated[idx].inputType = val;
-                                          return updated;
-                                        });
-                                      }}
-                                      className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                                    >
-                                      <option value="Dropdown">Dropdown Menu</option>
-                                      <option value="Radio Button">Radio Buttons</option>
-                                      <option value="Color Picker">Color Picker Circle</option>
-                                      <option value="Multi Select">Multi Select Box</option>
-                                    </select>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-
-                            {displayType === "specification" && (
-                              <div>
-                                <label className="text-[9px] font-black uppercase text-slate-400 pl-1 tracking-wider block mb-1">Specification Value</label>
-                                <input
-                                  type="text"
-                                  placeholder="e.g. 128GB, 4K HDR, Core i7, 100% Cotton"
-                                  value={attr.value || ""}
-                                  onChange={(e) => {
-                                    const val = e.target.value;
-                                    setProductAttributes(prev => {
-                                      const updated = [...prev];
-                                      updated[idx].value = val;
-                                      return updated;
-                                    });
-                                  }}
-                                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                                />
-                              </div>
-                            )}
-
-                            {displayType === "feature" && (
-                              <div className="space-y-3">
-                                <div className="flex items-center gap-4">
-                                  <label className="text-[9px] font-black uppercase text-slate-400 pl-1 tracking-wider">Feature Type:</label>
-                                  <div className="flex items-center gap-3">
-                                    <label className="inline-flex items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
-                                      <input
-                                        type="radio"
-                                        name={`feature-type-${idx}`}
-                                        value="Boolean"
-                                        checked={attr.inputType === "Boolean"}
-                                        onChange={() => {
-                                          setProductAttributes(prev => {
-                                            const updated = [...prev];
-                                            updated[idx].inputType = "Boolean";
-                                            updated[idx].value = "false";
-                                            return updated;
-                                          });
-                                        }}
-                                        className="cursor-pointer text-orange-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                                      />
-                                      <span>Yes/No (Boolean)</span>
-                                    </label>
-                                    <label className="inline-flex items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
-                                      <input
-                                        type="radio"
-                                        name={`feature-type-${idx}`}
-                                        value="Text"
-                                        checked={attr.inputType === "Text"}
-                                        onChange={() => {
-                                          setProductAttributes(prev => {
-                                            const updated = [...prev];
-                                            updated[idx].inputType = "Text";
-                                            updated[idx].value = "";
-                                            return updated;
-                                          });
-                                        }}
-                                        className="cursor-pointer text-orange-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                                      />
-                                      <span>Feature Details (Text)</span>
-                                    </label>
-                                  </div>
-                                </div>
-
-                                {attr.inputType === "Boolean" ? (
-                                  <div className="flex items-center gap-2 mt-1 pl-1">
-                                    <input
-                                      type="checkbox"
-                                      id={`feature-checkbox-${idx}`}
-                                      checked={attr.value === "true"}
-                                      onChange={(e) => {
-                                        const checked = e.target.checked;
-                                        setProductAttributes(prev => {
-                                          const updated = [...prev];
-                                          updated[idx].value = checked ? "true" : "false";
-                                          return updated;
-                                        });
-                                      }}
-                                      className="h-4 w-4 rounded border-slate-300 text-orange-600 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                                    />
-                                    <label htmlFor={`feature-checkbox-${idx}`} className="text-xs font-bold text-slate-700 dark:text-slate-300 cursor-pointer">
-                                      Enable Feature (Yes / True)
-                                    </label>
-                                  </div>
-                                ) : (
-                                  <input
-                                    type="text"
-                                    placeholder="e.g. Ultra-quiet motor, Water-resistant IP68"
-                                    value={attr.value || ""}
-                                    onChange={(e) => {
-                                      const val = e.target.value;
-                                      setProductAttributes(prev => {
-                                        const updated = [...prev];
-                                        updated[idx].value = val;
-                                        return updated;
-                                      });
-                                    }}
-                                    className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                                  />
-                                )}
-                              </div>
-                            )}
-
-                            {displayType === "badge" && (
-                              <div>
-                                <label className="text-[9px] font-black uppercase text-slate-400 pl-1 tracking-wider block mb-1">Badge label</label>
-                                <input
-                                  type="text"
-                                  placeholder="e.g. Limited Edition, Eco-Friendly, Best Seller"
-                                  value={attr.value || ""}
-                                  onChange={(e) => {
-                                    const val = e.target.value;
-                                    setProductAttributes(prev => {
-                                      const updated = [...prev];
-                                      updated[idx].value = val;
-                                      return updated;
-                                    });
-                                  }}
-                                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                                />
-                              </div>
-                            )}
-
-                            {displayType === "hidden" && (
-                              <div>
-                                <label className="text-[9px] font-black uppercase text-slate-400 pl-1 tracking-wider block mb-1">Internal Value</label>
-                                <input
-                                  type="text"
-                                  placeholder="e.g. supplier_code_xyz123"
-                                  value={attr.value || ""}
-                                  onChange={(e) => {
-                                    const val = e.target.value;
-                                    setProductAttributes(prev => {
-                                      const updated = [...prev];
-                                      updated[idx].value = val;
-                                      return updated;
-                                    });
-                                  }}
-                                  className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                                />
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => setProductAttributes(prev => prev.filter((_, i) => i !== idx))}
-                          className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition cursor-pointer self-start mt-4"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Variant Recap & Matrix Section */}
-                {productVariants.length > 0 && (() => {
-                  const prices = productVariants.map(v => v.price || 0);
-                  const minPrice = prices.length ? Math.min(...prices) : 0;
-                  const maxPrice = prices.length ? Math.max(...prices) : 0;
-                  const totalStock = productVariants.reduce((sum, v) => sum + (v.stock || 0), 0);
-
-                  const attrSummary = {};
-                  productVariants.forEach(v => {
-                    Object.entries(v.attributes || {}).forEach(([k, val]) => {
-                      if (!attrSummary[k]) attrSummary[k] = new Set();
-                      attrSummary[k].add(val);
-                    });
-                  });
-
-                  const displayedVariants = showAllVariants ? productVariants : productVariants.slice(0, 5);
-
-                  return (
-                    <div className="space-y-3 mt-4 pt-4 border-t border-slate-100 dark:border-white/[0.04]">
-                      {/* Compact Recap Header */}
-                      <div className="bg-gradient-to-r from-slate-900 to-slate-800 dark:from-slate-950 dark:to-indigo-950/80 text-white rounded-xl p-4 shadow-sm border border-slate-800 dark:border-indigo-500/20">
-                        <div className="flex flex-wrap items-center justify-between gap-3">
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                              <Package className="w-4 h-4 text-indigo-400" />
-                              <span className="text-xs font-black uppercase tracking-wider text-slate-200">
-                                Variant Recap ({productVariants.length} Combinations)
-                              </span>
-                            </div>
-                            <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-300">
-                              <span>Price: <strong className="text-emerald-400">₹{minPrice}{minPrice !== maxPrice ? ` - ₹${maxPrice}` : ''}</strong></span>
-                              <span className="text-slate-500">•</span>
-                              <span>Total Stock: <strong className="text-indigo-300">{totalStock} units</strong></span>
-                              <span className="text-slate-500">•</span>
-                              <div className="flex items-center gap-1.5 flex-wrap">
-                                {Object.entries(attrSummary).map(([k, set]) => (
-                                  <span key={k} className="px-1.5 py-0.5 bg-slate-800/80 dark:bg-indigo-900/40 border border-slate-700 dark:border-indigo-700/40 rounded text-[10px] text-slate-300">
-                                    {k}: <strong>{set.size} options</strong>
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <button
-                              type="button"
-                              onClick={handleOpenVariantJsonModal}
-                              className="px-3 py-1.5 bg-indigo-600/80 hover:bg-indigo-600 text-white text-[11px] font-bold rounded-lg transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
-                            >
-                              <Code size={13} />
-                              JSON Code Editor
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* Bulk Action Quick Inputs */}
-                        <div className="mt-3 pt-3 border-t border-slate-800/80 dark:border-white/10 flex flex-wrap items-center gap-3 text-[11px]">
-                          <span className="text-slate-400 font-bold uppercase text-[10px] tracking-wider flex items-center gap-1">
-                            <Zap size={11} className="text-amber-400" /> Bulk Update:
-                          </span>
-                          <div className="flex items-center gap-1.5">
-                            <input
-                              type="number"
-                              placeholder="Price (₹)"
-                              value={bulkPriceInput}
-                              onChange={(e) => setBulkPriceInput(e.target.value)}
-                              className="w-24 px-2 py-1 bg-slate-950/80 border border-slate-700 rounded text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-                            />
-                            <button
-                              type="button"
-                              onClick={handleApplyBulkPrice}
-                              className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-[10px] font-bold cursor-pointer"
-                            >
-                              Apply Price
-                            </button>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <input
-                              type="number"
-                              placeholder="Stock Qty"
-                              value={bulkStockInput}
-                              onChange={(e) => setBulkStockInput(e.target.value)}
-                              className="w-20 px-2 py-1 bg-slate-950/80 border border-slate-700 rounded text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-                            />
-                            <button
-                              type="button"
-                              onClick={handleApplyBulkStock}
-                              className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-[10px] font-bold cursor-pointer"
-                            >
-                              Apply Stock
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Live Formatted Variant JSON Preview Box */}
-                      <div className="bg-slate-900 dark:bg-slate-950 border border-slate-800 dark:border-indigo-500/20 rounded-xl p-4 space-y-2 text-left shadow-sm">
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <div className="flex items-center gap-2">
-                            <Code className="w-4 h-4 text-emerald-400" />
-                            <span className="text-xs font-black uppercase tracking-wider text-slate-200">
-                              Formatted Variant JSON ({productVariants.length} Variants)
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const formatted = productVariants.map((v, idx) => {
-                                  const colorVal = v.Color || v.color || v.attributes?.Color || v.attributes?.color || "";
-                                  const sizeVal = v.Size || v.size || v.attributes?.Size || v.attributes?.size || "";
-                                  const obj = {};
-                                  if (colorVal) obj.Color = colorVal;
-                                  if (sizeVal) obj.Size = sizeVal;
-                                  if (v.attributes) {
-                                    Object.entries(v.attributes).forEach(([k, val]) => {
-                                      if (k !== "Color" && k !== "Size" && k !== "color" && k !== "size") {
-                                        obj[k] = val;
-                                      }
-                                    });
-                                  }
-                                  obj.sku = v.sku || `SKU-${idx + 1}`;
-                                  obj.price = Number(v.price || 0);
-                                  obj.stock = Number(v.stock || 0);
-                                  return obj;
-                                });
-                                navigator.clipboard.writeText(JSON.stringify(formatted, null, 2));
-                                toast.success("Variant JSON copied to clipboard!");
-                              }}
-                              className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-[10px] font-bold cursor-pointer flex items-center gap-1 transition"
-                            >
-                              <Copy size={11} /> Copy JSON
-                            </button>
-                            <button
-                              type="button"
-                              onClick={handleOpenVariantJsonModal}
-                              className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-[10px] font-bold cursor-pointer flex items-center gap-1 transition"
-                            >
-                              <Code size={11} /> Edit JSON
-                            </button>
-                          </div>
-                        </div>
-
-                        <pre className="p-3 bg-slate-950 rounded-lg text-emerald-400 text-[11px] font-mono overflow-x-auto max-h-48 scrollbar-thin border border-slate-800/80">
-                          {JSON.stringify(productVariants.map((v, idx) => {
-                            const colorVal = v.Color || v.color || v.attributes?.Color || v.attributes?.color || "";
-                            const sizeVal = v.Size || v.size || v.attributes?.Size || v.attributes?.size || "";
-                            const obj = {};
-                            if (colorVal) obj.Color = colorVal;
-                            if (sizeVal) obj.Size = sizeVal;
-                            if (v.attributes) {
-                              Object.entries(v.attributes).forEach(([k, val]) => {
-                                if (k !== "Color" && k !== "Size" && k !== "color" && k !== "size") {
-                                  obj[k] = val;
-                                }
-                              });
-                            }
-                            obj.sku = v.sku || `SKU-${idx + 1}`;
-                            obj.price = Number(v.price || 0);
-                            obj.stock = Number(v.stock || 0);
-                            return obj;
-                          }), null, 2)}
-                        </pre>
-                      </div>
-
-                      {/* Matrix Table - Shows 5 items initially */}
-                      <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-white/[0.08]">
-                        <table className="w-full text-left border-collapse">
-                          <thead>
-                            <tr className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-white/[0.08]">
-                              <th className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider min-w-[120px]">Combination</th>
-                              <th className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider min-w-[140px]">SKU</th>
-                              <th className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider min-w-[100px]">Price (₹)</th>
-                              <th className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider min-w-[90px]">Stock</th>
-                              <th className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider min-w-[150px]">Images</th>
-                              <th className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider min-w-[110px]">Barcode</th>
-                              <th className="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider min-w-[60px] text-center">Avail.</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-slate-100 dark:divide-white/[0.04]">
-                            {displayedVariants.map((variant, idx) => {
-                              const realIdx = showAllVariants ? idx : idx;
-                              return (
-                                <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/30">
-                                  <td className="px-3 py-2 text-xs font-medium text-slate-800 dark:text-slate-200">
-                                    <div className="flex flex-wrap gap-1">
-                                      {Object.entries(variant.attributes).map(([k, v]) => (
-                                        <span key={k} className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-[10px] font-bold text-slate-500 dark:text-slate-400">
-                                          {k}: {v}
-                                        </span>
-                                      ))}
-                                    </div>
-                                  </td>
-                                  <td className="px-3 py-2">
-                                    <input
-                                      type="text"
-                                      value={variant.sku}
-                                      onChange={(e) => {
-                                        const val = e.target.value;
-                                        setProductVariants(prev => {
-                                          const updated = [...prev];
-                                          updated[realIdx].sku = val;
-                                          return updated;
-                                        });
-                                      }}
-                                      className="w-full min-w-[120px] px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500"
-                                    />
-                                  </td>
-                                  <td className="px-3 py-2">
-                                    <input
-                                      type="number"
-                                      value={variant.price}
-                                      onChange={(e) => {
-                                        const val = parseFloat(e.target.value) || 0;
-                                        setProductVariants(prev => {
-                                          const updated = [...prev];
-                                          updated[realIdx].price = val;
-                                          return updated;
-                                        });
-                                      }}
-                                      className="w-full min-w-[80px] px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                    />
-                                  </td>
-                                  <td className="px-3 py-2">
-                                    <input
-                                      type="number"
-                                      value={variant.stock}
-                                      onChange={(e) => {
-                                        const val = parseInt(e.target.value) || 0;
-                                        setProductVariants(prev => {
-                                          const updated = [...prev];
-                                          updated[realIdx].stock = val;
-                                          return updated;
-                                        });
-                                      }}
-                                      className="w-full min-w-[70px] px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                    />
-                                  </td>
-                                  <td className="px-3 py-2">
-                                    <div className="flex gap-1.5 overflow-x-auto py-0.5 max-w-[160px]">
-                                      {uploadedFiles.map((fileObj, fIdx) => {
-                                        const isSelected = (variant.images || []).includes(fIdx);
-                                        return (
-                                          <button
-                                            key={fIdx}
-                                            type="button"
-                                            onClick={() => toggleVariantImage(realIdx, fIdx)}
-                                            className={`relative w-7 h-7 rounded-md overflow-hidden border-2 transition-all flex-shrink-0 cursor-pointer ${isSelected ? "border-indigo-600 dark:border-indigo-400 scale-105 shadow-xs" : "border-slate-200 dark:border-slate-700 opacity-60 hover:opacity-100" }`}
-                                            title={isSelected ? "Selected for variant" : "Click to select image"}
-                                          >
-                                            <img 
-                                              src={fileObj.preview} 
-                                              alt={`Thumb ${fIdx + 1}`} 
-                                              onError={(e) => {
-                                                e.target.onerror = null;
-                                                e.target.src = "https://placehold.co/100x100?text=Img";
-                                              }}
-                                              className="w-full h-full object-cover bg-slate-100 dark:bg-slate-900" 
-                                            />
-                                            {isSelected && (
-                                              <div className="absolute inset-0 bg-indigo-600/30 flex items-center justify-center">
-                                                <Check size={12} className="text-white stroke-[3]" />
-                                              </div>
-                                            )}
-                                          </button>
-                                        );
-                                      })}
-                                      {uploadedFiles.length === 0 && (
-                                        <button
-                                          type="button"
-                                          onClick={() => document.getElementById("file-upload-input")?.click()}
-                                          className="text-[10px] text-indigo-500 font-bold hover:underline flex items-center gap-1 cursor-pointer"
-                                        >
-                                          <Upload size={11} /> Upload Images
-                                        </button>
-                                      )}
-                                    </div>
-                                  </td>
-                                  <td className="px-3 py-2">
-                                    <input
-                                      type="text"
-                                      value={variant.barcode || ""}
-                                      onChange={(e) => {
-                                        const val = e.target.value;
-                                        setProductVariants(prev => {
-                                          const updated = [...prev];
-                                          updated[realIdx].barcode = val;
-                                          return updated;
-                                        });
-                                      }}
-                                      placeholder="Barcode"
-                                      className="w-full min-w-[90px] px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500"
-                                    />
-                                  </td>
-                                  <td className="px-3 py-2 text-center">
-                                    <input
-                                      type="checkbox"
-                                      checked={variant.availability !== false}
-                                      onChange={(e) => {
-                                        const val = e.target.checked;
-                                        setProductVariants(prev => {
-                                          const updated = [...prev];
-                                          updated[realIdx].availability = val;
-                                          return updated;
-                                        });
-                                      }}
-                                      className="w-4 h-4 text-indigo-600 border-slate-200 dark:border-slate-700 rounded cursor-pointer focus:ring-indigo-500"
-                                    />
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-
-                        {/* Footer Bar to Expand/Collapse Matrix Rows */}
-                        {productVariants.length > 5 && (
-                          <div className="p-3 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-white/[0.08] flex items-center justify-between text-xs">
-                            <span className="text-slate-500 dark:text-slate-400 font-medium">
-                              Showing <strong>{displayedVariants.length}</strong> of <strong>{productVariants.length}</strong> variants
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => setShowAllVariants(prev => !prev)}
-                              className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-bold text-xs flex items-center gap-1.5 transition cursor-pointer shadow-xs"
-                            >
-                              {showAllVariants ? (
-                                <>Show Fewer (5) <ChevronUp size={14} /></>
-                              ) : (
-                                <>Show All ({productVariants.length}) <ChevronDown size={14} /></>
-                              )}
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })()}
               </div>
 
-              {/* Collections section */}
-              <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-white/[0.04]">
-                <div className="flex justify-between items-center">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Assigned Collections</span>
-                  <button
-                    type="button"
-                    onClick={() => handleAIImproveField("collections")}
-                    disabled={loaders.collections}
-                    className="text-[9px] font-extrabold text-violet-600 dark:text-violet-400 flex items-center gap-1 cursor-pointer disabled:opacity-50"
-                  >
-                    {loaders.collections ? <RefreshCw size={10} className="animate-spin" /> : <Sparkles size={10} />}
-                    <span>✨ Suggest Collections</span>
-                  </button>
-                </div>
+              {/* Collections Checkboxes */}
+              <div className="space-y-2">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Assigned Marketplace Collections</span>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {collectionsList.map((col) => {
+                  {["Featured Products", "Best Sellers", "New Arrivals", "Trending Now", "Special Offers", "Flash Sale"].map((col) => {
                     const isSelected = selectedCollections.includes(col);
                     return (
                       <div
                         key={col}
                         onClick={() => handleCollectionCheckbox(col)}
-                        className={`p-2 rounded-xl border flex items-center gap-2 cursor-pointer transition ${isSelected ? "bg-orange-50 border-orange-200 dark:bg-orange-950/20 dark:border-orange-900 text-orange-700 dark:text-orange-300 font-extrabold" : "border-slate-100 dark:border-white/[0.04] bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 hover:bg-slate-50" }`}
+                        className={`p-2.5 rounded-xl flex items-center gap-2 cursor-pointer transition ${isSelected ? "bg-orange-50 dark:bg-orange-950/20 text-orange-700 dark:text-orange-300 font-extrabold shadow-2xs" : "bg-slate-50 dark:bg-slate-950 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50" }`}
                       >
-                        <BookmarkCheck size={12} className={isSelected ? "opacity-100 text-orange-500" : "opacity-35"} />
+                        <BookmarkCheck size={14} className={isSelected ? "opacity-100 text-orange-500" : "opacity-30"} />
                         <span className="text-[10px] truncate">{col}</span>
                       </div>
                     );
@@ -2062,9 +2000,9 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
               </div>
 
               {/* SEO details */}
-              <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-white/[0.04]">
+              <div className="space-y-3 pt-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block font-black">SEO Metadata</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">SEO Metadata</span>
                   <button
                     type="button"
                     onClick={() => handleAIImproveField("seo")}
@@ -2072,7 +2010,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                     className="text-[9px] font-extrabold text-violet-600 dark:text-violet-400 flex items-center gap-1 cursor-pointer disabled:opacity-50"
                   >
                     {loaders.seo ? <RefreshCw size={10} className="animate-spin" /> : <Sparkles size={10} />}
-                    <span>✨ Generate SEO</span>
+                    <span>✨ Generate SEO Meta</span>
                   </button>
                 </div>
 
@@ -2081,10 +2019,10 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">SEO Keywords (Comma Separated)</label>
                     <input
                       type="text"
-                      placeholder="e.g. fast charging, 5g phone, oppo reno"
+                      placeholder="e.g. fast charging, 5g phone, samsung"
                       value={newProduct.keywords}
                       onChange={(e) => setNewProduct({ ...newProduct, keywords: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                      className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none transition focus:ring-2 focus:ring-blue-500 shadow-2xs"
                     />
                   </div>
 
@@ -2092,148 +2030,60 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">SEO Meta Description</label>
                     <input
                       type="text"
-                      placeholder="SEO meta description snippet..."
+                      placeholder="Meta snippet for search engines..."
                       value={newProduct.seoDescription}
                       onChange={(e) => setNewProduct({ ...newProduct, seoDescription: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/[0.08] dark:bg-slate-900 text-slate-800 dark:text-white text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                      className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none transition focus:ring-2 focus:ring-blue-500 shadow-2xs"
                     />
                   </div>
                 </div>
               </div>
-
-              {/* Image Upload section */}
-              <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-white/[0.04]">
-                <div className="flex justify-between items-center mb-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Product Images *</label>
-                  <button
-                    type="button"
-                    onClick={handleAIGenerateImage}
-                    disabled={loaders.generateImage || !newProduct.name?.trim()}
-                    className="flex items-center gap-1.5 px-3.5 py-2 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-500/50 text-white rounded-xl text-[9px] font-black uppercase tracking-wider transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-sm shadow-orange-500/10"
-                    title={!newProduct.name?.trim() ? "Enter a product name to enable image generation" : "Generate image using AI"}
-                  >
-                    <Sparkles size={11} className={loaders.generateImage ? "animate-spin" : ""} />
-                    <span>{loaders.generateImage ? "Generating..." : "Generate AI Image"}</span>
-                  </button>
-                </div>
-                <div
-                  onDragEnter={handleDrag}
-                  onDragOver={handleDrag}
-                  onDragLeave={handleDrag}
-                  onDrop={handleDrop}
-                  className={`w-full py-8 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-1 cursor-pointer transition ${dragActive ? "border-orange-500 bg-orange-500/5" : "border-slate-200 hover:border-slate-300 dark:border-white/[0.08]" }`}
-                  onClick={() => document.getElementById("file-upload-input").click()}
-                >
-                  <Upload size={20} className="text-slate-400 mb-1" />
-                  <p className="text-[11px] font-bold text-slate-700 dark:text-slate-300">Drag & drop images here</p>
-                  <p className="text-[9px] text-slate-400">or click to browse from folders (JPG, PNG, WEBP)</p>
-                  <input
-                    type="file"
-                    id="file-upload-input"
-                    multiple
-                    accept="image/*"
-                    onChange={handleFileSelect}
-                    className="hidden"
-                  />
-                </div>
-
-                {uploadedFiles.length > 0 && (
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    {uploadedFiles.map((fileObj, idx) => (
-                      <div key={idx} className="relative group border border-slate-200 dark:border-white/[0.08] rounded-xl overflow-hidden p-1 flex flex-col gap-1.5 bg-slate-50 dark:bg-slate-900">
-                        <img
-                          src={fileObj.preview}
-                          alt=""
-                          className="w-full h-16 object-contain bg-white dark:bg-slate-950 rounded-lg"
-                        />
-                        <div className="flex justify-between items-center text-[8px] gap-1 px-1">
-                          <button
-                            type="button"
-                            onClick={() => setCoverFile(idx)}
-                            className={`px-1.5 py-0.5 rounded font-black transition cursor-pointer ${fileObj.isCover ? "bg-orange-500 text-white" : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300" }`}
-                          >
-                            {fileObj.isCover ? "Cover" : "Set Cover"}
-                          </button>
-
-                          <div className="flex gap-0.5">
-                            <button
-                              type="button"
-                              onClick={() => moveUploadedFile(idx, -1)}
-                              disabled={idx === 0}
-                              className="p-0.5 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800 rounded disabled:opacity-30 cursor-pointer"
-                            >
-                              <ArrowLeft size={8} />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => moveUploadedFile(idx, 1)}
-                              disabled={idx === uploadedFiles.length - 1}
-                              className="p-0.5 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800 rounded disabled:opacity-30 cursor-pointer"
-                            >
-                              <ArrowRight size={8} />
-                            </button>
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={() => removeUploadedFile(idx)}
-                            className="text-red-500 hover:bg-red-50 p-1 rounded-md transition cursor-pointer"
-                          >
-                            <Trash2 size={9} />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
             </div>
 
-            {/* Submit Actions */}
-            <div className="pt-4 border-t border-slate-100 dark:border-white/[0.04]">
+            {/* SUBMIT ACTION BUTTON */}
+            <div className="pt-2">
               <button
                 type="submit"
                 disabled={isPublishing}
-                className={`w-full py-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 shadow-lg flex items-center justify-center gap-2 cursor-pointer relative overflow-hidden group ${
+                className={`w-full py-4 rounded-2xl text-xs font-black uppercase tracking-wider transition-all duration-300 shadow-lg flex items-center justify-center gap-2 cursor-pointer relative overflow-hidden group ${
                   isPublishing
                     ? "bg-gradient-to-r from-amber-500 via-orange-500 to-emerald-500 text-white cursor-wait animate-pulse"
                     : "bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:from-orange-600 hover:to-amber-600 text-white hover:shadow-orange-500/25 active:scale-[0.98]"
                 }`}
               >
-                {/* Hover Shimmer Line */}
                 <span className="absolute inset-0 w-full h-full bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out pointer-events-none" />
 
                 {isPublishing ? (
                   <>
-                    <Loader2 size={16} className="animate-spin text-white" />
-                    <span>Publishing Listing to Store...</span>
+                    <Loader2 size={18} className="animate-spin text-white" />
+                    <span>Publishing Listing to CartNOW Store...</span>
                   </>
                 ) : (
                   <>
-                    <CheckCircle2 size={16} className="text-white group-hover:scale-110 transition-transform" />
-                    <span>Publish Listing (Requires Admin Verification)</span>
+                    <CheckCircle2 size={18} className="text-white group-hover:scale-110 transition-transform" />
+                    <span>Publish Listing to Marketplace</span>
                   </>
                 )}
               </button>
             </div>
+
           </form>
         </div>
 
-        {/* Right Side: Live Previews & Warnings */}
+        {/* RIGHT SIDE: LIVE PREVIEW & VALIDATION SIDEBAR */}
         {showRightSidebar && (
-          <div className="lg:col-span-5 space-y-6 transition-all duration-500 ease-in-out transform origin-top-right animate-in fade-in slide-in-from-right-6 duration-500">
-
-            {/* Validation Warnings Summary Panel */}
+          <div className="lg:col-span-5 space-y-3 transition-all duration-500 ease-in-out">
+            
+            {/* Pre-submission Flags */}
             {validationWarnings.length > 0 && (
-              <div className="bg-amber-50 dark:bg-amber-950/10 border border-amber-200 dark:border-amber-900/30 rounded-2xl p-4 space-y-2">
+              <div className="bg-amber-50 dark:bg-amber-950/20 rounded-2xl p-3.5 space-y-2 text-left shadow-2xs">
                 <div className="flex items-center gap-2 text-amber-800 dark:text-amber-400 font-extrabold uppercase text-[10px] tracking-wider">
                   <AlertTriangle size={14} />
-                  <span>Pre-submission Flags ({validationWarnings.length})</span>
+                  <span>Pre-submission Checklist ({validationWarnings.length})</span>
                 </div>
-                <ul className="space-y-1.5">
+                <ul className="space-y-1.5 pt-1">
                   {validationWarnings.map((warn, index) => (
-                    <li key={index} className="text-[10px] text-amber-700 dark:text-amber-300 font-medium leading-normal flex items-start gap-1">
+                    <li key={index} className="text-[10px] text-amber-700 dark:text-amber-300 font-bold leading-normal flex items-start gap-1">
                       <span className="mt-0.5">•</span>
                       <span>{warn.message}</span>
                     </li>
@@ -2242,31 +2092,34 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
               </div>
             )}
 
-            {/* Preview panel switcher */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.08] rounded-2xl p-5 shadow-sm space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/[0.06] pb-3">
+            {/* Live Preview Container */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl p-3.5 shadow-xs space-y-3 text-left">
+              <div className="flex items-center justify-between pb-3">
                 <div className="flex items-center gap-2 text-slate-800 dark:text-white font-extrabold uppercase text-xs tracking-wider">
-                  <Eye size={14} />
-                  <span>Instant Live Preview</span>
+                  <Eye size={16} className="text-orange-500" />
+                  <span>Live Product Preview</span>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <div className="flex bg-slate-100 dark:bg-slate-900 p-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider">
+                  <div className="flex bg-slate-100 dark:bg-slate-950 p-1 rounded-xl text-[9px] font-black uppercase tracking-wider">
                     <button
+                      type="button"
                       onClick={() => setActivePreviewTab("card")}
-                      className={`px-2 py-1.5 rounded-md transition cursor-pointer ${activePreviewTab === "card" ? "bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-sm" : "text-slate-500" }`}
+                      className={`px-2.5 py-1 rounded-lg transition cursor-pointer ${activePreviewTab === "card" ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-2xs" : "text-slate-500" }`}
                     >
                       Card
                     </button>
                     <button
+                      type="button"
                       onClick={() => setActivePreviewTab("page")}
-                      className={`px-2 py-1.5 rounded-md transition cursor-pointer ${activePreviewTab === "page" ? "bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-sm" : "text-slate-500" }`}
+                      className={`px-2.5 py-1 rounded-lg transition cursor-pointer ${activePreviewTab === "page" ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-2xs" : "text-slate-500" }`}
                     >
                       Page
                     </button>
                     <button
+                      type="button"
                       onClick={() => setActivePreviewTab("seo")}
-                      className={`px-2 py-1.5 rounded-md transition cursor-pointer ${activePreviewTab === "seo" ? "bg-white dark:bg-slate-900 text-slate-800 dark:text-white shadow-sm" : "text-slate-500" }`}
+                      className={`px-2.5 py-1 rounded-lg transition cursor-pointer ${activePreviewTab === "seo" ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-2xs" : "text-slate-500" }`}
                     >
                       SEO
                     </button>
@@ -2277,230 +2130,236 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
                     title="Hide Live Preview Box"
                     className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white transition cursor-pointer"
                   >
-                    <X size={14} />
+                    <X size={16} />
                   </button>
                 </div>
               </div>
 
-            {/* PREVIEW CONTAINER */}
-            <div className="overflow-hidden min-h-[300px] flex items-center justify-center bg-slate-50/50 dark:bg-slate-900/30 rounded-xl p-4 border border-dashed border-slate-200 dark:border-white/[0.04]">
-
-              {/* Card Preview */}
-              {activePreviewTab === "card" && (
-                <div className="w-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.08] rounded-2xl overflow-hidden shadow-md flex flex-col transition hover:shadow-lg">
-                  <div className="relative h-44 bg-slate-100 dark:bg-slate-950 flex items-center justify-center">
-                    {uploadedFiles.length > 0 ? (
-                      <img
-                        src={uploadedFiles.find(f => f.isCover)?.preview || uploadedFiles[0].preview}
-                        alt="Product"
-                        className="w-full h-full object-contain"
-                      />
-                    ) : (
-                      <Package size={36} className="text-slate-300 dark:text-slate-700 animate-pulse" />
-                    )}
-
-                    <div className="absolute top-2.5 right-2.5 flex flex-col gap-1">
-                      {newProduct.category && (
-                        <span className="bg-orange-500 text-slate-100 dark:text-white text-[7px] font-black uppercase tracking-wider px-2 py-0.5 rounded shadow-sm">
-                          {newProduct.category}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="p-3.5 space-y-2 text-left flex-1 flex flex-col justify-between">
-                    <div>
-                      {newProduct.brand && (
-                        <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">
-                          {newProduct.brand}
-                        </span>
-                      )}
-                      <h4 className="text-xs font-black text-slate-800 dark:text-white line-clamp-1 mt-0.5">
-                        {newProduct.name || "Untitled Product"}
-                      </h4>
-                      <p className="text-[10px] text-slate-400 dark:text-slate-500 line-clamp-2 mt-1 leading-normal font-sans">
-                        {newProduct.description || "No description set yet."}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-white/[0.04] mt-2">
-                      <span className="text-xs font-black text-slate-900 dark:text-white">
-                        ₹ {parseFloat(newProduct.price) ? parseFloat(newProduct.price).toLocaleString("en-IN") : "0"}
-                      </span>
-                      <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded ${parseInt(newProduct.stock) > 0 ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/20" : "bg-red-50 text-red-500 dark:bg-red-950/20" }`}>
-                        {parseInt(newProduct.stock) > 0 ? `In Stock (${newProduct.stock})` : "Out of Stock"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Page Preview */}
-              {activePreviewTab === "page" && (
-                <div className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.08] rounded-2xl p-4 space-y-4 text-left text-xs text-slate-800 dark:text-white shadow-md">
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="col-span-1 h-20 bg-slate-100 dark:bg-slate-950 rounded-lg flex items-center justify-center overflow-hidden border border-slate-200 dark:border-white/[0.08]">
+              {/* Preview Content Area */}
+              <div className="overflow-hidden min-h-[300px] flex items-center justify-center bg-slate-50/50 dark:bg-slate-950/40 rounded-2xl p-4 shadow-inner">
+                
+                {/* Card Preview */}
+                {activePreviewTab === "card" && (
+                  <div className="w-64 bg-white dark:bg-slate-900 rounded-2xl overflow-hidden shadow-md flex flex-col transition hover:shadow-lg">
+                    <div className="relative h-44 bg-slate-100 dark:bg-slate-955 flex items-center justify-center">
                       {uploadedFiles.length > 0 ? (
                         <img
                           src={uploadedFiles.find(f => f.isCover)?.preview || uploadedFiles[0].preview}
-                          alt="Cover"
+                          alt="Product"
                           className="w-full h-full object-contain"
                         />
                       ) : (
-                        <Package size={20} className="text-slate-300 dark:text-slate-700" />
+                        <Package size={36} className="text-slate-300 dark:text-slate-700 animate-pulse" />
                       )}
-                    </div>
-                    <div className="col-span-2 space-y-1">
-                      {newProduct.brand && (
-                        <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">{newProduct.brand}</span>
-                      )}
-                      <h4 className="text-sm font-black text-slate-900 dark:text-white leading-tight">{newProduct.name || "Untitled Product"}</h4>
-                      <p className="text-sm font-black text-orange-500 mt-1">₹ {parseFloat(newProduct.price) ? parseFloat(newProduct.price).toLocaleString("en-IN") : "0"}</p>
-                    </div>
-                  </div>
 
-                  <div className="space-y-1 bg-slate-50 dark:bg-slate-950 p-2 rounded-lg text-[10px]">
-                    <p><strong className="text-slate-400 uppercase tracking-wider text-[8px]">Audience:</strong> {newProduct.audience}</p>
-                    {newProduct.category && <p><strong className="text-slate-400 uppercase tracking-wider text-[8px]">Category:</strong> {newProduct.category} {newProduct.subCategory && ` / ${newProduct.subCategory}`}</p>}
-                    {selectedCollections.length > 0 && <p><strong className="text-slate-400 uppercase tracking-wider text-[8px]">Collections:</strong> {selectedCollections.join(", ")}</p>}
-                  </div>
-
-                  <div className="space-y-1">
-                    <span className="text-[8px] font-black uppercase text-slate-400 tracking-wider">About this item</span>
-                    <p className="text-[10px] text-slate-500 dark:text-slate-400 font-sans leading-relaxed">
-                      {newProduct.description || "No description set."}
-                    </p>
-                  </div>
-
-                  {customAttributes.length > 0 && (
-                    <div className="space-y-1">
-                      <span className="text-[8px] font-black uppercase text-slate-400 tracking-wider block border-b border-slate-100 dark:border-white/[0.04] pb-1">Technical Specifications</span>
-                      <div className="grid grid-cols-2 gap-1.5 text-[9px] pt-1">
-                        {customAttributes.map((attr, idx) => (
-                          <div key={idx} className="flex justify-between border-b border-slate-50 dark:border-white/[0.02] pb-0.5">
-                            <span className="font-bold text-slate-400 uppercase">{attr.key || "Specs"}:</span>
-                            <span className="text-slate-700 dark:text-slate-300 font-medium truncate max-w-[90px]">{attr.value || "Details"}</span>
-                          </div>
-                        ))}
+                      <div className="absolute top-2.5 right-2.5 flex flex-col gap-1">
+                        {newProduct.category && (
+                          <span className="bg-orange-500 text-white text-[7px] font-black uppercase tracking-wider px-2 py-0.5 rounded shadow-sm">
+                            {newProduct.category}
+                          </span>
+                        )}
                       </div>
                     </div>
-                  )}
 
-                  {newProduct.tags && (
-                    <div className="flex flex-wrap gap-1 pt-1.5">
-                      {newProduct.tags.split(",").map((tag, idx) => (
-                        <span key={idx} className="text-[8px] bg-slate-100 dark:bg-slate-950 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded font-medium">
-                          #{tag.trim()}
+                    <div className="p-3.5 space-y-2 text-left flex-1 flex flex-col justify-between">
+                      <div>
+                        {newProduct.brand && (
+                          <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">
+                            {newProduct.brand}
+                          </span>
+                        )}
+                        <h4 className="text-xs font-black text-slate-800 dark:text-white line-clamp-1 mt-0.5">
+                          {newProduct.name || "Untitled Product"}
+                        </h4>
+                        <p className="text-[10px] text-slate-400 dark:text-slate-500 line-clamp-2 mt-1 leading-normal font-sans">
+                          {newProduct.description || "No description set yet."}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-1 mt-2">
+                        <span className="text-xs font-black text-slate-900 dark:text-white">
+                          ₹ {parseFloat(newProduct.price) ? parseFloat(newProduct.price).toLocaleString("en-IN") : "0"}
                         </span>
-                      ))}
+                        <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded ${parseInt(newProduct.stock) > 0 ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/20" : "bg-red-50 text-red-500 dark:bg-red-950/20" }`}>
+                          {parseInt(newProduct.stock) > 0 ? `In Stock (${newProduct.stock})` : "Out of Stock"}
+                        </span>
+                      </div>
                     </div>
-                  )}
-                </div>
-              )}
-
-              {/* SEO Google Search Result Preview */}
-              {activePreviewTab === "seo" && (
-                <div className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 space-y-1.5 text-left shadow-md max-w-sm">
-                  <div className="flex items-center gap-1.5 text-[10px] text-slate-500 font-sans">
-                    <Globe size={10} className="text-slate-400" />
-                    <span>https://cartnow.com</span>
-                    <span>›</span>
-                    <span className="text-slate-400 truncate max-w-[150px]">
-                      product › {newProduct.name ? newProduct.name.toLowerCase().replace(/\s+/g, "-") : "listing"}
-                    </span>
                   </div>
+                )}
 
-                  <a
-                    href="#seo-preview"
-                    className="text-indigo-700 hover:underline text-sm font-medium font-sans block leading-snug truncate cursor-pointer"
-                  >
-                    {newProduct.name ? `${newProduct.name} | Buy ${newProduct.brand || "Online"}` : "Untitled Product Listing | CartNow"}
-                  </a>
-
-                  <p className="text-[10px] text-slate-600 font-sans leading-normal line-clamp-3">
-                    {newProduct.seoDescription || newProduct.description || "Enter a meta description or let the AI Generate SEO details to optimize Google and search engine rankings."}
-                  </p>
-
-                  {newProduct.keywords && (
-                    <div className="flex items-center gap-1 text-[8px] text-slate-400 uppercase font-black pt-1">
-                      <Search size={8} />
-                      <span>Keywords: {newProduct.keywords}</span>
+                {/* Page Detail Preview */}
+                {activePreviewTab === "page" && (
+                  <div className="w-full bg-white dark:bg-slate-900 rounded-2xl p-4 space-y-4 text-left text-xs text-slate-800 dark:text-white shadow-md">
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="col-span-1 h-20 bg-slate-100 dark:bg-slate-950 rounded-xl flex items-center justify-center overflow-hidden">
+                        {uploadedFiles.length > 0 ? (
+                          <img
+                            src={uploadedFiles.find(f => f.isCover)?.preview || uploadedFiles[0].preview}
+                            alt="Cover"
+                            className="w-full h-full object-contain"
+                          />
+                        ) : (
+                          <Package size={20} className="text-slate-300 dark:text-slate-700" />
+                        )}
+                      </div>
+                      <div className="col-span-2 space-y-1">
+                        {newProduct.brand && (
+                          <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">{newProduct.brand}</span>
+                        )}
+                        <h4 className="text-sm font-black text-slate-900 dark:text-white leading-tight">{newProduct.name || "Untitled Product"}</h4>
+                        <p className="text-sm font-black text-orange-500 mt-1">₹ {parseFloat(newProduct.price) ? parseFloat(newProduct.price).toLocaleString("en-IN") : "0"}</p>
+                      </div>
                     </div>
-                  )}
-                </div>
-              )}
 
+                    <div className="space-y-1 bg-slate-50 dark:bg-slate-950 p-2.5 rounded-xl text-[10px]">
+                      <p><strong className="text-slate-400 uppercase tracking-wider text-[8px]">Audience:</strong> {newProduct.audience}</p>
+                      {newProduct.category && <p><strong className="text-slate-400 uppercase tracking-wider text-[8px]">Category:</strong> {newProduct.category} {newProduct.subCategory && ` / ${newProduct.subCategory}`}</p>}
+                      {selectedCollections.length > 0 && <p><strong className="text-slate-400 uppercase tracking-wider text-[8px]">Collections:</strong> {selectedCollections.join(", ")}</p>}
+                    </div>
+
+                    <div className="space-y-1">
+                      <span className="text-[8px] font-black uppercase text-slate-400 tracking-wider">About this item</span>
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400 font-sans leading-relaxed">
+                        {newProduct.description || "No description set."}
+                      </p>
+                    </div>
+
+                    {customAttributes.length > 0 && (
+                      <div className="space-y-1">
+                        <span className="text-[8px] font-black uppercase text-slate-400 tracking-wider block pb-1">Technical Specifications</span>
+                        <div className="grid grid-cols-2 gap-1.5 text-[9px] pt-1">
+                          {customAttributes.map((attr, idx) => (
+                            <div key={idx} className="flex justify-between pb-0.5">
+                              <span className="font-bold text-slate-400 uppercase">{attr.key || "Specs"}:</span>
+                              <span className="text-slate-700 dark:text-slate-300 font-medium truncate max-w-[90px]">{attr.value || "Details"}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {newProduct.tags && (
+                      <div className="flex flex-wrap gap-1 pt-1.5">
+                        {newProduct.tags.split(",").map((tag, idx) => (
+                          <span key={idx} className="text-[8px] bg-slate-100 dark:bg-slate-950 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded font-medium">
+                            #{tag.trim()}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Google SERP Search Preview */}
+                {activePreviewTab === "seo" && (
+                  <div className="w-full bg-white dark:bg-slate-900 rounded-2xl p-4 space-y-1.5 text-left shadow-md max-w-sm">
+                    <div className="flex items-center gap-1.5 text-[10px] text-slate-500 font-sans">
+                      <Globe size={10} className="text-slate-400" />
+                      <span>https://cartnow.com</span>
+                      <span>›</span>
+                      <span className="text-slate-400 truncate max-w-[150px]">
+                        product › {newProduct.name ? newProduct.name.toLowerCase().replace(/\s+/g, "-") : "listing"}
+                      </span>
+                    </div>
+
+                    <a
+                      href="#seo-preview"
+                      className="text-indigo-600 dark:text-indigo-400 hover:underline text-sm font-bold font-sans block leading-snug truncate cursor-pointer"
+                    >
+                      {newProduct.name ? `${newProduct.name} | Buy ${newProduct.brand || "Online"}` : "Untitled Product Listing | CartNow"}
+                    </a>
+
+                    <p className="text-[10px] text-slate-600 dark:text-slate-400 font-sans leading-normal line-clamp-3">
+                      {newProduct.seoDescription || newProduct.description || "Enter a meta description or let the AI Generate SEO details to optimize Google and search engine rankings."}
+                    </p>
+
+                    {newProduct.keywords && (
+                      <div className="flex items-center gap-1 text-[8px] text-slate-400 uppercase font-black pt-1">
+                        <Search size={8} />
+                        <span>Keywords: {newProduct.keywords}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+              </div>
             </div>
+
           </div>
-        </div>
-      )}
-    </div>
+        )}
+
+      </div>
+
+      {/* ==================== MODALS ==================== */}
 
       {/* Variant JSON Code Editor Modal */}
       {showVariantJsonModal && (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-slate-900 text-white rounded-2xl w-full max-w-2xl border border-slate-800 shadow-2xl flex flex-col max-h-[85vh] overflow-hidden">
-            <div className="p-4 border-b border-slate-800 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Code className="text-indigo-400" size={18} />
+          <div className="bg-slate-900 text-white rounded-3xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden">
+            <div className="p-5 flex items-center justify-between border-b border-slate-800">
+              <div className="flex items-center gap-2.5">
+                <div className="h-8 w-8 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
+                  <Code size={18} />
+                </div>
                 <div>
-                  <h3 className="text-sm font-bold">Variant JSON Code Editor</h3>
-                  <p className="text-[11px] text-slate-400">View, edit, or paste variant prices, stocks, and attributes in JSON format</p>
+                  <h3 className="text-sm font-black uppercase tracking-wider">Variant JSON Code Editor</h3>
+                  <p className="text-[10px] text-slate-400">View, edit, or paste variant prices, stocks, and attributes in raw JSON</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setShowVariantJsonModal(false)}
-                className="p-1 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white cursor-pointer"
+                className="p-1.5 hover:bg-slate-800 rounded-xl text-slate-400 hover:text-white cursor-pointer"
               >
                 <X size={18} />
               </button>
             </div>
 
-            <div className="p-4 flex-1 overflow-y-auto space-y-2">
+            <div className="p-5 flex-1 overflow-y-auto space-y-3">
               {variantJsonError && (
-                <div className="p-2.5 bg-rose-500/10 border border-rose-500/30 rounded-lg text-rose-400 text-xs flex items-center gap-2">
+                <div className="p-3 bg-rose-500/10 rounded-xl text-rose-400 text-xs flex items-center gap-2">
                   <AlertCircle size={14} className="flex-shrink-0" />
                   <span>{variantJsonError}</span>
                 </div>
               )}
               <textarea
-                rows={14}
+                rows={12}
                 value={variantJsonText}
                 onChange={(e) => {
                   setVariantJsonText(e.target.value);
                   setVariantJsonError("");
                 }}
-                className="w-full p-3 bg-slate-950 text-indigo-200 font-mono text-xs rounded-xl border border-slate-800 focus:outline-none focus:border-indigo-500 leading-relaxed"
+                className="w-full p-4 bg-slate-955 text-indigo-300 font-mono text-xs rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed shadow-2xs"
                 placeholder='[{"attributes":{"Color":"Red","Size":"M"},"price":599,"stock":10,"sku":"PROD-RED-M-0"}]'
               />
               <div className="flex items-center justify-between text-[11px] text-slate-400">
-                <span>Format: Array of objects with `attributes`, `price`, `stock`, `sku`.</span>
+                <span>Format: Array of objects with attributes, price, stock, sku.</span>
                 <button
                   type="button"
                   onClick={() => {
                     navigator.clipboard.writeText(variantJsonText);
                     toast.info("JSON copied to clipboard!");
                   }}
-                  className="text-indigo-400 hover:underline flex items-center gap-1 cursor-pointer font-medium"
+                  className="text-indigo-400 hover:underline flex items-center gap-1 cursor-pointer font-bold"
                 >
                   <Copy size={12} /> Copy JSON
                 </button>
               </div>
             </div>
 
-            <div className="p-4 border-t border-slate-800 flex justify-end gap-2 bg-slate-900/50">
+            <div className="p-4 flex justify-end gap-2 bg-slate-950">
               <button
                 type="button"
                 onClick={() => setShowVariantJsonModal(false)}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition cursor-pointer"
+                className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleApplyVariantJson}
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-md cursor-pointer"
+                className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition flex items-center gap-1.5 shadow-md cursor-pointer"
               >
                 <Check size={14} /> Save & Apply JSON
               </button>
@@ -2511,23 +2370,21 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
 
       {/* Animated Success Celebration Modal */}
       {showSuccessModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-300">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-3xl p-8 max-w-md w-full text-center space-y-6 shadow-2xl relative overflow-hidden transform animate-in zoom-in-95 duration-300">
-            {/* Glow aura background effect */}
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 max-w-md w-full text-center space-y-6 shadow-2xl relative overflow-hidden">
             <div className="absolute -top-24 -left-24 w-48 h-48 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-orange-500/20 rounded-full blur-3xl pointer-events-none" />
 
-            {/* Floating Animated Badge */}
-            <div className="relative mx-auto w-20 h-20 bg-gradient-to-tr from-emerald-500 to-teal-400 rounded-3xl flex items-center justify-center shadow-lg shadow-emerald-500/30 animate-bounce">
+            <div className="relative mx-auto w-20 h-20 bg-gradient-to-tr from-emerald-500 to-teal-400 rounded-3xl flex items-center justify-center shadow-lg shadow-emerald-500/30">
               <PartyPopper size={36} className="text-white" />
             </div>
 
             <div className="space-y-2">
               <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
-                Product Listing Submitted! 🎉
+                Product Published Successfully! 🎉
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                Your product has been created successfully with all attributes & variants intact and submitted for admin verification.
+                Your product listing is now active with all dynamic attributes, matrix variants, and high-res media synced.
               </p>
             </div>
 
@@ -2535,7 +2392,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
               <button
                 type="button"
                 onClick={() => setShowSuccessModal(false)}
-                className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition shadow-md cursor-pointer"
+                className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition shadow-md cursor-pointer"
               >
                 Create Another Product
               </button>
@@ -2543,6 +2400,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
           </div>
         </div>
       )}
+
     </div>
   );
 };

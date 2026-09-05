@@ -111,7 +111,7 @@ const Notifications = ({ token, products = [], orders = [] }) => {
         )}
       </div>
 
-      <div className="bg-white dark:bg-slate-900 border border-slate-200/80 rounded-3xl p-6 shadow-sm space-y-4">
+      <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-xs space-y-4">
         {loading ? (
           <div className="py-12 text-center text-xs text-slate-400 font-semibold">
             Syncing logs feed...
@@ -121,7 +121,7 @@ const Notifications = ({ token, products = [], orders = [] }) => {
             No system notifications active in your feed.
           </div>
         ) : (
-          <div className="divide-y divide-slate-100">
+          <div className="space-y-2">
             {logs.map((log) => {
               const getIcon = () => {
                 switch (log.type) {
@@ -139,10 +139,10 @@ const Notifications = ({ token, products = [], orders = [] }) => {
               return (
                 <div
                   key={log.id}
-                  className={`py-4 flex gap-4 items-start justify-between group ${ !log.isRead ? "bg-orange-500/[0.01]" : "" }`}
+                  className={`py-3.5 px-4 rounded-2xl flex gap-4 items-start justify-between group transition hover:bg-slate-50 dark:hover:bg-slate-950/60 ${ !log.isRead ? "bg-orange-500/[0.02]" : "" }`}
                 >
                   <div className="flex gap-3 items-start">
-                    <div className="h-9 w-9 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-100 flex items-center justify-center shrink-0">
+                    <div className="h-9 w-9 rounded-xl bg-slate-100 dark:bg-slate-950 flex items-center justify-center shrink-0">
                       {getIcon()}
                     </div>
                     <div className="space-y-1">

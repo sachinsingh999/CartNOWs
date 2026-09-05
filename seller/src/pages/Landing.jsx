@@ -269,24 +269,19 @@ const Landing = () => {
           backgroundColor: headerBg,
           backdropFilter: headerBlur,
           WebkitBackdropFilter: headerBlur,
-          borderColor: headerBorder,
         }}
-        className="sticky top-0 z-50 border-b px-6 py-4 transition-colors duration-200"
+        className="sticky top-0 z-50 px-6 py-4 transition-colors duration-200 shadow-2xs"
       >
         <div className="max-w-7xl mx-auto flex items-center justify-between">
+          {/* Logo Brand */}
           <motion.div 
-            style={{ scale: logoSpringScale }}
-            className="flex items-center gap-3 origin-left"
+            initial={{ opacity: 0, y: shouldReduceMotion ? 0 : -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            onClick={() => navigate("/")}
+            className="flex items-center gap-3 cursor-pointer select-none group"
           >
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 p-[1px] shadow-lg shadow-orange-500/20">
-              <div className="h-full w-full bg-slate-950 rounded-xl flex items-center justify-center">
-                <Logo variant="icon" className="h-6 w-6 text-orange-500" />
-              </div>
-            </div>
-            <div className="flex flex-col text-left leading-none">
-              <span className="text-base font-black tracking-tight text-slate-100 dark:text-white">CartNOW</span>
-              <span className="text-[10px] text-orange-500 font-black uppercase tracking-wider mt-0.5">Seller Hub</span>
-            </div>
+            <Logo className="h-9 sm:h-10 w-32 sm:w-36 text-slate-100 dark:text-white group-hover:scale-105 transition-transform duration-200" />
           </motion.div>
 
           <motion.div 
@@ -317,7 +312,7 @@ const Landing = () => {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-orange-500/30 bg-orange-500/5 text-orange-400 text-xs font-extrabold uppercase tracking-wider mb-6 animate-pulse"
+          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-500/10 text-orange-400 text-xs font-extrabold uppercase tracking-wider mb-6 animate-pulse"
         >
           <Store size={12} />
           <span>Empowering 10,000+ Merchants</span>
@@ -364,7 +359,7 @@ const Landing = () => {
           </button>
           <a
             href="#calculator"
-            className="w-full sm:w-auto flex items-center justify-center gap-2 border border-slate-800 bg-slate-900/30 hover:bg-slate-900/60 hover:border-slate-700 text-slate-300 hover:text-white font-bold px-8 py-4 rounded-xl transition duration-300"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-slate-900/50 hover:bg-slate-900/80 text-slate-300 hover:text-white font-bold px-8 py-4 rounded-xl transition duration-300 shadow-xs"
           >
             <span>Calculate Fees</span>
           </a>
@@ -387,10 +382,10 @@ const Landing = () => {
               rotateY: shouldReduceMotion ? 0 : tiltY,
               transformStyle: "preserve-3d",
             }}
-            className="relative rounded-2xl border border-slate-800 bg-slate-900/40 p-4 md:p-6 shadow-2xl backdrop-blur-sm overflow-hidden group cursor-default"
+            className="relative rounded-2xl bg-slate-900/40 p-4 md:p-6 shadow-2xl backdrop-blur-sm overflow-hidden group cursor-default"
           >
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent z-10 pointer-events-none" />
-            <div className="flex items-center gap-2 pb-4 border-b border-slate-800/80 mb-6">
+            <div className="flex items-center gap-2 pb-4 mb-6">
               <span className="w-3 h-3 rounded-full bg-red-500/80" />
               <span className="w-3 h-3 rounded-full bg-yellow-500/80" />
               <span className="w-3 h-3 rounded-full bg-green-500/80" />
@@ -398,7 +393,7 @@ const Landing = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left relative z-0">
-              <div className="p-5 rounded-xl border border-slate-800/50 bg-slate-900/20">
+              <div className="p-5 rounded-xl bg-slate-900/30 shadow-xs">
                 <div className="flex items-center justify-between mb-3 text-slate-400">
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Monthly Revenue</span>
                   <TrendingUp size={16} className="text-emerald-500" />
@@ -412,7 +407,7 @@ const Landing = () => {
                 </div>
               </div>
 
-              <div className="p-5 rounded-xl border border-slate-800/50 bg-slate-900/20">
+              <div className="p-5 rounded-xl bg-slate-900/30 shadow-xs">
                 <div className="flex items-center justify-between mb-3 text-slate-400">
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Orders</span>
                   <ShoppingBag size={16} className="text-orange-500" />
@@ -426,7 +421,7 @@ const Landing = () => {
                 </div>
               </div>
 
-              <div className="p-5 rounded-xl border border-slate-800/50 bg-slate-900/20">
+              <div className="p-5 rounded-xl bg-slate-900/30 shadow-xs">
                 <div className="flex items-center justify-between mb-3 text-slate-400">
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Platform Rating</span>
                   <div className="flex gap-0.5 text-amber-500">
@@ -444,7 +439,7 @@ const Landing = () => {
               </div>
             </div>
 
-            <div className="mt-6 border border-slate-800/60 rounded-xl p-4 bg-slate-950/40 text-left">
+            <div className="mt-6 rounded-xl p-4 bg-slate-950/40 text-left shadow-xs">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-xs font-black uppercase tracking-wider text-slate-100 dark:text-white">Live Operations Feed</span>
                 <span className="flex h-2 w-2 relative">
@@ -467,7 +462,7 @@ const Landing = () => {
                   <motion.div 
                     key={i} 
                     variants={rowSlideIn}
-                    className="flex justify-between items-center text-xs py-2 border-b border-slate-900/60 last:border-0"
+                    className="flex justify-between items-center text-xs py-2"
                   >
                     <div className="flex items-center gap-2.5">
                       <span className={`w-1.5 h-1.5 rounded-full ${ log.type === "success" ? "bg-emerald-500" : log.type === "warning" ? "bg-amber-500" : "bg-blue-500" }`} />
@@ -483,7 +478,7 @@ const Landing = () => {
       </section>
 
       {/* Feature Grid Section */}
-      <section className="py-24 px-6 border-y border-slate-900 bg-slate-950/20 relative z-20">
+      <section className="py-24 px-6 bg-slate-950/20 relative z-20">
         <div className="max-w-7xl mx-auto">
           <motion.div 
             initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 30 }}
@@ -544,7 +539,7 @@ const Landing = () => {
                   variants={cardScaleUp}
                   whileHover="hover"
                   style={{ transformStyle: "preserve-3d" }}
-                  className="p-6 rounded-2xl border border-slate-800/80 bg-slate-900/20 hover:border-slate-700/80 hover:bg-slate-900/40 transition-colors duration-300 group cursor-default"
+                  className="p-6 rounded-2xl bg-slate-900/30 hover:bg-slate-900/60 transition-colors duration-300 group cursor-default shadow-xs"
                 >
                   <motion.div 
                     variants={{
@@ -613,7 +608,7 @@ const Landing = () => {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.7 }}
-            className="p-6 sm:p-8 rounded-3xl border border-slate-800 bg-slate-900/40 shadow-xl backdrop-blur-sm relative overflow-hidden text-left"
+            className="p-6 sm:p-8 rounded-3xl bg-slate-900/40 shadow-xl backdrop-blur-sm relative overflow-hidden text-left"
           >
             <div className="absolute top-0 right-0 h-28 w-28 bg-orange-500/10 rounded-full blur-2xl pointer-events-none" />
             <h3 className="text-lg font-black text-slate-100 dark:text-white mb-6 flex items-center gap-2">
@@ -661,7 +656,7 @@ const Landing = () => {
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true }}
-              className="space-y-4 pt-6 border-t border-slate-800/80"
+              className="space-y-4 pt-6"
             >
               <motion.div variants={itemFadeUp} className="flex justify-between text-xs text-slate-400">
                 <span>Estimated Monthly Revenue</span>
@@ -675,7 +670,7 @@ const Landing = () => {
                   <AnimatedCounter value={platformFee} prefix="-$" decimalPlaces={2} />
                 </span>
               </motion.div>
-              <motion.div variants={itemFadeUp} className="flex justify-between items-center pt-3 border-t border-slate-800/40">
+              <motion.div variants={itemFadeUp} className="flex justify-between items-center pt-3">
                 <span className="text-sm font-black text-slate-100 dark:text-white">Your Net Payout</span>
                 <span className="text-xl font-black text-emerald-400">
                   <AnimatedCounter value={netEarnings} prefix="$" decimalPlaces={2} />
@@ -687,7 +682,7 @@ const Landing = () => {
       </section>
 
       {/* Stepper Roadmap Section */}
-      <section ref={roadmapRef} className="py-24 px-6 border-t border-slate-900 bg-slate-950/10 relative overflow-hidden">
+      <section ref={roadmapRef} className="py-24 px-6 bg-slate-950/10 relative overflow-hidden">
         <div className="max-w-7xl mx-auto text-center relative z-10">
           <motion.div 
             initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 30 }}
@@ -748,7 +743,7 @@ const Landing = () => {
                 <motion.div 
                   key={i} 
                   variants={cardScaleUp}
-                  className="flex flex-col items-center md:items-start text-center md:text-left relative p-6 rounded-2xl bg-slate-900/20 border border-slate-900/80 backdrop-blur-sm"
+                  className="flex flex-col items-center md:items-start text-center md:text-left relative p-6 rounded-2xl bg-slate-900/20 backdrop-blur-sm shadow-xs"
                 >
                   <motion.span 
                     initial={{ scale: 0.7 }}
@@ -792,11 +787,11 @@ const Landing = () => {
             <motion.div 
               key={idx} 
               variants={itemFadeUp}
-              className="rounded-2xl border border-slate-800/80 bg-slate-900/20 overflow-hidden transition-colors duration-200"
+              className="rounded-2xl bg-slate-900/30 overflow-hidden shadow-xs transition-colors duration-200"
             >
               <button
                 onClick={() => toggleFaq(idx)}
-                className="w-full flex items-center justify-between p-5 text-left text-sm font-bold text-slate-100 dark:text-white transition hover:bg-slate-900/30 cursor-pointer"
+                className="w-full flex items-center justify-between p-5 text-left text-sm font-bold text-slate-100 dark:text-white transition hover:bg-slate-900/50 cursor-pointer"
               >
                 <span>{faq.q}</span>
                 <motion.div
@@ -817,7 +812,7 @@ const Landing = () => {
                     transition={{ duration: 0.3, ease: "easeInOut" }}
                     className="overflow-hidden"
                   >
-                    <div className="p-5 text-xs leading-relaxed text-slate-400 font-light border-t border-slate-800/40">
+                    <div className="p-5 text-xs leading-relaxed text-slate-400 font-light">
                       {faq.a}
                     </div>
                   </motion.div>
@@ -834,25 +829,19 @@ const Landing = () => {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        className="border-t border-slate-900 bg-slate-950/80 py-16 px-6 relative z-10 text-center"
+        className="bg-slate-950/80 py-16 px-6 relative z-10 text-center shadow-xs"
       >
         <div className="max-w-7xl mx-auto flex flex-col items-center gap-8">
           
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-xl border border-slate-800 bg-slate-950 flex items-center justify-center">
-              <Logo variant="icon" className="h-5 w-5 text-slate-100 dark:text-white" />
-            </div>
-            <div className="flex flex-col text-left leading-none">
-              <span className="text-sm font-black text-slate-100 dark:text-white">CartNOW</span>
-              <span className="text-[9px] text-orange-500 font-black uppercase tracking-wider mt-0.5">Seller Hub</span>
-            </div>
+          <div className="flex items-center justify-center">
+            <Logo className="h-9 sm:h-10 w-32 sm:w-36 text-slate-100 dark:text-white" />
           </div>
 
           <p className="text-xs text-slate-500 max-w-md">
             CartNOW Inc. All rights reserved. Registered under standard online merchant licensing guidelines.
           </p>
 
-          <div className="pt-6 border-t border-slate-900 w-full max-w-2xl">
+          <div className="pt-6 w-full max-w-2xl">
             <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-4">
               Explore CartNOW Platforms
             </p>

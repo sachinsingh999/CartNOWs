@@ -183,16 +183,16 @@ const KPIGrid = ({
               boxShadow: `0 20px 40px -15px ${m.glowColor}`,
               borderColor: "rgba(249, 115, 22, 0.2)"
             }}
-            className="p-[1px] bg-gradient-to-br from-white/10 to-transparent dark:from-slate-800/40 dark:to-transparent rounded-[24px] transition-all duration-300"
+            className="p-[1px] rounded-[24px] transition-all duration-300"
           >
-            <div className="bg-white dark:bg-slate-900/35 border border-slate-200 dark:border-slate-800/80 backdrop-blur-xl rounded-[23px] p-6 flex flex-col justify-between min-h-[176px] relative overflow-hidden transition-colors duration-300">
+            <div className="bg-white dark:bg-slate-900/50 backdrop-blur-xl rounded-[23px] p-6 flex flex-col justify-between min-h-[176px] relative overflow-hidden shadow-xs transition-colors duration-300">
               
               {/* Top row: Icon + Metric Name */}
               <div className="flex items-center justify-between relative z-10">
                 <span className="text-[10px] uppercase font-bold text-slate-450 dark:text-slate-500 tracking-wider">
                   {m.label}
                 </span>
-                <div className="h-8 w-8 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 flex items-center justify-center text-slate-555 shrink-0 shadow-inner">
+                <div className="h-8 w-8 rounded-xl bg-slate-100 dark:bg-slate-950 flex items-center justify-center text-slate-555 shrink-0 shadow-xs">
                   <Icon size={14} className={m.iconColor} />
                 </div>
               </div>
@@ -209,7 +209,7 @@ const KPIGrid = ({
               </div>
               
               {/* Bottom Row: Trend and Sparkline */}
-              <div className="flex items-end justify-between pt-3 border-t border-slate-100 dark:border-slate-900/60 relative z-10 mt-3">
+              <div className="flex items-end justify-between pt-3 relative z-10 mt-3">
                 {/* Trend percentage chip */}
                 <div className="flex flex-col text-left">
                   <span className={`inline-flex px-2 py-0.5 rounded text-[8.5px] font-black uppercase tracking-wider ${

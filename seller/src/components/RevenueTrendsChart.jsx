@@ -136,17 +136,17 @@ const RevenueTrendsChart = ({ orders = [] }) => {
       initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.1 }}
-      className="bg-white dark:bg-slate-900/35 border border-slate-200 dark:border-slate-800/80 rounded-[24px] p-6.5 sm:p-8 backdrop-blur-xl shadow-2xl relative overflow-hidden h-[520px] flex flex-col justify-between text-slate-800 dark:text-slate-100"
+      className="bg-white dark:bg-slate-900/35 rounded-[24px] p-6.5 sm:p-8 backdrop-blur-xl shadow-xs relative overflow-hidden h-[520px] flex flex-col justify-between text-slate-800 dark:text-slate-100"
     >
       {/* Decorative Glows */}
       <div className="absolute top-[-10%] right-[-10%] h-80 w-80 rounded-full bg-orange-500/5 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] left-[-10%] h-72 w-72 rounded-full bg-indigo-500/5 blur-[110px] pointer-events-none" />
 
       {/* Header controls row */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 border-b border-slate-150 dark:border-slate-800 pb-5 z-20">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 pb-5 z-20">
         
         {/* Left: Metric toggles */}
-        <div className="flex flex-wrap sm:flex-nowrap bg-slate-50 dark:bg-slate-950 p-1 rounded-2xl border border-slate-200 dark:border-slate-900 self-start shadow-inner overflow-x-auto max-w-full no-scrollbar">
+        <div className="flex flex-wrap sm:flex-nowrap bg-slate-50 dark:bg-slate-950 p-1 rounded-2xl self-start shadow-inner overflow-x-auto max-w-full no-scrollbar">
           {[
             { id: "revenue", label: "Revenue", icon: TrendingUp },
             { id: "orders", label: "Orders", icon: FileText },
@@ -162,8 +162,8 @@ const RevenueTrendsChart = ({ orders = [] }) => {
                   setActiveMetric(tab.id);
                   setHoveredIdx(null);
                 }}
-                className={`px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 transition cursor-pointer border ${
-                  active ? "text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-md" : "text-slate-400 dark:text-slate-500 hover:text-slate-650 dark:hover:text-slate-350 border-transparent"
+                className={`px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 transition cursor-pointer ${
+                  active ? "text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-900 shadow-md" : "text-slate-400 dark:text-slate-500 hover:text-slate-650 dark:hover:text-slate-350"
                 }`}
               >
                 <Icon size={13} className={active ? "text-orange-500" : "text-slate-500"} />
@@ -174,7 +174,7 @@ const RevenueTrendsChart = ({ orders = [] }) => {
         </div>
 
         {/* Right: Timeframe filter chips */}
-        <div className="flex bg-slate-50 dark:bg-slate-950 p-1 rounded-xl border border-slate-200 dark:border-slate-900 self-end">
+        <div className="flex bg-slate-50 dark:bg-slate-950 p-1 rounded-xl self-end">
           {["7D", "30D", "90D", "1Y"].map((t) => {
             const active = timeframe === t;
             return (
@@ -185,7 +185,7 @@ const RevenueTrendsChart = ({ orders = [] }) => {
                   setHoveredIdx(null);
                 }}
                 className={`px-4 py-1.5 rounded-lg text-[10px] font-black tracking-widest transition cursor-pointer ${
-                  active ? "text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-800 shadow-sm border border-slate-200/60 dark:border-transparent" : "text-slate-450 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
+                  active ? "text-slate-900 dark:text-slate-100 bg-white dark:bg-slate-800 shadow-sm" : "text-slate-450 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
                 }`}
               >
                 {t}
@@ -204,7 +204,7 @@ const RevenueTrendsChart = ({ orders = [] }) => {
         {/* Tooltip Card element */}
         {hoveredIdx !== null && chartData[hoveredIdx] && (
           <div 
-            className="absolute bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-3 rounded-2xl shadow-2xl z-30 pointer-events-none text-left min-w-[130px]"
+            className="absolute bg-white dark:bg-slate-950 p-3 rounded-2xl shadow-2xl z-30 pointer-events-none text-left min-w-[130px]"
             style={{
               left: `${(hoveredIdx / (chartData.length - 1)) * 84 + 8}%`,
               top: "0px",
@@ -312,7 +312,7 @@ const RevenueTrendsChart = ({ orders = [] }) => {
       </div>
 
       {/* X-axis labels */}
-      <div className="flex justify-between text-[10px] text-slate-450 dark:text-slate-500 font-extrabold uppercase tracking-widest border-t border-slate-100 dark:border-slate-900/60 pt-4 px-1.5 z-20">
+      <div className="flex justify-between text-[10px] text-slate-450 dark:text-slate-500 font-extrabold uppercase tracking-widest pt-4 px-1.5 z-20">
         {chartData.map((d, idx) => (
           <span 
             key={idx} 

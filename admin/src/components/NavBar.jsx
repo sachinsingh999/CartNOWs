@@ -114,10 +114,7 @@ const NavBar = ({ setToken, toggleSidebar, isCollapsed, theme, setTheme, token }
             className="flex items-center gap-2.5 cursor-pointer select-none group"
             title="Go to Dashboard"
           >
-            <div className="flex flex-col leading-none text-left">
-              <span className="text-xs font-black text-slate-900 dark:text-white tracking-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition duration-200">CartNOW</span>
-              <span className="text-[8px] text-blue-600 dark:text-blue-400 font-extrabold uppercase tracking-widest mt-0.5">Control Center</span>
-            </div>
+            <Logo className="h-10 sm:h-12 w-36 sm:w-44 text-slate-900 dark:text-white group-hover:scale-105 transition-transform duration-200" />
           </div>
         </div>
 

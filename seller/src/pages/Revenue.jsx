@@ -84,12 +84,12 @@ const Revenue = ({ token, seller, orders = [] }) => {
     <div className="space-y-4 animate-fadeIn text-slate-800 dark:text-slate-100">
       
       {/* ── Single Consolidated Container: Header, Stats & Search Bar ── */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-4 shadow-xs space-y-3.5 shrink-0">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-xs space-y-3.5 shrink-0">
         
         {/* Top: Header Row */}
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 bg-emerald-600 dark:bg-emerald-500/10 text-white dark:text-emerald-400 rounded-lg flex items-center justify-center border border-emerald-500/10 shadow-xs shrink-0">
+            <div className="h-8 w-8 bg-emerald-600 dark:bg-emerald-500/10 text-white dark:text-emerald-400 rounded-lg flex items-center justify-center shadow-xs shrink-0">
               <DollarSign size={16} />
             </div>
             <div>
@@ -101,7 +101,7 @@ const Revenue = ({ token, seller, orders = [] }) => {
           <button
             onClick={fetchPayouts}
             disabled={isRefreshing}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-lg text-xs font-bold transition active:scale-95 disabled:opacity-50 cursor-pointer shadow-xs"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-lg text-xs font-bold transition active:scale-95 disabled:opacity-50 cursor-pointer shadow-xs"
           >
             <RefreshCw size={12} className={isRefreshing ? "animate-spin text-emerald-500" : ""} />
             <span>Refresh Ledger</span>
@@ -112,7 +112,7 @@ const Revenue = ({ token, seller, orders = [] }) => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           
           {/* Card 1: Gross Sales */}
-          <div className="p-3.5 rounded-xl border bg-slate-50/70 dark:bg-slate-950/40 border-slate-200/60 dark:border-slate-800 flex items-center justify-between group relative overflow-hidden">
+          <div className="p-3.5 rounded-xl bg-slate-50/70 dark:bg-slate-950/40 flex items-center justify-between group relative overflow-hidden">
             <div className="space-y-1 relative z-10 text-left">
               <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
                 Gross Sales Volume
@@ -124,13 +124,13 @@ const Revenue = ({ token, seller, orders = [] }) => {
                 <TrendingUp size={10} /> Inclusive of order shipping
               </span>
             </div>
-            <div className="p-2 rounded-lg border text-indigo-500 bg-indigo-500/10 border-slate-200/50 dark:border-slate-800 transition-transform duration-200 group-hover:scale-105 relative z-10">
+            <div className="p-2 rounded-lg text-indigo-500 bg-indigo-500/10 transition-transform duration-200 group-hover:scale-105 relative z-10">
               <DollarSign size={16} />
             </div>
           </div>
 
           {/* Card 2: Net Earnings */}
-          <div className="p-3.5 rounded-xl border bg-slate-50/70 dark:bg-slate-950/40 border-slate-200/60 dark:border-slate-800 flex items-center justify-between group relative overflow-hidden">
+          <div className="p-3.5 rounded-xl bg-slate-50/70 dark:bg-slate-950/40 flex items-center justify-between group relative overflow-hidden">
             <div className="space-y-1 relative z-10 text-left">
               <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
                 Net Merchant Earnings
@@ -142,13 +142,13 @@ const Revenue = ({ token, seller, orders = [] }) => {
                 After {commissionRate}% commission
               </span>
             </div>
-            <div className="p-2 rounded-lg border text-emerald-500 bg-emerald-500/10 border-slate-200/50 dark:border-slate-800 transition-transform duration-200 group-hover:scale-105 relative z-10">
+            <div className="p-2 rounded-lg text-emerald-500 bg-emerald-500/10 transition-transform duration-200 group-hover:scale-105 relative z-10">
               <ShieldCheck size={16} />
             </div>
           </div>
 
           {/* Card 3: Withdrawable Balance & Action */}
-          <div className="p-3.5 rounded-xl border bg-gradient-to-br from-slate-950 to-slate-900 text-white border-slate-800 flex items-center justify-between group relative overflow-hidden shadow-xs">
+          <div className="p-3.5 rounded-xl bg-gradient-to-br from-slate-950 to-slate-900 text-white flex items-center justify-between group relative overflow-hidden shadow-xs">
             <div className="space-y-1 relative z-10 text-left">
               <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">
                 Available to Withdraw
@@ -165,7 +165,7 @@ const Revenue = ({ token, seller, orders = [] }) => {
                 <ArrowRight size={10} />
               </button>
             </div>
-            <div className="p-2 rounded-lg border text-orange-400 bg-orange-500/10 border-slate-800 relative z-10">
+            <div className="p-2 rounded-lg text-orange-400 bg-orange-500/10 relative z-10">
               <CreditCard size={16} />
             </div>
           </div>
@@ -178,8 +178,8 @@ const Revenue = ({ token, seller, orders = [] }) => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
         
         {/* Payout History Table (2 Cols) */}
-        <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-4 shadow-xs space-y-3 min-h-[350px]">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-slate-100 dark:border-slate-800 pb-3">
+        <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-xs space-y-3 min-h-[350px]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3">
             <div>
               <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">Disbursement History</h3>
               <p className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider mt-0.5">Track direct deposit requests and processing states</p>
@@ -216,7 +216,7 @@ const Revenue = ({ token, seller, orders = [] }) => {
                   placeholder="Search ref..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-6 pr-2 py-1 text-[10px] bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-md text-slate-800 dark:text-white font-semibold outline-none w-28"
+                  className="pl-6 pr-2 py-1 text-[10px] bg-slate-50 dark:bg-slate-950 rounded-md text-slate-800 dark:text-white font-semibold outline-none w-28"
                 />
               </div>
             </div>
@@ -224,18 +224,18 @@ const Revenue = ({ token, seller, orders = [] }) => {
 
           <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1 custom-scrollbar">
             {filteredPayouts.length === 0 ? (
-              <div className="py-16 text-center text-xs font-semibold text-slate-400 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
+              <div className="py-16 text-center text-xs font-semibold text-slate-400 bg-slate-50/50 dark:bg-slate-950/40 rounded-xl">
                 No payout records match your filter criteria.
               </div>
             ) : (
               filteredPayouts.map((p, index) => (
                 <div
                   key={p._id || index}
-                  className="p-3 rounded-xl border border-slate-200/60 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 transition"
+                  className="p-3 rounded-xl bg-slate-50/50 dark:bg-slate-950/40 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 transition"
                 >
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-[9px] font-black text-slate-500 bg-slate-100 dark:bg-slate-950 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-800">
+                      <span className="font-mono text-[9px] font-black text-slate-500 bg-slate-100 dark:bg-slate-950 px-1.5 py-0.5 rounded">
                         #{String(p._id || index).slice(-6).toUpperCase()}
                       </span>
                       <span className="font-extrabold text-xs text-slate-900 dark:text-white">Direct Bank Transfer</span>
@@ -247,12 +247,12 @@ const Revenue = ({ token, seller, orders = [] }) => {
 
                   <div className="flex items-center gap-3 shrink-0 justify-between sm:justify-end">
                     <span className="font-black text-xs text-slate-900 dark:text-white">₹{(p.amount || 0).toFixed(2)}</span>
-                    <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider border ${
+                    <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider ${
                       p.status === "approved" || p.status === "completed" 
-                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" 
+                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" 
                         : p.status === "rejected" 
-                        ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20" 
-                        : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
+                        ? "bg-rose-500/10 text-rose-600 dark:text-rose-400" 
+                        : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
                     }`}>
                       {p.status}
                     </span>
@@ -264,7 +264,7 @@ const Revenue = ({ token, seller, orders = [] }) => {
         </div>
 
         {/* Commission Detail Info Panel (1 Col) */}
-        <div className="bg-slate-900 text-white rounded-2xl p-5 shadow-xs border border-slate-800 space-y-4">
+        <div className="bg-slate-900 text-white rounded-2xl p-5 shadow-xs space-y-4">
           <div>
             <h3 className="font-black text-xs text-white uppercase tracking-wider">Platform Fee Breakdown</h3>
             <p className="text-[11px] text-slate-400 font-medium mt-1 leading-relaxed">
@@ -272,7 +272,7 @@ const Revenue = ({ token, seller, orders = [] }) => {
             </p>
           </div>
 
-          <div className="border-t border-slate-800 pt-3 space-y-2 text-xs font-semibold text-slate-300">
+          <div className="pt-3 space-y-2 text-xs font-semibold text-slate-300">
             <div className="flex justify-between">
               <span className="text-slate-400">Commission Rate:</span>
               <span className="font-black text-white">{commissionRate}%</span>

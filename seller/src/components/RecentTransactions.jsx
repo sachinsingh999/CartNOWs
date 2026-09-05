@@ -33,10 +33,10 @@ const RecentTransactions = ({ orders = [], products = [], navigate }) => {
       initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.2 }}
-      className="bg-white dark:bg-slate-900/35 border border-slate-200 dark:border-slate-800/80 rounded-[24px] p-6 backdrop-blur-xl shadow-2xl space-y-5 h-full flex flex-col justify-between text-slate-800 dark:text-slate-100"
+      className="bg-white dark:bg-slate-900/35 rounded-[24px] p-6 backdrop-blur-xl shadow-xs space-y-5 h-full flex flex-col justify-between text-slate-800 dark:text-slate-100"
     >
       {/* Header controls row */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-150 dark:border-slate-800 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4">
         <div className="text-left">
           <h3 className="text-sm font-black text-slate-900 dark:text-slate-100 uppercase tracking-wider">Recent Transactions</h3>
           <p className="text-[10px] text-slate-500 mt-0.5">Real-time buyer transaction activity and payments status.</p>
@@ -64,7 +64,7 @@ const RecentTransactions = ({ orders = [], products = [], navigate }) => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search customer or order ref..."
-            className="w-full pl-8.5 pr-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 text-[11px] text-slate-800 dark:text-slate-200 outline-none placeholder:text-slate-450 dark:placeholder:text-slate-650 focus:bg-white dark:focus:bg-slate-950 focus:border-slate-300 dark:focus:border-slate-700 transition-all duration-150"
+            className="w-full pl-8.5 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-950/60 text-[11px] text-slate-800 dark:text-slate-200 outline-none placeholder:text-slate-450 dark:placeholder:text-slate-650 focus:bg-white dark:focus:bg-slate-950 shadow-2xs transition-all duration-150"
           />
         </div>
 
@@ -79,7 +79,7 @@ const RecentTransactions = ({ orders = [], products = [], navigate }) => {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="pl-7.5 pr-8 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 text-[11px] text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 outline-none cursor-pointer focus:border-slate-300 dark:focus:border-slate-700 transition appearance-none font-bold"
+              className="pl-7.5 pr-8 py-2 rounded-xl bg-slate-50 dark:bg-slate-950/60 text-[11px] text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 outline-none cursor-pointer shadow-2xs transition appearance-none font-bold"
             >
               <option value="All">All Statuses</option>
               <option value="Delivered">Delivered</option>
@@ -97,7 +97,7 @@ const RecentTransactions = ({ orders = [], products = [], navigate }) => {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="pl-7.5 pr-8 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 text-[11px] text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 outline-none cursor-pointer focus:border-slate-300 dark:focus:border-slate-700 transition appearance-none font-bold"
+              className="pl-7.5 pr-8 py-2 rounded-xl bg-slate-50 dark:bg-slate-950/60 text-[11px] text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 outline-none cursor-pointer shadow-2xs transition appearance-none font-bold"
             >
               <option value="date_desc">Newest Date</option>
               <option value="date_asc">Oldest Date</option>
@@ -113,7 +113,7 @@ const RecentTransactions = ({ orders = [], products = [], navigate }) => {
       <div className="overflow-x-auto flex-1 min-h-[220px]">
         <table className="w-full text-left border-collapse text-xs min-w-[580px]">
           <thead>
-            <tr className="border-b border-slate-200 dark:border-slate-800 text-[9px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-widest bg-slate-50/50 dark:bg-slate-950/40">
+            <tr className="text-[9px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-widest bg-slate-50/50 dark:bg-slate-950/40">
               <th className="py-3 px-3 rounded-l-lg">Order Ref</th>
               <th className="py-3 px-3">Recipient</th>
               <th className="py-3 px-3">Product Image</th>
@@ -122,7 +122,7 @@ const RecentTransactions = ({ orders = [], products = [], navigate }) => {
               <th className="py-3 px-3 text-right rounded-r-lg">Total Payout</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-900/40">
+          <tbody>
             {sortedOrders.length === 0 ? (
               <tr>
                 <td colSpan={6} className="py-12 text-center text-xs text-slate-505 font-medium">
@@ -148,14 +148,14 @@ const RecentTransactions = ({ orders = [], products = [], navigate }) => {
                     className="group text-slate-650 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900/45 transition duration-150"
                   >
                     <td className="py-3 px-3">
-                      <span className="font-mono text-[10px] text-slate-450 dark:text-slate-550 font-bold group-hover:text-slate-650 dark:group-hover:text-slate-400">
+                      <span className="font-mono text-[10px] text-slate-450 dark:text-slate-555 font-bold group-hover:text-slate-650 dark:group-hover:text-slate-400">
                         #{order._id.slice(-8).toUpperCase()}
                       </span>
                     </td>
                     
                     <td className="py-3 px-3">
                       <div className="flex items-center gap-2">
-                        <div className="h-6 w-6 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center font-bold text-[8.5px] text-slate-500 dark:text-slate-400 uppercase select-none shrink-0 shadow-sm">
+                        <div className="h-6 w-6 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-[8.5px] text-slate-500 dark:text-slate-400 uppercase select-none shrink-0 shadow-2xs">
                           {initials}
                         </div>
                         <span className="font-bold text-slate-900 dark:text-slate-200 group-hover:text-black dark:group-hover:text-white">
@@ -166,7 +166,7 @@ const RecentTransactions = ({ orders = [], products = [], navigate }) => {
 
                     {/* Product image thumbnail */}
                     <td className="py-3 px-3">
-                      <div className="h-7 w-7 rounded-lg bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+                      <div className="h-7 w-7 rounded-lg bg-slate-100 dark:bg-slate-950 flex items-center justify-center overflow-hidden shrink-0 shadow-2xs">
                         {thumbImage ? (
                           <img src={thumbImage} alt="" className="h-full w-full object-contain" />
                         ) : (
@@ -180,14 +180,14 @@ const RecentTransactions = ({ orders = [], products = [], navigate }) => {
                     </td>
                     
                     <td className="py-3 px-3">
-                      <span className={`inline-flex px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border ${
+                      <span className={`inline-flex px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider ${
                         order.orderStatus === "Delivered" 
-                          ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400" 
+                          ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" 
                           : order.orderStatus === "Cancelled" 
-                          ? "bg-red-500/10 border-red-500/20 text-red-650 dark:text-red-400" 
+                          ? "bg-red-500/10 text-red-650 dark:text-red-400" 
                           : order.orderStatus === "In Transit" 
-                          ? "bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400"
-                          : "bg-blue-500/10 border-blue-500/20 text-blue-650 dark:text-blue-400"
+                          ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                          : "bg-blue-500/10 text-blue-650 dark:text-blue-400"
                       }`}>
                         {order.orderStatus}
                       </span>

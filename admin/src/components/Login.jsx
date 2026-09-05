@@ -361,7 +361,7 @@ const Login = ({ setToken }) => {
             </div>
             
             <div className="space-y-1">
-              <div className="text-sm font-black text-slate-100 tracking-wider uppercase leading-none">[ CartNOW ]</div>
+              <Logo forceWhite className="h-8 w-auto mb-1" />
               <h2 className="text-[10px] font-black text-slate-450 tracking-widest uppercase">Operations Control Center</h2>
               <div className="text-[8px] text-slate-550 font-bold uppercase tracking-wider">Security Level: Administrator</div>
             </div>

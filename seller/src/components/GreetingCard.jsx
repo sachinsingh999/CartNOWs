@@ -30,14 +30,13 @@ const GreetingCard = ({ seller, orders = [] }) => {
       initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="relative flex flex-col p-6 sm:p-8 rounded-[24px] bg-white dark:bg-slate-900/35 border border-slate-200 dark:border-slate-800/80 backdrop-blur-xl shadow-2xl overflow-hidden text-slate-800 dark:text-slate-100 space-y-6"
+      className="relative flex flex-col p-6 sm:p-8 rounded-[24px] bg-white dark:bg-slate-900/35 backdrop-blur-xl shadow-xs overflow-hidden text-slate-800 dark:text-slate-100 space-y-6"
     >
       {/* Decorative Animated Gradient Border / Accent */}
       <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 via-transparent to-indigo-500/5 pointer-events-none opacity-50" />
-      <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-orange-500/30 to-transparent animate-pulse" />
 
       {/* Top Section: Greeting & Actions */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-slate-150 dark:border-slate-800/80 z-10">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 z-10">
         
         {/* Left Column: Profile Info */}
         <div className="flex items-center gap-4 text-left">
@@ -55,11 +54,11 @@ const GreetingCard = ({ seller, orders = [] }) => {
 
           <div className="space-y-0.5">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[9px] text-orange-605 dark:text-orange-400 font-black uppercase tracking-widest bg-orange-500/10 border border-orange-500/20 px-2 py-0.5 rounded-md flex items-center gap-1">
+              <span className="text-[9px] text-orange-605 dark:text-orange-400 font-black uppercase tracking-widest bg-orange-500/10 px-2 py-0.5 rounded-md flex items-center gap-1">
                 <ShieldCheck size={9} />
                 <span>Verified Merchant</span>
               </span>
-              <span className="text-[9px] text-slate-500 dark:text-slate-400 font-extrabold uppercase tracking-widest bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded-md">
+              <span className="text-[9px] text-slate-500 dark:text-slate-400 font-extrabold uppercase tracking-widest bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
                 98% Health Score
               </span>
             </div>
@@ -88,7 +87,7 @@ const GreetingCard = ({ seller, orders = [] }) => {
             whileHover={{ scale: shouldReduceMotion ? 1 : 1.02 }}
             whileTap={{ scale: shouldReduceMotion ? 1 : 0.98 }}
             onClick={() => navigate("/orders")}
-            className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950/60 hover:bg-slate-100 dark:hover:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-605 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition cursor-pointer"
+            className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950/60 hover:bg-slate-100 dark:hover:bg-slate-950 text-slate-605 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition cursor-pointer shadow-2xs"
           >
             <ShoppingBag size={12} />
             <span>Orders</span>
@@ -98,7 +97,7 @@ const GreetingCard = ({ seller, orders = [] }) => {
             whileHover={{ scale: shouldReduceMotion ? 1 : 1.02 }}
             whileTap={{ scale: shouldReduceMotion ? 1 : 0.98 }}
             onClick={() => navigate("/analytics")}
-            className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950/60 hover:bg-slate-100 dark:hover:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-605 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition cursor-pointer"
+            className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950/60 hover:bg-slate-100 dark:hover:bg-slate-950 text-slate-605 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition cursor-pointer shadow-2xs"
           >
             <BarChart3 size={12} />
             <span>Analytics</span>
@@ -108,7 +107,7 @@ const GreetingCard = ({ seller, orders = [] }) => {
             whileHover={{ scale: shouldReduceMotion ? 1 : 1.02 }}
             whileTap={{ scale: shouldReduceMotion ? 1 : 0.98 }}
             onClick={() => navigate("/marketing")}
-            className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950/60 hover:bg-slate-100 dark:hover:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-605 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition cursor-pointer"
+            className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950/60 hover:bg-slate-100 dark:hover:bg-slate-950 text-slate-605 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition cursor-pointer shadow-2xs"
           >
             <Megaphone size={12} />
             <span>Marketing</span>
@@ -121,14 +120,14 @@ const GreetingCard = ({ seller, orders = [] }) => {
         <h3 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-left mb-4">
           Today's Operations Snapshot
         </h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 p-5 rounded-2xl bg-slate-50 dark:bg-slate-950/30 border border-slate-200/50 dark:border-slate-900/60 text-left">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 p-5 rounded-2xl bg-slate-50 dark:bg-slate-950/30 text-left shadow-xs">
           {[
             { label: "Revenue Today", value: `₹${revenueToday.toLocaleString("en-IN")}`, change: "Daily Gross Payout" },
             { label: "Orders Today", value: `${ordersTodayCount}`, change: "Completed Purchases" },
             { label: "Conversion Rate", value: conversionRate, change: "Active Sessions Index" },
             { label: "Store Rating", value: `★ ${satisfactionScore}`, change: "Customer CSAT Score" }
           ].map((snap, i) => (
-            <div key={i} className="space-y-1.5 pl-0 md:pl-5 border-l-0 md:border-l first:border-l-0 border-slate-200 dark:border-slate-800/40">
+            <div key={i} className="space-y-1.5 pl-0 md:pl-5">
               <span className="text-[9px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider block">
                 {snap.label}
               </span>

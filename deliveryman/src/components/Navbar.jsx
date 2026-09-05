@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import Logo from "./Logo";
 import { 
-  Bell, Settings, ShieldAlert, Sun, Moon, LogOut, User, Sparkles
+  Bell, Settings, ShieldAlert, Sun, Moon, LogOut, User, Sparkles, Menu, X
 } from "lucide-react";
 
 const Navbar = ({
@@ -20,21 +20,20 @@ const Navbar = ({
   notificationsList,
   logout
 }) => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   return (
-    <header className="w-full bg-white/95 dark:bg-gray-900/95 backdrop-blur-md sticky top-0 z-30 shadow-xs transition-all duration-300">
+    <header className="w-full bg-white dark:bg-slate-900 sticky top-0 z-30 border-b border-slate-200 dark:border-slate-800 shadow-xs transition-all duration-300">
       <div className="w-full max-w-[1600px] mx-auto px-4 md:px-6 py-3 flex items-center justify-between gap-6">
         
         {/* Left Section: Logo & Compact Navigation Tabs */}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3 lg:gap-6">
           {/* Brand Logo */}
           <div 
             onClick={() => handleTabClick("my-deliveries")}
-            className="flex items-center shrink-0 group cursor-pointer"
+            className="flex items-center gap-2 shrink-0 group cursor-pointer select-none"
           >
-            <div className="flex flex-col leading-none">
-              <span className="text-sm font-black text-slate-900 dark:text-white tracking-tight group-hover:text-blue-500 transition-colors duration-200">CartNOW</span>
-              <span className="text-[9px] text-blue-500 dark:text-blue-400 font-extrabold uppercase mt-0.5 tracking-wider">Courier</span>
-            </div>
+            <Logo className="h-10 sm:h-12 w-36 sm:w-44 text-slate-900 dark:text-white group-hover:scale-105 transition-transform duration-200" />
           </div>
 
           {/* Desktop Navigation Tabs */}
@@ -209,8 +208,83 @@ const Navbar = ({
               </>
             )}
           </div>
+          {/* Mobile Navigation Menu Toggle Button (Right Side) */}
+          <button
+            onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+            className="lg:hidden p-2 rounded-md bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition cursor-pointer"
+            aria-label="Toggle mobile menu"
+            title="Toggle Menu"
+          >
+            {isMobileMenuOpen ? <X size={16} /> : <Menu size={16} />}
+          </button>
         </div>
       </div>
+
+      {/* Mobile Navigation Drawer (Slide from Right over UI) */}
+      {isMobileMenuOpen && (
+        <>
+          {/* Backdrop Overlay */}
+          <div
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-xs lg:hidden animate-in fade-in duration-200"
+          />
+
+          {/* Slide-over Drawer */}
+          <div className="fixed inset-y-0 right-0 z-50 w-72 max-w-[85vw] bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col lg:hidden animate-in slide-in-from-right duration-300">
+            {/* Header inside drawer */}
+            <div className="flex items-center justify-between px-4 py-3.5 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/80">
+              <div className="flex items-center gap-2">
+                <Logo className="h-7 w-auto text-slate-900 dark:text-white" />
+              </div>
+              <button
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-1.5 rounded-md text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 transition cursor-pointer"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Scrollable Drawer Tabs */}
+            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2">
+              <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1">Navigation Menu</p>
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => {
+                      handleTabClick(tab.clickId);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-md font-extrabold text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer ${
+                      isActive
+                        ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md"
+                        : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Icon size={14} className="stroke-[2.5]" />
+                      <span>{tab.label}</span>
+                    </div>
+                    {tab.count > 0 && (
+                      <span
+                        className={`px-2 py-0.5 rounded-md text-[10px] font-black ${
+                          isActive
+                            ? "bg-white/20 text-white"
+                            : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700"
+                        }`}
+                      >
+                        {tab.count}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </>
+      )}
     </header>
   );
 };

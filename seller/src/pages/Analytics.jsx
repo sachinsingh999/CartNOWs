@@ -37,12 +37,12 @@ const Analytics = ({ products = [], orders = [] }) => {
     <div className="space-y-4 animate-fadeIn text-slate-800 dark:text-slate-100">
       
       {/* ── Single Consolidated Container: Header, Controls & Stats Grid ── */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-4 shadow-xs space-y-3.5 shrink-0">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-xs space-y-3.5 shrink-0">
         
         {/* Top: Header & Timeframe Chips */}
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 bg-indigo-600 dark:bg-indigo-500/10 text-white dark:text-indigo-400 rounded-lg flex items-center justify-center border border-indigo-500/10 shadow-xs shrink-0">
+            <div className="h-8 w-8 bg-indigo-600 dark:bg-indigo-500/10 text-white dark:text-indigo-400 rounded-lg flex items-center justify-center shadow-xs shrink-0">
               <BarChart3 size={16} />
             </div>
             <div>
@@ -51,7 +51,7 @@ const Analytics = ({ products = [], orders = [] }) => {
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950 p-1 rounded-xl border border-slate-200 dark:border-slate-800">
+          <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950 p-1 rounded-xl">
             {["7D", "30D", "90D", "1Y"].map(tf => (
               <button
                 key={tf}
@@ -72,7 +72,7 @@ const Analytics = ({ products = [], orders = [] }) => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           
           {/* Card 1: Visitors */}
-          <div className="p-3.5 rounded-xl border bg-slate-50/70 dark:bg-slate-950/40 border-slate-200/60 dark:border-slate-800 flex items-center justify-between group relative overflow-hidden">
+          <div className="p-3.5 rounded-xl bg-slate-50/70 dark:bg-slate-950/40 flex items-center justify-between group relative overflow-hidden">
             <div className="space-y-1 relative z-10 text-left">
               <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
                 Total Visitors
@@ -84,13 +84,13 @@ const Analytics = ({ products = [], orders = [] }) => {
                 <TrendingUp size={10} /> +15.2% vs prev
               </span>
             </div>
-            <div className="p-2 rounded-lg border text-orange-500 bg-orange-500/10 border-slate-200/50 dark:border-slate-800 transition-transform duration-200 group-hover:scale-105 relative z-10">
+            <div className="p-2 rounded-lg text-orange-500 bg-orange-500/10 transition-transform duration-200 group-hover:scale-105 relative z-10">
               <Users size={16} />
             </div>
           </div>
 
           {/* Card 2: Page Views */}
-          <div className="p-3.5 rounded-xl border bg-slate-50/70 dark:bg-slate-950/40 border-slate-200/60 dark:border-slate-800 flex items-center justify-between group relative overflow-hidden">
+          <div className="p-3.5 rounded-xl bg-slate-50/70 dark:bg-slate-950/40 flex items-center justify-between group relative overflow-hidden">
             <div className="space-y-1 relative z-10 text-left">
               <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
                 Total Page Views
@@ -102,13 +102,13 @@ const Analytics = ({ products = [], orders = [] }) => {
                 <TrendingUp size={10} /> +8.4% vs prev
               </span>
             </div>
-            <div className="p-2 rounded-lg border text-indigo-500 bg-indigo-500/10 border-slate-200/50 dark:border-slate-800 transition-transform duration-200 group-hover:scale-105 relative z-10">
+            <div className="p-2 rounded-lg text-indigo-500 bg-indigo-500/10 transition-transform duration-200 group-hover:scale-105 relative z-10">
               <LineChart size={16} />
             </div>
           </div>
 
           {/* Card 3: Conversion Rate */}
-          <div className="p-3.5 rounded-xl border bg-slate-50/70 dark:bg-slate-950/40 border-slate-200/60 dark:border-slate-800 flex items-center justify-between group relative overflow-hidden">
+          <div className="p-3.5 rounded-xl bg-slate-50/70 dark:bg-slate-950/40 flex items-center justify-between group relative overflow-hidden">
             <div className="space-y-1 relative z-10 text-left">
               <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
                 Conversion Rate
@@ -120,13 +120,13 @@ const Analytics = ({ products = [], orders = [] }) => {
                 Shopper to buyer ratio
               </span>
             </div>
-            <div className="p-2 rounded-lg border text-emerald-500 bg-emerald-500/10 border-slate-200/50 dark:border-slate-800 transition-transform duration-200 group-hover:scale-105 relative z-10">
+            <div className="p-2 rounded-lg text-emerald-500 bg-emerald-500/10 transition-transform duration-200 group-hover:scale-105 relative z-10">
               <Percent size={16} />
             </div>
           </div>
 
           {/* Card 4: Avg Order Value */}
-          <div className="p-3.5 rounded-xl border bg-slate-50/70 dark:bg-slate-950/40 border-slate-200/60 dark:border-slate-800 flex items-center justify-between group relative overflow-hidden">
+          <div className="p-3.5 rounded-xl bg-slate-50/70 dark:bg-slate-950/40 flex items-center justify-between group relative overflow-hidden">
             <div className="space-y-1 relative z-10 text-left">
               <span className="text-[8px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
                 Avg. Order Value
@@ -138,7 +138,7 @@ const Analytics = ({ products = [], orders = [] }) => {
                 Per checkout basket
               </span>
             </div>
-            <div className="p-2 rounded-lg border text-violet-500 bg-violet-500/10 border-slate-200/50 dark:border-slate-800 transition-transform duration-200 group-hover:scale-105 relative z-10">
+            <div className="p-2 rounded-lg text-violet-500 bg-violet-500/10 transition-transform duration-200 group-hover:scale-105 relative z-10">
               <ArrowUpRight size={16} />
             </div>
           </div>
@@ -151,13 +151,13 @@ const Analytics = ({ products = [], orders = [] }) => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
         
         {/* Weekly Store Traffic (2 Cols) */}
-        <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-4 shadow-xs space-y-4 flex flex-col justify-between min-h-[350px]">
-          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+        <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-xs space-y-4 flex flex-col justify-between min-h-[350px]">
+          <div className="flex items-center justify-between pb-3">
             <div>
               <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">Weekly Store Traffic Monitor</h3>
               <p className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider mt-0.5">Unique visitor requests mapped across past 7 days</p>
             </div>
-            <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-md">
+            <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-500/10 px-2.5 py-0.5 rounded-md">
               Live Feed
             </span>
           </div>
@@ -166,7 +166,7 @@ const Analytics = ({ products = [], orders = [] }) => {
           <div className="relative pt-4 px-2 select-none">
             {hoveredTraffic !== null && (
               <div 
-                className="absolute bg-slate-950 text-white rounded-xl px-3 py-1.5 text-left shadow-xl border border-slate-800 pointer-events-none z-10 transition-all duration-150"
+                className="absolute bg-slate-950 text-white rounded-xl px-3 py-1.5 text-left shadow-xl pointer-events-none z-10 transition-all duration-150"
                 style={{
                   left: `${(hoveredTraffic / (weeklyTraffic.length - 1)) * 80 + 10}%`,
                   top: "-10px",
@@ -242,8 +242,8 @@ const Analytics = ({ products = [], orders = [] }) => {
         </div>
 
         {/* Catalog Shares (1 Col) */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-4 shadow-xs space-y-4 min-h-[350px]">
-          <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-xs space-y-4 min-h-[350px]">
+          <div className="pb-3">
             <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">Catalog Metrics</h3>
             <p className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider mt-0.5">Product listing distribution & category depth</p>
           </div>
@@ -254,7 +254,7 @@ const Analytics = ({ products = [], orders = [] }) => {
                 <span>Active Listings</span>
                 <span className="font-black text-slate-900 dark:text-white">{products.length} Items</span>
               </div>
-              <div className="w-full bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-full h-2 overflow-hidden">
+              <div className="w-full bg-slate-100 dark:bg-slate-950 rounded-full h-2 overflow-hidden">
                 <div className="bg-indigo-600 h-full w-[80%]" />
               </div>
             </div>
@@ -264,7 +264,7 @@ const Analytics = ({ products = [], orders = [] }) => {
                 <span>Unique Categories</span>
                 <span className="font-black text-slate-900 dark:text-white">{uniqueCategories.length} Categories</span>
               </div>
-              <div className="w-full bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-full h-2 overflow-hidden">
+              <div className="w-full bg-slate-100 dark:bg-slate-950 rounded-full h-2 overflow-hidden">
                 <div className="bg-orange-500 h-full w-[65%]" />
               </div>
             </div>
@@ -274,7 +274,7 @@ const Analytics = ({ products = [], orders = [] }) => {
                 <span>Fulfillment Rate</span>
                 <span className="font-black text-emerald-500">98.4%</span>
               </div>
-              <div className="w-full bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-full h-2 overflow-hidden">
+              <div className="w-full bg-slate-100 dark:bg-slate-950 rounded-full h-2 overflow-hidden">
                 <div className="bg-emerald-500 h-full w-[98%]" />
               </div>
             </div>

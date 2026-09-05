@@ -66,7 +66,7 @@ const Inventory = ({ token, products = [], fetchProducts }) => {
       </div>
 
       {/* Filters & Search Bar */}
-      <div className="flex flex-col md:flex-row gap-4 bg-white dark:bg-slate-900 border border-slate-200/80 rounded-2xl p-4 shadow-sm">
+      <div className="flex flex-col md:flex-row gap-4 bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm">
         <div className="flex-1 relative">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
           <input
@@ -74,7 +74,7 @@ const Inventory = ({ token, products = [], fetchProducts }) => {
             placeholder="Search items by name..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs font-semibold outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+            className="w-full bg-slate-50 dark:bg-slate-950 rounded-xl pl-10 pr-4 py-2.5 text-xs font-semibold outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
           />
         </div>
         <div className="flex gap-2 items-center">
@@ -82,7 +82,7 @@ const Inventory = ({ token, products = [], fetchProducts }) => {
           <select
             value={filterCategory}
             onChange={(e) => setFilterCategory(e.target.value)}
-            className="border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-xs font-bold bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 outline-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+            className="rounded-xl px-3 py-2.5 text-xs font-bold bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 outline-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
           >
             {categories.map((c) => (
               <option key={c} value={c}>
@@ -94,11 +94,11 @@ const Inventory = ({ token, products = [], fetchProducts }) => {
       </div>
 
       {/* Grid view of inventory status */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200/80 rounded-3xl p-6 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-100 dark:border-slate-800 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/50 dark:bg-slate-950/40">
+              <tr className="text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/50 dark:bg-slate-950/40">
                 <th className="py-3 px-4">Product Details</th>
                 <th className="py-3 px-4">Category</th>
                 <th className="py-3 px-4 text-center">Unit Price</th>
@@ -122,11 +122,11 @@ const Inventory = ({ token, products = [], fetchProducts }) => {
                   return (
                     <tr
                       key={p._id}
-                      className="border-b border-slate-100/40 dark:border-slate-900/60 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50/30 dark:hover:bg-slate-950/20 transition duration-150"
+                      className="text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50/30 dark:hover:bg-slate-950/20 transition duration-150"
                     >
                       {/* Product Detail */}
                       <td className="py-4 px-4 font-bold flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-100 flex items-center justify-center overflow-hidden shrink-0">
+                        <div className="h-10 w-10 rounded-lg bg-slate-50 dark:bg-slate-950 flex items-center justify-center overflow-hidden shrink-0">
                           {p.images?.[0] ? (
                             <img src={p.images[0]} alt="" className="h-full w-full object-contain" />
                           ) : (
@@ -141,7 +141,7 @@ const Inventory = ({ token, products = [], fetchProducts }) => {
 
                       {/* Category */}
                       <td className="py-4 px-4">
-                        <span className="bg-slate-100 dark:bg-slate-950 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded-md font-bold text-[10px] uppercase border border-transparent dark:border-slate-900">
+                        <span className="bg-slate-100 dark:bg-slate-950 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded-md font-bold text-[10px] uppercase">
                           {p.category || "Beverages"}
                         </span>
                       </td>
@@ -159,7 +159,7 @@ const Inventory = ({ token, products = [], fetchProducts }) => {
                               type="number"
                               value={editStock}
                               onChange={(e) => setEditStock(parseInt(e.target.value) || 0)}
-                              className="w-16 border border-slate-300 rounded px-1.5 py-0.5 text-center text-xs font-bold"
+                              className="w-16 rounded px-1.5 py-0.5 text-center text-xs font-bold bg-slate-100 dark:bg-slate-800"
                             />
                             <button
                               onClick={() => handleUpdateStock(p._id)}
@@ -185,7 +185,7 @@ const Inventory = ({ token, products = [], fetchProducts }) => {
                       {/* Status */}
                       <td className="py-4 px-4 text-center">
                         <span
-                          className={`inline-flex px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border ${ isLow ? "bg-red-50 dark:bg-red-950/20 text-red-650 dark:text-red-400 border-red-100 dark:border-red-900/50" : "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-450 border-emerald-100 dark:border-emerald-900/50" }`}
+                          className={`inline-flex px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${ isLow ? "bg-red-50 dark:bg-red-950/20 text-red-650 dark:text-red-400" : "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-450" }`}
                         >
                           {isLow ? "Low Stock" : "Healthy"}
                         </span>
@@ -199,7 +199,7 @@ const Inventory = ({ token, products = [], fetchProducts }) => {
                               setEditingId(p._id);
                               setEditStock(p.stock ?? 15);
                             }}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-800 text-[10px] font-bold text-slate-700 dark:text-slate-300 transition cursor-pointer"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-800 text-[10px] font-bold text-slate-700 dark:text-slate-300 transition cursor-pointer"
                           >
                             <Edit2 size={10} />
                             <span>Quick Edit</span>

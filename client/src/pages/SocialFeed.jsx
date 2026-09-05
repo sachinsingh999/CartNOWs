@@ -25,8 +25,11 @@ const SocialFeed = () => {
   const [token] = useState(localStorage.getItem("token") || "");
   const [currentUser, setCurrentUser] = useState(null);
 
-  // Filter tabs
+  // Single post navigation state
+  const [currentPostIndex, setCurrentPostIndex] = useState(0);
   const [activeTab, setActiveTab] = useState("For You");
+  const [slideDirection, setSlideDirection] = useState("next");
+  const isScrollingRef = useRef(false);
 
   const displayedPosts = useMemo(() => {
     if (activeTab === "Following") {
@@ -40,6 +43,62 @@ const SocialFeed = () => {
     }
     return posts;
   }, [posts, activeTab, currentUser]);
+
+  const activePost = useMemo(() => {
+    if (!displayedPosts || displayedPosts.length === 0) return null;
+    const safeIdx = Math.min(Math.max(0, currentPostIndex), displayedPosts.length - 1);
+    return displayedPosts[safeIdx];
+  }, [displayedPosts, currentPostIndex]);
+
+  const handleNextPost = () => {
+    if (!displayedPosts || displayedPosts.length === 0) return;
+    if (currentPostIndex < displayedPosts.length - 1) {
+      setSlideDirection("next");
+      setCurrentPostIndex(prev => prev + 1);
+    }
+  };
+
+  const handlePrevPost = () => {
+    if (!displayedPosts || displayedPosts.length === 0) return;
+    if (currentPostIndex > 0) {
+      setSlideDirection("prev");
+      setCurrentPostIndex(prev => prev - 1);
+    }
+  };
+
+  const handleWheel = (e) => {
+    if (isScrollingRef.current) return;
+    if (Math.abs(e.deltaY) < 25) return;
+
+    isScrollingRef.current = true;
+    if (e.deltaY > 0) {
+      handleNextPost();
+    } else {
+      handlePrevPost();
+    }
+
+    setTimeout(() => {
+      isScrollingRef.current = false;
+    }, 550);
+  };
+
+  useEffect(() => {
+    if (activePost) {
+      setActiveCommentsPost(activePost);
+      setNewComment("");
+      setComments([]);
+      setLoadingComments(true);
+      axios.get(`${backendUrl}/api/social/${activePost._id}/comments`)
+        .then(res => {
+          if (res.data.success) setComments(res.data.comments);
+        })
+        .catch(err => console.error("Comments fetch error:", err))
+        .finally(() => setLoadingComments(false));
+    } else {
+      setActiveCommentsPost(null);
+      setComments([]);
+    }
+  }, [activePost?._id]);
 
   // Create post state
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -1082,7 +1141,10 @@ const SocialFeed = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-var(--navbar-height,76px))] bg-[#fafafb] dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex flex-col font-sans antialiased overflow-hidden">
+    <div 
+      onWheel={handleWheel}
+      className="w-full h-[calc(100vh-var(--navbar-height,76px))] bg-[#f4f6fb] text-slate-900 flex flex-col md:flex-row overflow-hidden relative select-none font-sans antialiased"
+    >
       <style>{`
         @keyframes heartPop {
           0% { transform: scale(0) rotate(-10deg); opacity: 0; }
@@ -1095,213 +1157,38 @@ const SocialFeed = () => {
           animation: heartPop 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
       `}</style>
-      {/* NEW PREMIUM RESPONSIVE GRID LAYOUT */}
-      <div className="w-full max-w-7xl mx-auto px-4 py-4 flex gap-6 items-stretch justify-center flex-1 h-full min-h-0 overflow-hidden" data-lenis-prevent>
+
+      {/* LEFT FULL-PAGE POST STAGE */}
+      <div className="flex-1 flex flex-col justify-between h-full bg-[#f4f6fb] relative overflow-hidden border-r border-slate-200/80">
         
-        {/* COLUMN 1: LEFT PROFILE & NAVIGATION PANEL (Desktop Only) */}
-        <aside className="hidden lg:flex flex-col gap-5 w-64 shrink-0 overflow-y-auto pr-1 h-full scrollbar-thin select-none py-1">
-          {/* PROFILE CARD */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80 rounded-lg overflow-hidden shadow-xs text-center relative group">
-            {/* Gradient Header background */}
-            <div className="h-20 w-full bg-gradient-to-r from-blue-600/90 to-indigo-600/90 relative overflow-hidden">
-              <div className="absolute inset-0 bg-grid-white/10 opacity-30" />
-            </div>
-            
-            {/* Avatar overlapping */}
-            <div className="relative -mt-10 mb-3 inline-flex">
-              <div className="h-20 w-20 rounded-full border-4 border-white dark:border-slate-900 overflow-hidden bg-slate-100 dark:bg-slate-800 shadow-md">
-                {currentUser?.profilePhoto ? (
-                  <img src={currentUser.profilePhoto} alt={currentUser.name} className="h-full w-full object-cover" />
-                ) : (
-                  <div className="h-full w-full flex items-center justify-center bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 font-extrabold text-2xl">
-                    {currentUser?.name?.charAt(0) || "U"}
-                  </div>
-                )}
-              </div>
-            </div>
+        {/* Top Floating Control Header */}
+        <div className="p-4 sm:p-6 flex items-center justify-between z-30">
+          {/* Tab Filter Switcher + (+) Button */}
+          <div className="flex items-center gap-1.5 bg-white p-1 rounded-full border border-slate-200/80 shadow-xs">
+            {["For You", "Following"].map(tab => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => {
+                  if (tab === "Following" && !token) {
+                    toast.info("Please log in to see posts from creators you follow.");
+                    return;
+                  }
+                  setActiveTab(tab);
+                  setCurrentPostIndex(0);
+                }}
+                className={`text-xs font-black uppercase tracking-wider px-4 py-1.5 rounded-full transition cursor-pointer border-none ${
+                  activeTab === tab 
+                    ? "bg-[#5842f6] text-white shadow-xs" 
+                    : "text-[#475569] hover:text-slate-900 bg-transparent"
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
 
-            {/* Profile Info */}
-            <div className="px-4 pb-6">
-              <h3 className="font-extrabold text-base text-slate-800 dark:text-white uppercase tracking-tight flex items-center justify-center gap-1">
-                <span>{currentUser?.name || "Anonymous Guest"}</span>
-                {currentUser && <CheckCircle2 size={13} className="text-blue-500 fill-blue-500/10 stroke-[3]" />}
-              </h3>
-              <p className="text-[11px] text-slate-400 dark:text-slate-500 font-semibold mt-0.5 truncate">{currentUser?.email || "Community Member"}</p>
-              
-              {/* Quick stats grid */}
-              <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800/60 text-left">
-                <div className="pl-2">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-black tracking-wider block">My Posts</span>
-                  <span className="text-sm font-extrabold text-slate-800 dark:text-white">{posts.filter(p => p.userId?._id === currentUser?._id).length}</span>
-                </div>
-                <div className="border-l border-slate-150 dark:border-slate-800/80 pl-4">
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-black tracking-wider block">Following</span>
-                  <span className="text-sm font-extrabold text-slate-800 dark:text-white">{currentUser?.following?.length || 0}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* QUICK LINKS PANEL */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80 rounded-lg p-5 shadow-xs">
-            <h4 className="text-[10.5px] font-black uppercase tracking-wider text-slate-450 dark:text-slate-500 mb-3.5 text-left pl-2">Navigation</h4>
-            <div className="flex flex-col gap-1">
-              {[
-                { label: "Community Feed", path: "/social", icon: Compass, active: true },
-                { label: "Marketplace Catalog", path: "/product", icon: ShoppingBag, active: false },
-                { label: "Explore Discover", path: "/discover", icon: Sparkles, active: false },
-                { label: "Personal Wishlist", path: "/wishlist", icon: Heart, active: false },
-                { label: "Order Tracking", path: "/profile", icon: User, active: false }
-              ].map((link, idx) => (
-                <Link
-                  key={idx}
-                  to={link.path}
-                  className={`flex items-center gap-3.5 px-4 py-3 rounded-md text-xs font-black uppercase tracking-wider transition-all duration-200 ${
-                    link.active
-                      ? "bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 shadow-2xs"
-                      : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-850 hover:text-slate-900 dark:hover:text-white"
-                  }`}
-                >
-                  {React.createElement(link.icon, { size: 15, className: "shrink-0 stroke-[2.5]" })}
-                  <span>{link.label}</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </aside>
-
-        {/* COLUMN 2: CENTER COLUMN (Stories & Feed) */}
-        <main className={`flex-1 min-w-0 h-full overflow-y-auto pr-2 space-y-6 pb-8 scrollbar-thin ${activeCommentsPost ? "max-w-[950px]" : "max-w-[620px]"}`}>
-          
-          {/* Feed Title and Info Header */}
-          <div className="flex items-center justify-between gap-4 select-none pb-2">
-            <div className="text-left">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-rose-500/10 to-indigo-500/10 border border-rose-500/20 text-[10px] font-black uppercase tracking-widest text-[#ff4e20]">
-                <Sparkles size={11} className="text-[#ff4e20]" />
-                <span>CartNow Social Hub</span>
-              </span>
-              <h1 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight mt-1.5 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-800 dark:from-white dark:via-slate-100 dark:to-slate-300 bg-clip-text text-transparent">
-                Community Feed
-              </h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">
-                Explore real style, tag your purchases, and shop trending fits directly from creators.
-              </p>
-            </div>
-            
-            {/* Notification Bell */}
-            <div className="relative cursor-pointer hover:scale-105 active:scale-95 transition duration-150 p-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm shrink-0">
-              <Bell size={20} className="text-slate-800 dark:text-slate-200 stroke-[2.2]" />
-              <span className="absolute top-2 right-2 flex h-2 w-2 rounded-full bg-[#f43f5e] ring-2 ring-white dark:ring-slate-900 animate-ping" />
-            </div>
-          </div>
-
-          {/* UNIFIED COMBINED STORIES & POST CREATION BAR */}
-          <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-4 shadow-sm select-none space-y-4">
-            <input 
-              type="file" 
-              accept="image/*,video/*" 
-              ref={fileInputRef} 
-              onChange={handleStoryFileChange} 
-              className="hidden" 
-              multiple
-            />
-
-            {/* TOP ROW: STORIES CAROUSEL */}
-            <div className="flex items-center gap-4 overflow-x-auto scrollbar-hide pb-1">
-              {/* Your Story Circle */}
-              {(() => {
-                const myStoryGroup = stories.find(s => s._id === currentUser?._id);
-                return (
-                  <div 
-                    onClick={() => {
-                      if (!token) {
-                        toast.info("Please log in to add stories!");
-                        return;
-                      }
-                      if (myStoryGroup) {
-                        setActiveStoryGroup(myStoryGroup);
-                        setActiveStoryIndex(0);
-                      } else {
-                        setStoryModalOpen(true);
-                      }
-                    }}
-                    className="flex flex-col items-center shrink-0 cursor-pointer relative group"
-                  >
-                    <div className={`h-13 w-13 rounded-full p-[2.5px] transition-all duration-300 group-hover:scale-105 shadow-md ${
-                      myStoryGroup 
-                        ? (isGroupSeen(myStoryGroup) 
-                            ? "bg-slate-200 dark:bg-slate-800" 
-                            : "bg-gradient-to-tr from-rose-500 via-purple-500 to-indigo-500 animate-pulse")
-                        : "bg-slate-200 dark:bg-slate-800"
-                    }`}>
-                      <div className="h-full w-full rounded-full border-2 border-white dark:border-slate-900 overflow-hidden bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                        {currentUser?.profilePhoto ? (
-                          <img src={currentUser.profilePhoto} alt="" className="h-full w-full object-cover" />
-                        ) : (
-                          <div className="h-full w-full flex items-center justify-center bg-indigo-50 dark:bg-indigo-950 text-indigo-500 dark:text-indigo-400 font-extrabold text-sm">
-                            {currentUser?.name?.charAt(0) || "+"}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (!token) {
-                          toast.info("Please log in to add stories!");
-                          return;
-                        }
-                        if (fileInputRef.current) fileInputRef.current.click();
-                      }}
-                      className="absolute right-0 bottom-4 bg-gradient-to-r from-rose-500 to-indigo-600 hover:from-rose-600 hover:to-indigo-700 text-white rounded-full p-1 border-2 border-white dark:border-slate-900 flex items-center justify-center transition hover:scale-110 active:scale-90 shadow-md z-10"
-                      title="Upload new story"
-                    >
-                      <Plus size={9} className="stroke-[3.5]" />
-                    </div>
-                    <span className="text-[9.5px] font-black uppercase text-slate-500 dark:text-slate-400 mt-1 tracking-wider truncate w-16 text-center">
-                      Your Story
-                    </span>
-                  </div>
-                );
-              })()}
-
-              {/* Vertical Separator */}
-              <div className="h-10 w-[1px] bg-slate-200/80 dark:bg-slate-800 shrink-0" />
-
-              {/* Other users' stories */}
-              {stories
-                .filter(s => s._id !== currentUser?._id)
-                .map(group => {
-                  const avatar = group.profilePhoto || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150";
-                  return (
-                    <div 
-                      key={group._id} 
-                      onClick={() => {
-                        setActiveStoryGroup(group);
-                        setActiveStoryIndex(0);
-                      }}
-                      className="flex flex-col items-center shrink-0 cursor-pointer relative group animate-fade-in"
-                    >
-                      <div className={`h-13 w-13 rounded-full p-[2.5px] transition-all duration-300 group-hover:scale-105 shadow-md ${
-                        isGroupSeen(group)
-                          ? "bg-slate-200 dark:bg-slate-800"
-                          : "bg-gradient-to-tr from-rose-500 via-purple-500 to-indigo-500"
-                      }`}>
-                        <div className="h-full w-full rounded-full border-2 border-white dark:border-slate-900 overflow-hidden bg-slate-100 dark:bg-slate-800">
-                          <img src={avatar} alt="" className="h-full w-full object-cover" />
-                        </div>
-                      </div>
-                      <span className="text-[9.5px] font-black uppercase text-slate-500 dark:text-slate-400 mt-1 tracking-wider truncate w-16 text-center">
-                        {group.name.split(" ")[0]}
-                      </span>
-                    </div>
-                  );
-                })
-              }
-            </div>
-
-            {/* BOTTOM ROW: INTEGRATED POST CREATION BAR */}
-            <div 
+            <button
+              type="button"
               onClick={() => {
                 if (token) {
                   setCreateModalOpen(true);
@@ -1309,514 +1196,234 @@ const SocialFeed = () => {
                   toast.info("Please log in to share your style!");
                 }
               }}
-              className="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-3 cursor-pointer"
+              className="h-7 w-7 rounded-full bg-[#d946ef] hover:bg-[#c026d3] text-white flex items-center justify-center hover:scale-105 active:scale-95 transition cursor-pointer border-none shadow-xs ml-0.5 shrink-0"
+              title="Create New Post"
             >
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                <div className="relative h-9 w-9 rounded-full border border-dashed border-indigo-500/40 flex items-center justify-center bg-indigo-50/50 dark:bg-indigo-950/30 shrink-0">
-                  <Plus size={15} className="text-indigo-600 dark:text-indigo-400 stroke-[3]" />
-                </div>
-                <div className="text-left min-w-0 flex-1 pr-2">
-                  <h3 className="text-xs font-black text-slate-800 dark:text-white uppercase tracking-tight">What’s on your mind?</h3>
-                  <p className="text-[10.5px] text-slate-500 dark:text-slate-400 mt-0.5 font-medium truncate">Share your style, tagged purchases, and vibes.</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3 shrink-0" onClick={(e) => e.stopPropagation()}>
-                <div className="flex items-center gap-2 text-slate-400 dark:text-slate-500">
-                  <button 
-                    type="button" 
-                    onClick={() => token ? setCreateModalOpen(true) : toast.info("Please log in to share your style!")}
-                    className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition text-slate-400 dark:text-slate-500 border-none bg-transparent cursor-pointer"
-                  >
-                    <ImageIcon size={17} className="stroke-[2.2]" />
-                  </button>
-                  <button 
-                    type="button" 
-                    onClick={() => token ? setCreateModalOpen(true) : toast.info("Please log in to share your style!")}
-                    className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition text-slate-400 dark:text-slate-500 border-none bg-transparent cursor-pointer"
-                  >
-                    <Tag size={17} className="stroke-[2.2]" />
-                  </button>
-                </div>
-                <button 
-                  type="button"
-                  onClick={() => {
-                    if (token) {
-                      setCreateModalOpen(true);
-                    } else {
-                      toast.info("Please log in to share your style!");
-                    }
-                  }}
-                  className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white text-[10px] font-black uppercase tracking-wider rounded-xl transition duration-150 shadow-sm border-none cursor-pointer active:scale-95"
-                >
-                  Post
-                </button>
-              </div>
-            </div>
+              <Plus size={16} className="stroke-[3]" />
+            </button>
           </div>
 
-          {/* POSTS FEED */}
-          <div className="space-y-6">
-            {/* Feed Filter Tab Switcher */}
-            <div className="flex gap-6 border-b border-slate-100 dark:border-slate-800 pb-3 select-none justify-start px-2">
-              {["For You", "Following"].map((tab) => (
-                <button
-                  key={tab}
-                  type="button"
-                  onClick={() => {
-                    if (tab === "Following" && !token) {
-                      toast.info("Please log in to see posts from creators you follow.");
-                      return;
-                    }
-                    setActiveTab(tab);
-                  }}
-                  className={`pb-1.5 text-[11px] font-black uppercase tracking-widest relative cursor-pointer border-none bg-transparent transition ${
-                    activeTab === tab 
-                      ? "text-indigo-600 dark:text-indigo-400" 
-                      : "text-slate-400 hover:text-slate-650 dark:text-slate-500 dark:hover:text-slate-350"
-                  }`}
-                >
-                  <span>{tab}</span>
-                  {activeTab === tab && (
-                    <motion.div 
-                      layoutId="activeFeedTabLine"
-                      className="absolute bottom-0 inset-x-0 h-[2.5px] bg-indigo-600 dark:bg-indigo-400 rounded-full"
-                    />
-                  )}
-                </button>
-              ))}
-            </div>
-
-            {loading ? (
-              <div className="py-20 flex flex-col items-center justify-center text-slate-400">
-                <Loader2 size={24} className="animate-spin text-indigo-500 mb-2 stroke-1.5" />
-                <span className="text-[9px] font-black uppercase tracking-widest">Loading Feed...</span>
-              </div>
-            ) : displayedPosts.length === 0 ? (
-              <div className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80 rounded-lg p-12 text-center select-none shadow-2xs">
-                <ShoppingBag className="mx-auto text-slate-350 dark:text-slate-700 mb-3.5 stroke-1.5" size={42} />
-                <h3 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white">
-                  {activeTab === "Following" ? "No posts from creators you follow" : "No community posts yet"}
-                </h3>
-                <p className="text-[10.5px] text-slate-500 dark:text-slate-400 mt-1 max-w-[280px] mx-auto leading-relaxed">
-                  {activeTab === "Following" 
-                    ? "Find and follow active creators from the Suggested list on the right to build your personal feed!"
-                    : "Be the first to share your recent purchases with the CartNow community and tag your setup!"}
-                </p>
-                {token && activeTab !== "Following" && (
-                  <button 
-                    onClick={() => setCreateModalOpen(true)}
-                    className="mt-4 px-4 py-2.5 bg-[#ff4e20] hover:bg-[#e03d12] text-white text-[10px] font-black uppercase tracking-wider rounded-xl border-none cursor-pointer active:scale-95 transition"
-                  >
-                    Share A Purchase
-                  </button>
-                )}
-              </div>
-            ) : (
-              displayedPosts.map(post => (
-                <div 
-                  key={post._id} 
-                  className={`flex flex-col md:flex-row gap-4 items-stretch justify-center w-full transition-all duration-300 mx-auto ${
-                    activeCommentsPost?._id === post._id ? "max-w-[1000px]" : "max-w-[620px]"
-                  }`}
-                >
-                  <div className="flex-1 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80 rounded-lg overflow-hidden shadow-2xs flex flex-col justify-between">
-                    {/* Post Card Header */}
-                    <div className="flex items-center justify-between p-4">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40 flex items-center justify-center text-xs font-black uppercase overflow-hidden shrink-0">
-                          {post.userId?.profilePhoto ? (
-                            <img src={post.userId.profilePhoto} alt="" className="h-full w-full object-cover" />
-                          ) : (
-                            <span>{post.userId?.name?.charAt(0) || "U"}</span>
-                          )}
-                        </div>
-                        <div className="text-left">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-[12.5px] font-black text-slate-800 dark:text-slate-100 uppercase tracking-wide leading-none">
-                              {post.userId?.name || "anonymous"}
-                            </span>
-                            <CheckCircle2 size={11} className="text-blue-500 fill-blue-500/10 stroke-[3] shrink-0 animate-pulse" />
-                            
-                            {/* Follow/Unfollow button */}
-                            {currentUser && post.userId && post.userId._id !== currentUser._id && (
-                              <button
-                                onClick={() => handleToggleFollowCreator(post.userId._id)}
-                                className="text-[9.5px] font-black uppercase text-[#ff4e20] hover:text-rose-600 cursor-pointer border-none bg-transparent select-none ml-1.5 pl-1.5 border-l border-slate-200 dark:border-slate-800/80 leading-none h-3"
-                              >
-                                {post.isFollowingCreator ? "Unfollow" : "Follow"}
-                              </button>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-1.5 mt-1 select-none">
-                            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold">
-                              {new Date(post.createdAt).toLocaleDateString([], { month: "short", day: "numeric" })}
-                            </span>
-                            <span className="text-slate-300 dark:text-slate-700 font-black text-[8px]">•</span>
-                            <div className="flex items-center gap-0.5 text-emerald-600 dark:text-emerald-400 leading-none bg-emerald-50 dark:bg-emerald-950/20 px-1.5 py-0.5 rounded-md border border-emerald-100/30 dark:border-emerald-900/30">
-                              <CheckCircle2 size={9} className="fill-emerald-500/10 stroke-[3]" />
-                              <span className="text-[8.5px] font-black uppercase tracking-tight">Verified Purchase</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <button className="text-slate-400 hover:text-slate-600 dark:hover:text-white border-none bg-transparent cursor-pointer p-1 rounded-full hover:bg-slate-50 dark:hover:bg-slate-800">
-                        <MoreHorizontal size={15} />
-                      </button>
-                    </div>
-
-                    {/* Caption */}
-                    <div className="px-4 pb-3.5 text-left">
-                      <p className="text-[13px] font-semibold leading-relaxed text-slate-700 dark:text-slate-200 break-words whitespace-pre-line">
-                        {post.caption}
-                      </p>
-                    </div>
-
-                    {/* Image container w/ Tagged Product Overlay Card */}
-                    <div 
-                      onDoubleClick={() => handleImageDoubleClick(post._id)}
-                      className="relative w-full max-h-[580px] bg-slate-50 dark:bg-slate-950 flex items-center justify-center cursor-pointer select-none overflow-hidden"
-                    >
-                      <img 
-                        src={post.mediaUrl} 
-                        alt="" 
-                        className="w-full h-auto max-h-[580px] object-contain select-none animate-fade-in" 
-                      />
-
-                      {/* Double Click Heart Pop */}
-                      {likedAnimationPostId === post._id && (
-                        <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
-                          <Heart size={64} className="fill-white text-white drop-shadow-[0_4px_20px_rgba(244,63,94,0.45)] animate-heart-pop" />
-                        </div>
-                      )}
-
-                      {/* Tag Overlay hotspots */}
-                      {post.taggedProducts?.map(tag => {
-                        if (!tag.productId) return null;
-                        return (
-                          <div 
-                            key={tag._id}
-                            style={{ left: `${tag.x}%`, top: `${tag.y}%` }}
-                            className="absolute -translate-x-1/2 -translate-y-1/2 group/tag select-none z-10"
-                          >
-                            <div className="relative h-5 w-5 flex items-center justify-center cursor-pointer">
-                              <span className="absolute inline-flex h-full w-full rounded-full bg-[#ff4e20]/30 animate-ping" />
-                              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#ff4e20] border border-white" />
-                            </div>
-
-                            {/* Floating interactive tooltip */}
-                            <div className="absolute top-6 left-1/2 -translate-x-1/2 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200 dark:border-slate-800 p-2.5 rounded-md shadow-xl w-48 text-left opacity-0 pointer-events-none group-hover/tag:opacity-100 group-hover/tag:pointer-events-auto transition duration-200 transform scale-95 origin-top group-hover/tag:scale-100 z-30">
-                              <div className="flex gap-2">
-                                <img src={tag.productId.images?.[0]} alt="" className="h-9 w-9 object-cover rounded-xl border border-slate-100/50 dark:border-slate-800 bg-white" />
-                                <div className="min-w-0 flex-1">
-                                  <h5 className="text-[10px] font-black text-slate-800 dark:text-white truncate uppercase tracking-tight leading-tight">{tag.productId.name}</h5>
-                                  <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 block mt-1">₹{tag.productId.price?.toLocaleString("en-IN")}</span>
-                                </div>
-                              </div>
-                              <a 
-                                href={`/product/${tag.productId._id}`}
-                                className="w-full inline-flex items-center justify-center gap-1.5 mt-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-[9px] font-black uppercase tracking-wider transition no-underline border-none"
-                              >
-                                <ShoppingBag size={10} />
-                                <span>View Details</span>
-                              </a>
-                            </div>
-                          </div>
-                        );
-                      })}
-
-                      {/* Tagged Product Horizontal Banner Overlay */}
-                      {post.taggedProducts?.[0] && post.taggedProducts[0].productId && (
-                        <div className="absolute bottom-4 left-4 right-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200/40 dark:border-slate-800/60 p-2.5 rounded-md flex items-center justify-between gap-3 shadow-lg select-none">
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <img 
-                              src={post.taggedProducts[0].productId.images?.[0]} 
-                              alt="" 
-                              className="h-10 w-10 object-cover rounded-xl bg-slate-50 border border-slate-200/50 dark:border-slate-800" 
-                            />
-                            <div className="min-w-0 text-left">
-                              <h5 className="text-[10px] font-black text-slate-800 dark:text-white truncate uppercase tracking-tight leading-tight">
-                                {post.taggedProducts[0].productId.name}
-                              </h5>
-                              <span className="text-[10px] font-black text-[#ff4e20] block mt-0.5">
-                                ₹{post.taggedProducts[0].productId.price?.toLocaleString("en-IN")}
-                              </span>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-1.5 shrink-0">
-                            <a 
-                              href={`/product/${post.taggedProducts[0].productId._id}`}
-                              className="px-3.5 py-1.5 bg-[#ff4e20] hover:bg-[#e03d12] text-white text-[9px] font-black uppercase tracking-wider rounded-xl transition duration-200 no-underline shrink-0 border-none cursor-pointer"
-                            >
-                              Buy Now
-                            </a>
-                            <button className="h-7 w-7 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-850 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center shrink-0 border-none cursor-pointer transition">
-                              <ShoppingCart size={11} className="stroke-[2.5]" />
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Actions Row */}
-                    <div className="p-4 border-t border-slate-100 dark:border-slate-800/80">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-6">
-                          <div className="flex items-center gap-1.5 min-w-[42px]">
-                            <motion.button 
-                              whileTap={{ scale: 0.7 }}
-                              whileHover={{ scale: 1.15 }}
-                              onClick={() => handleLike(post._id)}
-                              className="flex items-center text-slate-500 dark:text-slate-400 hover:text-rose-500 transition border-none bg-transparent cursor-pointer p-0"
-                            >
-                              <motion.div
-                                key={post.isLiked ? "liked" : "unliked"}
-                                initial={{ scale: 0.7 }}
-                                animate={{ scale: 1 }}
-                                transition={{ type: "spring", stiffness: 450, damping: 12 }}
-                                className="flex items-center justify-center"
-                              >
-                                <Heart 
-                                  size={19} 
-                                  className={`transition-colors duration-250 ${post.isLiked ? "fill-rose-500 text-rose-500" : "text-slate-450 dark:text-slate-550 hover:text-rose-500"}`} 
-                                />
-                              </motion.div>
-                            </motion.button>
-                            <span 
-                              onClick={() => fetchPostLikes(post._id)}
-                              className="text-[11px] font-black text-slate-550 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline cursor-pointer select-none"
-                              title="See who liked this post"
-                            >
-                              {post.likesCount}
-                            </span>
-                          </div>
-
-                          <button 
-                            onClick={() => openComments(post)}
-                            className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 hover:text-indigo-500 transition border-none bg-transparent cursor-pointer p-0 min-w-[42px]"
-                          >
-                            <MessageCircle size={19} className="text-slate-450 dark:text-slate-550 hover:text-slate-600 dark:hover:text-slate-300" />
-                            <span className="text-[11px] font-black text-slate-550 dark:text-slate-400">{post.commentsCount}</span>
-                          </button>
-
-                          <button className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 hover:text-indigo-500 transition border-none bg-transparent cursor-pointer p-0 min-w-[40px]">
-                            <Send size={15} className="text-slate-450 dark:text-slate-550 hover:text-slate-600" />
-                            <span className="text-[11px] font-black text-slate-550 dark:text-slate-400">{post.sharesCount || 0}</span>
-                          </button>
-                        </div>
-
-                        <button 
-                          onClick={() => toggleSave(post._id)}
-                          className="text-slate-450 hover:text-slate-700 dark:hover:text-white transition border-none bg-transparent cursor-pointer p-0"
-                        >
-                          <Bookmark size={19} className={savedPosts.has(post._id) ? "fill-slate-800 dark:fill-white text-slate-800 dark:text-white" : "text-slate-450 dark:text-slate-550"} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Comment Section side-by-side inside Feed */}
-                  {activeCommentsPost?._id === post._id && (
-                    <div className="w-full md:w-[350px] bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80 rounded-lg overflow-hidden shadow-2xs flex flex-col animate-slide-left h-auto min-h-full">
-                      {/* Header */}
-                      <div className="flex items-center justify-between px-4 py-3.5 border-b border-slate-100 dark:border-slate-800/80 shrink-0">
-                        <div className="text-left">
-                          <h4 className="text-[10px] font-black uppercase tracking-wider text-slate-800 dark:text-white">Comments</h4>
-                          <span className="text-[7.5px] text-slate-400 uppercase font-black tracking-widest mt-0.5 block">Live Q&A Discussion</span>
-                        </div>
-                        <button
-                          onClick={() => setActiveCommentsPost(null)}
-                          className="text-slate-400 hover:text-indigo-500 transition border-none bg-transparent cursor-pointer p-1 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-full"
-                        >
-                          <X size={14} />
-                        </button>
-                      </div>
-
-                      {/* Comments List */}
-                      <div className="flex-1 overflow-y-auto p-4 space-y-3.5 max-h-[480px] md:max-h-[540px]">
-                        {loadingComments ? (
-                          <div className="py-12 flex flex-col items-center justify-center text-slate-400">
-                            <Loader2 size={18} className="animate-spin text-indigo-500 mb-1" />
-                            <span className="text-[8px] font-black uppercase tracking-widest">Loading...</span>
-                          </div>
-                        ) : comments.length === 0 ? (
-                          <div className="py-12 text-center text-slate-400">
-                            <MessageCircle size={16} className="mx-auto text-slate-300 mb-1" />
-                            <span className="text-[8.5px] font-black uppercase tracking-wider text-slate-450">No discussions yet</span>
-                            <p className="text-[7.5px] text-slate-400 mt-0.5">Start the conversation below!</p>
-                          </div>
-                        ) : (
-                          comments.map(c => (
-                            <div key={c._id} className="flex items-start gap-2.5 text-left animate-fade-in">
-                              <div className="h-7 w-7 rounded-full bg-indigo-50 dark:bg-slate-800 flex items-center justify-center text-[9px] font-black uppercase overflow-hidden shrink-0 border border-slate-200 dark:border-slate-700">
-                                {c.userId?.profilePhoto ? (
-                                  <img src={c.userId.profilePhoto} alt="" className="h-full w-full object-cover" />
-                                ) : (
-                                  <span>{c.userId?.name?.charAt(0) || "U"}</span>
-                                )}
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                <div className="flex items-center gap-1.5">
-                                  <span className="text-[9px] font-black text-slate-800 dark:text-slate-200 uppercase tracking-wide">{c.userId?.name}</span>
-                                  <span className="text-[7px] text-slate-400 dark:text-slate-500 font-bold">{new Date(c.createdAt).toLocaleDateString([], { month: "short", day: "numeric" })}</span>
-                                </div>
-                                <p className="text-[11px] font-semibold text-slate-600 dark:text-slate-300 leading-relaxed mt-0.5 break-words">{c.text}</p>
-                              </div>
-                            </div>
-                          ))
-                        )}
-                      </div>
-
-                      {/* Comment Form */}
-                      <form onSubmit={handleAddComment} className="p-3 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50 dark:bg-slate-950 flex gap-1.5 shrink-0 mt-auto">
-                        <input
-                          type="text"
-                          placeholder={token ? "Add a comment..." : "Log in to comment"}
-                          value={newComment}
-                          onChange={(e) => setNewComment(e.target.value)}
-                          disabled={!token}
-                          className="flex-1 px-3 py-2 text-xs border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl outline-none focus:border-indigo-500 transition disabled:bg-slate-100 disabled:dark:bg-slate-950/50 text-slate-800 dark:text-slate-100 placeholder-slate-500 font-medium"
-                        />
-                        <button
-                          type="submit"
-                          disabled={!newComment.trim() || !token}
-                          className="h-8 w-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center hover:bg-indigo-700 active:scale-95 disabled:bg-slate-200 disabled:text-slate-400 transition cursor-pointer border-none shrink-0"
-                        >
-                          <Send size={11} className="text-white" />
-                        </button>
-                      </form>
-                    </div>
-                  )}
-                </div>
-              ))
-            )}
+          {/* Post Counter Badge */}
+          <div>
+            <span className="text-[11px] font-black uppercase tracking-widest text-slate-800 bg-white px-4 py-2 rounded-full border border-slate-200/80 shadow-xs">
+              Post {displayedPosts.length > 0 ? currentPostIndex + 1 : 0} of {displayedPosts.length}
+            </span>
           </div>
-        </main>
+        </div>
 
-        {/* COLUMN 3: RIGHT DISCOVER & TRENDS SIDEBAR (Desktop Only) */}
-        <aside className="hidden xl:flex flex-col gap-5 w-80 shrink-0 overflow-y-auto pl-1 h-full scrollbar-thin select-none text-left py-1">
+        {/* Post Media Stage with Smooth Framer Motion Slide Transition */}
+        <div className="flex-1 flex items-center justify-center relative p-4 sm:p-8 overflow-hidden">
           
-          {/* SUGGESTED CREATORS */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80 rounded-lg p-5 shadow-xs">
-            <div className="flex items-center justify-between mb-4 pl-1">
-              <h4 className="text-[11px] font-black uppercase tracking-wider text-slate-450 dark:text-slate-550 flex items-center gap-1.5">
-                <Users size={12} className="stroke-[2.5]" />
-                <span>Suggested Creators</span>
-              </h4>
+          {/* Left Arrow Nav */}
+          {currentPostIndex > 0 && (
+            <button
+              onClick={handlePrevPost}
+              className="absolute left-6 sm:left-10 top-1/2 -translate-y-1/2 z-40 h-10 w-10 rounded-full bg-white hover:bg-slate-50 text-slate-800 border border-slate-100 shadow-md flex items-center justify-center transition cursor-pointer active:scale-90"
+              title="Previous Post"
+            >
+              <ChevronLeft size={20} className="stroke-[2.5]" />
+            </button>
+          )}
+
+          {/* Right Arrow Nav */}
+          {currentPostIndex < displayedPosts.length - 1 && (
+            <button
+              onClick={handleNextPost}
+              className="absolute right-6 sm:right-10 top-1/2 -translate-y-1/2 z-40 h-10 w-10 rounded-full bg-white hover:bg-slate-50 text-slate-800 border border-slate-100 shadow-md flex items-center justify-center transition cursor-pointer active:scale-90"
+              title="Next Post"
+            >
+              <ChevronRight size={20} className="stroke-[2.5]" />
+            </button>
+          )}
+
+          {loading ? (
+            <div className="flex flex-col items-center justify-center text-slate-500">
+              <Loader2 size={28} className="animate-spin text-[#5842f6] mb-2" />
+              <span className="text-xs font-black uppercase tracking-widest">Loading Feed...</span>
             </div>
-            
-            {suggestedCreators && suggestedCreators.length > 0 ? (
-              <div className="space-y-4">
-                {suggestedCreators.slice(0, 5).map(creator => (
-                  <div key={creator._id} className="flex items-center justify-between gap-3 animate-fade-in">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="h-8.5 w-8.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200/40 overflow-hidden flex items-center justify-center text-[10px] font-black uppercase shrink-0">
-                        {creator.profilePhoto ? (
-                          <img src={creator.profilePhoto} alt="" className="h-full w-full object-cover" />
-                        ) : (
-                          <span>{creator.name.charAt(0)}</span>
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        <span className="text-[11.5px] font-black text-slate-850 dark:text-slate-100 uppercase tracking-tight block leading-tight truncate">
-                          {creator.name}
-                        </span>
-                        <span className="text-[9px] font-semibold text-slate-400 dark:text-slate-500 block leading-tight truncate mt-0.5">Verified Shop</span>
-                      </div>
-                    </div>
-                    
-                    <button
-                      onClick={() => handleFollowUser(creator._id)}
-                      className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-wider transition duration-150 active:scale-95 shrink-0 border-none cursor-pointer ${
-                        creator.isFollowing
-                          ? "bg-slate-100 dark:bg-slate-850 text-slate-550 dark:text-slate-400 hover:bg-slate-200"
-                          : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs"
-                      }`}
+          ) : displayedPosts.length === 0 ? (
+            <div className="text-center p-8">
+              <ShoppingBag className="mx-auto text-slate-400 mb-3" size={48} />
+              <h3 className="text-sm font-black uppercase tracking-wider text-slate-800">No posts found</h3>
+              <p className="text-xs text-slate-500 mt-1">Be the first to share your purchase!</p>
+            </div>
+          ) : activePost ? (
+            <motion.div
+              key={activePost._id}
+              initial={{ x: slideDirection === "next" ? 350 : -350, opacity: 0.1, scale: 0.95 }}
+              animate={{ x: 0, opacity: 1, scale: 1 }}
+              exit={{ x: slideDirection === "next" ? -350 : 350, opacity: 0 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full h-full flex flex-col items-center justify-center relative"
+            >
+              {/* Media Image Container */}
+              <div 
+                onDoubleClick={() => handleImageDoubleClick(activePost._id)}
+                className="relative max-h-[calc(100vh-220px)] max-w-full rounded-lg overflow-hidden shadow-md flex items-center justify-center bg-white border border-slate-200/80"
+              >
+                <img
+                  src={activePost.mediaUrl}
+                  alt=""
+                  className="max-h-[calc(100vh-220px)] max-w-full object-contain select-none"
+                />
+
+                {/* Double Tap Heart Animation */}
+                {likedAnimationPostId === activePost._id && (
+                  <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+                    <Heart size={80} className="fill-rose-500 text-rose-500 drop-shadow-[0_4px_30px_rgba(244,63,94,0.7)] animate-heart-pop" />
+                  </div>
+                )}
+
+                {/* Tag Overlay hotspots */}
+                {activePost.taggedProducts?.map(tag => {
+                  if (!tag.productId) return null;
+                  return (
+                    <div 
+                      key={tag._id}
+                      style={{ left: `${tag.x}%`, top: `${tag.y}%` }}
+                      className="absolute -translate-x-1/2 -translate-y-1/2 group/tag select-none z-10"
                     >
-                      {creator.isFollowing ? "Unfollow" : "Follow"}
-                    </button>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-[10px] text-slate-400 dark:text-slate-550 font-medium italic pl-1">No creator recommendations right now</p>
-            )}
-          </div>
-
-          {/* TRENDING HASHTAGS */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80 rounded-lg p-5 shadow-xs">
-            <h4 className="text-[11px] font-black uppercase tracking-wider text-slate-450 dark:text-slate-550 flex items-center gap-1.5 mb-4 pl-1">
-              <Hash size={12} className="stroke-[2.5]" />
-              <span>Trending Vibe</span>
-            </h4>
-            
-            <div className="flex flex-col gap-3">
-              {trendingHashtags && trendingHashtags.length > 0 ? (
-                trendingHashtags.slice(0, 5).map((hash, idx) => (
-                  <div key={idx} className="flex justify-between items-center pl-1 select-none cursor-pointer group animate-fade-in">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10.5px] font-bold text-slate-450 dark:text-slate-400 group-hover:text-indigo-500 transition-colors">#{hash.name}</span>
+                      <div className="relative h-5 w-5 flex items-center justify-center cursor-pointer">
+                        <span className="absolute inline-flex h-full w-full rounded-full bg-rose-500/30 animate-ping" />
+                        <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-500 border border-white" />
+                      </div>
+                      <div className="absolute top-6 left-1/2 -translate-x-1/2 bg-white/95 backdrop-blur-md border border-slate-200 p-2.5 rounded-xl shadow-xl w-48 text-left opacity-0 pointer-events-none group-hover/tag:opacity-100 group-hover/tag:pointer-events-auto transition duration-200 z-30">
+                        <div className="flex gap-2">
+                          <img src={tag.productId.images?.[0]} alt="" className="h-9 w-9 object-cover rounded-lg bg-slate-50 border border-slate-100" />
+                          <div className="min-w-0 flex-1">
+                            <h5 className="text-[10px] font-black text-slate-900 truncate uppercase tracking-tight">{tag.productId.name}</h5>
+                            <span className="text-[10px] font-black text-[#5842f6] block mt-0.5">₹{tag.productId.price?.toLocaleString("en-IN")}</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <span className="text-[9px] font-black uppercase text-slate-400 bg-slate-55 dark:bg-slate-800/80 px-2 py-0.5 rounded-md border border-slate-100 dark:border-slate-800/40">
-                      {hash.count} Posts
-                    </span>
+                  );
+                })}
+              </div>
+            </motion.div>
+          ) : null}
+        </div>
+
+        {/* Bottom Creator Info & Actions Overlay */}
+        {activePost && (
+          <div className="p-4 sm:p-6 z-30">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3 text-left min-w-0 flex-1">
+                <div className="h-10 w-10 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center text-xs font-black uppercase overflow-hidden shrink-0 shadow-2xs">
+                  {activePost.userId?.profilePhoto ? (
+                    <img src={activePost.userId.profilePhoto} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <span>{activePost.userId?.name?.charAt(0) || "U"}</span>
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-black uppercase tracking-wide text-slate-900 truncate">{activePost.userId?.name || "Anonymous"}</span>
+                    {currentUser && activePost.userId && activePost.userId._id !== currentUser._id && (
+                      <button
+                        onClick={() => handleToggleFollowCreator(activePost.userId._id)}
+                        className="text-xs font-black uppercase text-rose-500 hover:text-rose-600 cursor-pointer border-none bg-transparent"
+                      >
+                        {activePost.isFollowingCreator ? "Unfollow" : "Follow"}
+                      </button>
+                    )}
                   </div>
-                ))
-              ) : (
-                // Fallback trending tags
-                ["OOTD", "SummerPicks", "CartNowFit", "TechGear", "BeautyFavs"].map((tag, idx) => (
-                  <div key={idx} className="flex justify-between items-center pl-1 cursor-pointer group">
-                    <span className="text-[11px] font-black text-slate-650 dark:text-slate-350 group-hover:text-indigo-500 transition-colors">#{tag}</span>
-                    <span className="text-[8.5px] font-black uppercase text-slate-450 bg-slate-50 dark:bg-slate-850 px-2 py-0.5 rounded-md border border-slate-150/40 dark:border-slate-800/50">
-                      {24 + (5 - idx) * 7} Posts
-                    </span>
-                  </div>
-                ))
-              )}
+                  <p className="text-xs text-slate-600 font-medium truncate mt-0.5">{activePost.caption}</p>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center gap-4 shrink-0">
+                <button
+                  onClick={() => handleLike(activePost._id)}
+                  className="flex items-center gap-1.5 text-slate-700 hover:text-rose-500 transition border-none bg-transparent cursor-pointer"
+                >
+                  <Heart size={20} className={activePost.isLiked ? "fill-rose-500 text-rose-500" : ""} />
+                  <span className="text-xs font-black">{activePost.likesCount}</span>
+                </button>
+
+                <button
+                  onClick={() => toggleSave(activePost._id)}
+                  className="text-slate-700 hover:text-slate-900 transition border-none bg-transparent cursor-pointer"
+                >
+                  <Bookmark size={20} className={savedPosts.has(activePost._id) ? "fill-slate-900 text-slate-900" : ""} />
+                </button>
+              </div>
             </div>
           </div>
-
-          {/* TOP SHOPPABLE PICKS */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80 rounded-lg p-5 shadow-xs">
-            <h4 className="text-[11px] font-black uppercase tracking-wider text-slate-450 dark:text-slate-550 flex items-center gap-1.5 mb-4 pl-1">
-              <ShoppingBag size={12} className="stroke-[2.5]" />
-              <span>Shoppable Picks</span>
-            </h4>
-            
-            {topPicks && topPicks.length > 0 ? (
-              <div className="grid grid-cols-2 gap-3.5">
-                {topPicks.slice(0, 4).map(prod => (
-                  <div 
-                    key={prod._id}
-                    onClick={() => window.location.href = `/product/${prod._id}`}
-                    className="group border border-slate-200/50 dark:border-slate-800 rounded-md p-2 bg-slate-50/50 dark:bg-slate-950/20 hover:border-indigo-400 hover:shadow-xs transition duration-200 cursor-pointer flex flex-col justify-between"
-                  >
-                    <div className="aspect-square w-full rounded-xl overflow-hidden bg-white dark:bg-slate-900 p-1 border border-slate-100 dark:border-slate-850">
-                      <img 
-                        src={prod.images?.[0] || "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100"} 
-                        alt="" 
-                        className="w-full h-full object-contain group-hover:scale-105 transition duration-300" 
-                      />
-                    </div>
-                    <div className="mt-2 text-left min-w-0 pr-0.5">
-                      <h5 className="text-[8.5px] font-black text-slate-800 dark:text-slate-200 truncate uppercase tracking-tight">{prod.brand || "CartNOW"}</h5>
-                      <p className="text-[9px] text-slate-500 dark:text-slate-400 truncate leading-none mt-0.5 font-semibold">{prod.name}</p>
-                      <span className="text-[9.5px] font-black text-indigo-600 dark:text-indigo-400 mt-1 block">₹{prod.price?.toLocaleString("en-IN")}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-[10px] text-slate-400 dark:text-slate-550 font-medium italic pl-1">No shoppable picks loaded</p>
-            )}
-          </div>
-
-        </aside>
-
+        )}
       </div>
-{/* STORY CREATOR MODAL */}
+
+      {/* RIGHT FULL-HEIGHT COMMENTS PANEL */}
+      <div className="w-full md:w-[380px] lg:w-[400px] bg-white border-l border-slate-200/80 flex flex-col h-full shrink-0 z-30">
+        <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-white">
+          <div>
+            <h3 className="text-sm font-black uppercase tracking-wider text-slate-900">Comments</h3>
+            <span className="text-[9.5px] font-black text-slate-400 uppercase tracking-widest block mt-0.5">Live Discussion</span>
+          </div>
+          <span className="h-6 w-6 rounded-full bg-indigo-50 text-indigo-600 font-black text-xs flex items-center justify-center border border-indigo-100/50">
+            {comments.length}
+          </span>
+        </div>
+
+        {/* Comments List */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
+          {loadingComments ? (
+            <div className="py-20 flex flex-col items-center justify-center text-slate-400">
+              <Loader2 size={24} className="animate-spin text-[#5842f6] mb-2" />
+              <span className="text-[9px] font-black uppercase tracking-widest">Loading Comments...</span>
+            </div>
+          ) : comments.length === 0 ? (
+            <div className="py-20 text-center text-slate-400">
+              <MessageCircle size={24} className="mx-auto text-slate-300 mb-2" />
+              <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">No discussions yet</span>
+              <p className="text-[9px] text-slate-400 mt-1">Be the first to comment on this fit!</p>
+            </div>
+          ) : (
+            comments.map(c => (
+              <div key={c._id} className="border-b border-slate-100/80 pb-3 mb-3 last:border-none">
+                <div className="flex items-start gap-3 text-left">
+                  <div className="h-8 w-8 rounded-full bg-indigo-50 text-indigo-600 font-black text-[10px] flex items-center justify-center shrink-0 border border-indigo-100/40">
+                    {c.userId?.profilePhoto ? (
+                      <img src={c.userId.profilePhoto} alt="" className="h-full w-full object-cover rounded-full" />
+                    ) : (
+                      <span>{c.userId?.name?.charAt(0) || "U"}</span>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-black text-slate-900 uppercase">{c.userId?.name}</span>
+                      <span className="text-[10px] text-slate-400 font-medium">• {new Date(c.createdAt).toLocaleDateString([], { month: "short", day: "numeric" })}</span>
+                    </div>
+                    <p className="text-xs font-medium text-slate-700 leading-relaxed mt-0.5 break-words">{c.text}</p>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Comment Form */}
+        <form onSubmit={handleAddComment} className="p-4 bg-white border-t border-slate-100 flex items-center gap-3 shrink-0">
+          <input
+            type="text"
+            placeholder={token ? "Write a comment..." : "Log in to comment"}
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            disabled={!token}
+            className="flex-1 px-4 py-2.5 text-xs border border-slate-200/80 bg-white text-slate-800 rounded-full outline-none focus:border-[#5842f6] transition placeholder-slate-400 font-medium"
+          />
+          <button
+            type="submit"
+            disabled={!newComment.trim() || !token}
+            className="h-9 w-9 rounded-full bg-indigo-50 text-indigo-600 hover:bg-[#5842f6] hover:text-white flex items-center justify-center transition cursor-pointer border-none shrink-0 shadow-2xs disabled:bg-slate-100 disabled:text-slate-300"
+          >
+            <Send size={14} />
+          </button>
+        </form>
+      </div>
+
+      {/* STORY CREATOR MODAL */}
       <StoryCreatorModal
         isOpen={storyModalOpen}
         onClose={handleStoryModalClose}

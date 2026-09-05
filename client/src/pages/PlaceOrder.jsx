@@ -180,10 +180,16 @@ const PlaceOrder = () => {
         err = "Please enter both first and last name (separated by space)";
       }
     } else if (name === "phone") {
+      let cleaned = trimmed.replace(/\D/g, "");
+      if (cleaned.length === 11 && cleaned.startsWith("0")) {
+        cleaned = cleaned.slice(1);
+      } else if (cleaned.length === 12 && cleaned.startsWith("91")) {
+        cleaned = cleaned.slice(2);
+      }
       if (!trimmed) {
         err = "Mobile number is required";
-      } else if (!/^\d{10}$/.test(trimmed)) {
-        err = "Mobile number must be exactly 10 digits";
+      } else if (!/^\d{10}$/.test(cleaned)) {
+        err = "Mobile number must be a valid 10-digit number";
       }
     } else if (name === "pincode") {
       if (!trimmed) {
@@ -703,11 +709,18 @@ const PlaceOrder = () => {
     if (pincode) streetParts.push(`Pincode: ${pincode}`);
     const streetAddress = streetParts.join(", ");
 
+    let cleanedPhone = (phone || "").trim().replace(/\D/g, "");
+    if (cleanedPhone.length === 11 && cleanedPhone.startsWith("0")) {
+      cleanedPhone = cleanedPhone.slice(1);
+    } else if (cleanedPhone.length === 12 && cleanedPhone.startsWith("91")) {
+      cleanedPhone = cleanedPhone.slice(2);
+    }
+
     const payload = {
       firstName: fName,
       lastName: lName,
       email: email,
-      phone: phone,
+      phone: cleanedPhone || phone,
       street: streetAddress,
       city: city,
       state: state,
@@ -1942,7 +1955,13 @@ const PlaceOrder = () => {
                     placeholder="10-digit phone number"
                     value={modalFormData.phone}
                     onChange={(e) => {
-                      const val = e.target.value;
+                      let val = e.target.value;
+                      let cleaned = val.replace(/\D/g, "");
+                      if (cleaned.length === 11 && cleaned.startsWith("0")) {
+                        val = cleaned.slice(1);
+                      } else if (cleaned.length === 12 && cleaned.startsWith("91")) {
+                        val = cleaned.slice(2);
+                      }
                       setModalFormData({ ...modalFormData, phone: val });
                       setModalErrors(prev => ({ ...prev, phone: validateField("phone", val) }));
                     }}

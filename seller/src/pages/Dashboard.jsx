@@ -350,88 +350,110 @@ const Dashboard = ({ token, seller, products = [], orders = [] }) => {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="max-w-[1600px] mx-auto px-3 sm:px-5 py-4 space-y-4 relative text-slate-800 dark:text-slate-100 z-10 selection:bg-orange-500 selection:text-white"
+      className="w-full px-1 sm:px-2 py-1 space-y-2.5 relative text-slate-800 dark:text-slate-100 z-10 selection:bg-orange-500 selection:text-white"
     >
       {/* ==================== SECTION 1: COMMAND CENTER HEADER ==================== */}
       <motion.section 
         variants={sectionVariants}
-        className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 border-l-4 border-l-orange-500 rounded-xl p-4 shadow-xs relative overflow-hidden"
+        className="bg-white dark:bg-slate-900 rounded-xl p-2.5 sm:p-3 shadow-xs relative overflow-hidden"
       >
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-center">
           {/* Left: Merchant Bio */}
-          <div className="lg:col-span-3 flex items-center gap-3 text-left">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-orange-600 via-orange-500 to-amber-500 flex items-center justify-center text-white text-base font-black shadow-xs shrink-0">
+          <div className="lg:col-span-3 flex items-center gap-2.5 text-left">
+            <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-orange-600 via-orange-500 to-amber-500 flex items-center justify-center text-white text-sm font-black shadow-xs shrink-0">
               {seller?.name ? seller.name[0].toUpperCase() : "M"}
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
-                <h2 className="text-sm font-black text-slate-900 dark:text-slate-100 truncate tracking-tight">
+                <h2 className="text-xs font-black text-slate-900 dark:text-slate-100 truncate tracking-tight">
                   {seller?.shopName || "My Merchant Store"}
                 </h2>
-                <ShieldCheck size={14} className="text-emerald-500 shrink-0" title="Verified Storefront" />
+                <ShieldCheck size={13} className="text-emerald-500 shrink-0" title="Verified Storefront" />
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium truncate">{seller?.name || "Merchant Admin"}</p>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium truncate">{seller?.name || "Merchant Admin"}</p>
             </div>
           </div>
 
           {/* Center: Today's Snapshot Stats Grid */}
-          <div className="lg:col-span-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800 rounded-xl p-3.5 text-left transition-all hover:border-slate-300 dark:hover:border-slate-700">
+          <div className="lg:col-span-6 grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <motion.div 
+              whileHover={{ y: -2, scale: 1.01 }}
+              transition={{ duration: 0.2 }}
+              className="bg-slate-50 dark:bg-slate-950 rounded-xl p-2.5 text-left transition-all cursor-pointer shadow-2xs"
+            >
               <div className="flex items-center justify-between">
                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Revenue Today</span>
                 <DollarSign size={13} className="text-orange-500" />
               </div>
-              <span className="text-sm font-black text-slate-900 dark:text-slate-100 mt-1 block">₹{todaySnapshot.revenue.toLocaleString()}</span>
-            </div>
+              <span className="text-xs font-black text-slate-900 dark:text-slate-100 mt-0.5 block">₹{todaySnapshot.revenue.toLocaleString()}</span>
+            </motion.div>
 
-            <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800 rounded-xl p-3.5 text-left transition-all hover:border-slate-300 dark:hover:border-slate-700">
+            <motion.div 
+              whileHover={{ y: -2, scale: 1.01 }}
+              transition={{ duration: 0.2 }}
+              className="bg-slate-50 dark:bg-slate-950 rounded-xl p-2.5 text-left transition-all cursor-pointer shadow-2xs"
+            >
               <div className="flex items-center justify-between">
                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Orders Today</span>
                 <ShoppingBag size={13} className="text-indigo-500" />
               </div>
-              <span className="text-sm font-black text-slate-900 dark:text-slate-100 mt-1 block">{todaySnapshot.orders}</span>
-            </div>
+              <span className="text-xs font-black text-slate-900 dark:text-slate-100 mt-0.5 block">{todaySnapshot.orders}</span>
+            </motion.div>
 
-            <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800 rounded-xl p-3.5 text-left transition-all hover:border-slate-300 dark:hover:border-slate-700">
+            <motion.div 
+              whileHover={{ y: -2, scale: 1.01 }}
+              transition={{ duration: 0.2 }}
+              className="bg-slate-50 dark:bg-slate-950 rounded-xl p-2.5 text-left transition-all cursor-pointer shadow-2xs"
+            >
               <div className="flex items-center justify-between">
                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Traffic Today</span>
                 <Users size={13} className="text-blue-500" />
               </div>
-              <span className="text-sm font-black text-slate-900 dark:text-slate-100 mt-1 block">{todaySnapshot.visitors}</span>
-            </div>
+              <span className="text-xs font-black text-slate-900 dark:text-slate-100 mt-0.5 block">{todaySnapshot.visitors}</span>
+            </motion.div>
 
-            <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800 rounded-xl p-3.5 text-left transition-all hover:border-slate-300 dark:hover:border-slate-700">
+            <motion.div 
+              whileHover={{ y: -2, scale: 1.01 }}
+              transition={{ duration: 0.2 }}
+              className="bg-slate-50 dark:bg-slate-950 rounded-xl p-2.5 text-left transition-all cursor-pointer shadow-2xs"
+            >
               <div className="flex items-center justify-between">
                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Conversion</span>
                 <Percent size={13} className="text-emerald-500" />
               </div>
-              <span className="text-sm font-black text-orange-500 mt-1 block">{todaySnapshot.conversion}%</span>
-            </div>
+              <span className="text-xs font-black text-orange-500 mt-0.5 block">{todaySnapshot.conversion}%</span>
+            </motion.div>
           </div>
 
           {/* Right: Quick actions panel */}
           <div className="lg:col-span-3 flex flex-wrap gap-2.5 justify-start lg:justify-end">
-            <button
+            <motion.button
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
               onClick={() => navigate("/add-product")}
-              className="flex items-center gap-1.5 px-4 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer shadow-md shadow-orange-500/25 active:scale-95"
+              className="flex items-center gap-1.5 px-4 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer shadow-md shadow-orange-500/25"
             >
               <Plus size={15} />
               <span>Add Item</span>
-            </button>
-            <button
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
               onClick={() => navigate("/orders")}
-              className="flex items-center gap-1.5 px-3.5 py-2.5 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer active:scale-95 shadow-2xs"
+              className="flex items-center gap-1.5 px-3.5 py-2.5 bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer shadow-2xs"
             >
               <ShoppingBag size={14} />
               <span>Orders</span>
-            </button>
-            <button
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
               onClick={() => navigate("/analytics")}
-              className="flex items-center gap-1.5 px-3.5 py-2.5 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer active:scale-95 shadow-2xs"
+              className="flex items-center gap-1.5 px-3.5 py-2.5 bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer shadow-2xs"
             >
               <TrendingUp size={14} />
               <span>Analytics</span>
-            </button>
+            </motion.button>
           </div>
         </div>
       </motion.section>
@@ -439,14 +461,14 @@ const Dashboard = ({ token, seller, products = [], orders = [] }) => {
       {/* ==================== SECTION 2: ANALYTICS HERO & INSIGHTS ==================== */}
       <motion.section 
         variants={sectionVariants}
-        className="grid grid-cols-1 lg:grid-cols-10 gap-6 items-stretch"
+        className="grid grid-cols-1 lg:grid-cols-10 gap-2.5 items-stretch"
       >
         {/* Left: Bezier Curve Charts Centerpiece (70% Width) */}
-        <div className="lg:col-span-7 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 shadow-xs flex flex-col justify-between min-h-[500px]">
+        <div className="lg:col-span-7 bg-white dark:bg-slate-900 rounded-2xl p-3 sm:p-3.5 shadow-xs flex flex-col justify-between min-h-[380px]">
           {/* Chart Controls */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-2.5">
             {/* Metric Switcher tabs */}
-            <div className="flex flex-wrap bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-1 rounded-xl w-full sm:w-auto">
+            <div className="flex flex-wrap bg-slate-100 dark:bg-slate-950 p-0.5 rounded-xl w-full sm:w-auto">
               {["Revenue", "Orders", "Customers", "Profit"].map(metric => (
                 <button
                   key={metric}
@@ -454,7 +476,7 @@ const Dashboard = ({ token, seller, products = [], orders = [] }) => {
                     setActiveMetric(metric);
                     setHoveredDataPoint(null);
                   }}
-                  className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-lg text-xs font-bold transition duration-150 cursor-pointer uppercase tracking-wider ${ activeMetric === metric ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs" : "text-slate-500 hover:text-slate-800 dark:hover:text-white" }`}
+                  className={`flex-1 sm:flex-none px-3 py-1 rounded-lg text-xs font-bold transition duration-150 cursor-pointer uppercase tracking-wider ${ activeMetric === metric ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs" : "text-slate-500 hover:text-slate-800 dark:hover:text-white" }`}
                 >
                   {metric}
                 </button>
@@ -462,7 +484,7 @@ const Dashboard = ({ token, seller, products = [], orders = [] }) => {
             </div>
 
             {/* Timeframe selector chips */}
-            <div className="flex bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-1 rounded-xl self-end">
+            <div className="flex bg-slate-100 dark:bg-slate-950 p-0.5 rounded-xl self-end">
               {["7D", "30D", "90D", "1Y"].map(tf => (
                 <button
                   key={tf}
@@ -470,7 +492,7 @@ const Dashboard = ({ token, seller, products = [], orders = [] }) => {
                     setActiveTimeframe(tf);
                     setHoveredDataPoint(null);
                   }}
-                  className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase transition duration-150 cursor-pointer ${ activeTimeframe === tf ? "bg-orange-500 text-white shadow-xs" : "text-slate-500 hover:text-slate-800 dark:hover:text-white" }`}
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase transition duration-150 cursor-pointer ${ activeTimeframe === tf ? "bg-orange-500 text-white shadow-xs" : "text-slate-500 hover:text-slate-800 dark:hover:text-white" }`}
                 >
                   {tf}
                 </button>
@@ -483,7 +505,7 @@ const Dashboard = ({ token, seller, products = [], orders = [] }) => {
             ref={chartContainerRef}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
-            className="relative flex-1 py-6 h-64 select-none cursor-crosshair overflow-visible"
+            className="relative flex-1 py-2 h-48 select-none cursor-crosshair overflow-visible"
           >
             {/* Tooltip Card Overlay */}
             <AnimatePresence>
@@ -493,7 +515,7 @@ const Dashboard = ({ token, seller, products = [], orders = [] }) => {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.1 }}
-                  className="absolute bg-slate-900 text-white border border-slate-700 rounded-xl p-3 shadow-xl pointer-events-none z-20 flex flex-col items-start gap-1"
+                  className="absolute bg-slate-900 text-white rounded-xl p-2.5 shadow-xl pointer-events-none z-20 flex flex-col items-start gap-0.5"
                   style={{
                     left: `${(hoveredDataPoint.x / 800) * 100}%`,
                     top: `${hoveredDataPoint.y - 65}px`,
@@ -579,7 +601,7 @@ const Dashboard = ({ token, seller, products = [], orders = [] }) => {
           </div>
 
           {/* SVG X-Axis Labels */}
-          <div className="flex justify-between text-[10px] text-slate-400 font-extrabold uppercase tracking-widest mt-2 px-8">
+          <div className="flex justify-between text-[10px] text-slate-400 font-extrabold uppercase tracking-widest mt-1 px-8">
             {chartPoints.map((pt, idx) => (
               <span 
                 key={idx} 
@@ -592,35 +614,33 @@ const Dashboard = ({ token, seller, products = [], orders = [] }) => {
         </div>
 
         {/* Right: AI Insights Panel (30% Width) */}
-        <div className="lg:col-span-3 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 shadow-xs flex flex-col justify-between text-left relative overflow-hidden">
-          <div className="space-y-4">
-            <div className="flex items-center gap-2.5">
-              <div className="h-9 w-9 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500 border border-orange-500/20">
-                <Sparkles size={16} />
+        <div className="lg:col-span-3 bg-white dark:bg-slate-900 rounded-2xl p-3 sm:p-3.5 shadow-xs flex flex-col justify-between text-left relative overflow-hidden">
+          <div className="space-y-2.5">
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500">
+                <Sparkles size={15} />
               </div>
               <div>
-                <h3 className="font-extrabold text-sm text-slate-900 dark:text-slate-100 tracking-tight">AI Growth Insights</h3>
-                <p className="text-[10px] text-slate-400 uppercase tracking-widest mt-0.5">Real-time prediction model</p>
+                <h3 className="font-extrabold text-xs text-slate-900 dark:text-slate-100 tracking-tight">AI Growth Insights</h3>
+                <p className="text-[9px] text-slate-400 uppercase tracking-widest mt-0.5">Real-time prediction model</p>
               </div>
             </div>
 
-            <hr className="border-slate-100 dark:border-slate-800" />
-
             {/* Simulated business suggestions timeline */}
-            <div className="space-y-3.5 pt-1 text-xs">
-              <div className="flex gap-2.5">
-                <span className="mt-1 h-2 w-2 rounded-full bg-orange-500 shrink-0" />
+            <div className="space-y-2 pt-0.5 text-[11px]">
+              <div className="flex gap-2">
+                <span className="mt-1 h-1.5 w-1.5 rounded-full bg-orange-500 shrink-0" />
                 <div>
                   <p className="font-bold text-slate-800 dark:text-slate-200">Revenue Prediction</p>
-                  <p className="text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">Based on traffic indices, sales are projected to grow <strong className="text-orange-500 font-black">+18.5%</strong> in the upcoming week.</p>
+                  <p className="text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">Based on traffic indices, sales are projected to grow <strong className="text-orange-500 font-black">+18.5%</strong> in the upcoming week.</p>
                 </div>
               </div>
 
-              <div className="flex gap-2.5">
-                <span className="mt-1 h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
+              <div className="flex gap-2">
+                <span className="mt-1 h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
                 <div>
                   <p className="font-bold text-slate-800 dark:text-slate-200">Inventory Suggestion</p>
-                  <p className="text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
+                  <p className="text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">
                     {lowStockCount > 0 
                       ? `Catalog has ${lowStockCount} items on low stock. Increase volumes to prevent catalog warnings.` 
                       : "Inventory stocks look stable. Consider adding dynamic discount campaigns on slower collections."}
@@ -628,11 +648,11 @@ const Dashboard = ({ token, seller, products = [], orders = [] }) => {
                 </div>
               </div>
 
-              <div className="flex gap-2.5">
-                <span className="mt-1 h-2 w-2 rounded-full bg-indigo-500 shrink-0" />
+              <div className="flex gap-2">
+                <span className="mt-1 h-1.5 w-1.5 rounded-full bg-indigo-500 shrink-0" />
                 <div>
                   <p className="font-bold text-slate-800 dark:text-slate-200">Opportunities Grid</p>
-                  <p className="text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">Customers search for Unisex collection items. Adding 2 products could capture this demand.</p>
+                  <p className="text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">Customers search for Unisex collection items. Adding 2 products could capture this demand.</p>
                 </div>
               </div>
             </div>
@@ -640,10 +660,10 @@ const Dashboard = ({ token, seller, products = [], orders = [] }) => {
 
           <button
             onClick={() => toast.info("AI Analysis logs generated successfully!")}
-            className="w-full mt-6 bg-slate-900 hover:bg-slate-800 dark:bg-slate-950 dark:hover:bg-slate-800 text-white rounded-xl py-3 text-xs font-extrabold transition cursor-pointer flex items-center justify-center gap-1.5 shadow-xs active:scale-[0.98]"
+            className="w-full mt-3 bg-slate-900 hover:bg-slate-800 dark:bg-slate-950 dark:hover:bg-slate-800 text-white rounded-xl py-2 text-xs font-extrabold transition cursor-pointer flex items-center justify-center gap-1 shadow-xs active:scale-[0.98]"
           >
             <span>Run Complete Audit</span>
-            <ChevronRight size={14} />
+            <ChevronRight size={13} />
           </button>
         </div>
       </motion.section>
@@ -651,99 +671,115 @@ const Dashboard = ({ token, seller, products = [], orders = [] }) => {
       {/* ==================== SECTION 3: KPI METRICS ==================== */}
       <motion.section 
         variants={sectionVariants}
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5"
       >
         {/* Card 1: Active Listings */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-xs flex flex-col justify-between gap-4 text-left group hover:-translate-y-1 transition duration-200 cursor-pointer">
+        <motion.div 
+          whileHover={{ y: -3, scale: 1.01 }}
+          transition={{ duration: 0.2 }}
+          className="bg-white dark:bg-slate-900 rounded-2xl p-3 shadow-xs flex flex-col justify-between gap-2.5 text-left group cursor-pointer transition-colors"
+        >
           <div className="flex justify-between items-start">
             <div>
               <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Active Listings</span>
-              <h4 className="text-xl font-black text-slate-900 dark:text-slate-100 mt-1">{products.length} Items</h4>
+              <h4 className="text-lg font-black text-slate-900 dark:text-slate-100 mt-0.5">{products.length} Items</h4>
             </div>
-            <div className="h-10 w-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500 border border-orange-500/20 group-hover:scale-105 transition">
-              <Package size={16} />
+            <div className="h-9 w-9 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500 group-hover:scale-105 transition">
+              <Package size={15} />
             </div>
           </div>
           {/* Sparkline & trend */}
-          <div className="flex justify-between items-center pt-2 border-t border-slate-100 dark:border-slate-800">
-            <span className="inline-flex px-2 py-0.5 rounded-md text-[9px] font-black uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">Stable</span>
-            <svg className="h-6 w-20 text-emerald-500 overflow-visible shrink-0" viewBox="0 0 80 20" fill="none">
+          <div className="flex justify-between items-center pt-1.5">
+            <span className="inline-flex px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">Stable</span>
+            <svg className="h-5 w-16 text-emerald-500 overflow-visible shrink-0" viewBox="0 0 80 20" fill="none">
               <path d="M 0 10 Q 20 5 40 12 T 80 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
           </div>
-        </div>
+        </motion.div>
 
         {/* Card 2: Inventory Value */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-xs flex flex-col justify-between gap-4 text-left group hover:-translate-y-1 transition duration-200 cursor-pointer">
+        <motion.div 
+          whileHover={{ y: -3, scale: 1.01 }}
+          transition={{ duration: 0.2 }}
+          className="bg-white dark:bg-slate-900 rounded-2xl p-3 shadow-xs flex flex-col justify-between gap-2.5 text-left group cursor-pointer transition-colors"
+        >
           <div className="flex justify-between items-start">
             <div>
               <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Inventory Capital</span>
-              <h4 className="text-xl font-black text-slate-900 dark:text-slate-100 mt-1">₹{totalInventoryValue.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</h4>
+              <h4 className="text-lg font-black text-slate-900 dark:text-slate-100 mt-0.5">₹{totalInventoryValue.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</h4>
             </div>
-            <div className="h-10 w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20 group-hover:scale-105 transition">
-              <DollarSign size={16} />
+            <div className="h-9 w-9 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 group-hover:scale-105 transition">
+              <DollarSign size={15} />
             </div>
           </div>
           {/* Sparkline & trend */}
-          <div className="flex justify-between items-center pt-2 border-t border-slate-100 dark:border-slate-800">
-            <span className="inline-flex px-2 py-0.5 rounded-md text-[9px] font-black uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">+4.5%</span>
-            <svg className="h-6 w-20 text-emerald-500 overflow-visible shrink-0" viewBox="0 0 80 20" fill="none">
+          <div className="flex justify-between items-center pt-1.5">
+            <span className="inline-flex px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">+4.5%</span>
+            <svg className="h-5 w-16 text-emerald-500 overflow-visible shrink-0" viewBox="0 0 80 20" fill="none">
               <path d="M 0 18 Q 20 12 40 14 T 80 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
           </div>
-        </div>
+        </motion.div>
 
         {/* Card 3: Low Stock Alerts */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-xs flex flex-col justify-between gap-4 text-left group hover:-translate-y-1 transition duration-200 cursor-pointer">
+        <motion.div 
+          whileHover={{ y: -3, scale: 1.01 }}
+          transition={{ duration: 0.2 }}
+          className="bg-white dark:bg-slate-900 rounded-2xl p-3 shadow-xs flex flex-col justify-between gap-2.5 text-left group cursor-pointer transition-colors"
+        >
           <div className="flex justify-between items-start">
             <div>
               <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Low Stock Warnings</span>
-              <h4 className="text-xl font-black text-slate-900 dark:text-slate-100 mt-1">{lowStockCount} Products</h4>
+              <h4 className="text-lg font-black text-slate-900 dark:text-slate-100 mt-0.5">{lowStockCount} Products</h4>
             </div>
-            <div className="h-10 w-10 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500 border border-red-500/20 group-hover:scale-105 transition">
-              <AlertTriangle size={16} />
+            <div className="h-9 w-9 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500 group-hover:scale-105 transition">
+              <AlertTriangle size={15} />
             </div>
           </div>
           {/* Sparkline & trend */}
-          <div className="flex justify-between items-center pt-2 border-t border-slate-100 dark:border-slate-800">
-            <span className={`inline-flex px-2 py-0.5 rounded-md text-[9px] font-black uppercase ${ lowStockCount > 0 ? "bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20" : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20" }`}>
+          <div className="flex justify-between items-center pt-1.5">
+            <span className={`inline-flex px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase ${ lowStockCount > 0 ? "bg-red-500/10 text-red-600 dark:text-red-400" : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" }`}>
               {lowStockCount > 0 ? "Attention Required" : "Catalog Healthy"}
             </span>
-            <svg className={`h-6 w-20 ${ lowStockCount > 0 ? "text-red-500" : "text-emerald-500" } overflow-visible shrink-0`} viewBox="0 0 80 20" fill="none">
+            <svg className={`h-5 w-16 ${ lowStockCount > 0 ? "text-red-500" : "text-emerald-500" } overflow-visible shrink-0`} viewBox="0 0 80 20" fill="none">
               <path d="M 0 8 Q 20 18 40 6 T 80 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
           </div>
-        </div>
+        </motion.div>
 
         {/* Card 4: Net Earnings */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-xs flex flex-col justify-between gap-4 text-left group hover:-translate-y-1 transition duration-200 cursor-pointer">
+        <motion.div 
+          whileHover={{ y: -3, scale: 1.01 }}
+          transition={{ duration: 0.2 }}
+          className="bg-white dark:bg-slate-900 rounded-2xl p-3 shadow-xs flex flex-col justify-between gap-2.5 text-left group cursor-pointer transition-colors"
+        >
           <div className="flex justify-between items-start">
             <div>
               <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Net Merchant Earnings</span>
-              <h4 className="text-xl font-black text-slate-900 dark:text-slate-100 mt-1">₹{netEarnings.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</h4>
+              <h4 className="text-lg font-black text-slate-900 dark:text-slate-100 mt-0.5">₹{netEarnings.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</h4>
             </div>
-            <div className="h-10 w-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 border border-indigo-500/20 group-hover:scale-105 transition">
-              <ShieldCheck size={16} />
+            <div className="h-9 w-9 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500 group-hover:scale-105 transition">
+              <ShieldCheck size={15} />
             </div>
           </div>
           {/* Sparkline & trend */}
-          <div className="flex justify-between items-center pt-2 border-t border-slate-100 dark:border-slate-800">
-            <span className="inline-flex px-2 py-0.5 rounded-md text-[9px] font-black uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">+12.4%</span>
-            <svg className="h-6 w-20 text-emerald-500 overflow-visible shrink-0" viewBox="0 0 80 20" fill="none">
+          <div className="flex justify-between items-center pt-1.5">
+            <span className="inline-flex px-1.5 py-0.5 rounded-md text-[9px] font-black uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">+12.4%</span>
+            <svg className="h-5 w-16 text-emerald-500 overflow-visible shrink-0" viewBox="0 0 80 20" fill="none">
               <path d="M 0 16 Q 20 8 40 10 T 80 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
           </div>
-        </div>
+        </motion.div>
       </motion.section>
 
       {/* ==================== SECTION 4: OPERATIONS CENTER (ORDERS & TIMELINE) ==================== */}
       <motion.section 
         variants={sectionVariants}
-        className="grid grid-cols-1 lg:grid-cols-10 gap-6 items-stretch"
+        className="grid grid-cols-1 lg:grid-cols-10 gap-2.5 items-stretch"
       >
         {/* Left: Recent Orders Table (70% Width) */}
-        <div className="lg:col-span-7 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 shadow-xs flex flex-col justify-between text-left">
-          <div className="space-y-4">
+        <div className="lg:col-span-7 bg-white dark:bg-slate-900 rounded-2xl p-3 sm:p-3.5 shadow-xs flex flex-col justify-between text-left">
+          <div className="space-y-3">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
               <div>
                 <h3 className="font-extrabold text-sm text-slate-900 dark:text-slate-100 tracking-tight">Recent Orders</h3>
@@ -758,7 +794,7 @@ const Dashboard = ({ token, seller, products = [], orders = [] }) => {
                     placeholder="Search customer name..."
                     value={ordersSearch}
                     onChange={e => setOrdersSearch(e.target.value)}
-                    className="w-full sm:w-48 pl-8 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 outline-none transition font-semibold focus:outline-none"
+                    className="w-full sm:w-48 pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 outline-none transition font-semibold"
                   />
                   <Search size={12} className="absolute left-2.5 top-2.5 text-slate-400" />
                 </div>
@@ -766,7 +802,7 @@ const Dashboard = ({ token, seller, products = [], orders = [] }) => {
                 <select
                   value={ordersStatusFilter}
                   onChange={e => setOrdersStatusFilter(e.target.value)}
-                  className="px-2.5 py-1.5 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 outline-none cursor-pointer"
+                  className="px-2.5 py-1.5 text-xs font-bold rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 outline-none cursor-pointer"
                 >
                   <option value="All">All Status</option>
                   <option value="Order Placed">Placed</option>
@@ -779,7 +815,7 @@ const Dashboard = ({ token, seller, products = [], orders = [] }) => {
                 <select
                   value={ordersSortBy}
                   onChange={e => setOrdersSortBy(e.target.value)}
-                  className="px-2.5 py-1.5 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 outline-none cursor-pointer"
+                  className="px-2.5 py-1.5 text-xs font-bold rounded-xl bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 outline-none cursor-pointer"
                 >
                   <option value="newest">Newest</option>
                   <option value="amount-desc">Amount: High-Low</option>
@@ -788,10 +824,10 @@ const Dashboard = ({ token, seller, products = [], orders = [] }) => {
               </div>
             </div>
 
-            <div className="overflow-x-auto border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-950">
+            <div className="overflow-x-auto rounded-xl bg-white dark:bg-slate-950">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 text-[10px] font-black uppercase text-slate-400 tracking-wider">
+                  <tr className="bg-slate-50 dark:bg-slate-900/50 text-[10px] font-black uppercase text-slate-400 tracking-wider">
                     <th className="px-4 py-3">Customer</th>
                     <th className="px-4 py-3">Order ID</th>
                     <th className="px-4 py-3">Date</th>
@@ -799,7 +835,7 @@ const Dashboard = ({ token, seller, products = [], orders = [] }) => {
                     <th className="px-4 py-3 text-center">Fulfill Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                <tbody>
                   {filteredRecentOrders.length === 0 ? (
                     <tr>
                       <td colSpan="5" className="px-4 py-8 text-center text-slate-500 italic">No matching orders mapped.</td>
@@ -807,11 +843,11 @@ const Dashboard = ({ token, seller, products = [], orders = [] }) => {
                   ) : (
                     filteredRecentOrders.slice(0, 5).map(order => {
                       const statusStyles = {
-                        "Delivered": "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/50",
-                        "Order Placed": "bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400 border-orange-100/50 dark:border-orange-900/40",
-                        "Out for Delivery": "bg-indigo-50 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/50",
-                        "Cancelled": "bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 border-red-100 dark:border-red-900/50",
-                        "default": "bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-900/50"
+                        "Delivered": "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400",
+                        "Order Placed": "bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400",
+                        "Out for Delivery": "bg-indigo-50 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400",
+                        "Cancelled": "bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400",
+                        "default": "bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400"
                       };
                       const statusClass = statusStyles[order.orderStatus] || statusStyles["default"];
                       return (
@@ -830,7 +866,7 @@ const Dashboard = ({ token, seller, products = [], orders = [] }) => {
                           <td className="px-4 py-3 text-slate-400">{new Date(order.createdAt || order.date).toLocaleDateString("en-IN")}</td>
                           <td className="px-4 py-3 text-right font-extrabold text-slate-900 dark:text-slate-100">₹{order.amount?.toFixed(2)}</td>
                           <td className="px-4 py-3 text-center">
-                            <span className={`inline-flex px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider border ${statusClass}`}>
+                            <span className={`inline-flex px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider ${statusClass}`}>
                               {order.orderStatus}
                             </span>
                           </td>
@@ -845,14 +881,14 @@ const Dashboard = ({ token, seller, products = [], orders = [] }) => {
         </div>
 
         {/* Right: Live Activity Timeline Feed (30% Width) */}
-        <div className="lg:col-span-3 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 shadow-xs flex flex-col justify-between text-left relative overflow-hidden">
-          <div className="space-y-5">
+        <div className="lg:col-span-3 bg-white dark:bg-slate-900 rounded-2xl p-3 sm:p-3.5 shadow-xs flex flex-col justify-between text-left relative overflow-hidden">
+          <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="font-extrabold text-sm text-slate-900 dark:text-slate-100 tracking-tight">Live Activity Feed</h3>
+              <h3 className="font-extrabold text-xs text-slate-900 dark:text-slate-100 tracking-tight">Live Activity Feed</h3>
               <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
             </div>
 
-            <div className="space-y-4 relative pl-4 border-l border-slate-200 dark:border-slate-800 ml-1.5 text-xs">
+            <div className="space-y-2.5 relative pl-3.5 ml-1 text-xs">
               {orders.length === 0 ? (
                 <p className="text-xs text-slate-500 italic py-2">No activity feeds logged yet.</p>
               ) : (
@@ -863,9 +899,9 @@ const Dashboard = ({ token, seller, products = [], orders = [] }) => {
                   };
                   const bulletColor = statusColors[order.orderStatus] || "bg-orange-500";
                   return (
-                    <div key={order._id} className="relative space-y-1 text-left">
-                      <div className={`absolute -left-[21px] top-1 h-2 w-2 rounded-full ${bulletColor} border border-white dark:border-slate-900 shadow-xs`} />
-                      <div className="flex justify-between items-start text-xs font-bold gap-2">
+                    <div key={order._id} className="relative space-y-0.5 text-left">
+                      <div className={`absolute -left-[19px] top-1 h-2 w-2 rounded-full ${bulletColor} shadow-xs`} />
+                      <div className="flex justify-between items-start text-[11px] font-bold gap-2">
                         <span className="text-slate-800 dark:text-slate-200 truncate">
                           Order #{order._id.slice(-6).toUpperCase()} {order.orderStatus === "Delivered" ? "Delivered" : "Placed"}
                         </span>
@@ -873,7 +909,7 @@ const Dashboard = ({ token, seller, products = [], orders = [] }) => {
                           {new Date(order.createdAt || order.date).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
                         </span>
                       </div>
-                      <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed font-normal">
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-snug font-normal">
                         Fulfillment sequence compiled. Amount of ₹{order.amount?.toLocaleString()} tagged.
                       </p>
                     </div>
@@ -881,13 +917,13 @@ const Dashboard = ({ token, seller, products = [], orders = [] }) => {
                 })
               )}
               {products.slice(0, 1).map((prod) => (
-                <div key={prod._id} className="relative space-y-1 text-left">
-                  <div className="absolute -left-[21px] top-1 h-2 w-2 rounded-full bg-indigo-500 border border-white dark:border-slate-900 shadow-xs" />
-                  <div className="flex justify-between items-start text-xs font-bold gap-2">
+                <div key={prod._id} className="relative space-y-0.5 text-left">
+                  <div className="absolute -left-[19px] top-1 h-2 w-2 rounded-full bg-indigo-500 shadow-xs" />
+                  <div className="flex justify-between items-start text-[11px] font-bold gap-2">
                     <span className="text-slate-900 dark:text-slate-100">Catalog Updated</span>
                     <span className="text-[9px] text-slate-400 font-semibold">1h ago</span>
                   </div>
-                  <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed font-normal">
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-snug font-normal">
                     Published item '{prod.name}' with catalog value.
                   </p>
                 </div>
@@ -900,31 +936,33 @@ const Dashboard = ({ token, seller, products = [], orders = [] }) => {
       {/* ==================== SECTION 5: PERFORMANCE AREA (TOP SELLERS & STORE HEALTH) ==================== */}
       <motion.section 
         variants={sectionVariants}
-        className="grid grid-cols-1 lg:grid-cols-10 gap-6 items-stretch"
+        className="grid grid-cols-1 lg:grid-cols-10 gap-2.5 items-stretch"
       >
         {/* Left: Top Selling Leaderboard (60% Width) */}
-        <div className="lg:col-span-6 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 shadow-xs text-left flex flex-col justify-between">
-          <div className="space-y-4">
+        <div className="lg:col-span-6 bg-white dark:bg-slate-900 rounded-2xl p-3 sm:p-3.5 shadow-xs text-left flex flex-col justify-between">
+          <div className="space-y-2.5">
             <div>
-              <h3 className="font-extrabold text-sm text-slate-900 dark:text-slate-100 tracking-tight">Top Performing Catalog Items</h3>
-              <p className="text-[10px] text-slate-400 uppercase tracking-widest mt-0.5">Leaderboard based on total quantity sold</p>
+              <h3 className="font-extrabold text-xs text-slate-900 dark:text-slate-100 tracking-tight">Top Performing Catalog Items</h3>
+              <p className="text-[9px] text-slate-400 uppercase tracking-widest mt-0.5">Leaderboard based on total quantity sold</p>
             </div>
 
-            <div className="space-y-3 pt-2">
+            <div className="space-y-2 pt-0.5">
               {topSellers.length === 0 ? (
                 <p className="text-xs text-slate-500 italic py-4 text-center">No catalog sales tracked yet.</p>
               ) : (
                 topSellers.map((item, idx) => {
                   const medals = ["🥇", "🥈", "🥉"];
                   return (
-                    <div 
+                    <motion.div 
                       key={item._id} 
+                      whileHover={{ x: 3 }}
+                      transition={{ duration: 0.2 }}
                       onClick={() => navigate("/inventory")}
-                      className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800 flex items-center justify-between gap-4 hover:bg-slate-100 dark:hover:bg-slate-900 transition cursor-pointer"
+                      className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 flex items-center justify-between gap-2.5 hover:bg-slate-100 dark:hover:bg-slate-900 transition cursor-pointer"
                     >
-                      <div className="flex items-center gap-3.5 min-w-0">
-                        <span className="text-2xl shrink-0">{medals[idx]}</span>
-                        <div className="h-10 w-10 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <span className="text-lg shrink-0">{medals[idx]}</span>
+                        <div className="h-8 w-8 rounded-xl bg-white dark:bg-slate-900 flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
                           {item.images?.[0] ? (
                             <img src={item.images[0]} alt="" className="h-full w-full object-contain" />
                           ) : (
@@ -937,16 +975,16 @@ const Dashboard = ({ token, seller, products = [], orders = [] }) => {
                         </div>
                       </div>
 
-                      <div className="text-right shrink-0 flex items-center gap-3">
+                      <div className="text-right shrink-0 flex items-center gap-2">
                         <div>
                           <p className="text-xs font-black text-orange-500">₹{(item.price * (item.salesCount || 0)).toLocaleString("en-IN")}</p>
                           <p className="text-[9px] text-slate-400">Total Yield</p>
                         </div>
-                        <span className="text-[9px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-md font-black">
+                        <span className="text-[9px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded-md font-black">
                           +14.2%
                         </span>
                       </div>
-                    </div>
+                    </motion.div>
                   );
                 })
               )}
@@ -955,14 +993,14 @@ const Dashboard = ({ token, seller, products = [], orders = [] }) => {
         </div>
 
         {/* Right: Store Health score (40% Width) */}
-        <div className="lg:col-span-4 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 shadow-xs text-left flex flex-col justify-between">
-          <div className="space-y-4">
+        <div className="lg:col-span-4 bg-white dark:bg-slate-900 rounded-2xl p-3 sm:p-3.5 shadow-xs text-left flex flex-col justify-between">
+          <div className="space-y-2.5">
             <div>
-              <h3 className="font-extrabold text-sm text-slate-900 dark:text-slate-100 tracking-tight">Store Health Index</h3>
-              <p className="text-[10px] text-slate-400 uppercase tracking-widest mt-0.5">Platform evaluation standards</p>
+              <h3 className="font-extrabold text-xs text-slate-900 dark:text-slate-100 tracking-tight">Store Health Index</h3>
+              <p className="text-[9px] text-slate-400 uppercase tracking-widest mt-0.5">Platform evaluation standards</p>
             </div>
 
-            <div className="flex items-center gap-5 bg-slate-50 dark:bg-slate-950 border border-slate-200/60 dark:border-slate-800 p-4 rounded-xl">
+            <div className="flex items-center gap-5 bg-slate-50 dark:bg-slate-950 p-4 rounded-xl">
               {/* Circular health score percentage */}
               <div className="relative h-16 w-16 shrink-0 flex items-center justify-center">
                 <svg className="h-full w-full transform -rotate-90">
