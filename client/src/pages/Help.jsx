@@ -167,31 +167,31 @@ const Help = () => {
   const selectedTicket = tickets.find((t) => t._id === selectedTicketId) || tickets[0];
 
   return (
-    <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950 px-4 sm:px-6 lg:px-8 py-6 text-slate-800 dark:text-slate-200 transition-colors duration-300">
+    <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950 px-4 sm:px-6 lg:px-8 xl:px-10 py-6 text-slate-800 dark:text-slate-200 transition-colors duration-300 w-full">
       
-      {/* ── HERO BANNER SECTION ── */}
-      <div className="mx-auto max-w-7xl mb-6">
-        <div className="relative overflow-hidden rounded-md bg-gradient-to-r from-orange-500/10 via-amber-500/5 to-transparent border border-slate-200/60 dark:border-slate-800/80 p-5 sm:p-6 shadow-sm">
-          <div className="relative z-10 max-w-2xl">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-orange-100 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 mb-2">
+      {/* ── HERO BANNER SECTION (FULL WIDTH) ── */}
+      <div className="w-full mb-6">
+        <div className="relative overflow-hidden rounded-md bg-gradient-to-r from-orange-500/10 via-amber-500/5 to-transparent border border-slate-200/60 dark:border-slate-800/80 p-5 sm:p-7 shadow-sm">
+          <div className="relative z-10 max-w-3xl">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider bg-orange-100 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 mb-2">
               <Sparkles size={11} /> CartNOW Concierge
             </span>
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
               How can we support you today?
             </h1>
-            <p className="mt-1.5 text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
+            <p className="mt-1.5 text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-normal leading-relaxed">
               Create a support token below or select your previous token to track resolution updates.
             </p>
 
             {/* Live Search Input */}
-            <div className="mt-4 relative max-w-md">
+            <div className="mt-4 relative max-w-xl">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-slate-500" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search queries, returns, refund status..."
-                className="w-full pl-9 pr-3.5 py-2 rounded-md border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md text-xs text-slate-900 dark:text-white placeholder-slate-400 outline-none shadow-sm transition-all font-medium focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900"
+                className="w-full pl-9 pr-3.5 py-2 rounded-md border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md text-xs text-slate-900 dark:text-white placeholder-slate-400 outline-none shadow-sm transition-all font-normal focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900"
               />
             </div>
           </div>
@@ -201,7 +201,7 @@ const Help = () => {
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl grid gap-6 lg:grid-cols-12">
+      <div className="w-full grid gap-6 lg:grid-cols-12">
         
         {/* ── LEFT COLUMN: QUICK ACTIONS, CREATE TOKEN FORM & FAQs (8 cols) ── */}
         <div className="lg:col-span-8 space-y-6">
@@ -220,8 +220,8 @@ const Help = () => {
                 <div className={`h-8 w-8 rounded-md flex items-center justify-center ${item.color} mb-2`}>
                   <item.icon size={16} />
                 </div>
-                <h4 className="text-xs font-black text-slate-800 dark:text-white">{item.title}</h4>
-                <p className="text-[11px] text-slate-400 dark:text-slate-400 mt-0.5 font-medium">{item.desc}</p>
+                <h4 className="text-xs font-semibold text-slate-800 dark:text-white">{item.title}</h4>
+                <p className="text-[11px] text-slate-400 dark:text-slate-400 mt-0.5 font-normal">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -234,8 +234,8 @@ const Help = () => {
                   <Headset className="h-4 w-4" />
                 </div>
                 <div>
-                  <h2 className="text-sm font-black text-slate-900 dark:text-white">Create Support Token</h2>
-                  <p className="text-[10px] text-slate-400 dark:text-slate-400 font-semibold mt-0.5">Submit your query details below to generate a new support token.</p>
+                  <h2 className="text-sm font-semibold text-slate-900 dark:text-white">Create Support Token</h2>
+                  <p className="text-[10px] text-slate-400 dark:text-slate-400 font-normal mt-0.5">Submit your query details below to generate a new support token.</p>
                 </div>
               </div>
             </div>
@@ -243,13 +243,13 @@ const Help = () => {
             <form onSubmit={handleSubmit} className="space-y-3.5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400">Category</label>
+                  <label className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-slate-400 dark:text-slate-400">Category</label>
                   <select
                     value={form.category}
                     onChange={(event) =>
                       setForm((current) => ({ ...current, category: event.target.value }))
                     }
-                    className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 outline-none transition-colors focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900"
+                    className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-2 text-xs font-normal text-slate-700 dark:text-slate-300 outline-none transition-colors focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900"
                   >
                     {categories.map((item) => (
                       <option key={item} value={item} className="bg-white dark:bg-slate-900">
@@ -260,20 +260,20 @@ const Help = () => {
                 </div>
 
                 <div>
-                  <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400">Subject</label>
+                  <label className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-slate-400 dark:text-slate-400">Subject</label>
                   <input
                     value={form.subject}
                     onChange={(event) =>
                       setForm((current) => ({ ...current, subject: event.target.value }))
                     }
                     placeholder="e.g. Order status missing, Refund fail"
-                    className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-2 text-xs text-slate-800 dark:text-slate-200 outline-none placeholder-slate-400 transition-colors font-semibold focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900"
+                    className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-2 text-xs text-slate-800 dark:text-slate-200 outline-none placeholder-slate-400 transition-colors font-normal focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400">Message Details</label>
+                <label className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-slate-400 dark:text-slate-400">Message Details</label>
                 <textarea
                   rows="3"
                   value={form.message}
@@ -281,14 +281,14 @@ const Help = () => {
                     setForm((current) => ({ ...current, message: event.target.value }))
                   }
                   placeholder="Include transaction IDs, product names, dates, or address details if applicable..."
-                  className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-2 text-xs text-slate-800 dark:text-slate-200 outline-none placeholder-slate-400 resize-none transition-colors font-medium leading-relaxed focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900"
+                  className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-2 text-xs text-slate-800 dark:text-slate-200 outline-none placeholder-slate-400 resize-none transition-colors font-normal leading-relaxed focus:ring-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full sm:w-auto px-6 flex items-center justify-center gap-1.5 rounded-md bg-orange-500 hover:bg-orange-600 text-white font-black text-xs py-2.5 shadow-md shadow-orange-500/10 hover:shadow-orange-500/20 active:scale-98 transition disabled:opacity-60 cursor-pointer border-none uppercase tracking-wider select-none"
+                className="w-full sm:w-auto px-6 flex items-center justify-center gap-1.5 rounded-md bg-orange-500 hover:bg-orange-600 text-white font-medium text-xs py-2.5 shadow-md shadow-orange-500/10 hover:shadow-orange-500/20 active:scale-98 transition disabled:opacity-60 cursor-pointer border-none uppercase tracking-wider select-none"
               >
                 {submitting ? (
                   <span>Generating Token...</span>
@@ -307,7 +307,7 @@ const Help = () => {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-100 dark:border-slate-800/60">
               <div className="flex items-center gap-2">
                 <HelpCircle className="text-orange-500 h-4.5 w-4.5" />
-                <h2 className="text-sm font-black text-slate-900 dark:text-white">Frequently Answered FAQs</h2>
+                <h2 className="text-sm font-semibold text-slate-900 dark:text-white">Frequently Answered FAQs</h2>
               </div>
 
               {/* FAQ Category Pills */}
@@ -321,7 +321,7 @@ const Help = () => {
                   <button
                     key={pill.id}
                     onClick={() => setSelectedFaqCategory(pill.id)}
-                    className={`px-2.5 py-0.5 rounded text-[11px] font-bold transition-all cursor-pointer ${ selectedFaqCategory === pill.id ? "bg-orange-500 text-white shadow-xs" : "bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300" }`}
+                    className={`px-2.5 py-0.5 rounded text-[11px] font-medium transition-all cursor-pointer ${ selectedFaqCategory === pill.id ? "bg-orange-500 text-white shadow-xs" : "bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300" }`}
                   >
                     {pill.label}
                   </button>
@@ -339,7 +339,7 @@ const Help = () => {
                     <div key={faq.id} className="py-2.5 first:pt-0 last:pb-0">
                       <button
                         onClick={() => setExpandedFaqId(isOpen ? null : faq.id)}
-                        className="flex w-full items-center justify-between text-left font-bold text-xs text-slate-800 dark:text-slate-200 hover:text-orange-500 dark:hover:text-orange-400 transition-colors py-0.5 cursor-pointer"
+                        className="flex w-full items-center justify-between text-left font-medium text-xs text-slate-800 dark:text-slate-200 hover:text-orange-500 dark:hover:text-orange-400 transition-colors py-0.5 cursor-pointer"
                       >
                         <span>{faq.question}</span>
                         {isOpen ? (
@@ -352,7 +352,7 @@ const Help = () => {
                       {/* FAQ Expand Transition */}
                       <div className={`grid transition-all duration-200 ease-in-out ${ isOpen ? "grid-rows-[1fr] opacity-100 mt-1.5" : "grid-rows-[0fr] opacity-0 overflow-hidden" }`}>
                         <div className="overflow-hidden">
-                          <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed pl-0.5 font-medium">
+                          <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed pl-0.5 font-normal">
                             {faq.answer}
                           </p>
                         </div>
@@ -374,32 +374,32 @@ const Help = () => {
               <div className="flex items-center gap-2.5">
                 <Ticket className="text-orange-500 h-4.5 w-4.5 shrink-0" />
                 <div>
-                  <h2 className="text-sm font-black text-slate-900 dark:text-white">Previous Tokens</h2>
-                  <p className="text-[10px] text-slate-400 dark:text-slate-400 font-semibold mt-0.5">Select a token to inspect status & replies</p>
+                  <h2 className="text-sm font-semibold text-slate-900 dark:text-white">Previous Tokens</h2>
+                  <p className="text-[10px] text-slate-400 dark:text-slate-400 font-normal mt-0.5">Select a token to inspect status & replies</p>
                 </div>
               </div>
 
-              <span className="px-2 py-0.5 rounded bg-orange-100 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 text-[10px] font-extrabold">
+              <span className="px-2 py-0.5 rounded bg-orange-100 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 text-[10px] font-medium">
                 {tickets.length} {tickets.length === 1 ? "Token" : "Tokens"}
               </span>
             </div>
 
             {loading ? (
-              <div className="p-6 text-center rounded-md border border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-400">
+              <div className="p-6 text-center rounded-md border border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-normal text-slate-400">
                 Loading support tokens...
               </div>
             ) : tickets.length === 0 ? (
               <div className="p-6 text-center rounded-md border border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40">
                 <ShieldQuestion className="mx-auto h-8 w-8 text-slate-300 dark:text-slate-500 mb-2" />
-                <p className="text-xs font-black text-slate-800 dark:text-white">No Previous Tokens</p>
-                <p className="text-[11px] text-slate-400 mt-1">Submit your first query using the form on the left.</p>
+                <p className="text-xs font-semibold text-slate-800 dark:text-white">No Previous Tokens</p>
+                <p className="text-[11px] text-slate-400 mt-1 font-normal">Submit your first query using the form on the left.</p>
               </div>
             ) : (
               <div className="space-y-4">
                 
                 {/* ── TICKET SELECTOR DROPDOWN ── */}
                 <div>
-                  <label className="mb-1 block text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-400">
+                  <label className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-slate-400 dark:text-slate-400">
                     Select Support Token
                   </label>
                   <select
@@ -416,14 +416,14 @@ const Help = () => {
                         setSelectedTicketId(e.target.value);
                       }
                     }}
-                    className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-2 text-xs font-bold text-slate-800 dark:text-slate-200 outline-none transition focus:ring-2 focus:ring-blue-500"
+                    className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-2 text-xs font-normal text-slate-800 dark:text-slate-200 outline-none transition focus:ring-2 focus:ring-blue-500"
                   >
                     {tickets.map((t) => (
                       <option key={t._id} value={t._id} className="bg-white dark:bg-slate-900">
                         #TKN-{t._id.slice(-6).toUpperCase()} • {t.subject} ({t.status})
                       </option>
                     ))}
-                    <option value="new" className="bg-orange-500 text-white font-bold">
+                    <option value="new" className="bg-orange-500 text-white font-medium">
                       + Create New Support Token...
                     </option>
                   </select>
@@ -436,7 +436,7 @@ const Help = () => {
                     {/* Header: Token Badge, Copy Button & Status */}
                     <div className="flex items-center justify-between gap-2 border-b border-slate-200/60 dark:border-slate-800/80 pb-2.5">
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="font-mono text-[11px] font-extrabold px-2 py-0.5 rounded bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 shadow-2xs">
+                        <span className="font-mono text-[11px] font-semibold px-2 py-0.5 rounded bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 shadow-2xs">
                           #TKN-{selectedTicket._id.slice(-6).toUpperCase()}
                         </span>
                         <button
@@ -446,14 +446,14 @@ const Help = () => {
                             navigator.clipboard.writeText(tkn);
                             toast.success(`Token ID #${tkn} copied to clipboard!`);
                           }}
-                          className="px-1.5 py-0.5 rounded bg-slate-200/60 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-[9px] font-bold text-slate-600 dark:text-slate-300 cursor-pointer border-none transition"
+                          className="px-1.5 py-0.5 rounded bg-slate-200/60 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-[9px] font-medium text-slate-600 dark:text-slate-300 cursor-pointer border-none transition"
                         >
                           Copy
                         </button>
                       </div>
 
                       {/* Status Badge */}
-                      <span className="flex items-center gap-1.5 rounded px-2 py-0.5 text-[9px] font-black bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xs">
+                      <span className="flex items-center gap-1.5 rounded px-2 py-0.5 text-[9px] font-medium bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xs">
                         <span
                           className={`h-1.5 w-1.5 rounded-full ${
                             selectedTicket.status === "Open"
@@ -469,40 +469,40 @@ const Help = () => {
 
                     {/* Subject & Metadata */}
                     <div>
-                      <span className="text-[9px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-400">
+                      <span className="text-[9px] font-medium uppercase tracking-wider text-slate-400 dark:text-slate-400">
                         {selectedTicket.category}
                       </span>
-                      <h3 className="text-xs font-black text-slate-900 dark:text-white mt-0.5 leading-snug">
+                      <h3 className="text-xs font-semibold text-slate-900 dark:text-white mt-0.5 leading-snug">
                         {selectedTicket.subject}
                       </h3>
-                      <p className="text-[9px] text-slate-400 dark:text-slate-400 font-semibold mt-0.5">
+                      <p className="text-[9px] text-slate-400 dark:text-slate-400 font-normal mt-0.5">
                         Filed: {new Date(selectedTicket.createdAt).toLocaleString("en-IN")}
                       </p>
                     </div>
 
                     {/* User Message Box */}
                     <div className="rounded bg-white dark:bg-slate-900 p-2.5 text-xs text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-800">
-                      <div className="mb-1 flex items-center justify-between font-black text-[9px] uppercase tracking-wider text-slate-400">
+                      <div className="mb-1 flex items-center justify-between font-medium text-[9px] uppercase tracking-wider text-slate-400">
                         <span className="flex items-center gap-1">
                           <MessageSquareText className="h-3 w-3 text-orange-500" />
                           Enquiry Message
                         </span>
                       </div>
-                      <p className="leading-relaxed text-[11px] font-medium">{selectedTicket.message}</p>
+                      <p className="leading-relaxed text-[11px] font-normal">{selectedTicket.message}</p>
                     </div>
 
                     {/* Support Executive Response Box */}
                     {selectedTicket.adminReply ? (
                       <div className="rounded bg-green-500/[0.06] dark:bg-green-500/[0.03] p-2.5 text-xs text-slate-700 dark:text-slate-200 border border-green-500/20">
-                        <div className="mb-1 flex items-center gap-1 font-black text-[9px] uppercase tracking-wider text-green-600 dark:text-green-400">
+                        <div className="mb-1 flex items-center gap-1 font-medium text-[9px] uppercase tracking-wider text-green-600 dark:text-green-400">
                           <Headset className="h-3 w-3 text-green-500" />
                           Support Response
                         </div>
-                        <p className="leading-relaxed text-[11px] font-medium">{selectedTicket.adminReply}</p>
+                        <p className="leading-relaxed text-[11px] font-normal">{selectedTicket.adminReply}</p>
                       </div>
                     ) : (
                       <div className="rounded bg-amber-500/[0.06] dark:bg-amber-500/[0.03] p-2.5 text-xs text-amber-700 dark:text-amber-300 border border-amber-500/20">
-                        <div className="flex items-center gap-1.5 font-semibold text-[10px]">
+                        <div className="flex items-center gap-1.5 font-normal text-[10px]">
                           <Clock size={11} className="animate-spin text-amber-500" />
                           <span>Awaiting Executive Review. Your ticket is active in queue.</span>
                         </div>
@@ -513,7 +513,7 @@ const Help = () => {
 
                 {/* ── ALL PREVIOUS TOKENS QUICK LIST ── */}
                 <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800/60">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block mb-1">
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-slate-400 block mb-1">
                     All History ({tickets.length})
                   </span>
                   
@@ -526,18 +526,18 @@ const Help = () => {
                           onClick={() => setSelectedTicketId(t._id)}
                           className={`p-2 rounded border text-left cursor-pointer transition flex items-center justify-between ${
                             isSelected
-                              ? "bg-orange-500/10 dark:bg-orange-500/20 border-orange-500/50 text-orange-600 dark:text-orange-400 font-bold"
-                              : "bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 hover:border-slate-300 text-slate-700 dark:text-slate-300"
+                              ? "bg-orange-500/10 dark:bg-orange-500/20 border-orange-500/50 text-orange-600 dark:text-orange-400 font-medium"
+                              : "bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 hover:border-slate-300 text-slate-700 dark:text-slate-300 font-normal"
                           }`}
                         >
                           <div className="min-w-0 pr-2">
                             <div className="flex items-center gap-1.5">
-                              <span className="font-mono text-[9px] font-extrabold">#TKN-{t._id.slice(-6).toUpperCase()}</span>
+                              <span className="font-mono text-[9px] font-medium">#TKN-{t._id.slice(-6).toUpperCase()}</span>
                               <span className="text-[8px] uppercase text-slate-400 truncate">• {t.category}</span>
                             </div>
-                            <p className="text-[11px] truncate font-bold mt-0.5">{t.subject}</p>
+                            <p className="text-[11px] truncate font-normal mt-0.5">{t.subject}</p>
                           </div>
-                          <span className="text-[9px] font-extrabold shrink-0 uppercase px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500">
+                          <span className="text-[9px] font-medium shrink-0 uppercase px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500">
                             {t.status}
                           </span>
                         </div>

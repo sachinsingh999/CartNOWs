@@ -2,6 +2,7 @@ import React from "react";
 import { Route, Routes, Navigate, useOutletContext } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { CheckCircle2, AlertCircle, AlertTriangle, Info, X } from "lucide-react";
 
 // Context providers
 import { ThemeProvider, useTheme } from "./context/ThemeContext";
@@ -47,7 +48,55 @@ const AppContent = () => {
 
   return (
     <div className="bg-slate-50 dark:bg-slate-950 min-h-screen flex flex-col antialiased text-slate-800 dark:text-slate-100 selection:bg-blue-500/30 w-full">
-      <ToastContainer theme={theme} />
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        pauseOnHover
+        pauseOnFocusLoss={false}
+        draggable
+        style={{ zIndex: 999999 }}
+        icon={({ type }) => {
+          switch (type) {
+            case "success":
+              return (
+                <div className="w-6 h-6 rounded bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0">
+                  <CheckCircle2 size={13} strokeWidth={2.4} />
+                </div>
+              );
+            case "error":
+              return (
+                <div className="w-6 h-6 rounded bg-rose-500/15 border border-rose-500/30 text-rose-400 flex items-center justify-center shrink-0">
+                  <AlertCircle size={13} strokeWidth={2.4} />
+                </div>
+              );
+            case "warning":
+              return (
+                <div className="w-6 h-6 rounded bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center shrink-0">
+                  <AlertTriangle size={13} strokeWidth={2.4} />
+                </div>
+              );
+            case "info":
+            default:
+              return (
+                <div className="w-6 h-6 rounded bg-sky-500/15 border border-sky-500/30 text-sky-400 flex items-center justify-center shrink-0">
+                  <Info size={13} strokeWidth={2.4} />
+                </div>
+              );
+          }
+        }}
+        closeButton={({ closeToast }) => (
+          <button
+            onClick={closeToast}
+            className="ml-2 shrink-0 p-1 rounded text-slate-400 hover:text-white hover:bg-white/10 active:scale-90 transition-all cursor-pointer flex items-center justify-center"
+            aria-label="Close notification"
+          >
+            <X size={13} strokeWidth={2.2} />
+          </button>
+        )}
+      />
 
       {token === "" ? (
         <Routes>

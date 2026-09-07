@@ -1,5 +1,6 @@
 import React from "react";
-import logoImg from "../assets/logo.png";
+import logoLight from "../assets/logo_light.png";
+import logoDark from "../assets/logo_dark.png";
 import logoIcon from "../assets/logo_icon.png";
 
 const Logo = ({ variant = "horizontal", className = "", forceWhite = false, ...props }) => {
@@ -8,13 +9,28 @@ const Logo = ({ variant = "horizontal", className = "", forceWhite = false, ...p
   if (isIcon) {
     return (
       <div 
-        className={`relative overflow-hidden flex items-center justify-center shrink-0 ${className}`} 
+        className={`relative flex items-center justify-center shrink-0 ${className}`} 
         {...props}
       >
         <img
           src={logoIcon}
           alt="CartNow Icon"
-          className="h-full w-auto object-contain"
+          className="h-full w-auto max-h-full object-contain"
+        />
+      </div>
+    );
+  }
+
+  if (forceWhite) {
+    return (
+      <div 
+        className={`relative flex items-center justify-center shrink-0 ${className}`} 
+        {...props}
+      >
+        <img
+          src={logoDark}
+          alt="CartNow Logo"
+          className="h-full w-auto max-h-full object-contain drop-shadow-xs"
         />
       </div>
     );
@@ -22,13 +38,18 @@ const Logo = ({ variant = "horizontal", className = "", forceWhite = false, ...p
 
   return (
     <div 
-      className={`relative flex items-center justify-center shrink-0 overflow-hidden ${className}`} 
+      className={`relative flex items-center justify-center shrink-0 ${className}`} 
       {...props}
     >
       <img
-        src={logoImg}
+        src={logoLight}
         alt="CartNow Logo"
-        className="h-full w-auto max-w-none object-contain drop-shadow-sm"
+        className="h-full w-auto max-h-full object-contain drop-shadow-xs dark:hidden block"
+      />
+      <img
+        src={logoDark}
+        alt="CartNow Logo"
+        className="h-full w-auto max-h-full object-contain drop-shadow-xs dark:block hidden"
       />
     </div>
   );

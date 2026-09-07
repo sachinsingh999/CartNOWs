@@ -2,6 +2,7 @@ import React, { Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import { ToastContainer, Slide } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { CheckCircle2, AlertCircle, AlertTriangle, Info, X } from "lucide-react";
 
 // Context providers
 import { SystemProvider } from "./context/SystemContext";
@@ -60,30 +61,42 @@ const App = () => {
           draggable
           transition={Slide}
           style={{ zIndex: 999999 }}
-          toastClassName={(context) => {
-            const type = context?.type || "default";
-            let bgClasses = "bg-slate-900/95 text-white border-slate-700/80 shadow-slate-950/60";
-            if (type === "success") {
-              bgClasses = "bg-slate-900/95 text-emerald-400 border-emerald-500/50 shadow-emerald-950/50";
-            } else if (type === "error") {
-              bgClasses = "bg-slate-900/95 text-rose-400 border-rose-500/50 shadow-rose-950/50";
-            } else if (type === "info") {
-              bgClasses = "bg-slate-900/95 text-sky-400 border-sky-500/50 shadow-sky-950/50";
-            } else if (type === "warning") {
-              bgClasses = "bg-slate-900/95 text-amber-400 border-amber-500/50 shadow-amber-950/50";
+          icon={({ type }) => {
+            switch (type) {
+              case "success":
+                return (
+                  <div className="w-6 h-6 rounded bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0">
+                    <CheckCircle2 size={13} strokeWidth={2.4} />
+                  </div>
+                );
+              case "error":
+                return (
+                  <div className="w-6 h-6 rounded bg-rose-500/15 border border-rose-500/30 text-rose-400 flex items-center justify-center shrink-0">
+                    <AlertCircle size={13} strokeWidth={2.4} />
+                  </div>
+                );
+              case "warning":
+                return (
+                  <div className="w-6 h-6 rounded bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center shrink-0">
+                    <AlertTriangle size={13} strokeWidth={2.4} />
+                  </div>
+                );
+              case "info":
+              default:
+                return (
+                  <div className="w-6 h-6 rounded bg-sky-500/15 border border-sky-500/30 text-sky-400 flex items-center justify-center shrink-0">
+                    <Info size={13} strokeWidth={2.4} />
+                  </div>
+                );
             }
-            return `relative flex items-center justify-between gap-3 min-h-[56px] w-[360px] max-w-[calc(100vw-32px)] rounded-2xl p-4 mb-3 cursor-pointer select-none transition-all duration-300 hover:scale-[1.02] active:scale-[0.99] border backdrop-blur-2xl shadow-2xl ${bgClasses}`;
           }}
-          bodyClassName={() =>
-            "flex-1 text-xs font-bold leading-relaxed text-slate-100 tracking-wide flex items-center gap-2"
-          }
           closeButton={({ closeToast }) => (
             <button
               onClick={closeToast}
-              className="ml-2 shrink-0 flex items-center justify-center h-6 w-6 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition-all cursor-pointer text-xs font-black active:scale-90"
+              className="ml-2 shrink-0 p-1 rounded text-slate-400 hover:text-white hover:bg-white/10 active:scale-90 transition-all cursor-pointer flex items-center justify-center"
               aria-label="Close notification"
             >
-              ✕
+              <X size={13} strokeWidth={2.2} />
             </button>
           )}
         />

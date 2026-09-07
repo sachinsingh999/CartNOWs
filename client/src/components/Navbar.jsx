@@ -707,7 +707,7 @@ const Navbar = () => {
                           animate="visible"
                           exit="exit"
                           variants={dropdownVariants}
-                          className="absolute right-0 top-[calc(100%+10px)] w-64 rounded-2xl bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl shadow-2xl z-50 p-2 text-left"
+                          className="absolute right-0 top-[calc(100%+10px)] w-64 rounded-md bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl shadow-2xl z-50 p-2 text-left border border-slate-200/80 dark:border-slate-800/80"
                         >
                           <button
                             type="button"
@@ -766,7 +766,7 @@ const Navbar = () => {
                       animate="visible"
                       exit="exit"
                       variants={dropdownVariants}
-                      className="absolute top-[calc(100%+8px)] left-0 right-0 z-50 overflow-hidden rounded-2xl bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl shadow-2xl p-4 space-y-4 text-left"
+                      className="absolute top-[calc(100%+8px)] left-0 right-0 z-50 overflow-hidden rounded-md bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl shadow-2xl p-4 space-y-4 text-left border border-slate-200/80 dark:border-slate-800/80"
                     >
                       {!searchValue.trim() ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -972,7 +972,7 @@ const Navbar = () => {
                         animate="visible"
                         exit="exit"
                         variants={dropdownVariants}
-                        className="absolute right-0 top-[calc(100%+8px)] w-72 overflow-hidden rounded-2xl bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl shadow-2xl z-50 p-4 text-left"
+                        className="absolute right-0 top-[calc(100%+8px)] w-72 overflow-hidden rounded-md bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl shadow-2xl z-50 p-4 text-left border border-slate-200/80 dark:border-slate-800/80"
                       >
                         <div className="flex items-center justify-between pb-2 mb-3">
                           <span className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
@@ -1159,7 +1159,7 @@ const Navbar = () => {
                           exit="exit"
                           variants={dropdownVariants}
                           data-lenis-prevent
-                          className="fixed sm:absolute left-4 right-4 sm:left-auto sm:right-0 top-16 sm:top-[calc(100%+12px)] sm:w-96 overflow-hidden rounded-2xl bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl shadow-2xl z-50"
+                          className="fixed sm:absolute left-4 right-4 sm:left-auto sm:right-0 top-16 sm:top-[calc(100%+12px)] sm:w-96 overflow-hidden rounded-md bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl shadow-2xl z-50 border border-slate-200/80 dark:border-slate-800/80"
                         >
                           {/* Header */}
                           <div className="flex items-center justify-between px-5 py-4 bg-slate-50 dark:bg-slate-900/50">
@@ -1214,7 +1214,7 @@ const Navbar = () => {
                           <div className="max-h-[60vh] sm:max-h-[350px] overflow-y-auto scrollbar-hide">
                             {filteredNotifications.length === 0 ? (
                               <div className="flex flex-col items-center justify-center py-12 text-center px-6">
-                                <div className="relative mb-4 flex h-14 w-14 items-center justify-center rounded-3xl bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/40 dark:to-slate-900/40 text-slate-400 dark:text-slate-500 border border-slate-200/50 dark:border-slate-800/50 shadow-md">
+                                <div className="relative mb-4 flex h-14 w-14 items-center justify-center rounded-md bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/40 dark:to-slate-900/40 text-slate-400 dark:text-slate-500 border border-slate-200/50 dark:border-slate-800/50 shadow-md">
                                   <Bell
                                     size={24}
                                     className="text-slate-400 dark:text-slate-500"
@@ -1241,14 +1241,14 @@ const Navbar = () => {
                                     tLower.includes("discount")
                                   ) {
                                     return (
-                                      <div className="h-8.5 w-8.5 rounded-2xl bg-amber-500/10 dark:bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-500/20 shrink-0 shadow-xs animate-pulse">
+                                      <div className="h-8.5 w-8.5 rounded-md bg-amber-500/10 dark:bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-500/20 shrink-0 shadow-xs animate-pulse">
                                         <Tag size={15} className="stroke-[2.5]" />
                                       </div>
                                     );
                                   }
                                   if (tLower.includes("delivered")) {
                                     return (
-                                      <div className="h-8.5 w-8.5 rounded-2xl bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/20 shrink-0 shadow-xs">
+                                      <div className="h-8.5 w-8.5 rounded-md bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/20 shrink-0 shadow-xs">
                                         <PackageCheck
                                           size={15}
                                           className="stroke-[2.5]"
@@ -1257,7 +1257,7 @@ const Navbar = () => {
                                     );
                                   }
                                   return (
-                                    <div className="h-8.5 w-8.5 rounded-2xl bg-slate-500/10 dark:bg-slate-500/15 text-slate-600 dark:text-slate-400 flex items-center justify-center border border-slate-500/20 shrink-0 shadow-xs">
+                                    <div className="h-8.5 w-8.5 rounded-md bg-slate-500/10 dark:bg-slate-500/15 text-slate-600 dark:text-slate-400 flex items-center justify-center border border-slate-500/20 shrink-0 shadow-xs">
                                       <Package size={15} className="stroke-[2.5]" />
                                     </div>
                                   );
@@ -1300,7 +1300,7 @@ const Navbar = () => {
                                       <p className="text-[10.5px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
                                         {n.message}
                                       </p>
-                                      <p className="text-[9px] text-slate-400 dark:text-slate-500 mt-2 font-bold">
+                                      <p className="text-[9px] text-slate-400 dark:text-slate-500 mt-2 font-normal">
                                         {new Date(n.createdAt).toLocaleDateString()}
                                       </p>
                                     </div>
@@ -1323,19 +1323,20 @@ const Navbar = () => {
                       setOpen((p) => !p);
                       setPincodeOpen(false);
                     }}
-                    className="flex items-center gap-2 px-2.5 py-1 rounded-full hover:bg-slate-100/70 dark:hover:bg-slate-900/60 transition cursor-pointer bg-transparent"
+                    className="flex items-center gap-2 px-2.5 py-1 rounded-md hover:bg-slate-100/70 dark:hover:bg-slate-900/60 transition cursor-pointer bg-transparent"
                   >
-                    <div className="h-7 w-7 rounded-full bg-amber-500 text-slate-950 font-black text-xs flex items-center justify-center shadow-xs shrink-0">
+                    <div className="h-7 w-7 rounded-md bg-amber-500 text-slate-950 font-bold text-xs flex items-center justify-center shadow-xs shrink-0">
                       {initials || <User size={13} />}
                     </div>
                     <div className="text-left leading-none">
-                      <span className="text-[9.5px] font-bold text-slate-400 block">
+                      <span className="text-[9.5px] font-semibold text-slate-400 dark:text-slate-400 block">
                         Hello, {username ? username.split(" ")[0] : "Sign in"}
                       </span>
-                      <span className="text-xs font-black text-slate-800 dark:text-slate-100 flex items-center gap-0.5 mt-0.5">
+                      <span className="text-xs font-bold text-slate-900 dark:text-slate-100 flex items-center gap-0.5 mt-0.5">
                         Account{" "}
                         <ChevronDown
-                          size={10}
+                          size={11}
+                          strokeWidth={2.2}
                           className={`text-slate-400 transition-transform duration-300 ${
                             open ? "rotate-180" : ""
                           }`}
@@ -1352,20 +1353,20 @@ const Navbar = () => {
                         animate="visible"
                         exit="exit"
                         variants={dropdownVariants}
-                        className="absolute right-0 top-[calc(100%+8px)] w-64 overflow-hidden rounded-2xl bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl shadow-2xl z-50 text-left"
+                        className="absolute right-0 top-[calc(100%+8px)] w-64 overflow-hidden rounded-md bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl shadow-2xl z-50 text-left border border-slate-200/80 dark:border-slate-800/80 font-normal"
                       >
                         {token ? (
                           <>
                             {/* User Header */}
                             <div className="flex items-center gap-3 bg-slate-50/80 dark:bg-slate-900/60 px-4 py-3">
-                              <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-amber-500 text-xs font-black text-slate-950 shrink-0 shadow-xs">
+                              <div className="relative flex h-9 w-9 items-center justify-center rounded-md bg-amber-500 text-xs font-bold text-slate-950 shrink-0 shadow-xs">
                                 {initials || <User size={15} />}
                               </div>
                               <div className="min-w-0 flex-1">
-                                <span className="text-[9px] font-black tracking-widest uppercase text-slate-400 block leading-none">
+                                <span className="text-[9px] font-medium tracking-widest uppercase text-slate-400 block leading-none">
                                   WELCOME BACK
                                 </span>
-                                <p className="text-xs font-black text-slate-900 dark:text-white truncate capitalize mt-1 leading-none">
+                                <p className="text-xs font-medium text-slate-900 dark:text-white truncate capitalize mt-1 leading-none">
                                   {username || "My Account"}
                                 </p>
                               </div>
@@ -1403,7 +1404,7 @@ const Navbar = () => {
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       onClick={() => setOpen(false)}
-                                      className="flex w-full items-center justify-between px-3 py-1.5 rounded-xl text-left text-xs font-extrabold text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 transition-colors cursor-pointer group"
+                                      className="flex w-full items-center justify-between px-3 py-1.5 rounded-md text-left text-xs font-normal text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 transition-colors cursor-pointer group"
                                     >
                                       <div className="flex items-center gap-2.5">
                                         <item.icon
@@ -1423,7 +1424,7 @@ const Navbar = () => {
                                         setOpen(false);
                                         navigate(item.to);
                                       }}
-                                      className="flex w-full items-center justify-between px-3 py-1.5 rounded-md text-left text-xs font-extrabold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors cursor-pointer group border-none bg-transparent"
+                                      className="flex w-full items-center justify-between px-3 py-1.5 rounded-md text-left text-xs font-normal text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors cursor-pointer group border-none bg-transparent"
                                     >
                                       <div className="flex items-center gap-2.5">
                                         <item.icon
@@ -1445,7 +1446,7 @@ const Navbar = () => {
                             {/* Settings Section */}
                             <motion.div
                               variants={listItemVariants}
-                              className="mx-1 my-1 p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-800/80 bg-slate-50/60 dark:bg-slate-900/30 space-y-2"
+                              className="mx-1 my-1 p-2.5 rounded-md border border-slate-200/80 dark:border-slate-800/80 bg-slate-50/60 dark:bg-slate-900/30 space-y-2"
                             >
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
@@ -1454,7 +1455,7 @@ const Navbar = () => {
                                   ) : (
                                     <Sun size={12} className="text-amber-500" />
                                   )}
-                                  <span className="text-[9.5px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                                  <span className="text-[9.5px] font-normal uppercase tracking-wider text-slate-500 dark:text-slate-400">
                                     THEME
                                   </span>
                                 </div>
@@ -1481,13 +1482,13 @@ const Navbar = () => {
                               </div>
 
                               <div className="flex items-center justify-between pt-1.5 border-t border-slate-200/60 dark:border-slate-800/60">
-                                <span className="text-[9.5px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                                <span className="text-[9.5px] font-normal uppercase tracking-wider text-slate-500 dark:text-slate-400">
                                   LANGUAGE
                                 </span>
                                 <select
                                   value={language}
                                   onChange={(e) => changeLanguage(e.target.value)}
-                                  className="h-6 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-2 text-[10px] font-extrabold text-slate-800 dark:text-slate-200 cursor-pointer"
+                                  className="h-6 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-2 text-[10px] font-normal text-slate-800 dark:text-slate-200 cursor-pointer"
                                 >
                                   <option value="en">English (EN)</option>
                                   <option value="hi">Hindi (HI)</option>
@@ -1503,7 +1504,7 @@ const Navbar = () => {
                             >
                               <button
                                 onClick={handleLogout}
-                                className="flex w-full items-center justify-between px-3 py-1.5 rounded-xl text-left text-xs font-black text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer border-none bg-transparent group"
+                                className="flex w-full items-center justify-between px-3 py-1.5 rounded-md text-left text-xs font-normal text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer border-none bg-transparent group"
                               >
                                 <div className="flex items-center gap-2.5">
                                   <LogOut size={14} className="text-rose-500" />
@@ -1522,10 +1523,10 @@ const Navbar = () => {
                               <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-white border border-slate-200 dark:border-slate-800">
                                 <User size={18} />
                               </div>
-                              <h4 className="text-xs font-black text-slate-800 dark:text-white">
+                              <h4 className="text-xs font-normal text-slate-800 dark:text-white">
                                 Welcome Guest!
                               </h4>
-                              <p className="text-[9.5px] text-slate-400 dark:text-slate-500 mt-0.5 font-semibold">
+                              <p className="text-[9.5px] text-slate-400 dark:text-slate-500 mt-0.5 font-normal">
                                 Sign in to track orders & details
                               </p>
                             </div>
@@ -1536,7 +1537,7 @@ const Navbar = () => {
                                   setOpen(false);
                                   navigate("/login", { state: { from: location } });
                                 }}
-                                className="w-full py-2 rounded-xl bg-amber-500 text-slate-950 text-center text-xs font-black active:scale-95 transition-all cursor-pointer border-none uppercase tracking-wider shadow-2xs hover:bg-amber-600"
+                                className="w-full py-2 rounded-md bg-amber-500 text-slate-950 text-center text-xs font-normal active:scale-95 transition-all cursor-pointer border-none uppercase tracking-wider shadow-2xs hover:bg-amber-600"
                               >
                                 {t("login")}
                               </button>
@@ -1545,7 +1546,7 @@ const Navbar = () => {
                                   setOpen(false);
                                   navigate("/signup", { state: { from: location } });
                                 }}
-                                className="w-full py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-center text-xs font-black text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 active:scale-95 transition-all cursor-pointer uppercase tracking-wider"
+                                className="w-full py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-center text-xs font-normal text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 active:scale-95 transition-all cursor-pointer uppercase tracking-wider"
                               >
                                 Create Account
                               </button>

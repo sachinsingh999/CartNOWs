@@ -859,7 +859,7 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
         {/* 3-Column Split Showcase Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1.1fr_0.8fr] gap-8 items-start">
           {/* COLUMN 1: E-commerce Image Showcase */}
-          <div className="flex flex-col gap-6 lg:sticky lg:top-24 lg:self-start">
+          <div className="flex flex-col gap-6 lg:sticky lg:top-24 lg:self-start min-w-0 max-w-full">
             <div className="flex gap-2.5 items-stretch">
               
               {/* Vertical Thumbnail Deck (Desktop) */}
@@ -1160,22 +1160,22 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
                 {activeTab === "reviews" && (
                   <div className="space-y-6 animate-fade-in text-left w-full">
                     {/* Reviews Header: Title, Sort, and Write Review Button */}
-                    <div className="flex justify-between items-center gap-4 flex-wrap border-b border-slate-100 dark:border-slate-800 pb-4">
+                    <div className="flex justify-between items-center gap-4 flex-wrap border-b border-slate-100 dark:border-slate-800 pb-3.5">
                       <div>
                         <h4 className="text-xs font-black uppercase text-slate-900 dark:text-white tracking-wider">
                           Customer Feedback
                         </h4>
-                        <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
-                          Showing {reviewCount} product reviews
+                        <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+                          Showing {reviewCount} verified buyer {reviewCount === 1 ? "review" : "reviews"}
                         </p>
                       </div>
 
-                      <div className="flex items-center gap-2 sm:gap-3">
+                      <div className="flex items-center gap-2 sm:gap-2.5">
                         {/* Sorting select */}
                         <select
                           value={reviewsSortBy}
                           onChange={(e) => setReviewsSortBy(e.target.value)}
-                          className="h-8 px-2 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 rounded-xl text-[10.5px] font-bold text-slate-700 dark:text-slate-300 outline-none cursor-pointer"
+                          className="h-8.5 px-2.5 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 rounded-md text-xs font-semibold text-slate-700 dark:text-slate-300 outline-none cursor-pointer hover:border-slate-300 transition-colors"
                         >
                           <option>Most Recent</option>
                           <option>Most Helpful</option>
@@ -1185,23 +1185,27 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
 
                         <button
                           onClick={() => setShowWriteReview(true)}
-                          className="py-2 px-3 bg-slate-950 dark:bg-indigo-600 hover:bg-slate-800 dark:hover:bg-indigo-500 text-slate-100 dark:text-white text-[10.5px] font-black uppercase tracking-wider rounded-xl transition active:scale-95 cursor-pointer flex items-center gap-1.5 shadow-sm"
+                          className="h-8.5 px-3.5 bg-slate-950 dark:bg-indigo-600 hover:bg-slate-800 dark:hover:bg-indigo-500 text-white text-xs font-bold rounded-md transition active:scale-95 cursor-pointer flex items-center gap-1.5 shadow-xs"
                         >
-                          <MessageSquare size={12} />
+                          <MessageSquare size={13} />
                           <span>Write Review</span>
                         </button>
                       </div>
                     </div>
 
                     {/* Feed Filters */}
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-wrap items-center gap-1.5">
                       {["All Reviews", "5 Star", "4 Star", "Verified Purchase"].map(chip => {
                         const isActive = reviewsFilter === chip;
                         return (
                           <button
                             key={chip}
                             onClick={() => setReviewsFilter(chip)}
-                            className={`px-3 py-1 rounded-full text-[10px] font-bold transition-all duration-200 cursor-pointer ${ isActive ? "bg-slate-950 dark:bg-indigo-600 text-slate-100 dark:text-white shadow-xs" : "bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 border border-slate-200/50 dark:border-slate-900 hover:border-slate-300" }`}
+                            className={`px-3 py-1 rounded-md text-xs font-bold transition-all duration-150 cursor-pointer ${
+                              isActive
+                                ? "bg-slate-900 dark:bg-indigo-600 text-white shadow-xs"
+                                : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50"
+                            }`}
                           >
                             {chip}
                           </button>
@@ -2115,6 +2119,7 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
         onClose={() => setShowWriteReview(false)}
         onSubmit={handleReviewSubmit}
         loading={reviewLoading}
+        product={product}
       />
     </div>
   );
