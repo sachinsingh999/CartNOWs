@@ -12,11 +12,15 @@ import {
   createExchangeShipment,
 } from "../controllers/rmsController.js";
 import authUser from "../middleware/auth.js";
-import adminAuth from "../middleware/adminAuth.js";
+import adminAuth, { requirePermission } from "../middleware/adminAuth.js";
 import sellerAuth from "../middleware/sellerAuth.js";
 import deliverymanAuth from "../middleware/deliverymanAuth.js";
 
 const rmsRouter = express.Router();
+
+const verifyAdminReturns = (req, res, next) => {
+  return adminAuth(req, res, () => requirePermission("returns")(req, res, next));
+};
 
 /* Customer Routes */
 rmsRouter.post("/request/create", authUser, createReturnRequest);
@@ -28,7 +32,7 @@ rmsRouter.post("/request/review", (req, res, next) => {
   if (req.headers.seller_token || req.headers.sellertoken) {
     return sellerAuth(req, res, () => reviewReturnRequest(req, res, next));
   }
-  return adminAuth(req, res, () => reviewReturnRequest(req, res, next));
+  return verifyAdminReturns(req, res, () => reviewReturnRequest(req, res, next));
 });
 
 /* RMA Information & List */
@@ -40,7 +44,7 @@ rmsRouter.get("/rma/list", (req, res, next) => {
     return deliverymanAuth(req, res, () => getRMAList(req, res, next));
   }
   if (req.headers.admin_token || req.headers.admintoken) {
-    return adminAuth(req, res, () => getRMAList(req, res, next));
+    return verifyAdminReturns(req, res, () => getRMAList(req, res, next));
   }
   return authUser(req, res, () => getRMAList(req, res, next));
 });
@@ -53,7 +57,7 @@ rmsRouter.get("/rma/:rmaId", (req, res, next) => {
     return deliverymanAuth(req, res, () => getRMADetails(req, res, next));
   }
   if (req.headers.admin_token || req.headers.admintoken) {
-    return adminAuth(req, res, () => getRMADetails(req, res, next));
+    return verifyAdminReturns(req, res, () => getRMADetails(req, res, next));
   }
   return authUser(req, res, () => getRMADetails(req, res, next));
 });
@@ -63,7 +67,7 @@ rmsRouter.post("/rma/schedule-pickup", (req, res, next) => {
   if (req.headers.seller_token || req.headers.sellertoken) {
     return sellerAuth(req, res, () => schedulePickup(req, res, next));
   }
-  return adminAuth(req, res, () => schedulePickup(req, res, next));
+  return verifyAdminReturns(req, res, () => schedulePickup(req, res, next));
 });
 
 rmsRouter.post("/rma/verify-pickup", deliverymanAuth, verifyPickup);
@@ -73,7 +77,7 @@ rmsRouter.post("/rma/update-inspection", (req, res, next) => {
   if (req.headers.seller_token || req.headers.sellertoken) {
     return sellerAuth(req, res, () => updateWarehouseInspection(req, res, next));
   }
-  return adminAuth(req, res, () => updateWarehouseInspection(req, res, next));
+  return verifyAdminReturns(req, res, () => updateWarehouseInspection(req, res, next));
 });
 
 /* Financial Refund Execution */
@@ -81,7 +85,7 @@ rmsRouter.post("/refund/process", (req, res, next) => {
   if (req.headers.seller_token || req.headers.sellertoken || req.headers.token) {
     return sellerAuth(req, res, () => processRefund(req, res, next));
   }
-  return adminAuth(req, res, () => processRefund(req, res, next));
+  return verifyAdminReturns(req, res, () => processRefund(req, res, next));
 });
 
 /* Exchange & Replacement Shipment */
@@ -89,7 +93,7 @@ rmsRouter.post("/exchange/create-shipment", (req, res, next) => {
   if (req.headers.seller_token || req.headers.sellertoken) {
     return sellerAuth(req, res, () => createExchangeShipment(req, res, next));
   }
-  return adminAuth(req, res, () => createExchangeShipment(req, res, next));
+  return verifyAdminReturns(req, res, () => createExchangeShipment(req, res, next));
 });
 
 export default rmsRouter;

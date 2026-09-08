@@ -468,7 +468,7 @@ const AdminRevenueChart = ({
 
       {/* Main Recharts Area Container */}
       <div className="w-full h-[240px] md:h-[280px]">
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height="100%" debounce={100}>
           {activeTab === "revenue" ? (
             <AreaChart data={transformedChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>

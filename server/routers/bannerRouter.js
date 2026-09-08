@@ -1,7 +1,7 @@
 import express from "express";
 import { getBanners, createBanner, updateBanner, deleteBanner } from "../controllers/bannerController.js";
 import upload from "../middleware/multer.js";
-import adminAuth from "../middleware/adminAuth.js";
+import adminAuth, { requirePermission } from "../middleware/adminAuth.js";
 
 const bannerRouter = express.Router();
 
@@ -11,6 +11,7 @@ bannerRouter.get("/", getBanners);
 // Admin routes
 const adminBannerRouter = express.Router();
 adminBannerRouter.use(adminAuth);
+adminBannerRouter.use(requirePermission("promos"));
 
 adminBannerRouter.post("/", upload.single("image"), createBanner);
 adminBannerRouter.put("/:id", upload.single("image"), updateBanner);

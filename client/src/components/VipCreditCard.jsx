@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion as Motion, useReducedMotion } from "framer-motion";
 import {
   Sparkles,
   Wifi,
@@ -114,13 +114,13 @@ const VipCreditCard = ({ user = {}, token = "" }) => {
 
   return (
     <>
-      <motion.div
+      <Motion.div
         animate={{ scale: cardScale }}
         transition={{ type: "spring", stiffness: 300, damping: 20 }}
         onDoubleClick={handleDoubleClick}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
-        className="relative w-full rounded-xl p-4 sm:p-5 text-white shadow-2xl overflow-hidden select-none border border-cyan-500/30 bg-[#070b14] transition-all duration-300 hover:border-cyan-400/50 flex flex-col justify-between space-y-3 sm:space-y-3.5 cursor-pointer"
+        className="relative w-full rounded-md p-4 sm:p-5 text-white shadow-2xl overflow-hidden select-none border border-cyan-500/30 bg-[#070b14] transition-all duration-300 hover:border-cyan-400/50 flex flex-col justify-between space-y-3 sm:space-y-3.5 cursor-pointer"
         title="Double-click to unlock VIP Security"
       >
         {/* Background Crystal Wireframe Mesh & Glow Effects */}
@@ -139,7 +139,7 @@ const VipCreditCard = ({ user = {}, token = "" }) => {
             </span>
 
             {/* DIAMOND VIP GLOWING BADGE */}
-            <div className="flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg sm:rounded-xl bg-gradient-to-r from-teal-400 via-emerald-400 to-cyan-400 text-slate-950 font-black text-[9px] min-[380px]:text-[10px] sm:text-[11px] shadow-md tracking-wide uppercase whitespace-nowrap">
+            <div className="flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-sm bg-gradient-to-r from-teal-400 via-emerald-400 to-cyan-400 text-slate-950 font-black text-[9px] min-[380px]:text-[10px] sm:text-[11px] shadow-md tracking-wide uppercase whitespace-nowrap">
               <Sparkles size={11} className="fill-slate-950 text-slate-950 shrink-0" />
               <span>{levelName.toUpperCase()}</span>
             </div>
@@ -153,16 +153,16 @@ const VipCreditCard = ({ user = {}, token = "" }) => {
         {/* MIDDLE ROW: CHIP & GLASS STATS BOX */}
         <div className="relative z-10 my-auto flex items-center gap-2.5 sm:gap-4">
           {/* Metallic 3D Gold Chip */}
-          <div className="h-8 w-11 min-[380px]:h-9 min-[380px]:w-13 rounded-lg bg-gradient-to-tr from-amber-300 via-yellow-400 to-amber-500 border border-yellow-200/80 shadow-lg p-1 flex flex-col justify-between relative overflow-hidden shrink-0">
+          <div className="h-8 w-11 min-[380px]:h-9 min-[380px]:w-13 rounded-sm bg-gradient-to-tr from-amber-300 via-yellow-400 to-amber-500 border border-yellow-200/80 shadow-lg p-1 flex flex-col justify-between relative overflow-hidden shrink-0">
             <div className="w-full h-[1px] bg-amber-900/40 my-auto" />
             <div className="w-full h-[1px] bg-amber-900/40 my-auto" />
             <div className="absolute inset-x-1.5 inset-y-1 border-x border-amber-900/40" />
           </div>
 
           {/* FLOATING DARK GLASS STATS PILL BOX */}
-          <div className="flex-1 rounded-xl bg-[#0d1627]/85 border border-slate-700/60 p-1.5 min-[380px]:p-2 sm:p-2.5 flex items-center justify-around backdrop-blur-md shadow-inner overflow-hidden">
+          <div className="flex-1 rounded-sm bg-[#0d1627]/85 border border-slate-700/60 p-1.5 min-[380px]:p-2 sm:p-2.5 flex items-center justify-around backdrop-blur-md shadow-inner overflow-hidden">
             <div className="flex items-center gap-1.5 min-[380px]:gap-2">
-              <div className="h-6 w-6 sm:h-7 sm:w-7 rounded-full border border-cyan-400/40 bg-cyan-500/10 flex items-center justify-center text-cyan-400 font-black text-[10px] sm:text-[11px] shrink-0">
+              <div className="h-6 w-6 sm:h-7 sm:w-7 rounded-sm border border-cyan-400/40 bg-cyan-500/10 flex items-center justify-center text-cyan-400 font-black text-[10px] sm:text-[11px] shrink-0">
                 %
               </div>
               <div className="text-left">
@@ -178,7 +178,7 @@ const VipCreditCard = ({ user = {}, token = "" }) => {
             <div className="h-5 sm:h-6 w-[1px] bg-slate-800 shrink-0 mx-1" />
 
             <div className="flex items-center gap-1.5 min-[380px]:gap-2">
-              <div className="h-6 w-6 sm:h-7 sm:w-7 rounded-full border border-purple-400/40 bg-purple-500/10 flex items-center justify-center text-purple-300 shrink-0">
+              <div className="h-6 w-6 sm:h-7 sm:w-7 rounded-sm border border-purple-400/40 bg-purple-500/10 flex items-center justify-center text-purple-300 shrink-0">
                 <Star size={11} className="fill-purple-400 text-purple-400 sm:w-3.5 sm:h-3.5" />
               </div>
               <div className="text-left">
@@ -195,14 +195,27 @@ const VipCreditCard = ({ user = {}, token = "" }) => {
 
         {/* MEMBERSHIP ID ROW (EXPLICIT LOYALTY IDENTIFIER LABEL) */}
         <div className="relative z-10 space-y-0.5 my-auto">
-          <div className="text-[7.5px] sm:text-[8.5px] font-black uppercase tracking-widest text-slate-400">
+          <div className="flex items-center justify-between text-[7.5px] sm:text-[8.5px] font-black uppercase tracking-widest text-slate-400">
             <span>MEMBERSHIP ID</span>
+            {remainingUnlockSeconds > 0 && (
+              <span className="text-cyan-400 font-mono">
+                Unlocked ({formatCountdown(remainingUnlockSeconds)})
+              </span>
+            )}
           </div>
 
           <div className="flex items-center justify-between gap-2">
             <div className="font-mono text-sm min-[360px]:text-base sm:text-lg md:text-xl font-black tracking-normal min-[360px]:tracking-wider sm:tracking-[0.18em] text-white drop-shadow-md whitespace-nowrap overflow-hidden text-ellipsis">
               {displayedMembershipId}
             </div>
+            <button
+              type="button"
+              onClick={handleCopyId}
+              className="p-1 rounded-sm text-slate-400 hover:text-white transition cursor-pointer bg-transparent border-none shrink-0"
+              title="Copy Membership ID"
+            >
+              {copied ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
+            </button>
           </div>
         </div>
 
@@ -223,10 +236,10 @@ const VipCreditCard = ({ user = {}, token = "" }) => {
               setSettingsMode("change");
               setIsSettingsModalOpen(true);
             }}
-            className="flex items-center gap-1 bg-slate-900/80 hover:bg-slate-800 border border-slate-700 hover:border-cyan-400/50 px-2 py-1 rounded-lg cursor-pointer transition shrink-0"
+            className="flex items-center gap-1 bg-slate-900/80 hover:bg-slate-800 border border-slate-700 hover:border-cyan-400/50 px-2 py-1 rounded-sm cursor-pointer transition shrink-0"
             title="VIP Security Settings"
           >
-            <div className="h-5 w-5 rounded-full bg-cyan-500/10 flex items-center justify-center text-cyan-400 shrink-0">
+            <div className="h-5 w-5 rounded-sm bg-cyan-500/10 flex items-center justify-center text-cyan-400 shrink-0">
               <Gift size={11} />
             </div>
             <div className="text-left">
@@ -250,10 +263,10 @@ const VipCreditCard = ({ user = {}, token = "" }) => {
         </div>
 
         {/* INTEGRATED FULL-WIDTH VIP BENEFITS BAR */}
-        <div className="relative z-10 -mx-4 -mb-4 sm:-mx-5 sm:-mb-5 mt-2 border-t border-slate-800/80 bg-[#050810]/95 rounded-b-xl px-3 sm:px-4 py-2 sm:py-2.5">
-          <div className="grid grid-cols-2 min-[480px]:grid-cols-4 gap-1.5 sm:gap-2 text-left">
+        <div className="relative z-10 -mx-4 -mb-4 sm:-mx-5 sm:-mb-5 mt-2 border-t border-slate-800/80 bg-[#050810]/95 rounded-b-md px-4 sm:px-5 py-2.5 sm:py-3">
+          <div className="grid grid-cols-2 min-[480px]:grid-cols-4 gap-2 sm:gap-3 text-left">
             <div className="flex items-center gap-1.5 min-w-0">
-              <div className="h-5.5 w-5.5 rounded-md bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0">
+              <div className="h-5.5 w-5.5 rounded-sm bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0">
                 <Crown size={11} className="text-cyan-400" />
               </div>
               <div className="min-w-0 flex-1">
@@ -267,7 +280,7 @@ const VipCreditCard = ({ user = {}, token = "" }) => {
             </div>
 
             <div className="flex items-center gap-1.5 min-w-0">
-              <div className="h-5.5 w-5.5 rounded-md bg-teal-500/10 border border-teal-500/20 flex items-center justify-center shrink-0">
+              <div className="h-5.5 w-5.5 rounded-sm bg-teal-500/10 border border-teal-500/20 flex items-center justify-center shrink-0">
                 <Truck size={11} className="text-teal-400" />
               </div>
               <div className="min-w-0 flex-1">
@@ -281,7 +294,7 @@ const VipCreditCard = ({ user = {}, token = "" }) => {
             </div>
 
             <div className="flex items-center gap-1.5 min-w-0">
-              <div className="h-5.5 w-5.5 rounded-md bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
+              <div className="h-5.5 w-5.5 rounded-sm bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
                 <Tag size={11} className="text-amber-400" />
               </div>
               <div className="min-w-0 flex-1">
@@ -295,7 +308,7 @@ const VipCreditCard = ({ user = {}, token = "" }) => {
             </div>
 
             <div className="flex items-center gap-1.5 min-w-0">
-              <div className="h-5.5 w-5.5 rounded-md bg-purple-500/10 border border-purple-500/20 flex items-center justify-center shrink-0">
+              <div className="h-5.5 w-5.5 rounded-sm bg-purple-500/10 border border-purple-500/20 flex items-center justify-center shrink-0">
                 <Sparkles size={11} className="text-purple-300" />
               </div>
               <div className="min-w-0 flex-1">
@@ -309,7 +322,7 @@ const VipCreditCard = ({ user = {}, token = "" }) => {
             </div>
           </div>
         </div>
-      </motion.div>
+      </Motion.div>
 
       {/* VERIFICATION MODAL */}
       <VipSecurityModal

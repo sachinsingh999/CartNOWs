@@ -22,6 +22,7 @@ const Returns = ({ token }) => {
   const [types, setTypes] = useState({});
   const [exchangeSizes, setExchangeSizes] = useState({});
   const [assignedDrivers, setAssignedDrivers] = useState({});
+  const [processingRefundId, setProcessingRefundId] = useState(null);
 
   // Date filter states
   const [startDate, setStartDate] = useState("");
@@ -66,19 +67,24 @@ const Returns = ({ token }) => {
 
   const handleProcessRefund = async (requestId) => {
     try {
+      setProcessingRefundId(requestId);
       const res = await axios.post(
         `${backendUrl}/api/rms/refund/process`,
         { rmaId: requestId },
         { headers: { token, seller_token: token } }
       );
       if (res.data.success) {
-        toast.success(`Refund processed & completed successfully! ₹${res.data.refund?.amount || ''} credited to user.`);
+        toast.success(`Refund processed & marked as done! ₹${res.data.refund?.amount || ''} credited to user.`);
+        // Optimistically update request status to Completed immediately
+        setRequests(prev => prev.map(req => req._id === requestId ? { ...req, status: "Completed" } : req));
         fetchReturns();
       } else {
         toast.error(res.data.message || "Failed to process refund");
       }
     } catch (err) {
       toast.error(err.response?.data?.message || "Error processing refund");
+    } finally {
+      setProcessingRefundId(null);
     }
   };
 
@@ -510,13 +516,30 @@ const Returns = ({ token }) => {
                     {/* Process Refund / Complete Return Button for Seller */}
                     {request.status !== "Requested" && request.status !== "Rejected" && (
                       <div className="pt-2">
-                        <button
-                          onClick={() => handleProcessRefund(request._id)}
-                          className="w-full rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2.5 text-xs font-black uppercase tracking-wider transition shadow-md cursor-pointer flex items-center justify-center gap-2 active:scale-95"
-                        >
-                          <CheckCircle size={15} />
-                          <span>Process Refund (₹{request.amount}) & Complete</span>
-                        </button>
+                        {request.status === "Completed" ? (
+                          <div className="w-full rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 text-emerald-700 dark:text-emerald-300 px-3.5 py-2.5 text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 select-none shadow-2xs">
+                            <CheckCircle size={15} className="text-emerald-600 dark:text-emerald-400" />
+                            <span>Marked as Done</span>
+                          </div>
+                        ) : (
+                          <button
+                            disabled={processingRefundId === request._id}
+                            onClick={() => handleProcessRefund(request._id)}
+                            className="w-full rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2.5 text-xs font-black uppercase tracking-wider transition shadow-md cursor-pointer flex items-center justify-center gap-2 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+                          >
+                            {processingRefundId === request._id ? (
+                              <>
+                                <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                <span>Processing Refund...</span>
+                              </>
+                            ) : (
+                              <>
+                                <CheckCircle size={15} />
+                                <span>Process Refund (₹{request.amount}) & Complete</span>
+                              </>
+                            )}
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>

@@ -48,8 +48,8 @@ export const BrandsSkeleton = () => (
 
 /* ─────────────── 4. SINGLE PRODUCT CARD SKELETON ─────────────── */
 export const ProductCardSkeleton = () => (
-  <div className="bg-white dark:bg-slate-900 rounded-none p-4 border border-slate-200/50 dark:border-slate-800/80 space-y-4 animate-pulse">
-    <div className="bg-slate-200 dark:bg-slate-800 h-48 w-full rounded-none" />
+  <div className="bg-white dark:bg-slate-900 rounded-md p-4 border border-slate-200/50 dark:border-slate-800/80 space-y-4 animate-pulse">
+    <div className="bg-slate-200 dark:bg-slate-800 h-48 w-full rounded-md" />
     <div className="space-y-2">
       <div className="bg-slate-200 dark:bg-slate-800 h-4 w-3/4 rounded" />
       <div className="bg-slate-200 dark:bg-slate-800 h-3 w-1/2 rounded" />
@@ -232,36 +232,50 @@ export const ProductDetailSkeleton = () => (
 
 /* ─────────────── 13. PROFILE SKELETON ─────────────── */
 export const ProfileSkeleton = () => (
-  <div className="max-w-7xl mx-auto px-4 py-8 animate-pulse w-full space-y-8">
-    {/* Profile Header */}
-    <div className="flex items-center gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
-      <div className="w-16 h-16 bg-slate-200 dark:bg-slate-800 rounded-full" />
-      <div className="space-y-2">
-        <div className="h-5 bg-slate-200 dark:bg-slate-800 w-32 rounded" />
-        <div className="h-3 bg-slate-200 dark:bg-slate-800 w-48 rounded" />
-      </div>
-    </div>
-    {/* Grid Content */}
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-      {/* Sidebar Links */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80 rounded-2xl p-4 h-fit space-y-4">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-8 bg-slate-200 dark:bg-slate-800 w-full rounded" />
-        ))}
-      </div>
-      {/* Detail Form */}
-      <div className="md:col-span-2 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80 rounded-2xl p-6 space-y-6">
-        <div className="h-5 bg-slate-200 dark:bg-slate-800 w-1/4 rounded" />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="space-y-2">
-              <div className="h-3 bg-slate-200 dark:bg-slate-800 w-1/3 rounded" />
-              <div className="h-10 bg-slate-200 dark:bg-slate-800 w-full rounded-lg" />
+  <div className="w-full max-w-[1560px] mx-auto px-3 sm:px-5 lg:px-6 pt-3 sm:pt-4 animate-pulse space-y-3 sm:space-y-4">
+    {/* Profile Hero Identity Banner Skeleton & Combined Tabs */}
+    <div className="rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs">
+      <div className="h-32 sm:h-40 md:h-44 bg-slate-200 dark:bg-slate-800" />
+      <div className="px-4 pb-4 pt-1 sm:px-6 sm:pb-5">
+        <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between gap-3 sm:gap-4 -mt-10 sm:-mt-14">
+          <div className="flex flex-col sm:flex-row items-center sm:items-end gap-3 sm:gap-4">
+            <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-md bg-slate-300 dark:bg-slate-700 ring-2 ring-white dark:ring-slate-900" />
+            <div className="space-y-1.5 text-center sm:text-left">
+              <div className="h-6 w-44 bg-slate-200 dark:bg-slate-800 rounded-sm" />
+              <div className="h-4 w-32 bg-slate-200 dark:bg-slate-800 rounded-sm" />
             </div>
+          </div>
+          <div className="flex gap-2">
+            <div className="h-8 w-28 bg-slate-200 dark:bg-slate-800 rounded" />
+            <div className="h-8 w-24 bg-slate-200 dark:bg-slate-800 rounded" />
+          </div>
+        </div>
+        <div className="mt-4 pt-3.5 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 sm:grid-cols-5 gap-2.5 sm:gap-3">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="h-14 bg-slate-100 dark:bg-slate-800/60 rounded-md" />
           ))}
         </div>
-        <div className="h-10 bg-slate-200 dark:bg-slate-800 w-24 rounded-lg" />
       </div>
+
+      {/* Integrated Tab Navigation Skeleton */}
+      <div className="border-t border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/50 px-3 sm:px-6 py-2 sm:py-2.5 flex gap-2 overflow-x-auto">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <div key={i} className="h-8.5 w-32 bg-slate-200 dark:bg-slate-800 rounded shrink-0" />
+        ))}
+      </div>
+    </div>
+
+    {/* Metric Cards Skeleton */}
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
+      {[1, 2, 3, 4, 5, 6].map((i) => (
+        <div key={i} className="h-20 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 space-y-2" />
+      ))}
+    </div>
+
+    {/* Content Grid Skeleton */}
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4">
+      <div className="lg:col-span-5 h-64 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800" />
+      <div className="lg:col-span-7 h-64 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800" />
     </div>
   </div>
 );

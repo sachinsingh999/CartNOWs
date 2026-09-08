@@ -1,7 +1,7 @@
 import express from "express";
 import { getDeals, createDeal, updateDeal, deleteDeal } from "../controllers/dealOfDayController.js";
 import upload from "../middleware/multer.js";
-import adminAuth from "../middleware/adminAuth.js";
+import adminAuth, { requirePermission } from "../middleware/adminAuth.js";
 
 const dealOfDayRouter = express.Router();
 
@@ -11,6 +11,7 @@ dealOfDayRouter.get("/", getDeals);
 // Admin routes
 const adminDealOfDayRouter = express.Router();
 adminDealOfDayRouter.use(adminAuth);
+adminDealOfDayRouter.use(requirePermission("promos"));
 
 adminDealOfDayRouter.get("/", getDeals);
 adminDealOfDayRouter.post("/", upload.single("image"), createDeal);

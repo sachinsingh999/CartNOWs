@@ -42,7 +42,12 @@ import {
   Cpu,
   Gift,
   Crown,
-  Tag
+  Tag,
+  LayoutDashboard,
+  ExternalLink,
+  Shield,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import { backendUrl } from "../config";
 import { useLanguage } from "../context/LanguageContext";
@@ -51,13 +56,14 @@ import { toast } from "react-toastify";
 import { ProfileSkeleton } from "../components/SkeletonLoader";
 import VipCreditCard from "../components/VipCreditCard";
 import VipCodeSettingsModal from "../components/VipCodeSettingsModal";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 
-// Luxury Preset Avatars for SaaS Dashboard
+// Luxury Preset Avatars for Profile Customization
 const PRESET_AVATARS = [
   { id: "aurora", name: "Cosmic Aurora", gradient: "from-pink-500 via-purple-600 to-indigo-700" },
   { id: "gold", name: "Liquid Gold", gradient: "from-yellow-400 via-amber-500 to-orange-600" },
   { id: "neon", name: "Neon Crystal", gradient: "from-cyan-400 via-blue-500 to-indigo-600" },
+  { id: "emerald", name: "Emerald Glaze", gradient: "from-emerald-400 via-teal-500 to-cyan-700" },
   { id: "silver", name: "Silver Silk", gradient: "from-slate-300 via-slate-500 to-slate-700" },
   { id: "obsidian", name: "Obsidian Wave", gradient: "from-slate-900 via-purple-950 to-slate-950" },
   { id: "deep", name: "Deep Space", gradient: "from-indigo-900 via-purple-900 to-pink-900" }
@@ -85,8 +91,8 @@ const Profile = () => {
   const [wishlistIds, setWishlistIds] = useState([]);
   const [coupons, setCoupons] = useState([]);
 
-  // Tab State: dashboard | addresses | settings
-  const [activeProfileTab, setActiveProfileTab] = useState("dashboard");
+  // Pro Tabs: overview | orders | addresses | vip | settings
+  const [activeProfileTab, setActiveProfileTab] = useState("overview");
 
   // VIP Security Code Modal state
   const [isVipCodeModalOpen, setIsVipCodeModalOpen] = useState(false);
@@ -111,7 +117,6 @@ const Profile = () => {
   const [editEmail, setEditEmail] = useState("");
   const [editPassword, setEditPassword] = useState("");
   const [selectedAvatar, setSelectedAvatar] = useState("");
-  const [showAvatarSelector, setShowAvatarSelector] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
   const [copiedKey, setCopiedKey] = useState(false);
   const [revealKey, setRevealKey] = useState(false);
@@ -189,7 +194,7 @@ const Profile = () => {
           state: "",
           country: "",
         });
-        toast.success("Address added successfully!");
+        toast.success("Address saved successfully!");
       } else {
         toast.error(res.data.message || "Failed to add address.");
       }
@@ -202,7 +207,7 @@ const Profile = () => {
   };
 
   const handleDeleteAddress = async (addressId) => {
-    if (!window.confirm("Are you sure you want to delete this address?")) return;
+    if (!window.confirm("Are you sure you want to remove this address?")) return;
     try {
       const token = localStorage.getItem("token");
       const res = await axios.post(`${backendUrl}/api/user/delete-address`, { addressId }, {
@@ -210,7 +215,7 @@ const Profile = () => {
       });
       if (res.data.success) {
         setUser(prev => ({ ...prev, addresses: res.data.addresses }));
-        toast.success("Address deleted successfully!");
+        toast.success("Address removed successfully!");
       } else {
         toast.error(res.data.message || "Failed to delete address.");
       }
@@ -264,16 +269,16 @@ const Profile = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setSelectedAvatar(reader.result);
-        setShowAvatarSelector(false);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const copyToClipboard = (text) => {
+  const copyToClipboard = (text, label = "Copied to clipboard!") => {
+    if (!text) return;
     navigator.clipboard.writeText(text);
     setCopiedKey(true);
-    toast.success("Verification Key copied to clipboard! 📋");
+    toast.success(label);
     setTimeout(() => setCopiedKey(false), 2000);
   };
 
@@ -308,7 +313,7 @@ const Profile = () => {
           let spent = 0;
           let active = 0;
           fetchedOrders.forEach((order) => {
-            spent += order.amount;
+            spent += order.amount || 0;
             if (
               order.orderStatus &&
               order.orderStatus.toLowerCase() !== "delivered" &&
@@ -323,7 +328,6 @@ const Profile = () => {
       } catch (error) {
         console.error("VITAL PROFILE FETCH ERROR 👉", error);
       } finally {
-        // Render dashboard immediately
         setLoading(false);
       }
 
@@ -355,6 +359,9 @@ const Profile = () => {
 
   const logoutHandler = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    localStorage.removeItem("user");
+    toast.info("Logged out successfully");
     navigate("/login");
   };
 
@@ -432,69 +439,61 @@ const Profile = () => {
     }
   };
 
-  const initial = user?.name ? user.name.charAt(0).toUpperCase() : "";
+  const initial = user?.name ? user.name.charAt(0).toUpperCase() : "U";
 
   const getLoyaltyTier = () => {
-    if (totalSpent > 30000) return { name: "Diamond VIP Member", color: "from-blue-600 via-indigo-700 to-slate-950", bg: "bg-blue-500/10 text-blue-400 border-blue-500/20" };
-    if (totalSpent > 15000) return { name: "Platinum VIP Member", color: "from-indigo-600 via-purple-600 to-pink-500", bg: "bg-purple-500/10 text-purple-400 border-purple-500/20" };
-    if (totalSpent > 5000) return { name: "Gold Member", color: "from-amber-500 via-orange-500 to-slate-950", bg: "bg-amber-500/10 text-amber-400 border-amber-500/20" };
-    return { name: "Silver Member", color: "from-slate-500 via-slate-700 to-slate-950", bg: "bg-slate-50/10 text-slate-450 border-slate-250/20" };
+    const qualSpend = (user?.membership && user.membership.qualifyingSpend) || totalSpent;
+    if (qualSpend >= 30000) {
+      return {
+        name: "Diamond VIP",
+        tag: "DIAMOND",
+        color: "from-cyan-400 via-teal-400 to-emerald-400",
+        badgeBg: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
+        crownColor: "text-cyan-400",
+        rate: "5.0%",
+        multiplier: "3×"
+      };
+    }
+    if (qualSpend >= 15000) {
+      return {
+        name: "Platinum VIP",
+        tag: "PLATINUM",
+        color: "from-purple-400 via-fuchsia-400 to-pink-400",
+        badgeBg: "bg-purple-500/10 text-purple-400 border-purple-500/20",
+        crownColor: "text-purple-400",
+        rate: "3.0%",
+        multiplier: "2×"
+      };
+    }
+    if (qualSpend >= 5000) {
+      return {
+        name: "Gold Member",
+        tag: "GOLD",
+        color: "from-amber-400 via-yellow-400 to-orange-400",
+        badgeBg: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+        crownColor: "text-amber-400",
+        rate: "2.0%",
+        multiplier: "1.5×"
+      };
+    }
+    return {
+      name: "Silver Member",
+      tag: "SILVER",
+      color: "from-slate-400 via-slate-300 to-slate-500",
+      badgeBg: "bg-slate-500/10 text-slate-400 border-slate-500/20",
+      crownColor: "text-slate-400",
+      rate: "1.0%",
+      multiplier: "1×"
+    };
   };
 
   const tier = getLoyaltyTier();
 
-  const getProfileProgressInfo = () => {
-    let nextTierName = "";
-    let nextTierThreshold = 0;
-    let unlockedBenefits = [];
-    let rewardPreview = "";
-
-    if (totalSpent < 5000) {
-      nextTierName = "Gold Member";
-      nextTierThreshold = 5000;
-      unlockedBenefits = ["Standard Shipping", "1.0%"];
-      rewardPreview = "Earn more points to unlock Gold Member benefits";
-    } else if (totalSpent < 15000) {
-      nextTierName = "Platinum VIP";
-      nextTierThreshold = 15000;
-      unlockedBenefits = ["Standard Shipping", "3.0%", "Priority Dispatch"];
-      rewardPreview = "Earn more points to unlock Platinum VIP benefits";
-    } else if (totalSpent < 30000) {
-      nextTierName = "Diamond VIP";
-      nextTierThreshold = 30000;
-      unlockedBenefits = ["Free Express Shipping", "5.0%", "24/7 Premium Support", "AI Fitting Room PRO access"];
-      rewardPreview = "Earn more points to unlock Diamond VIP benefits";
-    } else {
-      nextTierName = "Max Level";
-      nextTierThreshold = 30005;
-      unlockedBenefits = ["Free Express Shipping", "8.0%", "24/7 Dedicated Support Concierge"];
-      rewardPreview = "All luxury benefits unlocked!";
-    }
-
-    const nextTierDiff = Math.max(nextTierThreshold - totalSpent, 0);
-    
-    // Non-linear progress mapping for Silver (0), Gold (33.3%), Platinum (66.6%), Diamond (100%)
-    let progressPercent = 0;
-    if (totalSpent <= 5000) {
-      progressPercent = (totalSpent / 5000) * 33.3;
-    } else if (totalSpent <= 15000) {
-      progressPercent = 33.3 + ((totalSpent - 5000) / 10000) * 33.3;
-    } else if (totalSpent <= 30000) {
-      progressPercent = 66.6 + ((totalSpent - 15000) / 15000) * 33.4;
-    } else {
-      progressPercent = 100;
-    }
-
-    return { nextTierName, nextTierThreshold, nextTierDiff, progressPercent, unlockedBenefits, rewardPreview };
-  };
-
-  const progressInfo = getProfileProgressInfo();
-
-  // Dynamic Avatar rendering
-  const renderAvatarContent = (avatarStr, classes = "h-20 w-20 text-2xl") => {
+  // Dynamic Avatar rendering with subtle rounded corners
+  const renderAvatarContent = (avatarStr, classes = "h-16 w-16 text-xl") => {
     if (!avatarStr) {
       return (
-        <div className={`flex items-center justify-center rounded-full bg-slate-900 text-slate-100 dark:text-white font-black border-2 border-white/10 ${classes}`}>
+        <div className={`flex items-center justify-center rounded-md bg-gradient-to-tr from-slate-900 to-indigo-950 text-white font-black shadow-inner ${classes}`}>
           {initial}
         </div>
       );
@@ -504,20 +503,20 @@ const Profile = () => {
         <img
           src={avatarStr}
           alt="Avatar"
-          className={`rounded-full object-cover border-2 border-white/10 ${classes}`}
+          className={`rounded-md object-cover border border-white/10 ${classes}`}
         />
       );
     }
     const preset = PRESET_AVATARS.find(p => p.id === avatarStr);
     if (preset) {
       return (
-        <div className={`rounded-full bg-gradient-to-tr ${preset.gradient} border-2 border-white/10 ${classes} flex items-center justify-center font-black text-slate-100 dark:text-white`}>
+        <div className={`rounded-md bg-gradient-to-tr ${preset.gradient} border border-white/10 ${classes} flex items-center justify-center font-black text-white shadow-inner`}>
           {initial}
         </div>
       );
     }
     return (
-      <div className={`flex items-center justify-center rounded-full bg-slate-900 text-slate-100 dark:text-white font-black border-2 border-white/10 ${classes}`}>
+      <div className={`flex items-center justify-center rounded-md bg-gradient-to-tr from-slate-900 to-indigo-950 text-white font-black shadow-inner ${classes}`}>
         {initial}
       </div>
     );
@@ -527,7 +526,7 @@ const Profile = () => {
   const spendingBreakdown = useMemo(() => {
     const categoriesCount = {};
     let total = 0;
-    
+
     orders.forEach(order => {
       order.items?.forEach(item => {
         const cat = item.category || "Others";
@@ -536,12 +535,12 @@ const Profile = () => {
         total += amt;
       });
     });
-    
+
     if (total === 0) {
       return [
         { name: "Electronics", amount: 4250, percent: 50, color: "#6366f1" },
         { name: "Fashion", amount: 2550, percent: 30, color: "#3b82f6" },
-        { name: "Home & Kitchen", amount: 1150, percent: 14, color: "#f97316" },
+        { name: "Home & Decor", amount: 1150, percent: 14, color: "#f97316" },
         { name: "Others", amount: 500, percent: 6, color: "#10b981" }
       ];
     }
@@ -558,7 +557,7 @@ const Profile = () => {
 
     mapped.sort((a, b) => b.amount - a.amount);
 
-    const colorPalette = ["#6366f1", "#3b82f6", "#f97316", "#10b981", "#ec4899", "#8b5cf6"];
+    const colorPalette = ["#6366f1", "#06b6d4", "#f59e0b", "#10b981", "#ec4899", "#8b5cf6"];
     return mapped.map((item, idx) => ({
       ...item,
       color: colorPalette[idx % colorPalette.length]
@@ -571,49 +570,52 @@ const Profile = () => {
     orders.forEach((order) => {
       const orderDateStr = new Date(order.date).toLocaleDateString("en-US", { month: "short", day: "numeric" });
       const status = order.orderStatus?.toLowerCase() || "processing";
-      
+
       list.push({
         title: `Order #${order._id.slice(-8).toUpperCase()} placed`,
-        desc: `Total amount: ₹${order.amount.toLocaleString("en-IN")}`,
+        desc: `Total: ₹${order.amount.toLocaleString("en-IN")}`,
         time: orderDateStr,
-        badge: "bg-indigo-500"
+        badge: "bg-indigo-500",
+        icon: Package
       });
-      
+
       if (status === "delivered") {
         list.push({
           title: `Order #${order._id.slice(-8).toUpperCase()} delivered`,
-          desc: "Successfully delivered to shipping address",
+          desc: "Safely handed over to recipient",
           time: orderDateStr,
-          badge: "bg-emerald-500"
+          badge: "bg-emerald-500",
+          icon: CheckCircle
         });
       } else if (status === "shipped") {
         list.push({
-          title: `Order #${order._id.slice(-8).toUpperCase()} shipped`,
-          desc: "Item is in transit and arriving soon",
+          title: `Order #${order._id.slice(-8).toUpperCase()} in transit`,
+          desc: "Carrier tracking initiated",
           time: orderDateStr,
-          badge: "bg-blue-500"
+          badge: "bg-cyan-500",
+          icon: Truck
         });
       }
     });
 
     if (list.length === 0) {
       return [
-        { title: "Account registered", desc: "Welcome to CartNow!", time: "Just now", badge: "bg-indigo-500" },
-        { title: "First purchase coupon active", desc: "Use code CARTNOW10 on checkout", time: "Just now", badge: "bg-emerald-500" }
+        { title: "Account registered", desc: "Welcome to CartNow Premium!", time: "Active", badge: "bg-indigo-500", icon: User },
+        { title: "Welcome bonus active", desc: "Use coupon CARTNOW10 on checkout", time: "Ready", badge: "bg-emerald-500", icon: Gift }
       ];
     }
-    
+
     return list.slice(0, 4);
   }, [orders]);
 
   const renderDonutChart = () => {
-    const circ = 238.7; // 2 * PI * r
+    const circ = 238.7; // 2 * PI * r (r=38)
     let currentOffset = 0;
     const totalSpentValue = spendingBreakdown.reduce((sum, item) => sum + item.amount, 0);
 
     return (
-      <div className="relative h-28 w-28 shrink-0 flex items-center justify-center">
-        <svg width="100" height="100" viewBox="0 0 100 100" className="overflow-visible select-none">
+      <div className="relative h-24 w-24 shrink-0 flex items-center justify-center">
+        <svg width="90" height="90" viewBox="0 0 100 100" className="overflow-visible select-none">
           {spendingBreakdown.map((item, idx) => {
             const strokeLength = (item.percent / 100) * circ;
             const strokeOffset = currentOffset;
@@ -631,14 +633,14 @@ const Profile = () => {
                 strokeDasharray={`${strokeLength.toFixed(1)} ${circ}`}
                 strokeDashoffset={strokeOffset.toFixed(1)}
                 transform="rotate(-90 50 50)"
-                className="transition-all duration-500"
+                className="transition-all duration-700 ease-out hover:opacity-85"
               />
             );
           })}
         </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase leading-none">TOTAL</span>
-          <span className="text-[11px] font-black text-slate-900 dark:text-white leading-none mt-1">₹{formatCompactNumber(totalSpentValue)}</span>
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+          <span className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none">TOTAL</span>
+          <span className="text-[11px] font-black text-slate-900 dark:text-white leading-none mt-0.5">₹{formatCompactNumber(totalSpentValue)}</span>
         </div>
       </div>
     );
@@ -656,941 +658,1448 @@ const Profile = () => {
     return null;
   }
 
+  const qualSpend = (user.membership && user.membership.qualifyingSpend) || totalSpent;
+  const nextTierName = (user.membership && user.membership.nextLevelName) || (qualSpend < 5000 ? "Gold Member" : qualSpend < 15000 ? "Platinum VIP" : qualSpend < 30000 ? "Diamond VIP" : null);
+  const amountToNext = (user.membership && user.membership.amountToNextLevel) || (qualSpend < 5000 ? 5000 - qualSpend : qualSpend < 15000 ? 15000 - qualSpend : qualSpend < 30000 ? 30000 - qualSpend : 0);
+  const progressPercent = (user.membership && user.membership.progressPercent) || (qualSpend < 5000 ? (qualSpend / 5000) * 100 : qualSpend < 15000 ? ((qualSpend - 5000) / 10000) * 100 : qualSpend < 30000 ? ((qualSpend - 15000) / 15000) * 100 : 100);
+
+  const navTabs = [
+    { id: "overview", label: "Overview", icon: LayoutDashboard },
+    { id: "orders", label: "Orders & Deliveries", icon: Package, badge: orders.length },
+    { id: "addresses", label: "Saved Addresses", icon: MapPin, badge: user.addresses?.length || 0 },
+    { id: "vip", label: "VIP & Rewards", icon: Crown, highlight: true },
+    { id: "settings", label: "Account & Security", icon: Settings },
+  ];
+
   return (
-    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#070A13] px-4 py-8 sm:px-6 lg:px-8 transition-colors duration-300 text-left relative overflow-hidden">
-      {/* Background radial luxury mesh gradients */}
-      <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-orange-500/5 dark:bg-orange-500/3 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[700px] h-[700px] rounded-full bg-purple-500/5 dark:bg-indigo-500/3 blur-[150px] pointer-events-none" />
+    <div className="min-h-screen w-full bg-[#f8fafc] dark:bg-[#070913] text-slate-900 dark:text-slate-100 transition-colors duration-300 relative overflow-hidden pb-4 sm:pb-6">
+      
+      {/* Dynamic Ambient Background Glows */}
+      <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[1200px] h-[350px] bg-gradient-to-b from-indigo-500/10 via-cyan-500/5 to-transparent blur-3xl opacity-60 dark:opacity-30" />
+      <div className="pointer-events-none absolute top-[250px] -left-40 w-[450px] h-[450px] bg-orange-500/5 dark:bg-orange-500/3 blur-[140px]" />
+      <div className="pointer-events-none absolute top-[500px] -right-40 w-[550px] h-[550px] bg-purple-500/5 dark:bg-purple-500/3 blur-[160px]" />
 
-      <style>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 5px;
-          height: 5px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(156, 163, 175, 0.3);
-          border-radius: 99px;
-        }
-      `}</style>
+      {/* BALANCED OPEN FULL-WIDTH CANVAS WITH COMFORTABLE BREATHING ROOM */}
+      <div className="w-full max-w-[1560px] mx-auto px-3 sm:px-5 lg:px-6 pt-3 sm:pt-4 relative z-10 space-y-3 sm:space-y-4">
 
-      <div className="w-full relative z-10 space-y-8">
-
-        {/* Main Grid Wrapper */}
-        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8">
+        {/* ══════════════════════════════════════════════════════════
+            HERO PROFILE IDENTITY BANNER & INTEGRATED TABS (COMBINED)
+        ══════════════════════════════════════════════════════════ */}
+        <div className="relative rounded-md overflow-hidden border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
           
-          {/* LEFT SIDEBAR: PROFILE SUMMARY */}
-          <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-6 space-y-6 shadow-sm flex flex-col justify-between">
-            <div className="space-y-6">
-              {/* User Details */}
-              <div className="flex flex-col items-center text-center space-y-3.5">
-                <div className="relative group select-none cursor-pointer">
-                  <div
-                    onClick={() => setShowAvatarSelector(true)}
-                    className="relative flex h-20 w-20 rounded-md overflow-hidden shadow-xs border border-slate-200 dark:border-slate-800 active:scale-95 transition group"
-                  >
-                    {renderAvatarContent(user.profilePhoto)}
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                      <Camera size={18} className="text-slate-100 dark:text-white" />
+          {/* Cover gradient strip - open luxury height */}
+          <div className="h-32 sm:h-40 md:h-44 w-full bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-950 relative overflow-hidden">
+            <div 
+              className="absolute inset-0 opacity-30 mix-blend-screen bg-cover bg-center"
+              style={{ backgroundImage: `url('/diamond_card_crystal_mesh.jpg')` }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+            
+            {/* Ambient shimmer line */}
+            <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-70" />
+
+            {/* Top right badges */}
+            <div className="absolute top-3 right-3 sm:top-4 sm:right-4 flex items-center gap-2">
+              <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm text-[10px] font-black uppercase tracking-wider bg-black/60 backdrop-blur-md text-emerald-400 border border-emerald-500/30 shadow-xs">
+                <ShieldCheck size={12} />
+                <span>Verified Customer</span>
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm text-[10px] font-black uppercase tracking-wider bg-black/60 backdrop-blur-md text-white border border-white/15 shadow-xs">
+                <Clock size={11} className="text-slate-400" />
+                <span>Since {user.createdAt ? new Date(user.createdAt).getFullYear() : "2024"}</span>
+              </span>
+            </div>
+          </div>
+
+          {/* Profile Details Bar - open comfortable padding */}
+          <div className="px-4 pb-4 pt-1 sm:px-6 sm:pb-5">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 -mt-10 sm:-mt-14">
+              
+              {/* Left: Avatar + Name + Badges */}
+              <div className="flex flex-col sm:flex-row items-center sm:items-end gap-3.5 text-center sm:text-left">
+                
+                {/* Avatar with subtle rounded status frame */}
+                <div className="relative group cursor-pointer" onClick={() => setActiveProfileTab("settings")}>
+                  <div className="relative p-1 rounded-md bg-white dark:bg-slate-900 shadow-xl ring-1 ring-slate-300 dark:ring-slate-700 transition group-hover:border-indigo-500">
+                    {renderAvatarContent(user.profilePhoto, "h-20 w-20 sm:h-24 sm:w-24 text-2xl")}
+                    <div className="absolute inset-0 bg-black/60 rounded-md opacity-0 group-hover:opacity-100 transition-all flex flex-col items-center justify-center gap-1 text-white">
+                      <Camera size={16} />
+                      <span className="text-[8.5px] font-black uppercase tracking-wider">Edit</span>
                     </div>
                   </div>
-                </div>
-
-                <div>
-                  <h3 className="text-base font-black text-slate-900 dark:text-white leading-tight flex items-center justify-center gap-1">
-                    <span>{user.name}</span>
-                    <Award size={14} className="text-orange-500" />
-                  </h3>
-                  <p className="text-[10.5px] font-semibold text-slate-400 dark:text-slate-500 truncate max-w-[190px] mt-0.5">{user.email}</p>
-                </div>
-              </div>
-
-              {/* Sidebar Tab Selectors */}
-              <div className="space-y-1">
-                {[
-                  { id: "dashboard", label: "Overview", icon: User },
-                  { id: "addresses", label: "Shipping Addresses", icon: MapPin },
-                  { id: "settings", label: "Account Settings", icon: Settings },
-                ].map((tab) => {
-                  const Icon = tab.icon;
-                  const isSelected = activeProfileTab === tab.id;
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveProfileTab(tab.id)}
-                      className={`flex w-full items-center justify-between rounded-md px-3.5 py-2.5 text-xs font-black uppercase tracking-wider transition-all duration-250 relative cursor-pointer group ${isSelected ? "bg-slate-950 dark:bg-orange-500/10 border border-slate-950 dark:border-orange-500/20 text-slate-100 dark:text-white dark:text-orange-400 scale-[1.01]" : "text-slate-500 dark:text-slate-400 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 border border-transparent" }`}
-                    >
-                      <span className="flex items-center gap-2.5">
-                        <Icon size={13} className={isSelected ? "text-orange-500" : "text-slate-400 group-hover:text-orange-400 transition-colors"} />
-                        <span>{tab.label}</span>
-                      </span>
-                      <ChevronRight size={11} className={`text-slate-400/80 transition-transform duration-200 ${isSelected ? "translate-x-0.5" : "group-hover:translate-x-0.5"}`} />
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Profile Completion Indicator */}
-              <div className="p-3.5 bg-slate-50/50 dark:bg-slate-950/20 rounded-lg border border-slate-150 dark:border-slate-800 text-left space-y-1.5">
-                <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-wider text-slate-400">
-                  <span>Profile Complete</span>
-                  <span className="text-orange-500">
-                    {user.name && user.email && user.addresses?.length > 0 && user.appReview ? "100%" : user.name && user.email && user.addresses?.length > 0 ? "75%" : "50%"}
-                  </span>
-                </div>
-                <div className="w-full h-1 bg-slate-200 dark:bg-slate-800 rounded-md overflow-hidden">
-                  <div 
-                    className="h-full bg-orange-500 rounded-md animate-pulse" 
-                    style={{ width: user.name && user.email && user.addresses?.length > 0 && user.appReview ? "100%" : user.name && user.email && user.addresses?.length > 0 ? "75%" : "50%" }}
-                  />
-                </div>
-              </div>
-
-              {/* Quick account stats wrapper */}
-              <div className="pt-4.5 border-t border-slate-200/50 dark:border-slate-800/80 space-y-3.5">
-                <div className="flex justify-between items-center text-[9.5px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                  <span>Account Created</span>
-                  <span className="font-mono text-slate-700 dark:text-slate-300">
-                    {user.createdAt ? new Date(user.createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" }) : "Recently"}
-                  </span>
-                </div>
-
-                {/* Secure verification key drawer */}
-                <div className="space-y-1">
-                  <div className="flex justify-between items-center text-[9.5px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                    <span>Verification Key</span>
-                    <button
-                      onClick={() => setRevealKey(!revealKey)}
-                      className="text-[8.5px] font-black text-orange-500 hover:underline uppercase tracking-wider cursor-pointer bg-transparent border-none"
-                    >
-                      {revealKey ? "Hide" : "Reveal"}
-                    </button>
+                  {/* VIP Crown Floating Badge */}
+                  <div className="absolute -bottom-1.5 -right-1.5 h-6 w-6 rounded-sm bg-slate-950 border border-white/20 flex items-center justify-center shadow-md">
+                    <Crown size={12} className={tier.crownColor} />
                   </div>
-                  <div className="flex items-center gap-2 bg-slate-100/60 dark:bg-slate-900/60 border border-slate-200/40 dark:border-slate-800/80 p-2 rounded-md justify-between">
-                    <span className="font-mono text-[10px] font-black text-slate-700 dark:text-slate-300 tracking-wider pl-1">
-                      {revealKey ? user.deliveryVerificationKey : "•••• ••••"}
+                </div>
+
+                {/* Name & Contact meta */}
+                <div className="space-y-1 min-w-0">
+                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                    <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+                      {user.name}
+                    </h1>
+                    <div className={`px-2 py-0.5 rounded-sm text-[9.5px] font-black uppercase tracking-wider border flex items-center gap-1 ${tier.badgeBg}`}>
+                      <Sparkles size={9} />
+                      <span>{tier.name}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400">
+                    <span className="flex items-center gap-1.5 truncate max-w-[280px]">
+                      <Mail size={13} className="text-slate-400 shrink-0" />
+                      <span>{user.email}</span>
                     </span>
-                    <button
-                      onClick={() => copyToClipboard(user.deliveryVerificationKey)}
-                      className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition cursor-pointer pr-1 bg-transparent border-none"
-                      title="Copy Key"
-                    >
-                      {copiedKey ? <Check size={11} className="text-emerald-500" /> : <Copy size={11} />}
-                    </button>
+                    <span className="hidden sm:inline text-slate-300 dark:text-slate-700">•</span>
+                    <span className="font-mono text-xs text-slate-600 dark:text-slate-300 flex items-center gap-1">
+                      <span className="text-slate-400 uppercase text-[9px] font-bold">UID:</span>
+                      <span>#{user._id ? user._id.slice(-6).toUpperCase() : "USR"}</span>
+                    </span>
                   </div>
                 </div>
+              </div>
+
+              {/* Right: Quick Action Controls */}
+              <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2">
+                <button
+                  onClick={() => setActiveProfileTab("settings")}
+                  className="px-3.5 py-2 rounded border border-slate-300 dark:border-slate-700 bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200 transition-all active:scale-98 cursor-pointer flex items-center gap-1.5 shadow-xs"
+                >
+                  <Settings size={13} />
+                  <span>Edit Profile</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setVipCodeModalMode("change");
+                    setIsVipCodeModalOpen(true);
+                  }}
+                  className="px-3.5 py-2 rounded border border-cyan-500/40 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 text-xs font-black uppercase tracking-wider transition-all active:scale-98 cursor-pointer flex items-center gap-1.5 shadow-xs"
+                >
+                  <Lock size={13} />
+                  <span>VIP PIN</span>
+                </button>
+
+                <button
+                  onClick={logoutHandler}
+                  className="px-3.5 py-2 rounded border border-rose-200 dark:border-rose-900/40 bg-rose-50/50 dark:bg-rose-950/20 hover:bg-rose-500 hover:text-white dark:hover:bg-rose-500 text-xs font-black uppercase tracking-wider text-rose-500 dark:text-rose-400 transition-all active:scale-98 cursor-pointer flex items-center gap-1.5 shadow-xs"
+                  title="Logout"
+                >
+                  <LogOut size={13} />
+                  <span className="hidden sm:inline">{t("logout")}</span>
+                </button>
+              </div>
+
+            </div>
+
+            {/* Quick Hero Highlights Bar - open comfortable grid */}
+            <div className="mt-4 pt-3.5 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-2.5 sm:gap-3">
+              <div className="p-3 sm:p-3.5 rounded-md bg-slate-50/80 dark:bg-slate-950/50 border border-slate-200/70 dark:border-slate-800/70">
+                <span className="text-[9.5px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Total Spend</span>
+                <span className="text-sm sm:text-base font-black text-slate-900 dark:text-white font-mono block">₹{totalSpent.toLocaleString("en-IN")}</span>
+              </div>
+              <div className="p-3 sm:p-3.5 rounded-md bg-slate-50/80 dark:bg-slate-950/50 border border-slate-200/70 dark:border-slate-800/70">
+                <span className="text-[9.5px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Total Orders</span>
+                <span className="text-sm sm:text-base font-black text-slate-900 dark:text-white font-mono block">{orders.length} Placed</span>
+              </div>
+              <div className="p-3 sm:p-3.5 rounded-md bg-slate-50/80 dark:bg-slate-950/50 border border-slate-200/70 dark:border-slate-800/70">
+                <span className="text-[9.5px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Reward Points</span>
+                <span className="text-sm sm:text-base font-black text-indigo-500 dark:text-indigo-400 font-mono block">{formatCompactNumber(Math.floor(totalSpent * 0.5))} Pts</span>
+              </div>
+              <div className="p-3 sm:p-3.5 rounded-md bg-slate-50/80 dark:bg-slate-950/50 border border-slate-200/70 dark:border-slate-800/70">
+                <span className="text-[9.5px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Cashback Rate</span>
+                <span className="text-sm sm:text-base font-black text-cyan-500 dark:text-cyan-400 font-mono block">{tier.rate} VIP</span>
+              </div>
+              <div className="p-3 sm:p-3.5 rounded-md bg-slate-50/80 dark:bg-slate-950/50 border border-slate-200/70 dark:border-slate-800/70 col-span-2 sm:col-span-4 lg:col-span-1 flex items-center justify-between lg:block">
+                <div>
+                  <span className="text-[9.5px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Active Shipments</span>
+                  <span className="text-sm sm:text-base font-black text-emerald-500 font-mono block">{activeShipments} in Transit</span>
+                </div>
+                {activeShipments > 0 && (
+                  <button 
+                    onClick={() => setActiveProfileTab("orders")}
+                    className="lg:hidden text-[10px] font-black uppercase text-indigo-600 dark:text-indigo-400"
+                  >
+                    Track →
+                  </button>
+                )}
               </div>
             </div>
 
-            {/* Logout button */}
-            <button
-              onClick={logoutHandler}
-              className="w-full mt-6 flex items-center justify-center gap-2 rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 px-3 py-2.5 text-xs font-black uppercase tracking-wider text-red-500 hover:bg-red-500 hover:text-white dark:hover:bg-red-500/10 dark:hover:text-red-400 hover:border-red-500 dark:hover:border-red-500/20 transition-all cursor-pointer shadow-2xs active:scale-[0.98]"
-            >
-              <LogOut size={12} />
-              <span>{t("logout")}</span>
-            </button>
           </div>
 
-          {/* RIGHT VIEWPORT: MAIN DASHBOARD SECTIONS */}
-          <div className="space-y-8 min-w-0">
-            <AnimatePresence mode="wait">
-              {/* Tab 1: Dashboard Overview */}
-              {activeProfileTab === "dashboard" && (
-                <motion.div
-                  key="dashboard-overview"
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -15 }}
-                  transition={{ duration: 0.35 }}
-                  className="space-y-6 text-left"
+          {/* ══════════════════════════════════════════════════════════
+              INTEGRATED SEGMENTED TAB NAVIGATION (COMBINED AT BOTTOM)
+          ══════════════════════════════════════════════════════════ */}
+          <div className="border-t border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/50 px-3 sm:px-6 py-2 sm:py-2.5 flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar">
+            {navTabs.map((tab) => {
+              const Icon = tab.icon;
+              const isSelected = activeProfileTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveProfileTab(tab.id)}
+                  className={`flex items-center gap-2 px-3.5 py-2 sm:py-2.5 rounded text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all duration-150 cursor-pointer ${
+                    isSelected
+                      ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950 shadow-xs"
+                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/70 dark:hover:bg-slate-800"
+                  }`}
                 >
-                  {/* Welcome Message Header */}
-                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-                    <div>
-                      <h2 className="text-xl sm:text-[26px] font-extrabold text-[#0B0F19] dark:text-white tracking-tight flex items-center gap-2">
-                        Welcome back, {user.name.split(" ")[0]}! 👋
-                      </h2>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 font-medium">Here's what's happening with your account today.</p>
-                    </div>
-                    
-                    <div className="flex items-center gap-3 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80 p-2.5 px-4.5 rounded-lg shadow-[0_2px_12px_rgba(0,0,0,0.015)] select-none text-left shrink-0">
-                      <div className="h-8 w-8 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-450 flex items-center justify-center">
-                        <ShieldCheck size={16} />
-                      </div>
-                      <div>
-                        <p className="text-[9px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider">Security Status</p>
-                        <p className="text-xs font-black text-emerald-600 dark:text-emerald-450 leading-tight">Secure</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Top Stats Overview (6 Columns exactly matching mockups) */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-4 w-full">
-                    {[
-                      { label: "Total Orders", value: orders.length, trend: `${orders.length} placed`, icon: Package, color: "bg-indigo-50 text-indigo-500 dark:bg-indigo-950/20" },
-                      { label: "Total Spent", value: `₹${formatCompactNumber(totalSpent)}`, trend: `₹${formatCompactNumber(Math.floor(totalSpent * 0.12))} saved`, icon: DollarSign, color: "bg-amber-50 text-amber-500 dark:bg-amber-955/20" },
-                      { label: "Reward Points", value: formatCompactNumber(Math.floor(totalSpent * 0.5)), trend: `+${formatCompactNumber(Math.floor(totalSpent * 0.05))} this month`, icon: Sparkles, color: "bg-purple-50 text-purple-500 dark:bg-purple-955/20" },
-                      { label: "Active Deliveries", value: activeShipments, trend: activeShipments > 0 ? "In Transit" : "All Delivered", icon: Truck, color: "bg-blue-50 text-blue-500 dark:bg-blue-955/20" },
-                      { label: "Wishlist Items", value: wishlistIds.length, trend: `${wishlistIds.length} items pinned`, icon: Heart, color: "bg-pink-50 text-pink-500 dark:bg-pink-955/20" },
-                      { label: "Coupons", value: coupons.length, trend: coupons.length > 0 ? "Available" : "No active coupon", icon: Percent, color: "bg-emerald-50 text-emerald-500 dark:bg-emerald-955/20" }
-                    ].map((stat, idx) => {
-                      const Icon = stat.icon;
-                      return (
-                        <div key={idx} className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 p-4 rounded-md flex items-center gap-3 shadow-[0_2px_12px_rgba(0,0,0,0.01)] min-w-0">
-                          <div className={`h-10 w-10 rounded-md ${stat.color} flex items-center justify-center shrink-0`}>
-                            <Icon size={16} />
-                          </div>
-                          <div className="text-left space-y-0.5 min-w-0 flex-1">
-                            <span className="text-[10px] font-bold text-slate-450 dark:text-slate-550 block truncate">
-                              {stat.label}
-                            </span>
-                            <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white leading-none tracking-tight truncate">
-                              {stat.value}
-                            </h3>
-                            <span className={`text-[8.5px] font-black block truncate ${stat.trend.startsWith("↑") || stat.trend.includes("saved") || stat.trend.includes("+") ? "text-emerald-500" : "text-slate-400 dark:text-slate-500"}`}>
-                              {stat.trend}
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Mid-section Grid split (40% Member, 60% Orders) */}
-                  <div className="grid grid-cols-1 xl:grid-cols-[1.5fr_2fr] gap-6 items-start">
-                    
-                    {/* DYNAMIC SERVER-AUTHORITATIVE VIP CREDIT CARD & PROGRESS BAR */}
-                    <div className="space-y-4">
-                      <VipCreditCard user={user} token={localStorage.getItem("token") || ""} />
-
-                      {/* VIP Tier Progress Bar */}
-                      <div className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 space-y-2">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="font-bold text-slate-700 dark:text-slate-300">
-                            Qualifying Spend: <span className="font-mono font-black text-slate-900 dark:text-white">₹{((user.membership || {}).qualifyingSpend || 0).toLocaleString("en-IN")}</span>
-                          </span>
-                          <span className="font-mono font-bold text-amber-500">
-                            {(user.membership || {}).nextLevelName ? `₹${((user.membership || {}).amountToNextLevel || 0).toLocaleString("en-IN")} more for ${(user.membership || {}).nextLevelName}` : "Max Level Unlocked 💎"}
-                          </span>
-                        </div>
-
-                        {(user.membership || {}).nextLevelName && (
-                          <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden border border-slate-200 dark:border-slate-700">
-                            <div 
-                              className="bg-gradient-to-r from-teal-400 via-amber-400 to-cyan-400 h-full rounded-full transition-all duration-500" 
-                              style={{ width: `${Math.min(100, Math.max(0, (user.membership || {}).progressPercent || 0))}%` }} 
-                            />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Recent Orders List Cards */}
-                    <div className="rounded-md bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 p-5 shadow-[0_2px_12px_rgba(0,0,0,0.015)] h-[300px] flex flex-col justify-between text-left">
-                      <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
-                        <h4 className="text-sm font-black text-[#0B0F19] dark:text-white uppercase tracking-wider">Recent Orders</h4>
-                        <button 
-                          onClick={() => navigate("/orderdetail")}
-                          className="text-xs font-black uppercase text-indigo-600 dark:text-indigo-400 hover:underline bg-transparent border-none cursor-pointer"
-                        >
-                          View All Orders
-                        </button>
-                      </div>
-
-                      <div className="flex-1 mt-3 space-y-3.5 overflow-y-auto custom-scrollbar pr-1">
-                        {orders.length === 0 ? (
-                          <div className="text-center py-8 text-slate-400 dark:text-slate-600 text-[10px] font-semibold uppercase tracking-wider">
-                            No recent orders found
-                          </div>
-                        ) : (
-                          orders.slice(0, 2).map((order) => {
-                            const status = order.orderStatus?.toLowerCase() || "processing";
-                            const isDelivered = status === "delivered";
-                            const isShipped = status === "shipped" || isDelivered;
-
-                            return (
-                              <div key={order._id} className="flex gap-4 items-center justify-between group hover:bg-slate-50/50 dark:hover:bg-slate-950/20 p-2 rounded-lg transition duration-200">
-                                <div className="h-14 w-14 rounded-md border border-slate-200/60 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 overflow-hidden flex items-center justify-center p-1.5 shrink-0">
-                                  <img 
-                                    src={order.items?.[0]?.image?.startsWith("http") ? order.items[0].image : `${backendUrl}/${order.items?.[0]?.image || ""}`} 
-                                    alt="" 
-                                    className="h-full w-full object-contain" 
-                                  />
-                                </div>
-
-                                <div className="flex-1 min-w-0 text-left">
-                                  <h5 className="text-xs font-black text-slate-900 dark:text-white truncate max-w-[180px]">{order.items?.[0]?.name || "Purchased Product"}</h5>
-                                  <p className="text-[9.5px] text-slate-400 dark:text-slate-500 font-bold mt-0.5">Order #{order._id?.slice(-8).toUpperCase()}</p>
-                                  <p className="text-xs font-extrabold text-slate-900 dark:text-white mt-1">₹{order.amount.toLocaleString("en-IN")}</p>
-                                </div>
-
-                                <div className="text-right space-y-2 shrink-0">
-                                  <div className="flex flex-col items-end">
-                                    <span className={`px-2 py-0.5 text-[8.5px] font-black uppercase rounded ${isDelivered ? "bg-emerald-500/10 text-emerald-500" : "bg-orange-500/10 text-orange-500"}`}>
-                                      {order.orderStatus || "Processing"}
-                                    </span>
-                                    <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold mt-1 block">
-                                      {isDelivered ? "Delivered successfully" : "Arriving soon"}
-                                    </span>
-                                  </div>
-
-                                  {/* Progress pathway dots */}
-                                  <div className="flex items-center gap-1.5 justify-end">
-                                    {[1, 2, 3, 4].map((stepIdx) => {
-                                      let stepActive = false;
-                                      if (status === "delivered") stepActive = true;
-                                      else if (status === "shipped") stepActive = stepIdx <= 3;
-                                      else stepActive = stepIdx <= 2;
-                                      
-                                      return (
-                                        <span 
-                                          key={stepIdx} 
-                                          className={`h-1.5 w-1.5 rounded-md transition-all duration-300 ${stepActive ? "bg-indigo-500" : "bg-slate-200 dark:bg-slate-800"}`} 
-                                        />
-                                      );
-                                    })}
-                                  </div>
-                                </div>
-
-                                <button 
-                                  onClick={() => navigate(`/orderdetail`)}
-                                  className="h-7 w-7 rounded-full bg-slate-100/50 hover:bg-slate-200 dark:bg-slate-800 text-slate-455 dark:text-slate-300 flex items-center justify-center border-none cursor-pointer"
-                                >
-                                  <ChevronRight size={14} />
-                                </button>
-                              </div>
-                            );
-                          })
-                        )}
-                      </div>
-                    </div>
-
-                  </div>
-
-                  {/* Bottom Segment Layout (3 Columns matching mockups) */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    
-                    {/* Column 1: Wallet & Rewards */}
-                    <div className="rounded-md bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 p-5 shadow-[0_2px_12px_rgba(0,0,0,0.01)] text-left flex flex-col justify-between h-[310px]">
-                      <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
-                        <h4 className="text-sm font-black text-[#0B0F19] dark:text-white uppercase tracking-wider">Wallet & Rewards</h4>
-                        <button 
-                          onClick={() => setActiveProfileTab("settings")}
-                          className="text-xs font-black uppercase text-indigo-600 dark:text-indigo-400 hover:underline bg-transparent border-none cursor-pointer"
-                        >
-                          View All
-                        </button>
-                      </div>
-
-                      <div className="flex-1 mt-3.5 space-y-2.5">
-                        {[
-                          { label: "Cashback Balance", val: `₹${Math.floor(totalSpent * 0.05).toLocaleString("en-IN")}`, icon: CreditCard, color: "text-emerald-500 bg-emerald-50 dark:bg-emerald-950/20" },
-                          { label: "Reward Points", val: `${Math.floor(totalSpent * 0.5).toLocaleString("en-IN")} pts`, icon: Sparkles, color: "text-indigo-500 bg-indigo-50 dark:bg-indigo-950/20" },
-                          { label: "Coupons Available", val: `${coupons.length} Coupon${coupons.length !== 1 ? 's' : ''}`, icon: Percent, color: "text-pink-500 bg-pink-50 dark:bg-pink-955/20" }
-                        ].map((w, wIdx) => {
-                          const Icon = w.icon;
-                          return (
-                            <div 
-                              key={wIdx} 
-                              onClick={() => {
-                                toast.info(`${w.label}: ${w.val} available! 💸`);
-                              }}
-                              className="flex items-center gap-3.5 p-3 rounded-lg border border-slate-150/40 dark:border-slate-800/80 bg-slate-50/20 dark:bg-slate-950/10 hover:border-indigo-500/10 transition duration-200 cursor-pointer"
-                            >
-                              <div className={`h-9 w-9 rounded-md ${w.color} flex items-center justify-center shrink-0`}>
-                                <Icon size={16} />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 leading-none">{w.label}</p>
-                                <p className="text-xs font-black text-slate-900 dark:text-white mt-1 leading-none">{w.val}</p>
-                              </div>
-                              <ChevronRight size={13} className="text-slate-400" />
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Column 2: Recent Activity Timeline */}
-                    <div className="rounded-md bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 p-5 shadow-[0_2px_12px_rgba(0,0,0,0.01)] text-left flex flex-col justify-between h-[310px]">
-                      <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
-                        <h4 className="text-sm font-black text-[#0B0F19] dark:text-white uppercase tracking-wider">Recent Activity</h4>
-                        <button 
-                          onClick={() => {
-                            toast.info("Log list synchronized! 📋");
-                          }}
-                          className="text-xs font-black uppercase text-indigo-600 dark:text-indigo-400 hover:underline bg-transparent border-none cursor-pointer"
-                        >
-                          View All
-                        </button>
-                      </div>
-
-                      <div className="flex-1 mt-3.5 space-y-3 relative pl-3.5 border-l border-slate-200 dark:border-slate-800">
-                        {activitiesList.map((act, aIdx) => (
-                          <div key={aIdx} className="relative space-y-0.5 text-left">
-                            <span className={`absolute left-[-20.5px] top-[3.5px] h-2 w-2 rounded-full border border-white dark:border-slate-900 ${act.badge}`} />
-                            <div className="flex justify-between items-baseline">
-                              <h6 className="text-[11px] font-black text-slate-900 dark:text-white leading-none">{act.title}</h6>
-                              <span className="text-[8px] font-bold text-slate-400 dark:text-slate-500 font-mono shrink-0 pl-1">{act.time}</span>
-                            </div>
-                            <p className="text-[9.5px] text-slate-450 dark:text-slate-500 font-semibold leading-normal">{act.desc}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Column 3: Spending Overview Category breakdown */}
-                    <div className="rounded-md bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 p-5 shadow-[0_2px_12px_rgba(0,0,0,0.01)] text-left flex flex-col justify-between h-[310px]">
-                      <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
-                        <h4 className="text-sm font-black text-[#0B0F19] dark:text-white uppercase tracking-wider">Spending Overview</h4>
-                        <select className="text-[9.5px] font-black uppercase text-slate-650 bg-slate-50 dark:bg-slate-950/20 border border-slate-200/50 dark:border-slate-850 px-2 py-1 rounded outline-none cursor-pointer">
-                          <option>This Month</option>
-                          <option>Last 6 Months</option>
-                        </select>
-                      </div>
-
-                      <div className="flex-1 mt-3.5 space-y-3.5">
-                        <div className="flex justify-between items-center">
-                          <div className="text-left space-y-1">
-                            <span className="text-[9.5px] font-black uppercase tracking-wider text-slate-400">Total Spending</span>
-                            <h3 className="text-base font-extrabold text-[#0B0F19] dark:text-white leading-none">₹{formatCompactNumber(totalSpent)}</h3>
-                            <span className="text-[9px] font-black text-emerald-500 block">
-                              {orders.length > 0 ? "↑ 22% vs last month" : "No orders this month"}
-                            </span>
-                          </div>
-
-                          {renderDonutChart()}
-                        </div>
-
-                        {/* Category legend splits with values and percentages */}
-                        <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 space-y-2">
-                          {spendingBreakdown.slice(0, 4).map((leg, lIdx) => (
-                            <div key={lIdx} className="flex justify-between items-center text-[10px] font-bold text-slate-700 dark:text-slate-300 select-none">
-                              <div className="flex items-center gap-2">
-                                <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: leg.color }} />
-                                <span className="font-semibold">{leg.name}</span>
-                              </div>
-                              <div className="flex gap-4 font-mono">
-                                <span>₹{formatCompactNumber(leg.amount)}</span>
-                                <span className="text-slate-400">{leg.percent}%</span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                  </div>
-
-                  {/* Horizontal Wishlist view is placed directly underneath the bottom layout components */}
-                  {wishlistedItems.length > 0 && (
-                    <div className="rounded-md bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 p-5 shadow-[0_2px_12px_rgba(0,0,0,0.01)] text-left space-y-4">
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <h4 className="text-[10px] font-black uppercase tracking-wider text-[#0B0F19] dark:text-white flex items-center gap-1.5">
-                            <Heart size={13} className="text-pink-500" />
-                            <span>Your Curated Wishlist</span>
-                          </h4>
-                          <p className="text-[9.5px] text-slate-455 dark:text-slate-500 font-bold mt-0.5">Quick access to items you pinned for checkout.</p>
-                        </div>
-                        <button 
-                          onClick={() => navigate("/wishlist")}
-                          className="text-[9.5px] font-black uppercase bg-transparent text-orange-500 hover:underline cursor-pointer border-none"
-                        >
-                          View All
-                        </button>
-                      </div>
-
-                      <div className="flex gap-4 overflow-x-auto py-2 custom-scrollbar">
-                        {wishlistedItems.map((prod) => {
-                          const img = prod.images?.[0]?.startsWith("http") ? prod.images[0] : `${backendUrl}/${prod.images?.[0]}`;
-                          return (
-                            <div key={prod._id} className="w-[180px] rounded-lg border border-slate-200/40 dark:border-slate-800 bg-white dark:bg-slate-950/45 p-3 shrink-0 space-y-2 text-left hover:shadow-md transition duration-300 relative group/wishitem">
-                              <button
-                                onClick={() => toggleFavorite(prod)}
-                                className="absolute top-2 right-2 h-6 w-6 rounded-full bg-slate-100 hover:bg-red-500/10 dark:bg-slate-900 flex items-center justify-center text-red-500 transition cursor-pointer border-none z-10"
-                              >
-                                <Trash2 size={11} />
-                              </button>
-                              <div className="h-24 w-full bg-slate-50 dark:bg-slate-900 rounded-md overflow-hidden flex items-center justify-center p-2">
-                                <img src={img} alt={prod.name} className="h-full w-full object-contain hover:scale-105 transition duration-300" />
-                              </div>
-                              <h6 className="text-[11px] font-black text-slate-900 dark:text-white leading-tight truncate">{prod.name}</h6>
-                              <div className="flex justify-between items-baseline">
-                                <span className="text-xs font-black text-slate-900 dark:text-white">₹{prod.price.toLocaleString("en-IN")}</span>
-                                {prod.originalPrice > prod.price && (
-                                  <span className="text-[8.5px] font-black text-red-500">-{Math.round(((prod.originalPrice - prod.price) / prod.originalPrice) * 100)}%</span>
-                                )}
-                              </div>
-                              <button
-                                onClick={() => handleAddToCart(prod)}
-                                className="w-full text-[9px] font-black uppercase bg-slate-900 hover:bg-slate-800 dark:bg-orange-600 dark:hover:bg-orange-500 text-white py-1.5 rounded-md border-none cursor-pointer"
-                              >
-                                Add to Cart
-                              </button>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
+                  <Icon size={14} className={isSelected ? (tab.highlight ? "text-amber-400" : "") : (tab.highlight ? "text-amber-500" : "text-slate-400")} />
+                  <span>{tab.label}</span>
+                  {typeof tab.badge === "number" && tab.badge > 0 && (
+                    <span className={`px-2 py-0.5 rounded-sm text-[9px] font-mono font-black ${
+                      isSelected ? "bg-white/20 text-white dark:bg-slate-950/20 dark:text-slate-950" : "bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                    }`}>
+                      {tab.badge}
+                    </span>
                   )}
-                </motion.div>
-              )}
-
-              {/* Tab 2: Saved Addresses */}
-              {activeProfileTab === "addresses" && (
-                <motion.div
-                  key="saved-addresses"
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -15 }}
-                  transition={{ duration: 0.35 }}
-                  className="space-y-6 text-left"
-                >
-                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b border-slate-200/50 dark:border-slate-900 pb-4">
-                    <div>
-                      <h3 className="text-lg font-black text-[#0B0F19] dark:text-white tracking-tight uppercase">Saved Shipping Addresses</h3>
-                      <p className="text-xs text-slate-400 dark:text-slate-500 font-bold mt-0.5">Manage details for fast, single-click checkout workflows.</p>
-                    </div>
-                    <button
-                      onClick={() => setShowAddressModal(true)}
-                      className="self-start sm:self-center inline-flex items-center gap-2 rounded-lg bg-[#6366f1] hover:bg-indigo-700 px-4.5 py-3 text-xs font-black uppercase tracking-wider text-slate-100 dark:text-white shadow-md active:scale-95 transition cursor-pointer border-none"
-                    >
-                      <Plus size={14} />
-                      <span>Add Address</span>
-                    </button>
-                  </div>
-
-                  {(!user.addresses || user.addresses.length === 0) ? (
-                    <div className="rounded-md border border-dashed border-slate-200 dark:border-slate-800 p-12 text-center bg-white dark:bg-slate-900">
-                      <MapPin size={28} className="mx-auto text-slate-400 mb-3" />
-                      <p className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">No saved addresses</p>
-                      <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1.5 font-semibold">Your address list is currently empty. Click "Add Address" to populate.</p>
-                    </div>
-                  ) : (
-                    <div className="grid gap-6 sm:grid-cols-2">
-                      {user.addresses.map((addr) => (
-                        <div
-                          key={addr._id}
-                          className="relative rounded-xl border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 flex flex-col justify-between group hover:border-[#6366f1]/20 hover:shadow-lg transition-all duration-300"
-                        >
-                          <div className="space-y-2 pr-6 text-left break-words">
-                            <p className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
-                              {addr.firstName} {addr.lastName}
-                            </p>
-                            <div className="space-y-0.5 text-slate-700 dark:text-slate-300 text-xs font-bold leading-relaxed">
-                              <p>{addr.street}</p>
-                              <p>{addr.city}, {addr.state}</p>
-                              <p className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-widest">{addr.country}</p>
-                            </div>
-                            <p className="text-xs text-slate-500 dark:text-slate-505 font-bold pt-2 border-t border-slate-100 dark:border-slate-800/80">
-                              📞 {addr.phone}
-                            </p>
-                          </div>
-
-                          <button
-                            onClick={() => handleDeleteAddress(addr._id)}
-                            className="absolute top-5 right-5 text-slate-400 hover:text-red-500 transition cursor-pointer bg-transparent border-none"
-                            title="Delete Saved Address"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </motion.div>
-              )}
-
-              {/* Tab 3: Account Settings & Credentials */}
-              {activeProfileTab === "settings" && (
-                <motion.div
-                  key="account-settings"
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -15 }}
-                  transition={{ duration: 0.35 }}
-                  className="space-y-8 text-left"
-                >
-                  <div className="border-b border-slate-200/50 dark:border-slate-900 pb-4">
-                    <h3 className="text-lg font-black text-[#0B0F19] dark:text-white tracking-tight uppercase">Profile Credentials & Settings</h3>
-                    <p className="text-xs text-slate-400 dark:text-slate-500 font-bold mt-0.5">Edit credentials, security passwords, app reviews, and luxury visual settings.</p>
-                  </div>
-
-                  {/* Settings grid */}
-                  <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-8">
-
-                    {/* Credentials form card */}
-                    <div className="rounded-md border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-6">
-                      <h4 className="text-xs font-black uppercase text-slate-900 dark:text-white tracking-wider">Account Credentials</h4>
-
-                      <form onSubmit={handleUpdateProfile} className="space-y-5">
-                        {/* Name Input */}
-                        <div className="relative group">
-                          <User size={16} className="absolute left-4 top-[17px] text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
-                          <input
-                            type="text"
-                            required
-                            value={editName}
-                            onChange={(e) => setEditName(e.target.value)}
-                            placeholder="Display Name"
-                            className="w-full pl-12 pr-4 py-3.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#070A13]/20 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                          />
-                        </div>
-
-                        {/* Email Input */}
-                        <div className="relative group">
-                          <Mail size={16} className="absolute left-4 top-[17px] text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
-                          <input
-                            type="email"
-                            required
-                            value={editEmail}
-                            onChange={(e) => setEditEmail(e.target.value)}
-                            placeholder="Email Address"
-                            className="w-full pl-12 pr-4 py-3.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#070A13]/20 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                          />
-                        </div>
-
-                        {/* Password Input (Optional Update) */}
-                        <div className="relative group">
-                          <Lock size={16} className="absolute left-4 top-[17px] text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
-                          <input
-                            type="password"
-                            value={editPassword}
-                            onChange={(e) => setEditPassword(e.target.value)}
-                            placeholder="Update Password (leave blank to keep current)"
-                            className="w-full pl-12 pr-4 py-3.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-[#070A13]/20 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                          />
-                        </div>
-
-                        <div className="flex justify-end pt-2">
-                          <button
-                            type="submit"
-                            disabled={savingProfile}
-                            className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#6366f1] hover:bg-indigo-750 text-xs font-black uppercase tracking-wider text-slate-100 dark:text-white px-6 py-3.5 transition active:scale-95 disabled:opacity-50 shadow-md cursor-pointer border-none"
-                          >
-                            {savingProfile ? (
-                              <>
-                                <RefreshCw size={13} className="animate-spin" />
-                                <span>Saving...</span>
-                              </>
-                            ) : (
-                              <span>Save Changes</span>
-                            )}
-                          </button>
-                        </div>
-                      </form>
-                    </div>
-
-                    {/* Preset Avatars & custom upload selection */}
-                    <div className="rounded-md border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 space-y-5 flex flex-col justify-between">
-                      <div>
-                        <h4 className="text-xs font-black uppercase text-slate-900 dark:text-white tracking-wider">Luxury Avatar Presets</h4>
-                        <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold mt-1">Select a premium gradient design or upload a custom image file.</p>
-                      </div>
-
-                      {/* Presets grid */}
-                      <div className="grid grid-cols-3 gap-3 my-2">
-                        {PRESET_AVATARS.map((avatar) => {
-                          const isSelected = selectedAvatar === avatar.id;
-                          return (
-                            <button
-                              key={avatar.id}
-                              onClick={() => {
-                                setSelectedAvatar(avatar.id);
-                                toast.info(`Selected Preset: ${avatar.name} 🎨`);
-                              }}
-                              className={`h-11 rounded-md bg-gradient-to-tr ${avatar.gradient} relative cursor-pointer border ${isSelected ? "border-indigo-500 ring-2 ring-indigo-500/25 scale-102" : "border-white/10" } hover:scale-102 transition`}
-                              title={avatar.name}
-                            >
-                              {isSelected && (
-                                <span className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-md">
-                                  <Check size={14} className="text-slate-100 dark:text-white" />
-                                </span>
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>
-
-                      <div className="border-t border-slate-200/40 dark:border-slate-800 pt-4 flex flex-col gap-3">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          ref={fileInputRef}
-                          onChange={handleAvatarFileUpload}
-                          className="hidden"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => fileInputRef.current.click()}
-                          className="w-full flex items-center justify-center gap-2 py-3 rounded-lg border border-slate-200 dark:border-slate-800 text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:bg-slate-100/50 dark:hover:bg-slate-900/50 transition cursor-pointer"
-                        >
-                          <Camera size={13} />
-                          <span>Upload Custom File</span>
-                        </button>
-                        {selectedAvatar && selectedAvatar.startsWith("data:") && (
-                          <div className="flex items-center gap-2">
-                            <div className="h-8 w-8 rounded-md overflow-hidden border border-slate-200 dark:border-slate-855 shrink-0">
-                              <img src={selectedAvatar} alt="Upload preview" className="h-full w-full object-cover" />
-                            </div>
-                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500">Custom Image Linked</span>
-                            <button
-                              onClick={() => setSelectedAvatar("")}
-                              className="text-red-500 hover:underline text-[9px] font-black uppercase ml-auto tracking-wider cursor-pointer bg-transparent border-none"
-                            >
-                              Remove
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* VIP CARD SECURITY SETTINGS SECTION */}
-                  <div className="rounded-md border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="text-xs font-black uppercase text-slate-900 dark:text-white tracking-wider flex items-center gap-2">
-                          <Lock size={14} className="text-cyan-500" />
-                          VIP Card Security Code
-                        </h4>
-                        <p className="text-[10.5px] text-slate-400 dark:text-slate-500 font-bold mt-1">
-                          Protect sensitive VIP membership card information with a 4–6 digit security PIN.
-                        </p>
-                      </div>
-                      <span className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-500 border border-cyan-500/20">
-                        ENABLED
-                      </span>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-3 pt-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setVipCodeModalMode("change");
-                          setIsVipCodeModalOpen(true);
-                        }}
-                        className="py-2.5 px-4 rounded-lg bg-slate-900 dark:bg-slate-800 text-white text-xs font-black uppercase tracking-wider hover:bg-slate-800 transition cursor-pointer border border-slate-700"
-                      >
-                        Change Security Code
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setVipCodeModalMode("reset");
-                          setIsVipCodeModalOpen(true);
-                        }}
-                        className="py-2.5 px-4 rounded-lg bg-transparent text-cyan-500 hover:text-cyan-400 text-xs font-black uppercase tracking-wider transition cursor-pointer border border-cyan-500/30"
-                      >
-                        Forgot Security Code?
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* App rating comment feedback section */}
-                  <div className="rounded-md border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 space-y-6">
-                    <div>
-                      <h4 className="text-xs font-black uppercase text-slate-900 dark:text-white tracking-wider">App Experience Feedback</h4>
-                      <p className="text-[10.5px] text-slate-400 dark:text-slate-500 font-bold mt-1">
-                        Tell us how we are doing! We use ratings to optimize routing speeds, fitting room maps, and pricing transparency.
-                      </p>
-                    </div>
-
-                    <form onSubmit={handleAppReviewSubmit} className="space-y-5">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <button
-                              key={star}
-                              type="button"
-                              onClick={() => setAppRating(star)}
-                              className="transition duration-150 hover:scale-110 active:scale-95 cursor-pointer text-slate-200 dark:text-slate-850 hover:text-amber-400 bg-transparent border-none outline-none"
-                              title={`${star} Star${star > 1 ? 's' : ''}`}
-                            >
-                              <svg
-                                className={`h-8 w-8 ${star <= appRating ? "text-amber-400 fill-amber-400 animate-pulse" : "text-current" }`}
-                                viewBox="0 0 20 20"
-                                fill="currentColor"
-                              >
-                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                              </svg>
-                            </button>
-                          ))}
-                          {appRating > 0 && (
-                            <span className="text-xs font-black text-slate-500 dark:text-slate-400 ml-3">
-                              {appRating} / 5 Rating
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      <div>
-                        <textarea
-                          value={appComment}
-                          onChange={(e) => setAppComment(e.target.value.slice(0, 500))}
-                          rows={4}
-                          maxLength={500}
-                          placeholder="Share details about checkout speeds, product quality, or virtual fitting room options..."
-                          className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-55/30 dark:bg-[#070A13]/40 p-4 text-xs font-semibold outline-none text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-650 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                        />
-                        <div className="mt-1 flex justify-end text-[9px] text-slate-400 dark:text-slate-550 font-mono">
-                          <span>{appComment.length} / 500 characters</span>
-                        </div>
-                      </div>
-
-                      <div className="flex justify-end">
-                        <button
-                          type="submit"
-                          disabled={submittingReview || appRating === 0}
-                          className="inline-flex items-center justify-center gap-2 rounded-md bg-slate-950 dark:bg-orange-650 hover:bg-slate-800 dark:hover:bg-orange-500 text-slate-100 dark:text-white text-xs font-black uppercase tracking-wider px-5 py-3 transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-md cursor-pointer border-none"
-                        >
-                          <span>{user.appReview ? "Update Feedback" : "Submit Feedback"}</span>
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
+                </button>
+              );
+            })}
           </div>
 
         </div>
 
+        {/* ══════════════════════════════════════════════════════════
+            ACTIVE TAB CONTENT VIEWPORT
+        ══════════════════════════════════════════════════════════ */}
+        <AnimatePresence mode="wait">
+          
+          {/* ──────────────────────────────────────────────────────────
+              TAB 1: OVERVIEW & ANALYTICS
+          ────────────────────────────────────────────────────────── */}
+          {activeProfileTab === "overview" && (
+            <Motion.div
+              key="tab-overview"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.18 }}
+              className="space-y-3 sm:space-y-4"
+            >
+              {/* 6 KPI Metric Cards with comfortable open grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
+                {[
+                  { label: "Total Orders", value: orders.length, sub: `${orders.length} total orders`, icon: Package, color: "text-indigo-500 bg-indigo-50 dark:bg-indigo-950/30" },
+                  { label: "Total Spent", value: `₹${formatCompactNumber(totalSpent)}`, sub: `₹${formatCompactNumber(Math.floor(totalSpent * 0.12))} saved`, icon: DollarSign, color: "text-amber-500 bg-amber-50 dark:bg-amber-950/30" },
+                  { label: "Reward Points", value: formatCompactNumber(Math.floor(totalSpent * 0.5)), sub: `${tier.multiplier} multiplier active`, icon: Sparkles, color: "text-purple-500 bg-purple-50 dark:bg-purple-950/30" },
+                  { label: "Active Deliveries", value: activeShipments, sub: activeShipments > 0 ? "In transit" : "All delivered", icon: Truck, color: "text-cyan-500 bg-cyan-50 dark:bg-cyan-950/30" },
+                  { label: "Saved Items", value: wishlistIds.length, sub: `${wishlistIds.length} in wishlist`, icon: Heart, color: "text-pink-500 bg-pink-50 dark:bg-pink-950/30" },
+                  { label: "Active Coupons", value: coupons.length, sub: coupons.length > 0 ? "Ready to apply" : "No coupons", icon: Percent, color: "text-emerald-500 bg-emerald-50 dark:bg-emerald-950/30" },
+                ].map((kpi, idx) => {
+                  const Icon = kpi.icon;
+                  return (
+                    <div
+                      key={idx}
+                      className="p-3.5 sm:p-4 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs hover:border-slate-400 dark:hover:border-slate-600 transition-all flex flex-col justify-between space-y-2 text-left"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-[9.5px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">{kpi.label}</span>
+                        <div className={`h-7 w-7 rounded-sm flex items-center justify-center ${kpi.color}`}>
+                          <Icon size={14} />
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-base sm:text-lg font-black text-slate-900 dark:text-white font-mono tracking-tight leading-tight block">
+                          {kpi.value}
+                        </span>
+                        <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 mt-0.5 block truncate">
+                          {kpi.sub}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* VIP Card & Milestone Journey + Recent Orders Preview */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 items-start">
+                
+                {/* Left (5 cols): VIP Credit Card + Milestone Progression */}
+                <div className="lg:col-span-5 space-y-3 sm:space-y-4">
+                  <VipCreditCard user={user} token={localStorage.getItem("token") || ""} />
+
+                  {/* Tier Milestones Progression Card */}
+                  <div className="p-3.5 sm:p-4 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs text-left space-y-2.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <div>
+                        <span className="text-[9px] font-black uppercase tracking-wider text-slate-400">Qualifying VIP Spend</span>
+                        <p className="text-sm sm:text-base font-black text-slate-900 dark:text-white font-mono mt-0.5">
+                          ₹{qualSpend.toLocaleString("en-IN")}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[9px] font-black uppercase tracking-wider text-slate-400">Tier Goal</span>
+                        <p className="text-xs font-black text-amber-500 dark:text-amber-400 mt-0.5">
+                          {nextTierName ? `₹${amountToNext.toLocaleString("en-IN")} to ${nextTierName}` : "Max Level Unlocked 💎"}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Subtle Multi-tier Progress Bar */}
+                    <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden border border-slate-200 dark:border-slate-700">
+                      <div
+                        className="bg-gradient-to-r from-cyan-400 via-indigo-500 to-amber-400 h-full rounded-full transition-all duration-700"
+                        style={{ width: `${Math.min(100, Math.max(8, progressPercent))}%` }}
+                      />
+                    </div>
+
+                    {/* Tier Milestones Roadmap */}
+                    <div className="grid grid-cols-4 gap-2 text-center">
+                      {[
+                        { label: "Silver", at: "₹0", active: true },
+                        { label: "Gold", at: "₹5K", active: qualSpend >= 5000 },
+                        { label: "Platinum", at: "₹15K", active: qualSpend >= 15000 },
+                        { label: "Diamond", at: "₹30K+", active: qualSpend >= 30000 },
+                      ].map((mStep, sIdx) => (
+                        <div key={sIdx} className="space-y-1">
+                          <span className={`h-1.5 w-full rounded-full block ${mStep.active ? "bg-indigo-500" : "bg-slate-200 dark:bg-slate-800"}`} />
+                          <p className={`text-[9px] font-black uppercase ${mStep.active ? "text-slate-900 dark:text-white" : "text-slate-400"}`}>{mStep.label}</p>
+                          <p className="text-[8px] font-mono text-slate-400 leading-none">{mStep.at}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right (7 cols): Live Shipments & Recent Orders */}
+                <div className="lg:col-span-7 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 sm:p-5 shadow-xs text-left flex flex-col justify-between space-y-3">
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5">
+                    <div className="flex items-center gap-2">
+                      <Package size={16} className="text-indigo-500" />
+                      <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">Recent Orders & Tracking</h3>
+                    </div>
+                    <button
+                      onClick={() => setActiveProfileTab("orders")}
+                      className="text-[11px] font-black uppercase text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer bg-transparent border-none"
+                    >
+                      View All ({orders.length}) →
+                    </button>
+                  </div>
+
+                  {/* Orders list with open spacing */}
+                  <div className="space-y-2">
+                    {orders.length === 0 ? (
+                      <div className="py-8 text-center space-y-2">
+                        <ShoppingBag size={26} className="mx-auto text-slate-300 dark:text-slate-700" />
+                        <p className="text-xs font-black uppercase tracking-wider text-slate-500">No orders placed yet</p>
+                        <button
+                          onClick={() => navigate("/product")}
+                          className="text-[11px] font-black uppercase text-orange-500 hover:underline cursor-pointer bg-transparent border-none mt-1"
+                        >
+                          Start Shopping →
+                        </button>
+                      </div>
+                    ) : (
+                      orders.slice(0, 3).map((order) => {
+                        const status = order.orderStatus?.toLowerCase() || "processing";
+                        const isDelivered = status === "delivered";
+                        const isShipped = status === "shipped";
+                        const firstItem = order.items?.[0];
+                        const imgUrl = firstItem?.image?.startsWith("http")
+                          ? firstItem.image
+                          : `${backendUrl}/${firstItem?.image || ""}`;
+
+                        return (
+                          <div
+                            key={order._id}
+                            className="p-2.5 sm:p-3 rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/30 hover:border-indigo-500/40 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 group"
+                          >
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="h-11 w-11 rounded-sm border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-1 shrink-0 overflow-hidden flex items-center justify-center">
+                                <img
+                                  src={imgUrl}
+                                  alt={firstItem?.name || "Product"}
+                                  className="h-full w-full object-contain group-hover:scale-105 transition"
+                                  onError={(e) => { e.target.style.display = "none"; }}
+                                />
+                              </div>
+
+                              <div className="min-w-0 space-y-0.5">
+                                <p className="text-xs sm:text-sm font-black text-slate-900 dark:text-white truncate max-w-[260px]">
+                                  {firstItem?.name || "Order Product"}
+                                </p>
+                                <p className="text-[10px] font-mono font-bold text-slate-400">
+                                  #{order._id.slice(-8).toUpperCase()} • {new Date(order.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                                </p>
+                                <p className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white font-mono">
+                                  ₹{order.amount.toLocaleString("en-IN")}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Status and Action */}
+                            <div className="flex items-center justify-between sm:justify-end gap-2.5 shrink-0 pt-1.5 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800">
+                              <span className={`px-2 py-0.5 rounded-sm text-[8.5px] font-black uppercase tracking-wider ${
+                                isDelivered ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20" :
+                                isShipped ? "bg-cyan-500/10 text-cyan-500 border border-cyan-500/20" :
+                                "bg-amber-500/10 text-amber-500 border border-amber-500/20"
+                              }`}>
+                                {order.orderStatus || "Processing"}
+                              </span>
+
+                              <button
+                                onClick={() => navigate("/orderdetail")}
+                                className="h-7 px-2.5 rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-[10px] font-black uppercase tracking-wider text-slate-800 dark:text-slate-200 transition cursor-pointer flex items-center gap-1 shadow-2xs"
+                              >
+                                <span>Details</span>
+                                <ChevronRight size={12} />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+
+                  {orders.length > 0 && (
+                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+                      <span className="text-slate-400 text-[11px] font-medium">Need order assistance?</span>
+                      <button
+                        onClick={() => navigate("/help")}
+                        className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer bg-transparent border-none flex items-center gap-1.5"
+                      >
+                        <Headset size={13} />
+                        <span>Support Concierge</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+              </div>
+
+              {/* 3-Column Bottom Insights Row with open layout */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                
+                {/* Column 1: Wallet & Rewards Overview */}
+                <div className="rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 sm:p-5 shadow-xs text-left space-y-3 flex flex-col justify-between">
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5">
+                    <h4 className="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
+                      <CreditCard size={14} className="text-cyan-500" />
+                      <span>Wallet & Rewards</span>
+                    </h4>
+                    <button
+                      onClick={() => setActiveProfileTab("vip")}
+                      className="text-[11px] font-black uppercase text-indigo-600 dark:text-indigo-400 hover:underline bg-transparent border-none cursor-pointer"
+                    >
+                      View Perks →
+                    </button>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="p-2.5 sm:p-3 rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20 flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div className="h-8 w-8 rounded-sm bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
+                          <DollarSign size={16} />
+                        </div>
+                        <div>
+                          <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400">Cashback Balance</p>
+                          <p className="text-sm font-black text-slate-900 dark:text-white font-mono mt-0.5">
+                            ₹{Math.floor(totalSpent * 0.05).toLocaleString("en-IN")}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-sm bg-emerald-500/10 text-emerald-500">
+                        {tier.rate}
+                      </span>
+                    </div>
+
+                    <div className="p-2.5 sm:p-3 rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20 flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div className="h-8 w-8 rounded-sm bg-purple-500/10 text-purple-500 flex items-center justify-center shrink-0">
+                          <Sparkles size={16} />
+                        </div>
+                        <div>
+                          <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400">CartNow Points</p>
+                          <p className="text-sm font-black text-slate-900 dark:text-white font-mono mt-0.5">
+                            {formatCompactNumber(Math.floor(totalSpent * 0.5))} Pts
+                          </p>
+                        </div>
+                      </div>
+                      <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-sm bg-purple-500/10 text-purple-500">
+                        {tier.multiplier} Rate
+                      </span>
+                    </div>
+
+                    <div className="p-2.5 sm:p-3 rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20 flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div className="h-8 w-8 rounded-sm bg-pink-500/10 text-pink-500 flex items-center justify-center shrink-0">
+                          <Percent size={16} />
+                        </div>
+                        <div>
+                          <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400">Coupons Available</p>
+                          <p className="text-sm font-black text-slate-900 dark:text-white font-mono mt-0.5">
+                            {coupons.length} Active Offers
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setActiveProfileTab("vip")}
+                        className="text-[10px] font-black uppercase text-indigo-600 dark:text-indigo-400 cursor-pointer bg-transparent border-none"
+                      >
+                        Claim
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-400 flex items-center gap-1.5">
+                    <ShieldCheck size={14} className="text-emerald-500 shrink-0" />
+                    <span>Auto-applied at checkout when eligible.</span>
+                  </div>
+                </div>
+
+                {/* Column 2: Recent Activity Timeline */}
+                <div className="rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 sm:p-5 shadow-xs text-left space-y-3 flex flex-col justify-between">
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5">
+                    <h4 className="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
+                      <Clock size={14} className="text-indigo-500" />
+                      <span>Account Timeline</span>
+                    </h4>
+                    <span className="text-[10px] font-mono font-bold text-slate-400">Live</span>
+                  </div>
+
+                  <div className="space-y-2.5 relative pl-3 border-l border-slate-200 dark:border-slate-800 my-auto">
+                    {activitiesList.map((act, aIdx) => (
+                      <div key={aIdx} className="relative space-y-0.5">
+                        <span className={`absolute -left-[17px] top-1.5 h-2 w-2 rounded-full ${act.badge}`} />
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs font-black text-slate-900 dark:text-white leading-tight">{act.title}</p>
+                          <span className="text-[9px] font-mono font-bold text-slate-400 shrink-0">{act.time}</span>
+                        </div>
+                        <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 leading-normal">{act.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
+                    <span>Events automatically synced</span>
+                    <button 
+                      onClick={() => toast.info("Activity log up-to-date! ✨")}
+                      className="text-[10px] font-black uppercase text-indigo-600 dark:text-indigo-400 cursor-pointer bg-transparent border-none"
+                    >
+                      Refresh
+                    </button>
+                  </div>
+                </div>
+
+                {/* Column 3: Category Spending Breakdown */}
+                <div className="rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 sm:p-5 shadow-xs text-left space-y-3 flex flex-col justify-between">
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5">
+                    <h4 className="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
+                      <TrendingUp size={14} className="text-amber-500" />
+                      <span>Spending Analytics</span>
+                    </h4>
+                    <span className="text-[10px] font-bold uppercase text-emerald-500">
+                      {orders.length > 0 ? "Active" : "New"}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-3 my-auto">
+                    <div className="space-y-1 text-left">
+                      <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400">Total Spent</span>
+                      <p className="text-base sm:text-lg font-black text-slate-900 dark:text-white font-mono">₹{formatCompactNumber(totalSpent)}</p>
+                      <span className="text-[10px] font-semibold text-emerald-500 block">
+                        {orders.length > 0 ? "↑ 18% vs prev period" : "First order eligible"}
+                      </span>
+                    </div>
+
+                    {renderDonutChart()}
+                  </div>
+
+                  {/* Legend */}
+                  <div className="space-y-1 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    {spendingBreakdown.slice(0, 3).map((leg, lIdx) => (
+                      <div key={lIdx} className="flex items-center justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+                        <div className="flex items-center gap-2">
+                          <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: leg.color }} />
+                          <span className="truncate max-w-[140px]">{leg.name}</span>
+                        </div>
+                        <div className="flex items-center gap-2 font-mono text-[10px]">
+                          <span>₹{formatCompactNumber(leg.amount)}</span>
+                          <span className="text-slate-400 w-6 text-right">{leg.percent}%</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Curated Wishlist Showcase with comfortable padding */}
+              {wishlistedItems.length > 0 && (
+                <div className="p-4 sm:p-5 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs text-left space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
+                        <Heart size={14} className="text-pink-500" />
+                        <span>Curated Wishlist ({wishlistedItems.length})</span>
+                      </h4>
+                      <p className="text-[11px] text-slate-400 font-medium mt-0.5">Quick access to pinned items ready for checkout.</p>
+                    </div>
+                    <button
+                      onClick={() => navigate("/wishlist")}
+                      className="text-[11px] font-black uppercase text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer bg-transparent border-none"
+                    >
+                      View All →
+                    </button>
+                  </div>
+
+                  <div className="flex gap-2.5 overflow-x-auto py-1 custom-scrollbar no-scrollbar">
+                    {wishlistedItems.map((prod) => {
+                      const img = prod.images?.[0]?.startsWith("http") ? prod.images[0] : `${backendUrl}/${prod.images?.[0]}`;
+                      return (
+                        <div
+                          key={prod._id}
+                          className="w-[160px] rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 p-2 shrink-0 space-y-2 text-left hover:shadow-sm transition-all relative group"
+                        >
+                          <button
+                            onClick={() => toggleFavorite(prod)}
+                            className="absolute top-2.5 right-2.5 h-6 w-6 rounded-sm bg-white dark:bg-slate-900 shadow-xs flex items-center justify-center text-rose-500 hover:scale-105 transition cursor-pointer border border-slate-200 dark:border-slate-700 z-10"
+                            title="Remove"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+
+                          <div className="h-28 w-full bg-white dark:bg-slate-900 rounded-sm overflow-hidden flex items-center justify-center p-2 border border-slate-100 dark:border-slate-800">
+                            <img src={img} alt={prod.name} className="h-full w-full object-contain group-hover:scale-105 transition duration-300" />
+                          </div>
+
+                          <div className="space-y-1">
+                            <h5 className="text-xs font-black text-slate-900 dark:text-white truncate leading-tight">{prod.name}</h5>
+                            <div className="flex items-baseline justify-between font-mono">
+                              <span className="text-xs sm:text-sm font-black text-slate-900 dark:text-white">₹{prod.price.toLocaleString("en-IN")}</span>
+                              {prod.originalPrice > prod.price && (
+                                <span className="text-[9px] font-black text-rose-500">
+                                  -{Math.round(((prod.originalPrice - prod.price) / prod.originalPrice) * 100)}%
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={() => handleAddToCart(prod)}
+                            className="w-full py-1.5 rounded bg-slate-950 dark:bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase tracking-wider transition cursor-pointer border-none shadow-xs active:scale-98"
+                          >
+                            Add to Cart
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+            </Motion.div>
+          )}
+
+          {/* ──────────────────────────────────────────────────────────
+              TAB 2: ORDERS & DELIVERIES
+          ────────────────────────────────────────────────────────── */}
+          {activeProfileTab === "orders" && (
+            <Motion.div
+              key="tab-orders"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.18 }}
+              className="space-y-3 sm:space-y-4 text-left"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800 pb-2.5">
+                <div>
+                  <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white uppercase tracking-tight">Orders & Shipments</h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+                    Track live deliveries, review purchase history, and download receipts.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-sm text-[10.5px] font-black uppercase bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">
+                    {orders.length} Total
+                  </span>
+                  <span className="px-2.5 py-0.5 rounded-sm text-[10.5px] font-black uppercase bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                    {activeShipments} Active
+                  </span>
+                </div>
+              </div>
+
+              {orders.length === 0 ? (
+                <div className="p-8 rounded-md border border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-center space-y-2">
+                  <Package size={32} className="mx-auto text-slate-400 dark:text-slate-600" />
+                  <h4 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">No Orders Placed Yet</h4>
+                  <p className="text-xs text-slate-400 dark:text-slate-500 max-w-sm mx-auto font-medium">
+                    Your order history is clean. Explore the latest catalogs and order items with express shipping.
+                  </p>
+                  <button
+                    onClick={() => navigate("/product")}
+                    className="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black uppercase tracking-wider transition cursor-pointer border-none shadow-xs mt-1"
+                  >
+                    Start Shopping Now
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-3 sm:space-y-4">
+                  {orders.map((order) => {
+                    const status = order.orderStatus?.toLowerCase() || "processing";
+                    const isDelivered = status === "delivered";
+                    const isShipped = status === "shipped";
+                    const isCancelled = status === "cancelled";
+
+                    return (
+                      <div
+                        key={order._id}
+                        className="rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-xs hover:border-slate-400 dark:hover:border-slate-600 transition-all space-y-3"
+                      >
+                        {/* Order Header Row */}
+                        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-2.5">
+                          <div className="space-y-0.5">
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-sm font-black text-slate-900 dark:text-white">
+                                #{order._id.slice(-8).toUpperCase()}
+                              </span>
+                              <span className={`px-2 py-0.5 rounded-sm text-[9px] font-black uppercase tracking-wider ${
+                                isDelivered ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20" :
+                                isShipped ? "bg-cyan-500/10 text-cyan-500 border border-cyan-500/20" :
+                                isCancelled ? "bg-rose-500/10 text-rose-500 border border-rose-500/20" :
+                                "bg-amber-500/10 text-amber-500 border border-amber-500/20"
+                              }`}>
+                                {order.orderStatus || "Processing"}
+                              </span>
+                            </div>
+                            <p className="text-[11px] font-medium text-slate-400">
+                              Placed on {new Date(order.date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                            </p>
+                          </div>
+
+                          <div className="flex items-center gap-3">
+                            <div className="text-right">
+                              <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 block">Total</span>
+                              <span className="text-sm sm:text-base font-black text-slate-900 dark:text-white font-mono">
+                                ₹{order.amount.toLocaleString("en-IN")}
+                              </span>
+                            </div>
+
+                            <button
+                              onClick={() => navigate("/orderdetail")}
+                              className="px-3 py-1.5 rounded-sm bg-slate-100 dark:bg-slate-800 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 text-[10.5px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-200 transition cursor-pointer border border-transparent shadow-2xs"
+                            >
+                              Details
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Order Items Preview Stack */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                          {order.items?.map((item, iIdx) => {
+                            const img = item.image?.startsWith("http") ? item.image : `${backendUrl}/${item.image || ""}`;
+                            return (
+                              <div key={iIdx} className="flex items-center gap-2.5 p-2 rounded-md bg-slate-50/60 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800">
+                                <div className="h-10 w-10 rounded-sm bg-white dark:bg-slate-900 p-1 shrink-0 overflow-hidden border border-slate-200 dark:border-slate-800 flex items-center justify-center">
+                                  <img src={img} alt={item.name} className="h-full w-full object-contain" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-xs font-black text-slate-900 dark:text-white truncate">{item.name}</p>
+                                  <p className="text-[10px] font-semibold text-slate-400 font-mono">
+                                    Qty: {item.qty} {item.size ? `• Size: ${item.size}` : ""} • ₹{(item.price || 0).toLocaleString("en-IN")}
+                                  </p>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Shipment Progress Indicator */}
+                        <div className="pt-1.5">
+                          <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-wider text-slate-400 mb-1">
+                            <span className={order.date ? "text-indigo-500" : ""}>1. Placed</span>
+                            <span className={status !== "processing" ? "text-indigo-500" : ""}>2. Confirmed</span>
+                            <span className={isShipped || isDelivered ? "text-cyan-500" : ""}>3. Shipped</span>
+                            <span className={isDelivered ? "text-emerald-500" : ""}>4. Delivered</span>
+                          </div>
+                          <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all duration-500 ${
+                                isDelivered ? "w-full bg-emerald-500" :
+                                isShipped ? "w-3/4 bg-cyan-500" :
+                                status === "confirmed" ? "w-1/2 bg-indigo-500" :
+                                isCancelled ? "w-full bg-rose-500" :
+                                "w-1/4 bg-amber-500"
+                              }`}
+                            />
+                          </div>
+                        </div>
+
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </Motion.div>
+          )}
+
+          {/* ──────────────────────────────────────────────────────────
+              TAB 3: SAVED ADDRESSES
+          ────────────────────────────────────────────────────────── */}
+          {activeProfileTab === "addresses" && (
+            <Motion.div
+              key="tab-addresses"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.18 }}
+              className="space-y-3 sm:space-y-4 text-left"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800 pb-2.5">
+                <div>
+                  <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white uppercase tracking-tight">Saved Shipping Addresses</h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+                    Manage default delivery destinations for seamless 1-click checkout.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowAddressModal(true)}
+                  className="px-3.5 py-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black uppercase tracking-wider transition cursor-pointer border-none flex items-center gap-1.5 shadow-xs active:scale-98 self-start sm:self-auto"
+                >
+                  <Plus size={14} />
+                  <span>Add Address</span>
+                </button>
+              </div>
+
+              {(!user.addresses || user.addresses.length === 0) ? (
+                <div className="p-8 rounded-md border border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-center space-y-2">
+                  <MapPin size={32} className="mx-auto text-slate-400" />
+                  <h4 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">No Saved Addresses</h4>
+                  <p className="text-xs text-slate-400 dark:text-slate-500 max-w-sm mx-auto font-medium">
+                    Add your residence or office address so you can check out swiftly without re-typing details.
+                  </p>
+                  <button
+                    onClick={() => setShowAddressModal(true)}
+                    className="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black uppercase tracking-wider transition cursor-pointer border-none shadow-xs mt-1"
+                  >
+                    Add Address Now
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                  {user.addresses.map((addr, aIdx) => (
+                    <div
+                      key={addr._id || aIdx}
+                      className="rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-xs hover:border-slate-400 dark:hover:border-slate-600 transition-all relative flex flex-col justify-between space-y-3 group"
+                    >
+                      <div className="space-y-2.5">
+                        <div className="flex items-center justify-between pr-8">
+                          <div className="flex items-center gap-2">
+                            <span className="h-6 w-6 rounded-sm bg-indigo-500/10 text-indigo-500 flex items-center justify-center font-black text-[11px]">
+                              {aIdx + 1}
+                            </span>
+                            <div>
+                              <h5 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">
+                                {addr.firstName} {addr.lastName}
+                              </h5>
+                              <span className="text-[10px] font-bold text-slate-400">Primary Contact</span>
+                            </div>
+                          </div>
+
+                          {aIdx === 0 && (
+                            <span className="px-2 py-0.5 rounded-sm text-[8.5px] font-black uppercase bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                              Default
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="p-2.5 sm:p-3 rounded-md bg-slate-50/60 dark:bg-slate-950/30 border border-slate-200 dark:border-slate-800 text-xs font-medium text-slate-700 dark:text-slate-300 space-y-1">
+                          <p className="font-semibold text-slate-900 dark:text-white">{addr.street}</p>
+                          <p>{addr.city}, {addr.state}</p>
+                          <p className="font-bold text-slate-500 dark:text-slate-400 uppercase text-[9.5px] tracking-wider">{addr.country}</p>
+                        </div>
+
+                        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-mono">
+                          <span>📞 {addr.phone}</span>
+                          <button
+                            onClick={() => copyToClipboard(`${addr.street}, ${addr.city}, ${addr.state}, ${addr.country}`, "Address copied to clipboard! 📋")}
+                            className="text-[10px] font-black uppercase text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer bg-transparent border-none flex items-center gap-1"
+                          >
+                            <Copy size={11} />
+                            <span>Copy</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Delete action */}
+                      <button
+                        onClick={() => handleDeleteAddress(addr._id)}
+                        className="absolute top-3 right-3 h-7 w-7 rounded-sm bg-slate-100 dark:bg-slate-800 hover:bg-rose-500 hover:text-white text-slate-400 transition cursor-pointer border border-slate-200 dark:border-slate-700 flex items-center justify-center shadow-2xs"
+                        title="Remove Address"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Motion.div>
+          )}
+
+          {/* ──────────────────────────────────────────────────────────
+              TAB 4: VIP MEMBERSHIP & REWARDS
+          ────────────────────────────────────────────────────────── */}
+          {activeProfileTab === "vip" && (
+            <Motion.div
+              key="tab-vip"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.18 }}
+              className="space-y-3 sm:space-y-4 text-left"
+            >
+              <div className="border-b border-slate-200 dark:border-slate-800 pb-2.5">
+                <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white uppercase tracking-tight flex items-center gap-2">
+                  <Crown size={16} className="text-amber-500" />
+                  <span>VIP Club & Membership Privileges</span>
+                </h3>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+                  Unlock exclusive cashback tiers, priority courier routing, and members-only flash deals.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 items-start">
+                
+                {/* 3D VIP Card Showcase */}
+                <div className="lg:col-span-6 space-y-3 sm:space-y-4">
+                  <VipCreditCard user={user} token={localStorage.getItem("token") || ""} />
+
+                  <div className="p-3 rounded-md bg-cyan-500/5 border border-cyan-500/20 text-xs text-slate-600 dark:text-slate-300 space-y-1">
+                    <div className="flex items-center gap-1.5 font-black uppercase text-cyan-600 dark:text-cyan-400 text-[10.5px]">
+                      <Lock size={12} />
+                      <span>Security Note</span>
+                    </div>
+                    <p className="text-[10.5px] leading-relaxed">
+                      Double-click the card above anytime on desktop (or hold on mobile) to enter your security PIN and temporarily reveal your full unmasked VIP membership identifier.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Tier Benefits Breakdown */}
+                <div className="lg:col-span-6 space-y-3 sm:space-y-4">
+                  <div className="p-4 sm:p-5 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-2.5">
+                    <h4 className="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white">
+                      Membership Tier Benefits
+                    </h4>
+
+                    <div className="space-y-2">
+                      {[
+                        { name: "Silver Member", spend: "₹0+", perks: "1.0% Cashback • Standard Dispatch • Basic Support", current: tier.name === "Silver Member" },
+                        { name: "Gold Member", spend: "₹5,000+", perks: "2.0% Cashback • 1.5× Reward Points • Priority Processing", current: tier.name === "Gold Member" },
+                        { name: "Platinum VIP", spend: "₹15,000+", perks: "3.0% Cashback • 2× Reward Points • Free Express Shipping", current: tier.name === "Platinum VIP" },
+                        { name: "Diamond VIP", spend: "₹30,000+", perks: "5.0% Cashback • 3× Points • 24/7 Dedicated Concierge • Early Access", current: tier.name === "Diamond VIP" },
+                      ].map((lvl, lIdx) => (
+                        <div
+                          key={lIdx}
+                          className={`p-2.5 sm:p-3 rounded-md border transition-all ${
+                            lvl.current
+                              ? "border-cyan-500/50 bg-cyan-500/5 shadow-xs ring-1 ring-cyan-500/20"
+                              : "border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-950/20"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs sm:text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+                              <span>{lvl.name}</span>
+                              {lvl.current && (
+                                <span className="px-2 py-0.5 rounded-sm text-[8px] font-black uppercase bg-cyan-500 text-slate-950">
+                                  Current Tier
+                                </span>
+                              )}
+                            </span>
+                            <span className="font-mono text-xs font-bold text-slate-500">{lvl.spend}</span>
+                          </div>
+                          <p className="text-[10.5px] text-slate-500 dark:text-slate-400 font-medium mt-1 leading-normal">
+                            {lvl.perks}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Active Coupons Grid with open gap */}
+              <div className="p-4 sm:p-5 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
+                      <Tag size={14} className="text-pink-500" />
+                      <span>Available Coupons & Discount Vouchers ({coupons.length})</span>
+                    </h4>
+                    <p className="text-[11px] text-slate-400 font-medium mt-0.5">Click any voucher to copy coupon code to checkout.</p>
+                  </div>
+                </div>
+
+                {coupons.length === 0 ? (
+                  <p className="text-xs text-slate-400 py-3 text-center">No active coupons available right now. Check back soon!</p>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3">
+                    {coupons.map((coupon) => (
+                      <div
+                        key={coupon._id}
+                        onClick={() => copyToClipboard(coupon.code, `Copied coupon ${coupon.code}! 🎟️`)}
+                        className="p-3 sm:p-3.5 rounded-md border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-950/30 hover:border-indigo-500 hover:bg-indigo-500/5 transition cursor-pointer space-y-1 relative group"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-mono text-xs sm:text-sm font-black text-indigo-600 dark:text-indigo-400 tracking-wider">
+                            {coupon.code}
+                          </span>
+                          <span className="text-[9px] font-black uppercase text-slate-400 group-hover:text-indigo-500 flex items-center gap-1">
+                            <Copy size={11} />
+                            <span>Copy</span>
+                          </span>
+                        </div>
+                        <p className="text-xs font-bold text-slate-900 dark:text-white">
+                          {coupon.discountType === "percentage" ? `${coupon.discountValue}% OFF` : `₹${coupon.discountValue} FLAT OFF`}
+                        </p>
+                        {coupon.minSpend && (
+                          <p className="text-[10px] text-slate-400 font-mono">Min spend: ₹{coupon.minSpend.toLocaleString("en-IN")}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </Motion.div>
+          )}
+
+          {/* ──────────────────────────────────────────────────────────
+              TAB 5: ACCOUNT SETTINGS & CREDENTIALS
+          ────────────────────────────────────────────────────────── */}
+          {activeProfileTab === "settings" && (
+            <Motion.div
+              key="tab-settings"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.18 }}
+              className="space-y-3 sm:space-y-4 text-left"
+            >
+              <div className="border-b border-slate-200 dark:border-slate-800 pb-2.5">
+                <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white uppercase tracking-tight">Profile Credentials & Security</h3>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+                  Update account credentials, luxury avatar presets, VIP PIN settings, and app feedback.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 items-start">
+                
+                {/* Left (7 cols): Credentials Form */}
+                <div className="lg:col-span-7 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-xs space-y-3">
+                  <h4 className="text-xs sm:text-sm font-black uppercase text-slate-900 dark:text-white tracking-wider flex items-center gap-2">
+                    <User size={14} className="text-indigo-500" />
+                    <span>Personal Credentials</span>
+                  </h4>
+
+                  <form onSubmit={handleUpdateProfile} className="space-y-3 sm:space-y-3.5">
+                    <div>
+                      <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Full Name *</label>
+                      <div className="relative">
+                        <User size={15} className="absolute left-3 top-2.5 text-slate-400" />
+                        <input
+                          type="text"
+                          required
+                          value={editName}
+                          onChange={(e) => setEditName(e.target.value)}
+                          placeholder="Your full name"
+                          className="w-full pl-9 pr-3 py-2 rounded border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 text-xs sm:text-sm font-semibold text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-indigo-500 transition"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Email Address *</label>
+                      <div className="relative">
+                        <Mail size={15} className="absolute left-3 top-2.5 text-slate-400" />
+                        <input
+                          type="email"
+                          required
+                          value={editEmail}
+                          onChange={(e) => setEditEmail(e.target.value)}
+                          placeholder="Your email address"
+                          className="w-full pl-9 pr-3 py-2 rounded border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 text-xs sm:text-sm font-semibold text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-indigo-500 transition"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">New Password (Optional)</label>
+                      <div className="relative">
+                        <Lock size={15} className="absolute left-3 top-2.5 text-slate-400" />
+                        <input
+                          type="password"
+                          value={editPassword}
+                          onChange={(e) => setEditPassword(e.target.value)}
+                          placeholder="Leave blank to keep current password"
+                          className="w-full pl-9 pr-3 py-2 rounded border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 text-xs sm:text-sm font-semibold text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-indigo-500 transition"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end pt-1">
+                      <button
+                        type="submit"
+                        disabled={savingProfile}
+                        className="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black uppercase tracking-wider transition cursor-pointer border-none shadow-xs disabled:opacity-50 flex items-center gap-1.5"
+                      >
+                        {savingProfile && <RefreshCw size={13} className="animate-spin" />}
+                        <span>{savingProfile ? "Saving..." : "Save Credentials"}</span>
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
+                {/* Right (5 cols): Avatar Customizer & Delivery Key */}
+                <div className="lg:col-span-5 space-y-3 sm:space-y-4">
+                  
+                  {/* Avatar Picker Card */}
+                  <div className="rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-xs space-y-2.5">
+                    <div>
+                      <h4 className="text-xs sm:text-sm font-black uppercase text-slate-900 dark:text-white tracking-wider flex items-center gap-2">
+                        <Camera size={14} className="text-purple-500" />
+                        <span>Luxury Avatar Presets</span>
+                      </h4>
+                      <p className="text-[10px] text-slate-400 font-medium mt-0.5">Choose a designer gradient or upload a photo.</p>
+                    </div>
+
+                    {/* Presets Grid */}
+                    <div className="grid grid-cols-4 gap-2 pt-1">
+                      {PRESET_AVATARS.map((avatar) => {
+                        const isSelected = selectedAvatar === avatar.id;
+                        return (
+                          <button
+                            key={avatar.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedAvatar(avatar.id);
+                              toast.info(`Selected Preset: ${avatar.name} 🎨`);
+                            }}
+                            className={`h-9 sm:h-10 rounded-md bg-gradient-to-tr ${avatar.gradient} relative cursor-pointer border ${
+                              isSelected ? "border-indigo-500 ring-2 ring-indigo-500/40" : "border-white/10"
+                            } transition hover:opacity-90`}
+                            title={avatar.name}
+                          >
+                            {isSelected && (
+                              <span className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-md">
+                                <Check size={14} className="text-white" />
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-1.5">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        ref={fileInputRef}
+                        onChange={handleAvatarFileUpload}
+                        className="hidden"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current.click()}
+                        className="w-full py-2 rounded border border-slate-200 dark:border-slate-800 text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer flex items-center justify-center gap-1.5"
+                      >
+                        <Camera size={13} />
+                        <span>Upload Custom Image</span>
+                      </button>
+
+                      {selectedAvatar && selectedAvatar.startsWith("data:") && (
+                        <div className="flex items-center justify-between text-xs pt-1">
+                          <span className="text-emerald-500 font-bold text-[10.5px]">Custom Photo Loaded</span>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedAvatar("")}
+                            className="text-rose-500 hover:underline text-[10px] font-black uppercase bg-transparent border-none cursor-pointer"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Delivery Key Vault Card */}
+                  <div className="rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-xs space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs sm:text-sm font-black uppercase text-slate-900 dark:text-white tracking-wider flex items-center gap-2">
+                        <ShieldCheck size={14} className="text-emerald-500" />
+                        <span>Delivery Verification Key</span>
+                      </h4>
+                      <button
+                        onClick={() => setRevealKey(!revealKey)}
+                        className="text-[10px] font-black text-indigo-500 hover:underline uppercase tracking-wider cursor-pointer bg-transparent border-none"
+                      >
+                        {revealKey ? "Hide" : "Reveal"}
+                      </button>
+                    </div>
+
+                    <p className="text-[10.5px] text-slate-400 font-medium">
+                      Show this secret verification PIN to delivery agents to safely receive your VIP packages.
+                    </p>
+
+                    <div className="flex items-center justify-between p-2.5 rounded-md bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
+                      <span className="font-mono text-sm sm:text-base font-black text-slate-900 dark:text-white tracking-widest pl-1">
+                        {revealKey ? (user.deliveryVerificationKey || "3849 2014") : "•••• ••••"}
+                      </span>
+                      <button
+                        onClick={() => copyToClipboard(user.deliveryVerificationKey || "38492014", "Verification Key copied! 📋")}
+                        className="p-1.5 rounded-sm hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-900 dark:hover:text-white transition cursor-pointer border-none bg-transparent"
+                        title="Copy Key"
+                      >
+                        {copiedKey ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                      </button>
+                    </div>
+                  </div>
+
+                </div>
+
+              </div>
+
+              {/* VIP Security PIN Configuration Section */}
+              <div className="rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="space-y-0.5">
+                  <h4 className="text-xs sm:text-sm font-black uppercase text-slate-900 dark:text-white tracking-wider flex items-center gap-2">
+                    <Lock size={14} className="text-cyan-500" />
+                    <span>VIP Card Security PIN Configuration</span>
+                  </h4>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                    Guard your VIP Card unmasked numbers with a 4–6 digit security passcode.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setVipCodeModalMode("change");
+                      setIsVipCodeModalOpen(true);
+                    }}
+                    className="px-3.5 py-2 rounded bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 text-white text-xs font-black uppercase tracking-wider transition cursor-pointer border border-slate-700 shadow-xs"
+                  >
+                    Change PIN
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setVipCodeModalMode("reset");
+                      setIsVipCodeModalOpen(true);
+                    }}
+                    className="px-3.5 py-2 rounded bg-transparent text-cyan-500 hover:text-cyan-400 text-xs font-black uppercase tracking-wider transition cursor-pointer border border-cyan-500/30"
+                  >
+                    Forgot PIN?
+                  </button>
+                </div>
+              </div>
+
+              {/* App Feedback Rating Section */}
+              <div className="rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-xs space-y-2.5">
+                <div>
+                  <h4 className="text-xs sm:text-sm font-black uppercase text-slate-900 dark:text-white tracking-wider flex items-center gap-2">
+                    <Star size={14} className="text-amber-500" />
+                    <span>App Experience Feedback</span>
+                  </h4>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+                    Rate your overall experience with CartNow. Your feedback helps us fine-tune delivery speeds and catalog quality.
+                  </p>
+                </div>
+
+                <form onSubmit={handleAppReviewSubmit} className="space-y-2.5">
+                  <div className="flex items-center gap-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setAppRating(star)}
+                        className="transition hover:scale-110 active:scale-95 cursor-pointer bg-transparent border-none text-slate-300 dark:text-slate-700 hover:text-amber-400"
+                        title={`${star} Star${star > 1 ? "s" : ""}`}
+                      >
+                        <svg
+                          className={`h-6 w-6 ${star <= appRating ? "text-amber-400 fill-amber-400" : "text-current"}`}
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                      </button>
+                    ))}
+                    {appRating > 0 && (
+                      <span className="text-xs font-black text-slate-600 dark:text-slate-300 ml-1">
+                        {appRating} of 5 Stars
+                      </span>
+                    )}
+                  </div>
+
+                  <div>
+                    <textarea
+                      value={appComment}
+                      onChange={(e) => setAppComment(e.target.value.slice(0, 500))}
+                      rows={3}
+                      maxLength={500}
+                      placeholder="Share details about checkout speeds, product quality, or delivery accuracy..."
+                      className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 p-3 text-xs sm:text-sm font-semibold text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-indigo-500 resize-none transition"
+                    />
+                    <div className="flex justify-end text-[10px] text-slate-400 font-mono mt-1">
+                      <span>{appComment.length} / 500 characters</span>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end">
+                    <button
+                      type="submit"
+                      disabled={submittingReview || appRating === 0}
+                      className="px-4 py-2 rounded bg-slate-950 dark:bg-indigo-600 hover:bg-slate-800 dark:hover:bg-indigo-700 text-white text-xs font-black uppercase tracking-wider transition cursor-pointer border-none disabled:opacity-50 disabled:cursor-not-allowed shadow-xs"
+                    >
+                      {submittingReview ? "Submitting..." : user.appReview ? "Update Feedback" : "Submit Feedback"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+            </Motion.div>
+          )}
+
+        </AnimatePresence>
+
       </div>
 
-      {/* Add Address Modal Overlay */}
+      {/* ══════════════════════════════════════════════════════════
+          ADD ADDRESS MODAL OVERLAY (SUBTLE ROUNDED CORNERS)
+      ══════════════════════════════════════════════════════════ */}
       {showAddressModal && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-fade-in">
-          <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[28px] shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-55/50 dark:bg-slate-900/50 text-left">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/70 backdrop-blur-md p-3 animate-fade-in">
+          <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
+            
+            <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/30 text-left">
               <div>
-                <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">Add Shipping Address</h3>
-                <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">Enter delivery credentials</p>
+                <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">Add Shipping Address</h3>
+                <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Enter recipient delivery details</p>
               </div>
               <button
                 type="button"
                 onClick={() => setShowAddressModal(false)}
-                className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition cursor-pointer bg-transparent border-none"
+                className="h-6 w-6 flex items-center justify-center rounded-sm hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition cursor-pointer border-none bg-transparent"
               >
-                <X size={16} />
+                <X size={14} />
               </button>
             </div>
 
-            <form onSubmit={handleAddAddress} className="p-6 space-y-4 text-left overflow-y-auto flex-1 custom-scrollbar">
-              <div className="grid gap-4 sm:grid-cols-2">
+            <form onSubmit={handleAddAddress} className="p-3 sm:p-4 space-y-2 text-left overflow-y-auto flex-1 custom-scrollbar">
+              <div className="grid gap-2 sm:grid-cols-2">
                 <div>
-                  <label className="block text-[9px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider mb-1">First Name *</label>
+                  <label className="block text-[9px] font-black uppercase text-slate-400 mb-0.5">First Name *</label>
                   <input
                     type="text"
                     required
                     value={newAddress.firstName}
                     onChange={(e) => setNewAddress({ ...newAddress, firstName: e.target.value })}
-                    className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                    className="w-full rounded border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-2.5 py-1 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-indigo-500"
                     placeholder="John"
                   />
                 </div>
                 <div>
-                  <label className="block text-[9px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider mb-1">Last Name</label>
+                  <label className="block text-[9px] font-black uppercase text-slate-400 mb-0.5">Last Name</label>
                   <input
                     type="text"
                     value={newAddress.lastName}
                     onChange={(e) => setNewAddress({ ...newAddress, lastName: e.target.value })}
-                    className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                    className="w-full rounded border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-2.5 py-1 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-indigo-500"
                     placeholder="Doe"
                   />
                 </div>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-2 sm:grid-cols-2">
                 <div>
-                  <label className="block text-[9px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider mb-1">Contact Email *</label>
+                  <label className="block text-[9px] font-black uppercase text-slate-400 mb-0.5">Contact Email *</label>
                   <input
                     type="email"
                     required
                     value={newAddress.email}
                     onChange={(e) => setNewAddress({ ...newAddress, email: e.target.value })}
-                    className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                    className="w-full rounded border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-2.5 py-1 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-indigo-500"
                     placeholder="john@example.com"
                   />
                 </div>
                 <div>
-                  <label className="block text-[9px] font-black uppercase text-slate-405 dark:text-slate-500 tracking-wider mb-1">Phone Number *</label>
+                  <label className="block text-[9px] font-black uppercase text-slate-400 mb-0.5">Phone Number *</label>
                   <input
                     type="text"
                     required
                     value={newAddress.phone}
                     onChange={(e) => setNewAddress({ ...newAddress, phone: e.target.value })}
-                    className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                    placeholder="e.g. +91 9988776655"
+                    className="w-full rounded border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-2.5 py-1 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-indigo-500"
+                    placeholder="+91 9988776655"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[9px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider mb-1">Street Address *</label>
+                <label className="block text-[9px] font-black uppercase text-slate-400 mb-0.5">Street Address *</label>
                 <input
                   type="text"
                   required
                   value={newAddress.street}
                   onChange={(e) => setNewAddress({ ...newAddress, street: e.target.value })}
-                  className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                  placeholder="Apartment, block, street details"
+                  className="w-full rounded border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-2.5 py-1 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-indigo-500"
+                  placeholder="Apartment, suite, street name"
                 />
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-3">
+              <div className="grid gap-2 sm:grid-cols-3">
                 <div>
-                  <label className="block text-[9px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider mb-1">City *</label>
+                  <label className="block text-[9px] font-black uppercase text-slate-400 mb-0.5">City *</label>
                   <input
                     type="text"
                     required
                     value={newAddress.city}
                     onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
-                    className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                    placeholder="City"
+                    className="w-full rounded border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-2.5 py-1 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-indigo-500"
+                    placeholder="New Delhi"
                   />
                 </div>
                 <div>
-                  <label className="block text-[9px] font-black uppercase text-slate-400 dark:text-slate-550 tracking-wider mb-1">State *</label>
+                  <label className="block text-[9px] font-black uppercase text-slate-400 mb-0.5">State *</label>
                   <input
                     type="text"
                     required
                     value={newAddress.state}
                     onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value })}
-                    className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                    placeholder="State"
+                    className="w-full rounded border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-2.5 py-1 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-indigo-500"
+                    placeholder="Delhi"
                   />
                 </div>
                 <div>
-                  <label className="block text-[9px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider mb-1">Country *</label>
+                  <label className="block text-[9px] font-black uppercase text-slate-400 mb-0.5">Country *</label>
                   <input
                     type="text"
                     required
                     value={newAddress.country}
                     onChange={(e) => setNewAddress({ ...newAddress, country: e.target.value })}
-                    className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-4 py-2.5 text-xs font-semibold outline-none transition text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                    placeholder="Country"
+                    className="w-full rounded border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 px-2.5 py-1 text-xs font-semibold text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-indigo-500"
+                    placeholder="India"
                   />
                 </div>
               </div>
 
-              <div className="flex gap-3 justify-end pt-4 border-t border-slate-200 dark:border-slate-800">
+              <div className="flex gap-2 justify-end pt-2 border-t border-slate-100 dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => setShowAddressModal(false)}
-                  className="px-4 py-2 rounded-md border border-slate-200 dark:border-slate-800 text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer bg-transparent"
+                  className="px-3 py-1 rounded border border-slate-200 dark:border-slate-800 text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer bg-transparent"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={adding}
-                  className="px-5 py-2 rounded-md bg-orange-500 hover:bg-orange-600 text-xs font-black uppercase tracking-wider text-slate-100 dark:text-white shadow-md active:scale-95 transition cursor-pointer disabled:opacity-50 border-none"
+                  className="px-3.5 py-1 rounded bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black uppercase tracking-wider transition cursor-pointer shadow-xs disabled:opacity-50 border-none"
                 >
                   {adding ? "Saving..." : "Save Address"}
                 </button>
@@ -1607,6 +2116,7 @@ const Profile = () => {
         mode={vipCodeModalMode}
         token={localStorage.getItem("token") || ""}
       />
+
     </div>
   );
 };

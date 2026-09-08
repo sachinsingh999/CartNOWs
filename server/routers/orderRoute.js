@@ -14,15 +14,15 @@ import {
   returnOrderItem,
   updateOrderItemStatusAdmin,
 } from "../controllers/orderController.js";
-import adminAuth from "../middleware/adminAuth.js";
+import adminAuth, { requirePermission } from "../middleware/adminAuth.js";
 import authUser from "../middleware/auth.js";
 
 const orderRouter = express.Router();
 
 // Admin features
-orderRouter.post("/list", adminAuth, allOrders);
-orderRouter.post("/status", adminAuth, updateStatus);
-orderRouter.post("/update-item-status", adminAuth, updateOrderItemStatusAdmin);
+orderRouter.post("/list", adminAuth, requirePermission("orders"), allOrders);
+orderRouter.post("/status", adminAuth, requirePermission("orders"), updateStatus);
+orderRouter.post("/update-item-status", adminAuth, requirePermission("orders"), updateOrderItemStatusAdmin);
 
 // Payment feature
 orderRouter.post("/place", authUser, placeOrder);

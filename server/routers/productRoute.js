@@ -17,7 +17,7 @@ import {
   getSearchSuggestions
 } from '../controllers/productController.js'
 import upload from '../middleware/multer.js';
-import adminAuth from '../middleware/adminAuth.js';
+import adminAuth, { requirePermission } from '../middleware/adminAuth.js';
 import authUser, { authUserOptional } from '../middleware/auth.js';
 
 const productRouter=express.Router();
@@ -30,12 +30,13 @@ productRouter.post(
     { name: 'image4', maxCount: 1 }
   ]),
   adminAuth,
+  requirePermission("products"),
   addProducts
 );
 
-productRouter.post('/remove',adminAuth,removeProduct)
-productRouter.post('/update-stock',adminAuth,updateStock)
-productRouter.post('/generate-description',adminAuth,generateDescription)
+productRouter.post('/remove',adminAuth,requirePermission("products"),removeProduct)
+productRouter.post('/update-stock',adminAuth,requirePermission("products"),updateStock)
+productRouter.post('/generate-description',adminAuth,requirePermission("products"),generateDescription)
 productRouter.get('/single/:id',authUserOptional,singleProduct)
 productRouter.post('/bulk', bulkProducts)
 productRouter.post('/review/:id',authUser,addProductReview)

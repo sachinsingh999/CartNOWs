@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Outlet, useNavigate, useLocation, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
@@ -9,7 +9,8 @@ import Logo from "./Logo";
 import { 
   User, BarChart3, Package, ShoppingBag, DollarSign, TrendingUp, 
   MessageSquare, Bell, Settings, Search, PlusCircle, Layers, 
-  FileText, Menu, ChevronLeft, Sun, Moon, RotateCcw, X
+  FileText, Menu, ChevronLeft, Sun, Moon, RotateCcw, X,
+  Store, ExternalLink, ArrowRight, ShieldCheck, Check
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -27,6 +28,39 @@ const SellerLayout = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(typeof window !== "undefined" ? window.innerWidth < 768 : false);
+
+  // Global Search & Command Palette State
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const searchInputRef = useRef(null);
+  const searchContainerRef = useRef(null);
+
+  // Keyboard shortcut listener for Cmd+K / Ctrl+K and Escape
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setIsSearchOpen(prev => !prev);
+        setTimeout(() => searchInputRef.current?.focus(), 50);
+      } else if (e.key === "Escape") {
+        setIsSearchOpen(false);
+        searchInputRef.current?.blur();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  // Click outside to close search popover
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target)) {
+        setIsSearchOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -153,6 +187,50 @@ const SellerLayout = () => {
     }
   }, [token]);
 
+  const navPages = [
+    { name: "Dashboard Overview", path: "/", icon: BarChart3, desc: "Store performance & summary" },
+    { name: "Product Catalog", path: "/products", icon: Package, desc: "Inventory & product listings" },
+    { name: "Add New Product", path: "/add-product", icon: PlusCircle, desc: "Create a new product listing" },
+    { name: "Orders Desk", path: "/orders", icon: ShoppingBag, desc: "Fulfillment & shipments" },
+    { name: "Returns & RMA", path: "/returns", icon: RotateCcw, desc: "Refunds and returned goods" },
+    { name: "Inventory Stock", path: "/inventory", icon: Layers, desc: "Warehouse stock management" },
+    { name: "Analytics & Trends", path: "/analytics", icon: TrendingUp, desc: "Customer metrics and conversion" },
+    { name: "Revenue & Payouts", path: "/revenue", icon: DollarSign, desc: "Financial balance & payout history" },
+    { name: "Tax Invoices", path: "/invoices", icon: FileText, desc: "GST invoices and monthly billing" },
+    { name: "Customer Reviews", path: "/reviews", icon: MessageSquare, desc: "Buyer ratings and product feedback" },
+    { name: "Store Settings & Profile", path: "/profile", icon: Settings, desc: "Merchant credentials and security" },
+  ];
+
+  const trimmedSearch = searchQuery.trim().toLowerCase();
+
+  const matchingPages = navPages.filter(p =>
+    !trimmedSearch ||
+    p.name.toLowerCase().includes(trimmedSearch) ||
+    p.desc.toLowerCase().includes(trimmedSearch)
+  ).slice(0, trimmedSearch ? 4 : 5);
+
+  const matchingProducts = trimmedSearch
+    ? (products || []).filter(p =>
+        (p.name && p.name.toLowerCase().includes(trimmedSearch)) ||
+        (p.category && p.category.toLowerCase().includes(trimmedSearch))
+      ).slice(0, 4)
+    : [];
+
+  const matchingOrders = trimmedSearch
+    ? (orders || []).filter(o =>
+        (o._id && o._id.toLowerCase().includes(trimmedSearch)) ||
+        (o.status && o.status.toLowerCase().includes(trimmedSearch)) ||
+        (o.address?.firstName && o.address.firstName.toLowerCase().includes(trimmedSearch)) ||
+        (o.address?.city && o.address.city.toLowerCase().includes(trimmedSearch))
+      ).slice(0, 3)
+    : [];
+
+  const handleNavigateFromSearch = (path) => {
+    navigate(path);
+    setIsSearchOpen(false);
+    setSearchQuery("");
+  };
+
   const contextValues = {
     token,
     seller,
@@ -170,48 +248,258 @@ const SellerLayout = () => {
   return (
     <div className="flex flex-col h-screen overflow-hidden relative bg-slate-50 dark:bg-slate-950 w-full">
       {/* Top Full-Width Header / Navigation Bar */}
-      <header className="h-14 md:h-16 bg-white/95 dark:bg-[#0B0F17]/95 backdrop-blur-md pl-1.5 sm:pl-3 pr-3 md:pr-6 flex items-center justify-between shrink-0 z-40 relative shadow-xs">
-        {/* Subtle Ambient Bottom Glow Line */}
-        <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-orange-500/30 to-transparent pointer-events-none" />
-
+      <header className="h-16 bg-white/95 dark:bg-[#0B0F17]/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 px-3 sm:px-5 flex items-center justify-between shrink-0 z-40 relative">
         {/* Left Side: Brand Logo & Navigation Title */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
           <div 
             onClick={() => navigate("/")}
             className="-ml-1 flex items-center gap-2 cursor-pointer group select-none"
+            title="CartNOW Merchant Center"
           >
-            <Logo className="h-8 sm:h-10 w-32 sm:w-40 text-slate-900 dark:text-white group-hover:scale-105 transition-transform duration-200" />
+            <Logo className="h-8 sm:h-9 w-28 sm:w-36 text-slate-900 dark:text-white group-hover:scale-105 transition-transform duration-200" />
           </div>
 
+          <div className="h-4 w-[1px] bg-slate-200 dark:bg-slate-800 hidden sm:block" />
+
+          {/* Active Section Breadcrumb */}
           <div className="hidden sm:flex items-center gap-1.5">
-            <span className="px-2.5 py-1 bg-orange-500/10 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 font-extrabold text-[10px] uppercase tracking-wider rounded-lg flex items-center gap-1.5">
+            <span className="px-2.5 py-1 bg-orange-500/10 dark:bg-orange-950/40 border border-orange-500/20 text-orange-600 dark:text-orange-400 font-bold text-[11px] uppercase tracking-wider rounded-lg flex items-center gap-1.5">
               <span className="h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse" />
               {activeSubTab.replace("-", " ")}
             </span>
           </div>
         </div>
 
-        {/* Center: Search */}
-        <div className="relative w-44 sm:w-80 group">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-orange-500 transition-colors" />
-          <input
-            type="text"
-            placeholder="Search catalog, orders..."
-            className="w-full bg-slate-100/90 dark:bg-slate-900/90 text-slate-800 dark:text-slate-100 rounded-xl pl-9 pr-12 py-1.5 text-xs font-semibold outline-none transition-all duration-200 focus:bg-white dark:focus:bg-slate-950 focus:ring-2 focus:ring-orange-500/25"
-          />
-          <kbd className="hidden sm:inline-flex absolute right-2.5 top-1/2 -translate-y-1/2 items-center gap-0.5 px-1.5 py-0.5 text-[9px] font-mono font-bold text-slate-400 bg-white dark:bg-slate-950 rounded-md shadow-2xs">
-            ⌘K
-          </kbd>
+        {/* Center: Command Palette / Search Input */}
+        <div ref={searchContainerRef} className="relative flex-1 max-w-xs sm:max-w-md mx-2 sm:mx-4">
+          <div className="relative group">
+            <Search 
+              size={14} 
+              className={`absolute left-3 top-1/2 -translate-y-1/2 transition-colors ${
+                isSearchOpen ? "text-orange-500" : "text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300"
+              }`} 
+            />
+            <input
+              ref={searchInputRef}
+              type="text"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                if (!isSearchOpen) setIsSearchOpen(true);
+              }}
+              onFocus={() => setIsSearchOpen(true)}
+              placeholder="Search catalog, orders, pages..."
+              className="w-full bg-slate-100/90 dark:bg-slate-900/90 text-slate-800 dark:text-slate-100 rounded-xl pl-9 pr-14 py-2 text-xs font-semibold outline-none transition-all duration-200 border border-transparent focus:border-orange-500/30 focus:bg-white dark:focus:bg-slate-950 focus:ring-2 focus:ring-orange-500/20 shadow-2xs"
+            />
+            
+            <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
+              {searchQuery ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery("");
+                    searchInputRef.current?.focus();
+                  }}
+                  className="p-1 rounded-md text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition cursor-pointer"
+                >
+                  <X size={12} />
+                </button>
+              ) : (
+                <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[9px] font-mono font-bold text-slate-400 dark:text-slate-500 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md shadow-2xs">
+                  ⌘K
+                </kbd>
+              )}
+            </div>
+          </div>
+
+          {/* Floating Command Palette Results Popover */}
+          <AnimatePresence>
+            {isSearchOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: 6, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 6, scale: 0.98 }}
+                transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
+                className="absolute left-0 right-0 sm:-left-6 sm:-right-6 top-full mt-2 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden z-50 text-left max-h-[70vh] flex flex-col"
+              >
+                {/* Popover Header / Context */}
+                <div className="px-3.5 py-2 bg-slate-50/90 dark:bg-slate-950/80 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                    {trimmedSearch ? `Results for "${searchQuery}"` : "Quick Navigation & Tools"}
+                  </span>
+                  <span className="text-[10px] font-medium text-slate-400">
+                    {matchingPages.length + matchingProducts.length + matchingOrders.length} items
+                  </span>
+                </div>
+
+                <div className="overflow-y-auto p-2 space-y-3 divide-y divide-slate-100 dark:divide-slate-800/60">
+                  {/* Matching Pages */}
+                  {matchingPages.length > 0 && (
+                    <div className="pt-1 first:pt-0">
+                      <p className="px-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                        Pages & Actions
+                      </p>
+                      <div className="space-y-0.5">
+                        {matchingPages.map((page) => {
+                          const Icon = page.icon;
+                          const isActive = location.pathname === page.path;
+                          return (
+                            <button
+                              key={page.path}
+                              onClick={() => handleNavigateFromSearch(page.path)}
+                              className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-left transition cursor-pointer group ${
+                                isActive 
+                                  ? "bg-orange-500/10 text-orange-600 dark:text-orange-400" 
+                                  : "hover:bg-slate-100 dark:hover:bg-slate-800/70 text-slate-700 dark:text-slate-200"
+                              }`}
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <div className={`p-1.5 rounded-lg shrink-0 ${
+                                  isActive 
+                                    ? "bg-orange-500 text-white" 
+                                    : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-orange-500 group-hover:text-white transition-colors"
+                                }`}>
+                                  <Icon size={14} />
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-xs font-bold truncate">{page.name}</p>
+                                  <p className="text-[10px] text-slate-400 truncate">{page.desc}</p>
+                                </div>
+                              </div>
+                              <ArrowRight size={12} className="text-slate-300 dark:text-slate-600 group-hover:text-orange-500 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Matching Products */}
+                  {matchingProducts.length > 0 && (
+                    <div className="pt-2">
+                      <p className="px-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                        Products ({matchingProducts.length})
+                      </p>
+                      <div className="space-y-0.5">
+                        {matchingProducts.map((prod) => (
+                          <button
+                            key={prod._id}
+                            onClick={() => handleNavigateFromSearch("/products")}
+                            className="w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-left hover:bg-slate-100 dark:hover:bg-slate-800/70 text-slate-700 dark:text-slate-200 transition cursor-pointer group"
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              {prod.image && prod.image[0] ? (
+                                <img 
+                                  src={prod.image[0]} 
+                                  alt={prod.name} 
+                                  className="h-8 w-8 rounded-lg object-cover bg-slate-100 dark:bg-slate-800 shrink-0 border border-slate-200 dark:border-slate-700" 
+                                />
+                              ) : (
+                                <div className="h-8 w-8 rounded-lg bg-orange-100 dark:bg-orange-950/50 text-orange-600 flex items-center justify-center shrink-0">
+                                  <Package size={14} />
+                                </div>
+                              )}
+                              <div className="min-w-0">
+                                <p className="text-xs font-bold truncate text-slate-900 dark:text-slate-100">{prod.name}</p>
+                                <p className="text-[10px] text-slate-400 truncate flex items-center gap-1.5">
+                                  <span>{prod.category}</span>
+                                  <span>•</span>
+                                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">₹{prod.price}</span>
+                                </p>
+                              </div>
+                            </div>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500 shrink-0 ml-2 group-hover:bg-orange-500 group-hover:text-white transition-colors">
+                              View
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Matching Orders */}
+                  {matchingOrders.length > 0 && (
+                    <div className="pt-2">
+                      <p className="px-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                        Orders ({matchingOrders.length})
+                      </p>
+                      <div className="space-y-0.5">
+                        {matchingOrders.map((ord) => (
+                          <button
+                            key={ord._id}
+                            onClick={() => handleNavigateFromSearch("/orders")}
+                            className="w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-left hover:bg-slate-100 dark:hover:bg-slate-800/70 text-slate-700 dark:text-slate-200 transition cursor-pointer group"
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div className="h-8 w-8 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                                <ShoppingBag size={14} />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-xs font-bold truncate text-slate-900 dark:text-slate-100">
+                                  Order #{ord._id?.slice(-6).toUpperCase()}
+                                </p>
+                                <p className="text-[10px] text-slate-400 truncate">
+                                  {ord.address?.firstName || "Customer"} • {ord.status || "Processing"}
+                                </p>
+                              </div>
+                            </div>
+                            <span className="text-xs font-bold text-slate-900 dark:text-slate-100 shrink-0 ml-2">
+                              ₹{ord.amount}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Empty state */}
+                  {matchingPages.length === 0 && matchingProducts.length === 0 && matchingOrders.length === 0 && (
+                    <div className="py-8 text-center">
+                      <Search size={24} className="mx-auto text-slate-300 dark:text-slate-600 mb-2" />
+                      <p className="text-xs font-bold text-slate-700 dark:text-slate-300">No matching results</p>
+                      <p className="text-[11px] text-slate-400 mt-0.5">Try searching for a product name, order ID, or section</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Popover Footer Shortcuts */}
+                <div className="px-3.5 py-2 bg-slate-50/90 dark:bg-slate-950/80 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[10px] text-slate-400">
+                  <div className="flex items-center gap-2">
+                    <span className="flex items-center gap-1">
+                      <kbd className="px-1 py-0.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded text-[9px] font-mono">ESC</kbd>
+                      <span>to dismiss</span>
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-medium text-orange-600 dark:text-orange-400">
+                    CartNOW Search
+                  </span>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* Right: Actions */}
-        <div className="flex items-center gap-2.5 font-semibold">
+        {/* Right: Actions & Profile */}
+        <div className="flex items-center gap-2 sm:gap-2.5 font-semibold shrink-0">
+          {/* View Live Store Shortcut */}
+          <a
+            href="http://localhost:5173"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-orange-600 dark:hover:text-orange-400 bg-slate-100/90 dark:bg-slate-900/90 hover:bg-orange-50 dark:hover:bg-orange-950/30 border border-slate-200/60 dark:border-slate-800/80 transition-all group cursor-pointer"
+            title="Open customer storefront in new tab"
+          >
+            <Store size={14} className="text-slate-400 group-hover:text-orange-500 transition-colors" />
+            <span>Storefront</span>
+            <ExternalLink size={11} className="text-slate-400 group-hover:text-orange-500 transition-colors" />
+          </a>
+
           {/* Notifications Button */}
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => navigate("/notifications")}
-            className="relative p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-xl bg-slate-100/90 dark:bg-slate-900/90 hover:bg-slate-200/80 dark:hover:bg-slate-850 transition cursor-pointer"
+            className="relative p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-xl bg-slate-100/90 dark:bg-slate-900/90 hover:bg-slate-200/80 dark:hover:bg-slate-800 transition cursor-pointer border border-slate-200/60 dark:border-slate-800/80"
             title="Notifications"
           >
             <Bell size={16} />
@@ -223,11 +511,13 @@ const SellerLayout = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={toggleTheme}
-            className="p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-xl bg-slate-100/90 dark:bg-slate-900/90 hover:bg-slate-200/80 dark:hover:bg-slate-850 transition cursor-pointer"
-            title="Toggle Theme"
+            className="p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-xl bg-slate-100/90 dark:bg-slate-900/90 hover:bg-slate-200/80 dark:hover:bg-slate-800 transition cursor-pointer border border-slate-200/60 dark:border-slate-800/80"
+            title="Toggle Light / Dark Mode"
           >
             {theme === "dark" ? <Sun size={16} className="text-amber-400" /> : <Moon size={16} className="text-indigo-600" />}
           </motion.button>
+
+          <div className="h-5 w-[1px] bg-slate-200 dark:bg-slate-800 hidden sm:block mx-0.5" />
 
           {/* Profile Dropdown Toggle */}
           <div className="relative">
@@ -235,15 +525,20 @@ const SellerLayout = () => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setShowDropdown(!showDropdown)}
-              className="flex items-center gap-2 p-1.5 pl-1.5 pr-3 rounded-xl bg-slate-100/90 dark:bg-slate-900/90 hover:bg-slate-200/80 dark:hover:bg-slate-850 transition cursor-pointer"
+              className="flex items-center gap-2 p-1.5 pl-1.5 pr-2.5 rounded-xl bg-slate-100/90 dark:bg-slate-900/90 hover:bg-slate-200/80 dark:hover:bg-slate-800 transition cursor-pointer border border-slate-200/60 dark:border-slate-800/80"
             >
-              <div className="h-7 w-7 rounded-lg bg-gradient-to-tr from-orange-500 to-amber-500 text-white flex items-center justify-center font-black text-xs shadow-xs relative">
+              <div className="h-7 w-7 rounded-lg bg-gradient-to-tr from-orange-500 to-amber-500 text-white flex items-center justify-center font-black text-xs shadow-xs relative shrink-0">
                 {seller?.name ? seller.name[0].toUpperCase() : "S"}
                 <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500 ring-1.5 ring-white dark:ring-slate-950" />
               </div>
-              <span className="text-xs font-bold text-slate-800 dark:text-slate-200 hidden md:block max-w-[100px] truncate">
-                {seller?.shopName || seller?.name || "Merchant"}
-              </span>
+              <div className="text-left hidden md:block">
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 max-w-[110px] truncate leading-tight">
+                  {seller?.shopName || seller?.name || "Merchant"}
+                </p>
+                <p className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400 leading-none">
+                  Online
+                </p>
+              </div>
               <ChevronLeft size={13} className={`text-slate-400 transition-transform duration-200 hidden md:block ${showDropdown ? "rotate-90" : "-rotate-90"}`} />
             </motion.button>
 
@@ -253,42 +548,71 @@ const SellerLayout = () => {
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowDropdown(false)} />
                   <motion.div 
-                    initial={{ opacity: 0, scale: 0.95, y: 5 }}
+                    initial={{ opacity: 0, scale: 0.95, y: 6 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95, y: 5 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 6 }}
                     transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
-                    className="absolute right-0 mt-2 w-52 bg-white dark:bg-slate-900 rounded-2xl shadow-xl py-1.5 z-50 text-left overflow-hidden"
+                    className="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-xl py-2 z-50 text-left overflow-hidden"
                   >
-                    <div className="px-4 py-2.5 bg-slate-50/50 dark:bg-slate-950/40">
-                      <p className="text-xs font-black text-slate-900 dark:text-slate-100 truncate">{seller?.name || "Merchant User"}</p>
-                      <p className="text-[10px] font-medium text-slate-400 truncate mt-0.5">{seller?.email}</p>
+                    {/* Merchant Header Details */}
+                    <div className="px-4 py-3 bg-slate-50/80 dark:bg-slate-950/60 border-b border-slate-100 dark:border-slate-800">
+                      <div className="flex items-center gap-2.5">
+                        <div className="h-9 w-9 rounded-xl bg-orange-500 text-white flex items-center justify-center font-bold text-sm shadow-xs shrink-0">
+                          {seller?.name ? seller.name[0].toUpperCase() : "S"}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5">
+                            <p className="text-xs font-black text-slate-900 dark:text-slate-100 truncate">
+                              {seller?.shopName || seller?.name || "Merchant User"}
+                            </p>
+                            <ShieldCheck size={13} className="text-orange-500 shrink-0" title="Verified Merchant" />
+                          </div>
+                          <p className="text-[11px] font-medium text-slate-400 truncate">
+                            {seller?.email || "seller@cartnow.in"}
+                          </p>
+                        </div>
+                      </div>
                     </div>
                     
-                    <button 
-                      onClick={() => { navigate("/profile"); setShowDropdown(false); }}
-                      className="w-full text-left px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition cursor-pointer flex items-center gap-2.5"
-                    >
-                      <Settings size={14} className="text-slate-400" />
-                      <span>Store Settings</span>
-                    </button>
-                    
-                    <button 
-                      onClick={() => { navigate("/notifications"); setShowDropdown(false); }}
-                      className="w-full text-left px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition cursor-pointer flex items-center gap-2.5"
-                    >
-                      <Bell size={14} className="text-slate-400" />
-                      <span>Notifications</span>
-                    </button>
+                    {/* Quick Menu Actions */}
+                    <div className="py-1">
+                      <button 
+                        onClick={() => { navigate("/profile"); setShowDropdown(false); }}
+                        className="w-full text-left px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/70 transition cursor-pointer flex items-center gap-2.5"
+                      >
+                        <Settings size={14} className="text-slate-400" />
+                        <span>Store Settings & Profile</span>
+                      </button>
 
-                    <div className="my-1" />
+                      <button 
+                        onClick={() => { navigate("/products"); setShowDropdown(false); }}
+                        className="w-full text-left px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/70 transition cursor-pointer flex items-center gap-2.5"
+                      >
+                        <Package size={14} className="text-slate-400" />
+                        <span>Product Catalog</span>
+                      </button>
 
-                    <button 
-                      onClick={() => { logout(); setShowDropdown(false); }}
-                      className="w-full text-left px-4 py-2 text-xs font-extrabold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition cursor-pointer flex items-center gap-2.5"
-                    >
-                      <User size={14} className="text-red-500 dark:text-red-400" />
-                      <span>Sign Out</span>
-                    </button>
+                      <button 
+                        onClick={() => { navigate("/notifications"); setShowDropdown(false); }}
+                        className="w-full text-left px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/70 transition cursor-pointer flex items-center gap-2.5"
+                      >
+                        <Bell size={14} className="text-slate-400" />
+                        <span>Notifications</span>
+                      </button>
+                    </div>
+
+                    <div className="border-t border-slate-100 dark:border-slate-800 my-1" />
+
+                    {/* Sign Out Button */}
+                    <div className="px-1.5">
+                      <button 
+                        onClick={() => { logout(); setShowDropdown(false); }}
+                        className="w-full text-left px-3 py-2 text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition cursor-pointer flex items-center gap-2.5"
+                      >
+                        <User size={14} className="text-red-500 dark:text-red-400" />
+                        <span>Sign Out</span>
+                      </button>
+                    </div>
                   </motion.div>
                 </>
               )}
@@ -300,7 +624,7 @@ const SellerLayout = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsMobileSidebarOpen(true)}
-            className="md:hidden p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-xl bg-slate-100 dark:bg-slate-900 transition cursor-pointer shadow-2xs"
+            className="md:hidden p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-xl bg-slate-100 dark:bg-slate-900 transition cursor-pointer border border-slate-200/60 dark:border-slate-800/80"
             title="Open Navigation"
           >
             <Menu size={18} />

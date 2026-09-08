@@ -873,6 +873,16 @@ export const processRefund = async (req, res) => {
     }
 
     if (!rma) {
+      const returnReq = await returnRequestModel.findById(rmaId);
+      if (returnReq) {
+        returnReq.status = "Completed";
+        await returnReq.save();
+        return res.json({
+          success: true,
+          message: "Refund processed & marked as completed successfully",
+          refund: { amount: returnReq.amount, refundStatus: "Successful" }
+        });
+      }
       return res.status(404).json({ success: false, message: "RMA not found" });
     }
 

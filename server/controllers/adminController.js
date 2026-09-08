@@ -630,7 +630,7 @@ export const resolveDispute = async (req, res) => {
 /* ================= RETURN & REFUND MANAGEMENT ================= */
 export const getAllReturnRequestsAdmin = async (req, res) => {
   try {
-    const returns = await returnRequestModel.find({}).populate("userId", "name").sort({ createdAt: -1 });
+    const returns = await returnRequestModel.find({}).populate("customerId", "name email").sort({ createdAt: -1 });
     res.json({ success: true, returns });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -829,6 +829,19 @@ export const getAuditLogs = async (req, res) => {
 
 export const getDashboardSummary = async (req, res) => {
   try {
+    const isSuper = req.admin?.role === "superadmin" || req.admin?.permissions?.includes("*");
+    const perms = req.admin?.permissions || [];
+
+    const canOrders = isSuper || perms.includes("orders");
+    const canReturns = isSuper || perms.includes("returns");
+    const canProducts = isSuper || perms.includes("products");
+    const canSupport = isSuper || perms.includes("support");
+    const canSellers = isSuper || perms.includes("sellers");
+    const canCustomers = isSuper || perms.includes("customers");
+    const canAgents = isSuper || perms.includes("deliverymen");
+    const canLogs = isSuper;
+    const canFinance = isSuper || perms.includes("finance");
+
     const [
       products,
       orders,
@@ -840,15 +853,15 @@ export const getDashboardSummary = async (req, res) => {
       logs,
       financeSettings
     ] = await Promise.all([
-      productModel.find({ isDeleted: { $ne: true } }).select("_id name sellerId stock price category status").lean(),
-      orderModel.find({}).select("_id amount orderStatus paymentStatus createdAt items deliverymanId address").lean(),
-      returnRequestModel.find({}).select("_id status orderId orderItemId productName createdAt").sort({ createdAt: -1 }).limit(100).lean(),
-      helpRequestModel.find({}).select("_id status subject priority createdAt").sort({ createdAt: -1 }).limit(100).lean(),
-      sellerModel.find({}).select("_id name shopName status commissionRate balance revenue").lean(),
-      userModel.find({}).select("_id name email createdAt isBlocked").lean(),
-      deliverymanModel.find({}).select("_id name email status phone").lean(),
-      auditLogModel.find({}).sort({ createdAt: -1 }).limit(50).lean(),
-      platformSettingModel.findOne({}).lean()
+      canProducts ? productModel.find({ isDeleted: { $ne: true } }).select("_id name sellerId stock price category status").lean() : Promise.resolve([]),
+      canOrders ? orderModel.find({}).select("_id amount orderStatus paymentStatus createdAt items deliverymanId address").lean() : Promise.resolve([]),
+      canReturns ? returnRequestModel.find({}).select("_id status orderId orderItemId productName createdAt").sort({ createdAt: -1 }).limit(100).lean() : Promise.resolve([]),
+      canSupport ? helpRequestModel.find({}).select("_id status subject priority createdAt").sort({ createdAt: -1 }).limit(100).lean() : Promise.resolve([]),
+      canSellers ? sellerModel.find({}).select("_id name shopName status commissionRate balance revenue").lean() : Promise.resolve([]),
+      canCustomers ? userModel.find({}).select("_id name email createdAt isBlocked").lean() : Promise.resolve([]),
+      canAgents ? deliverymanModel.find({}).select("_id name email status phone").lean() : Promise.resolve([]),
+      canLogs ? auditLogModel.find({}).sort({ createdAt: -1 }).limit(50).lean() : Promise.resolve([]),
+      canFinance ? platformSettingModel.findOne({}).lean() : Promise.resolve(null)
     ]);
 
     const formattedLogs = logs.map((log) => ({

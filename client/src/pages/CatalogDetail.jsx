@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import NewArrivalsLanding from "../components/NewArrivalsLanding";
 import TrendingNowLanding from "../components/TrendingNowLanding";
+import { ProductGridSkeleton } from "../components/SkeletonLoader";
 
 const CatalogDetail = ({ type }) => {
   const { slug } = useParams();

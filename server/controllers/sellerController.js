@@ -175,8 +175,21 @@ export const resetPassword = async (req, res) => {
 
 export const changePassword = async (req, res) => {
   try {
-    const { oldPassword, newPassword } = req.body;
+    const oldPassword = req.body.oldPassword || req.body.currentPassword;
+    const { newPassword } = req.body;
+
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({ success: false, message: "Please provide both current and new password" });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ success: false, message: "New password must be at least 6 characters long" });
+    }
+
     const seller = await sellerModel.findById(req.seller._id);
+    if (!seller) {
+      return res.status(404).json({ success: false, message: "Seller account not found" });
+    }
 
     const isMatch = await bcrypt.compare(oldPassword, seller.password);
     if (!isMatch) return res.status(400).json({ success: false, message: "Incorrect current password" });
@@ -294,6 +307,20 @@ export const createProduct = async (req, res) => {
         req.files.forEach(f => fs.unlink(f.path, () => {}));
       }
       return res.status(400).json({ success: false, message: "Missing required fields" });
+    }
+
+    if (Number(price) < 0) {
+      if (req.files) {
+        req.files.forEach(f => fs.unlink(f.path, () => {}));
+      }
+      return res.status(400).json({ success: false, message: "Price cannot be negative" });
+    }
+
+    if (stock !== undefined && Number(stock) < 0) {
+      if (req.files) {
+        req.files.forEach(f => fs.unlink(f.path, () => {}));
+      }
+      return res.status(400).json({ success: false, message: "Stock cannot be negative" });
     }
 
     // Resolve Category Object or suggest it
@@ -616,6 +643,17 @@ export const createProduct = async (req, res) => {
       }
     });
 
+    for (const v of dynamicVariants || []) {
+      if (v.price !== undefined && Number(v.price) < 0) {
+        if (req.files) req.files.forEach(f => fs.unlink(f.path, () => {}));
+        return res.status(400).json({ success: false, message: "Variant price cannot be negative" });
+      }
+      if (v.stock !== undefined && Number(v.stock) < 0) {
+        if (req.files) req.files.forEach(f => fs.unlink(f.path, () => {}));
+        return res.status(400).json({ success: false, message: "Variant stock cannot be negative" });
+      }
+    }
+
     const resolvedVariants = (dynamicVariants || []).map(v => {
       let vImages = [];
       if (Array.isArray(v.images)) {
@@ -629,8 +667,8 @@ export const createProduct = async (req, res) => {
       }
       return {
         sku: v.sku || "",
-        price: (v.price !== undefined && v.price !== null && !isNaN(Number(v.price))) ? Number(v.price) : Number(price),
-        stock: (v.stock !== undefined && v.stock !== null && !isNaN(Number(v.stock))) ? Number(v.stock) : 0,
+        price: Math.max(0, (v.price !== undefined && v.price !== null && !isNaN(Number(v.price))) ? Number(v.price) : Number(price)),
+        stock: Math.max(0, (v.stock !== undefined && v.stock !== null && !isNaN(Number(v.stock))) ? Number(v.stock) : 0),
         images: vImages,
         barcode: v.barcode || "",
         availability: v.availability !== undefined ? !!v.availability : true,
@@ -641,7 +679,7 @@ export const createProduct = async (req, res) => {
     const product = await productModel.create({
       name,
       description,
-      price: Number(price),
+      price: Math.max(0, Number(price)),
       images: finalImageUrls,
       category: catObj ? catObj.name : category,
       subCategory: subCategory || "",
@@ -650,7 +688,7 @@ export const createProduct = async (req, res) => {
       audience: req.body.audience || "Unisex",
       brand: finalBrandName,
       sku: sku || "",
-      stock: Number(stock) || 0,
+      stock: Math.max(0, Number(stock) || 0),
       sizes: isArrayFormat
         ? (dynamicAttributes.find(a => a.name.toLowerCase() === "size")?.values || 
            (dynamicAttributes.find(a => a.name.toLowerCase() === "size")?.value ? [dynamicAttributes.find(a => a.name.toLowerCase() === "size").value] : []))
@@ -726,13 +764,25 @@ export const updateProduct = async (req, res) => {
 
     product.name = name ?? product.name;
     product.description = description ?? product.description;
-    product.price = price ?? product.price;
+    if (price !== undefined) {
+      const p = Number(price);
+      if (isNaN(p) || p < 0) {
+        return res.status(400).json({ success: false, message: "Price cannot be negative" });
+      }
+      product.price = p;
+    }
     product.category = category ?? product.category;
     product.subCategory = subCategory ?? product.subCategory;
     product.collection = collection ?? product.collection;
     product.brand = brand ?? product.brand;
     product.sku = sku ?? product.sku;
-    product.stock = stock ?? product.stock;
+    if (stock !== undefined) {
+      const s = Number(stock);
+      if (isNaN(s) || s < 0) {
+        return res.status(400).json({ success: false, message: "Stock cannot be negative" });
+      }
+      product.stock = s;
+    }
     product.sizes = sizes ?? product.sizes;
     
     if (tags !== undefined) {
@@ -960,9 +1010,13 @@ export const getAllSellerProducts = async (req, res) => {
 export const updateStock = async (req, res) => {
   try {
     const { id, stock } = req.body;
+    const stockNum = parseInt(stock, 10);
+    if (isNaN(stockNum) || stockNum < 0) {
+      return res.status(400).json({ success: false, message: "Stock cannot be negative" });
+    }
     const product = await productModel.findOneAndUpdate(
       { _id: id, sellerId: req.seller._id },
-      { stock },
+      { stock: stockNum },
       { new: true }
     );
     if (!product) return res.status(404).json({ success: false, message: "Product not found" });
@@ -977,8 +1031,15 @@ export const bulkStockUpdate = async (req, res) => {
     const { updates } = req.body; // array of { id, stock }
     if (!Array.isArray(updates)) return res.status(400).json({ success: false, message: "Updates must be an array" });
 
+    for (const u of updates) {
+      const s = parseInt(u.stock, 10);
+      if (isNaN(s) || s < 0) {
+        return res.status(400).json({ success: false, message: "Stock values cannot be negative" });
+      }
+    }
+
     const promises = updates.map(u =>
-      productModel.updateOne({ _id: u.id, sellerId: req.seller._id }, { stock: u.stock })
+      productModel.updateOne({ _id: u.id, sellerId: req.seller._id }, { stock: Math.max(0, parseInt(u.stock, 10) || 0) })
     );
     await Promise.all(promises);
 

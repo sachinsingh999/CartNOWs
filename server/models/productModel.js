@@ -128,7 +128,7 @@ const productSchema = new mongoose.Schema({
         Color: { type: String, default: "", trim: true },
         Size: { type: String, default: "", trim: true },
         sku: { type: String, default: "", trim: true },
-        price: { type: Number, default: 0 },
+        price: { type: Number, default: 0, min: 0 },
         stock: { type: Number, default: 0, min: 0 },
         images: { type: [String], default: [] },
         barcode: { type: String, default: "" },

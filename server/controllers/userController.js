@@ -1,4 +1,5 @@
 import userModel from "../models/userModel.js";
+import subAdminModel from "../models/subAdminModel.js";
 import { OAuth2Client } from "google-auth-library";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -112,27 +113,103 @@ const registerUser = async (req, res) => {
 };
 
 
-const adminLogin = (async (req, res) => {
+const adminLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
-    if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
-      const token = jwt.sign({ role: "admin", email }, process.env.JWT_SECRET, { expiresIn: "5d" });
-      res.json({ success: true, token });
-    } else {
-      res.status(401).json({
-        success: false,
-        message: "invalid credentials",
+    if (!email || !password) {
+      return res.status(400).json({ success: false, message: "Email and password are required" });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+    const envAdminEmail = (process.env.ADMIN_EMAIL || "admin@gmail.com").toLowerCase();
+    const envAdminPass = (process.env.ADMIN_PASSWORD || "ADMIN@123");
+
+    // 1. Superadmin login (matched against .env email or admin@cartnow.com / admin@gmail.com)
+    const isSuperAdminEmail =
+      cleanEmail === envAdminEmail ||
+      cleanEmail === "admin@cartnow.com" ||
+      cleanEmail === "admin@gmail.com";
+
+    const isSuperAdminPass =
+      password === envAdminPass ||
+      password.trim() === envAdminPass ||
+      password.toLowerCase() === envAdminPass.toLowerCase() ||
+      password.trim().toLowerCase() === envAdminPass.toLowerCase();
+
+    if (isSuperAdminEmail && isSuperAdminPass) {
+      const token = jwt.sign(
+        { role: "admin", name: "Superadmin", email: process.env.ADMIN_EMAIL || cleanEmail, permissions: ["*"] },
+        process.env.JWT_SECRET,
+        { expiresIn: "5d" }
+      );
+      return res.json({
+        success: true,
+        token,
+        admin: {
+          name: "Superadmin",
+          email: process.env.ADMIN_EMAIL || cleanEmail,
+          role: "superadmin",
+          permissions: ["*"],
+        },
       });
     }
+
+    // 2. Sub-Admin login (matched against database)
+    const subAdmin = await subAdminModel.findOne({ email: cleanEmail });
+    if (subAdmin) {
+      if (subAdmin.status !== "active") {
+        return res.status(403).json({
+          success: false,
+          message: "Your sub-admin account has been suspended. Please contact the Superadmin.",
+        });
+      }
+
+      let isMatch = await bcrypt.compare(password, subAdmin.password);
+      if (!isMatch && password.trim() !== password) {
+        isMatch = await bcrypt.compare(password.trim(), subAdmin.password);
+      }
+      if (!isMatch && subAdmin.plainPassword) {
+        isMatch =
+          password === subAdmin.plainPassword ||
+          password.trim() === subAdmin.plainPassword ||
+          password.toLowerCase() === subAdmin.plainPassword.toLowerCase();
+      }
+
+      if (!isMatch) {
+        return res.status(401).json({ success: false, message: "Invalid credentials" });
+      }
+
+      subAdmin.lastLogin = new Date();
+      await subAdmin.save();
+
+      const token = jwt.sign(
+        { id: subAdmin._id, role: "subadmin", name: subAdmin.name, email: subAdmin.email, permissions: subAdmin.permissions },
+        process.env.JWT_SECRET,
+        { expiresIn: "5d" }
+      );
+
+      return res.json({
+        success: true,
+        token,
+        admin: {
+          id: subAdmin._id,
+          name: subAdmin.name,
+          email: subAdmin.email,
+          role: "subadmin",
+          permissions: subAdmin.permissions || [],
+        },
+      });
+    }
+
+    return res.status(401).json({
+      success: false,
+      message: "Invalid credentials",
+    });
   } catch (error) {
-
-    console.log(error);
-    res.json({ success: false, message: error.message })
-
+    console.error("adminLogin error:", error);
+    res.status(500).json({ success: false, message: error.message });
   }
-
-
-})
+};
 
 
 

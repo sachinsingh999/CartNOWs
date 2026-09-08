@@ -188,31 +188,31 @@ const AdminKPIGrid = ({
         }).join(" ");
 
         if (kpi.isRevenueCard) {
-          // Dedicated high-density card layout for Admin Revenue Card
+          // Dedicated high-density card layout for Admin Revenue Card (adaptive light & dark mode)
           return (
             <div 
               key={idx} 
-              className="col-span-1 sm:col-span-2 lg:col-span-1 bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 dark:from-slate-950 dark:via-gray-900 dark:to-indigo-950 border border-slate-800 dark:border-indigo-500/20 rounded-xl p-4 flex flex-col justify-between hover:shadow-lg transition-all duration-300 group relative overflow-hidden"
+              className="col-span-1 sm:col-span-2 lg:col-span-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/[0.08] rounded-xl p-4 flex flex-col justify-between hover:border-slate-300 dark:hover:border-slate-700/80 hover:shadow-md transition-all duration-300 group relative overflow-hidden shadow-xs"
             >
               <div className="absolute top-0 right-0 -mt-4 -mr-4 h-24 w-24 bg-emerald-500/5 rounded-full blur-xl pointer-events-none" />
               <div className="flex items-center justify-between z-10">
-                <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400">
+                <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   {kpi.label}
                 </span>
-                <div className="h-7 w-7 rounded-lg flex items-center justify-center bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                <div className="h-7 w-7 rounded-lg flex items-center justify-center bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/60 shadow-2xs group-hover:scale-105 transition-transform">
                   <Icon size={14} />
                 </div>
               </div>
 
               <div className="mt-3.5 z-10">
-                <p className="text-2xl font-black tracking-tight text-slate-100 dark:text-white">
+                <p className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
                   {kpi.val}
                 </p>
-                <div className="grid grid-cols-2 gap-2.5 mt-3 pt-3 border-t border-white/[0.06] text-[10px]">
+                <div className="grid grid-cols-2 gap-2.5 mt-3 pt-3 border-t border-slate-100 dark:border-white/[0.06] text-[10px]">
                   {kpi.subMetrics.map((sm, sIdx) => (
                     <div key={sIdx} className="flex flex-col">
-                      <span className="text-slate-400 font-bold uppercase text-[8px] tracking-wider">{sm.label}</span>
-                      <span className={`font-extrabold mt-0.5 ${sm.highlight ? "text-emerald-400" : "text-white"}`}>
+                      <span className="text-slate-400 dark:text-slate-500 font-bold uppercase text-[8px] tracking-wider">{sm.label}</span>
+                      <span className={`font-extrabold mt-0.5 ${sm.highlight ? "text-emerald-600 dark:text-emerald-400" : "text-slate-800 dark:text-slate-200"}`}>
                         {sm.val}
                       </span>
                     </div>

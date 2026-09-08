@@ -95,9 +95,11 @@ app.use('/invoices', express.static(path.join(process.cwd(), 'public', 'invoices
   }
 }));
 import rmsRouter from "./routers/rmsRouter.js";
+import subAdminRouter from "./routers/subAdminRouter.js";
 app.use('/api/order-communication', communicationRouter);
 app.use('/api/social', postRouter);
 app.use('/api/rms', rmsRouter);
+app.use('/api/subadmins', subAdminRouter);
 
 
 

@@ -2,7 +2,7 @@ import express from "express";
 import {
   createSale, getAllSales, toggleSale, deleteSale, getActiveSales,
 } from "../controllers/saleController.js";
-import adminAuth from "../middleware/adminAuth.js";
+import adminAuth, { requirePermission } from "../middleware/adminAuth.js";
 
 const saleRouter = express.Router();
 
@@ -10,9 +10,9 @@ const saleRouter = express.Router();
 saleRouter.get("/active", getActiveSales);
 
 // Admin-protected
-saleRouter.post("/create", adminAuth, createSale);
-saleRouter.get("/all", adminAuth, getAllSales);
-saleRouter.patch("/toggle/:id", adminAuth, toggleSale);
-saleRouter.delete("/delete/:id", adminAuth, deleteSale);
+saleRouter.post("/create", adminAuth, requirePermission("promos"), createSale);
+saleRouter.get("/all", adminAuth, requirePermission("promos"), getAllSales);
+saleRouter.patch("/toggle/:id", adminAuth, requirePermission("promos"), toggleSale);
+saleRouter.delete("/delete/:id", adminAuth, requirePermission("promos"), deleteSale);
 
 export default saleRouter;

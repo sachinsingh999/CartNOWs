@@ -75,10 +75,10 @@ const AdminLayout = () => {
         token={token}
       />
 
-      <div className="flex flex-1 overflow-hidden h-[calc(100vh-60px)] relative w-full">
+      <div className="flex flex-1 overflow-hidden h-[calc(100vh-64px)] relative w-full">
         {isMobileSidebarOpen && (
           <div 
-            className="md:hidden fixed inset-0 top-[60px] bg-slate-950/40 dark:bg-slate-950/65 backdrop-blur-xs z-30 transition-opacity duration-300"
+            className="md:hidden fixed inset-0 top-[64px] bg-slate-950/40 dark:bg-slate-950/65 backdrop-blur-xs z-30 transition-opacity duration-300"
             onClick={() => setIsMobileSidebarOpen(false)}
           />
         )}

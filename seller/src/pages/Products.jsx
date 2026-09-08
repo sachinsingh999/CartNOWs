@@ -142,12 +142,24 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
         return;
       }
 
+      const parsedPrice = parseFloat(editForm.price);
+      if (isNaN(parsedPrice) || parsedPrice <= 0) {
+        toast.error("Valid selling price (> 0) is required.");
+        return;
+      }
+
+      const parsedStock = parseInt(editForm.stock, 10);
+      if (isNaN(parsedStock) || parsedStock < 0) {
+        toast.error("Stock cannot be negative.");
+        return;
+      }
+
       // Update basic product details
       const response = await axios.post(`${backendUrl}/api/seller/update-product`, {
         id: editingProduct._id,
         ...editForm,
-        price: parseFloat(editForm.price),
-        stock: parseInt(editForm.stock) || 0,
+        price: Math.max(0, parsedPrice),
+        stock: Math.max(0, parsedStock),
         images: editImages.map(img => img.imageUrl)
       }, {
         headers: { token }
@@ -919,236 +931,279 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
 
       {/* Edit Product Modal */}
       {editingProduct && (
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-none p-6 md:p-8 flex flex-col max-h-[90vh] shadow-2xl relative animate-scaleUp">
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-3 sm:p-5 md:p-8 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-5xl xl:max-w-6xl 2xl:max-w-7xl rounded-2xl p-5 md:p-7 lg:p-8 flex flex-col max-h-[92vh] shadow-2xl relative animate-scaleUp border border-slate-200/80 dark:border-slate-800">
             <button
               onClick={() => setEditingProduct(null)}
-              className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-none transition cursor-pointer z-10"
+              className="absolute top-5 right-5 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition cursor-pointer z-10"
+              title="Close"
             >
               <X size={20} />
             </button>
 
-            <div className="pb-4 shrink-0">
-              <h2 className="text-xl font-black text-slate-900 dark:text-slate-100 tracking-tight">Edit Product Listing</h2>
-              <p className="text-xs text-slate-400 mt-1">Update product specifications, details, and gallery images.</p>
+            <div className="pb-4 shrink-0 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between pr-10">
+              <div>
+                <div className="flex items-center gap-2.5">
+                  <h2 className="text-xl md:text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">Edit Product Listing</h2>
+                  {editingProduct?.sku && (
+                    <span className="text-[11px] font-mono font-semibold bg-orange-500/10 text-orange-600 dark:text-orange-400 px-2.5 py-0.5 rounded-md">
+                      {editingProduct.sku}
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-slate-400 mt-1">Update product specifications, details, pricing, and gallery images.</p>
+              </div>
             </div>
 
             <form onSubmit={handleEditFormSubmit} className="flex flex-col flex-1 overflow-hidden min-h-0">
-              <div className="flex-1 overflow-y-auto pr-1.5 space-y-5 py-3">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Product Name</label>
-                    <input
-                      type="text"
-                      value={editForm.name}
-                      onChange={(e) => setEditForm({...editForm, name: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                      required
-                    />
-                  </div>
+              <div className="flex-1 overflow-y-auto pr-2 space-y-6 py-4">
+                {/* SECTION 1: Essential Information */}
+                <div className="space-y-3">
+                  <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                    Essential Details
+                  </h3>
 
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Category</label>
-                    <select
-                      value={editForm.category}
-                      onChange={(e) => setEditForm({...editForm, category: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:ring-offset-2 dark:focus:ring-offset-slate-900 cursor-pointer"
-                      required
-                    >
-                      <option value="">Select Category</option>
-                      {editCategories.map(c => (
-                        <option key={c._id} value={c.name}>{c.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Product Name (2 cols) */}
+                    <div className="sm:col-span-2 lg:col-span-2 space-y-1.5">
+                      <label className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Product Name</label>
+                      <input
+                        type="text"
+                        value={editForm.name}
+                        onChange={(e) => setEditForm({...editForm, name: e.target.value})}
+                        className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                        required
+                      />
+                    </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Collection</label>
-                    <select
-                      value={editForm.collection}
-                      onChange={(e) => setEditForm({...editForm, collection: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:ring-offset-2 dark:focus:ring-offset-slate-900 cursor-pointer"
-                    >
-                      <option value="General">General</option>
-                      <option value="Women">Women</option>
-                      <option value="Men">Men</option>
-                      <option value="Kid">Kid</option>
-                      <option value="Unisex">Unisex</option>
-                    </select>
-                  </div>
+                    {/* Category */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Category</label>
+                      <select
+                        value={editForm.category}
+                        onChange={(e) => setEditForm({...editForm, category: e.target.value})}
+                        className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 cursor-pointer"
+                        required
+                      >
+                        <option value="">Select Category</option>
+                        {editCategories.map(c => (
+                          <option key={c._id} value={c.name}>{c.name}</option>
+                        ))}
+                      </select>
+                    </div>
 
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Subcategory</label>
-                    <input
-                      type="text"
-                      value={editForm.subCategory}
-                      onChange={(e) => setEditForm({...editForm, subCategory: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                    />
-                  </div>
-                </div>
+                    {/* Subcategory */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Subcategory</label>
+                      <input
+                        type="text"
+                        value={editForm.subCategory}
+                        onChange={(e) => setEditForm({...editForm, subCategory: e.target.value})}
+                        className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                      />
+                    </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Brand</label>
-                    <input
-                      type="text"
-                      value={editForm.brand}
-                      onChange={(e) => setEditForm({...editForm, brand: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                    />
-                  </div>
+                    {/* Brand */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Brand</label>
+                      <input
+                        type="text"
+                        value={editForm.brand}
+                        onChange={(e) => setEditForm({...editForm, brand: e.target.value})}
+                        className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                      />
+                    </div>
 
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">SKU</label>
-                    <input
-                      type="text"
-                      value={editForm.sku}
-                      onChange={(e) => setEditForm({...editForm, sku: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                    />
-                  </div>
-                </div>
+                    {/* SKU */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">SKU</label>
+                      <input
+                        type="text"
+                        value={editForm.sku}
+                        onChange={(e) => setEditForm({...editForm, sku: e.target.value})}
+                        className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                      />
+                    </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Price (₹ INR)</label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={editForm.price}
-                      onChange={(e) => setEditForm({...editForm, price: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                      required
-                    />
-                  </div>
+                    {/* Price (₹ INR) */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Price (₹ INR)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={editForm.price}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val === "" || parseFloat(val) >= 0) {
+                            setEditForm({...editForm, price: val});
+                          }
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "-" || e.key === "e" || e.key === "E") e.preventDefault();
+                        }}
+                        className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 font-bold"
+                        required
+                      />
+                    </div>
 
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Stock Available</label>
-                    <input
-                      type="number"
-                      value={editForm.stock}
-                      onChange={(e) => setEditForm({...editForm, stock: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                    />
-                  </div>
-                </div>
+                    {/* Stock Available */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Stock Available</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={editForm.stock}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val === "" || parseInt(val, 10) >= 0) {
+                            setEditForm({...editForm, stock: val});
+                          }
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "-" || e.key === "e" || e.key === "E" || e.key === ".") e.preventDefault();
+                        }}
+                        className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 font-bold"
+                      />
+                    </div>
 
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Description</label>
-                  <textarea
-                    rows={3}
-                    value={editForm.description}
-                    onChange={(e) => setEditForm({...editForm, description: e.target.value})}
-                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none text-slate-800 dark:text-slate-100 text-sm outline-none transition resize-none focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                  />
-                </div>
+                    {/* Collection */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Collection</label>
+                      <select
+                        value={editForm.collection}
+                        onChange={(e) => setEditForm({...editForm, collection: e.target.value})}
+                        className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 cursor-pointer"
+                      >
+                        <option value="General">General</option>
+                        <option value="Women">Women</option>
+                        <option value="Men">Men</option>
+                        <option value="Kid">Kid</option>
+                        <option value="Unisex">Unisex</option>
+                      </select>
+                    </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Audience</label>
-                    <select
-                      value={editForm.audience}
-                      onChange={(e) => setEditForm({...editForm, audience: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:ring-offset-2 dark:focus:ring-offset-slate-900 cursor-pointer"
-                    >
-                      <option value="Unisex">Unisex</option>
-                      <option value="Men">Men</option>
-                      <option value="Women">Women</option>
-                      <option value="Kid">Kid</option>
-                    </select>
-                  </div>
+                    {/* Audience */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Audience</label>
+                      <select
+                        value={editForm.audience}
+                        onChange={(e) => setEditForm({...editForm, audience: e.target.value})}
+                        className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 cursor-pointer"
+                      >
+                        <option value="Unisex">Unisex</option>
+                        <option value="Men">Men</option>
+                        <option value="Women">Women</option>
+                        <option value="Kid">Kid</option>
+                      </select>
+                    </div>
 
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Short Description</label>
-                    <input
-                      type="text"
-                      value={editForm.shortDescription}
-                      onChange={(e) => setEditForm({...editForm, shortDescription: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                      placeholder="Short summary description"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Tags (comma-separated)</label>
-                    <input
-                      type="text"
-                      value={editForm.tags}
-                      onChange={(e) => setEditForm({...editForm, tags: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                      placeholder="e.g. shoes, cotton, casual"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Keywords (comma-separated)</label>
-                    <input
-                      type="text"
-                      value={editForm.keywords}
-                      onChange={(e) => setEditForm({...editForm, keywords: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                      placeholder="e.g. nike sneakers, summer wear"
-                    />
+                    {/* Short Description (2 cols) */}
+                    <div className="sm:col-span-2 lg:col-span-2 space-y-1.5">
+                      <label className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Short Description</label>
+                      <input
+                        type="text"
+                        value={editForm.shortDescription}
+                        onChange={(e) => setEditForm({...editForm, shortDescription: e.target.value})}
+                        className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                        placeholder="Short summary description"
+                      />
+                    </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Highlights (comma-separated)</label>
-                    <input
-                      type="text"
-                      value={editForm.highlights}
-                      onChange={(e) => setEditForm({...editForm, highlights: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                      placeholder="e.g. Premium leather, Soft cushioning"
+                {/* SECTION 2: Description & Search Meta */}
+                <div className="space-y-4 pt-2 border-t border-slate-100 dark:border-slate-800/80">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Full Description</label>
+                    <textarea
+                      rows={3}
+                      value={editForm.description}
+                      onChange={(e) => setEditForm({...editForm, description: e.target.value})}
+                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-800 dark:text-slate-100 text-sm outline-none transition resize-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 leading-relaxed"
                     />
                   </div>
 
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Care Instructions (comma-separated)</label>
-                    <input
-                      type="text"
-                      value={editForm.careInstructions}
-                      onChange={(e) => setEditForm({...editForm, careInstructions: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 rounded-none text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-                      placeholder="e.g. Hand wash only, Lay flat to dry"
-                    />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Tags (comma-separated)</label>
+                      <input
+                        type="text"
+                        value={editForm.tags}
+                        onChange={(e) => setEditForm({...editForm, tags: e.target.value})}
+                        className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                        placeholder="e.g. shoes, cotton, casual"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Keywords (comma-separated)</label>
+                      <input
+                        type="text"
+                        value={editForm.keywords}
+                        onChange={(e) => setEditForm({...editForm, keywords: e.target.value})}
+                        className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                        placeholder="e.g. nike sneakers, summer wear"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Highlights (comma-separated)</label>
+                      <input
+                        type="text"
+                        value={editForm.highlights}
+                        onChange={(e) => setEditForm({...editForm, highlights: e.target.value})}
+                        className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                        placeholder="e.g. Premium leather, Soft cushioning"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Care Instructions (comma-separated)</label>
+                      <input
+                        type="text"
+                        value={editForm.careInstructions}
+                        onChange={(e) => setEditForm({...editForm, careInstructions: e.target.value})}
+                        className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-800 dark:text-slate-100 text-sm outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                        placeholder="e.g. Hand wash only, Lay flat to dry"
+                      />
+                    </div>
                   </div>
                 </div>
 
-                {/* Custom Dynamic Specifications Builder */}
-                <div className="space-y-4 pt-4 text-left animate-fade-in">
+                {/* SECTION 3: Custom Dynamic Specifications Builder */}
+                <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800/80">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 text-xs font-black text-indigo-600 uppercase tracking-wider">
-                      <Layers size={13} />
-                      <span>Dynamic Product Attributes</span>
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5 text-xs font-black text-orange-600 dark:text-orange-400 uppercase tracking-wider">
+                        <Layers size={14} />
+                        <span>Dynamic Product Attributes</span>
+                      </div>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500">
+                        {editCustomAttributes.length}
+                      </span>
                     </div>
                     <button
                       type="button"
                       onClick={() => setEditCustomAttributes(prev => [...prev, { key: "", value: "" }])}
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-slate-100 dark:text-white rounded-none text-[10px] font-black uppercase tracking-wider transition cursor-pointer shadow-sm"
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 dark:hover:bg-slate-700 text-white rounded-lg text-[10px] font-black uppercase tracking-wider transition cursor-pointer shadow-sm"
                     >
-                      <Plus size={11} />
+                      <Plus size={12} />
                       <span>Add Attribute</span>
                     </button>
                   </div>
 
                   {editCustomAttributes.length === 0 ? (
-                    <div className="rounded-none py-8 text-center text-slate-400 text-xs italic bg-slate-50/50 dark:bg-slate-950">
-                      No attributes added yet. Click "Add Attribute" to add custom key-value specifications.
+                    <div className="rounded-xl py-6 text-center text-slate-400 text-xs italic bg-slate-50/70 dark:bg-slate-950/70 border border-dashed border-slate-200 dark:border-slate-800">
+                      No custom attributes configured. Click "Add Attribute" to define custom key-value specifications.
                     </div>
                   ) : (
-                    <div className="space-y-3">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                       {editCustomAttributes.map((attr, idx) => (
-                        <div key={idx} className="flex items-center gap-2.5 p-3.5 rounded-none bg-white dark:bg-slate-900 shadow-sm transition hover:shadow-md">
-                          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div key={idx} className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 shadow-sm transition">
+                          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
                             <div className="space-y-1">
-                              <label className="text-[9px] font-bold text-slate-400 uppercase block">Attribute Name</label>
+                              <label className="text-[10px] font-bold text-slate-400 uppercase block">Attribute Name</label>
                               <input
                                 type="text"
                                 placeholder="e.g. RAM, Material, Color"
@@ -1161,11 +1216,11 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                                     return updated;
                                   });
                                 }}
-                                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 rounded-none text-slate-800 dark:text-slate-100 text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                                className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-100 text-xs outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
                               />
                             </div>
                             <div className="space-y-1">
-                              <label className="text-[9px] font-bold text-slate-400 uppercase block">Value</label>
+                              <label className="text-[10px] font-bold text-slate-400 uppercase block">Value</label>
                               <input
                                 type="text"
                                 placeholder="e.g. 16GB, 100% Cotton, Black"
@@ -1178,12 +1233,12 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                                     return updated;
                                   });
                                 }}
-                                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 rounded-none text-slate-800 dark:text-slate-100 text-xs outline-none transition focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                                className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-800 dark:text-slate-100 text-xs outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
                               />
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-1.5 self-end pb-0.5">
+                          <div className="flex items-center gap-1 self-end pb-0.5 shrink-0">
                             <button
                               type="button"
                               disabled={idx === 0}
@@ -1196,7 +1251,8 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                                   return updated;
                                 });
                               }}
-                              className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 disabled:opacity-20 transition cursor-pointer"
+                              className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 disabled:opacity-20 transition cursor-pointer"
+                              title="Move Up"
                             >
                               <ArrowUp size={13} />
                             </button>
@@ -1212,14 +1268,16 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                                   return updated;
                                 });
                               }}
-                              className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 disabled:opacity-20 transition cursor-pointer"
+                              className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 disabled:opacity-20 transition cursor-pointer"
+                              title="Move Down"
                             >
                               <ArrowDown size={13} />
                             </button>
                             <button
                               type="button"
                               onClick={() => setEditCustomAttributes(prev => prev.filter((_, i) => i !== idx))}
-                              className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-red-500 transition cursor-pointer"
+                              className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/40 text-red-500 transition cursor-pointer"
+                              title="Remove"
                             >
                               <Trash2 size={13} />
                             </button>
@@ -1230,12 +1288,17 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                   )}
                 </div>
 
-                {/* Gallery Image Manager */}
-                <div className="space-y-3 pt-3">
+                {/* SECTION 4: Gallery Image Manager */}
+                <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800/80">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Product Gallery</label>
-                      <span className="text-[10px] text-slate-400 block mt-0.5">3 to 10 images required.</span>
+                    <div className="flex items-center gap-2">
+                      <div>
+                        <label className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Product Gallery</label>
+                        <span className="text-[10px] text-slate-400 block">3 to 10 high-resolution images required</span>
+                      </div>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500">
+                        {editImages.length} Images
+                      </span>
                     </div>
                     <div>
                       <input
@@ -1249,7 +1312,7 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                       />
                       <label
                         htmlFor="edit-image-upload-input"
-                        className={`px-3 py-1.5 bg-slate-900 text-slate-100 dark:text-white hover:bg-slate-800 rounded-none text-xs font-bold transition cursor-pointer flex items-center gap-1 ${ editUploadLoading ? "opacity-50 cursor-wait" : "" }`}
+                        className={`px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 text-white rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1.5 shadow-sm ${ editUploadLoading ? "opacity-50 cursor-wait" : "" }`}
                       >
                         <Upload size={13} />
                         <span>{editUploadLoading ? "Uploading..." : "Add Images"}</span>
@@ -1258,53 +1321,65 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                   </div>
 
                   {editLoading ? (
-                    <p className="text-xs text-slate-400 text-center py-4">Loading gallery images...</p>
+                    <p className="text-xs text-slate-400 text-center py-6">Loading gallery images...</p>
                   ) : editImages.length === 0 ? (
-                    <p className="text-xs text-slate-400 text-center py-4">No images in gallery</p>
+                    <div className="rounded-xl py-6 text-center text-slate-400 text-xs italic bg-slate-50/70 dark:bg-slate-950/70 border border-dashed border-slate-200 dark:border-slate-800">
+                      No images in gallery
+                    </div>
                   ) : (
-                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
                       {editImages.map((imgObj, idx) => (
-                        <div key={imgObj._id} className="relative group rounded-none overflow-hidden p-1.5 flex flex-col gap-1.5 shadow-sm bg-slate-50 dark:bg-slate-950">
-                          <img
-                            src={imgObj.imageUrl}
-                            alt="Product"
-                            className="w-full h-16 object-cover rounded-none"
-                          />
+                        <div key={imgObj._id} className="relative group rounded-xl overflow-hidden p-1.5 flex flex-col gap-1.5 shadow-sm bg-slate-50 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800 transition">
+                          <div className="relative w-full h-20 bg-slate-100 dark:bg-slate-900 rounded-lg overflow-hidden">
+                            <img
+                              src={imgObj.imageUrl}
+                              alt="Product"
+                              className="w-full h-full object-cover"
+                            />
+                            {imgObj.isCover && (
+                              <span className="absolute top-1 left-1 bg-orange-500 text-white text-[9px] font-black uppercase px-1.5 py-0.5 rounded shadow-sm">
+                                Cover
+                              </span>
+                            )}
+                          </div>
                           <div className="flex flex-col gap-1 text-[9px]">
                             <div className="flex items-center justify-between">
                               <button
                                 type="button"
                                 onClick={() => handleEditSetCover(imgObj._id)}
-                                className={`px-1.5 py-0.5 rounded-none font-bold transition ${ imgObj.isCover ? "bg-orange-500 text-slate-100 dark:text-white animate-pulse" : "bg-slate-200 text-slate-600 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-300" }`}
+                                className={`px-1.5 py-0.5 rounded text-[9px] font-bold transition ${ imgObj.isCover ? "bg-orange-500 text-white" : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700" }`}
                               >
                                 {imgObj.isCover ? "Cover" : "Set Cover"}
                               </button>
                               <button
                                 type="button"
                                 onClick={() => handleEditImageDelete(imgObj._id)}
-                                className="text-red-500 hover:bg-red-50 dark:hover:bg-red-955/30 p-1 rounded-none transition"
+                                className="text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 p-1 rounded transition cursor-pointer"
+                                title="Delete image"
                               >
-                                <Trash2 size={10} />
+                                <Trash2 size={11} />
                               </button>
                             </div>
 
-                            <div className="flex items-center justify-between pt-1">
+                            <div className="flex items-center justify-between pt-0.5 text-slate-400">
                               <button
                                 type="button"
                                 disabled={idx === 0}
                                 onClick={() => moveEditImage(idx, -1)}
-                                className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-30"
+                                className="hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-20 p-0.5 cursor-pointer"
+                                title="Move left"
                               >
-                                <ArrowLeft size={12} />
+                                <ArrowLeft size={11} />
                               </button>
-                              <span className="font-semibold text-slate-400">Idx: {idx + 1}</span>
+                              <span className="font-mono text-[9px] font-semibold">#{idx + 1}</span>
                               <button
                                 type="button"
                                 disabled={idx === editImages.length - 1}
                                 onClick={() => moveEditImage(idx, 1)}
-                                className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-30"
+                                className="hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-20 p-0.5 cursor-pointer"
+                                title="Move right"
                               >
-                                <ArrowRight size={12} />
+                                <ArrowRight size={11} />
                               </button>
                             </div>
                           </div>
@@ -1315,20 +1390,26 @@ const Products = ({ token, products = [], deleteProduct, loading, fetchProducts 
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setEditingProduct(null)}
-                  className="px-4 py-2 text-slate-700 dark:text-slate-300 rounded-none text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer bg-slate-100 dark:bg-slate-800"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 bg-orange-500 text-slate-100 dark:text-white hover:bg-orange-600 rounded-none text-xs font-black uppercase tracking-wider transition shadow-md active:scale-95 cursor-pointer"
-                >
-                  Save Changes
-                </button>
+              {/* FOOTER */}
+              <div className="flex items-center justify-between pt-4 mt-2 border-t border-slate-100 dark:border-slate-800 shrink-0">
+                <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400">
+                  <span className="font-semibold text-slate-600 dark:text-slate-300 truncate max-w-sm">{editingProduct?.name}</span>
+                </div>
+                <div className="flex items-center gap-3 ml-auto">
+                  <button
+                    type="button"
+                    onClick={() => setEditingProduct(null)}
+                    className="px-5 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-xs font-bold transition cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs font-black uppercase tracking-wider transition shadow-md shadow-orange-500/20 active:scale-95 cursor-pointer"
+                  >
+                    Save Changes
+                  </button>
+                </div>
               </div>
             </form>
           </div>

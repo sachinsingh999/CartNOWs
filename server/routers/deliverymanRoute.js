@@ -28,17 +28,17 @@ import {
   forgotPassword,
   resetPassword
 } from "../controllers/deliverymanController.js";
-import adminAuth from "../middleware/adminAuth.js";
+import adminAuth, { requirePermission } from "../middleware/adminAuth.js";
 import deliverymanAuth from "../middleware/deliverymanAuth.js";
 
 const deliverymanRouter = express.Router();
 
 // Admin Endpoints
-deliverymanRouter.get("/list", adminAuth, listDeliverymen);
-deliverymanRouter.post("/assign", adminAuth, assignOrder);
-deliverymanRouter.post("/status", adminAuth, updateDriverStatus);
-deliverymanRouter.get("/complaints-list", adminAuth, adminGetComplaints);
-deliverymanRouter.post("/complaint-reply", adminAuth, adminReplyComplaint);
+deliverymanRouter.get("/list", adminAuth, requirePermission("deliverymen"), listDeliverymen);
+deliverymanRouter.post("/assign", adminAuth, requirePermission("deliverymen"), assignOrder);
+deliverymanRouter.post("/status", adminAuth, requirePermission("deliverymen"), updateDriverStatus);
+deliverymanRouter.get("/complaints-list", adminAuth, requirePermission("deliverymen"), adminGetComplaints);
+deliverymanRouter.post("/complaint-reply", adminAuth, requirePermission("deliverymen"), adminReplyComplaint);
 
 // Public / Portal Signup & Recovery
 deliverymanRouter.post("/register", registerDeliveryman);

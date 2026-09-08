@@ -157,8 +157,12 @@ const Inventory = ({ token, products = [], fetchProducts }) => {
                           <div className="flex items-center justify-center gap-1.5">
                             <input
                               type="number"
+                              min="0"
                               value={editStock}
-                              onChange={(e) => setEditStock(parseInt(e.target.value) || 0)}
+                              onChange={(e) => setEditStock(Math.max(0, parseInt(e.target.value, 10) || 0))}
+                              onKeyDown={(e) => {
+                                if (e.key === "-" || e.key === "e" || e.key === "E" || e.key === ".") e.preventDefault();
+                              }}
                               className="w-16 rounded px-1.5 py-0.5 text-center text-xs font-bold bg-slate-100 dark:bg-slate-800"
                             />
                             <button

@@ -22,16 +22,17 @@ import {
 import authUser from '../middleware/auth.js';
 import rateLimit from '../middleware/rateLimiter.js';
 
-const loginLimiter = rateLimit(5, 60 * 1000); // Max 5 login tries per minute
-const registerLimiter = rateLimit(3, 60 * 1000); // Max 3 signups per minute
-const vipVerifyLimiter = rateLimit(5, 60 * 1000); // Max 5 verification tries per minute
+const loginLimiter = rateLimit(10, 60 * 1000); // Max 10 login tries per minute
+const adminLoginLimiter = rateLimit(30, 60 * 1000); // Max 30 admin login tries per minute
+const registerLimiter = rateLimit(5, 60 * 1000); // Max 5 signups per minute
+const vipVerifyLimiter = rateLimit(10, 60 * 1000); // Max 10 verification tries per minute
 
 const userRouter = express.Router();
 
 userRouter.post('/register', registerLimiter, registerUser);
 userRouter.post('/login', loginLimiter, loginUser);
 userRouter.post('/google-login', loginLimiter, googleLogin);
-userRouter.post('/admin', loginLimiter, adminLogin);
+userRouter.post('/admin', adminLoginLimiter, adminLogin);
 userRouter.get("/profile", authUser, getUserProfile);
 userRouter.get("/membership", authUser, getUserMembership);
 userRouter.put("/update-profile", authUser, updateUserProfile);

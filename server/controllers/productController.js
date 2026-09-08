@@ -36,6 +36,20 @@ const addProducts = async (req, res) => {
       });
     }
 
+    if (Number(price) < 0) {
+      return res.json({
+        success: false,
+        message: "Price cannot be negative"
+      });
+    }
+
+    if (stock !== undefined && Number(stock) < 0) {
+      return res.json({
+        success: false,
+        message: "Stock cannot be negative"
+      });
+    }
+
     if (!req.files || Object.keys(req.files).length === 0) {
       return res.json({
         success: false,
@@ -93,12 +107,20 @@ const addProducts = async (req, res) => {
       try {
         const rawVar = typeof req.body.variants === "string" ? JSON.parse(req.body.variants) : req.body.variants;
         if (Array.isArray(rawVar)) {
+          for (const v of rawVar) {
+            if (v.price !== undefined && Number(v.price) < 0) {
+              return res.json({ success: false, message: "Variant price cannot be negative" });
+            }
+            if (v.stock !== undefined && Number(v.stock) < 0) {
+              return res.json({ success: false, message: "Variant stock cannot be negative" });
+            }
+          }
           variantArray = rawVar.map(v => ({
             Color: v.Color || v.color || "",
             Size: v.Size || v.size || "",
             sku: v.sku || "",
-            price: Number(v.price || price || 0),
-            stock: Number(v.stock || 0)
+            price: Math.max(0, Number(v.price || price || 0)),
+            stock: Math.max(0, Number(v.stock || 0))
           }));
         }
       } catch (err) {
@@ -956,9 +978,17 @@ const updateStock = async (req, res) => {
       });
     }
 
+    const parsedStock = Number(stock);
+    if (isNaN(parsedStock) || parsedStock < 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Stock cannot be negative",
+      });
+    }
+
     const updated = await productModel.findByIdAndUpdate(
       id,
-      { stock: Number(stock) || 0 },
+      { stock: Math.max(0, parseInt(stock, 10) || 0) },
       { new: true }
     );
 

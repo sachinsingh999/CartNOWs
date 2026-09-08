@@ -1,5 +1,5 @@
 import express from "express";
-import adminAuth from "../middleware/adminAuth.js";
+import adminAuth, { requirePermission } from "../middleware/adminAuth.js";
 import { getMaintenanceAdmin, updateMaintenanceAdmin } from "../controllers/maintenanceController.js";
 import {
   getAllSellers,
@@ -73,100 +73,100 @@ const adminRouter = express.Router();
 adminRouter.use(adminAuth);
 
 // Seller Management
-adminRouter.get("/sellers", getAllSellers);
-adminRouter.get("/seller/:id", getSellerDetails);
-adminRouter.post("/seller/status", updateSellerStatus);
-adminRouter.post("/seller/commission", updateSellerCommission);
-adminRouter.post("/seller/payout", processSellerPayout);
-adminRouter.delete("/seller/:id", deleteSeller);
+adminRouter.get("/sellers", requirePermission("sellers"), getAllSellers);
+adminRouter.get("/seller/:id", requirePermission("sellers"), getSellerDetails);
+adminRouter.post("/seller/status", requirePermission("sellers"), updateSellerStatus);
+adminRouter.post("/seller/commission", requirePermission("sellers"), updateSellerCommission);
+adminRouter.post("/seller/payout", requirePermission("sellers"), processSellerPayout);
+adminRouter.delete("/seller/:id", requirePermission("sellers"), deleteSeller);
 
 // Customer Management
-adminRouter.get("/customers", getAllCustomers);
-adminRouter.post("/customer/status", updateCustomerStatus);
-adminRouter.get("/customer/:id", getCustomerDetails);
+adminRouter.get("/customers", requirePermission("customers"), getAllCustomers);
+adminRouter.post("/customer/status", requirePermission("customers"), updateCustomerStatus);
+adminRouter.get("/customer/:id", requirePermission("customers"), getCustomerDetails);
 
 // Delivery Agent Management
-adminRouter.get("/agents", getAllDeliveryAgents);
-adminRouter.get("/agent/:id", getAgentDetails);
-adminRouter.post("/agent/status", updateAgentStatus);
-adminRouter.post("/agent/zone", assignAgentZone);
+adminRouter.get("/agents", requirePermission("deliverymen"), getAllDeliveryAgents);
+adminRouter.get("/agent/:id", requirePermission("deliverymen"), getAgentDetails);
+adminRouter.post("/agent/status", requirePermission("deliverymen"), updateAgentStatus);
+adminRouter.post("/agent/zone", requirePermission("deliverymen"), assignAgentZone);
 
 // Category Management
-adminRouter.get("/categories", getAllCategories);
-adminRouter.post("/category/create", createCategory);
-adminRouter.post("/category/update", updateCategory);
-adminRouter.post("/category/delete", deleteCategory);
-adminRouter.post("/category/reorder", reorderCategories);
-adminRouter.post("/category/duplicate", duplicateCategory);
-adminRouter.post("/category/archive", archiveCategory);
-adminRouter.post("/category/restore", restoreCategory);
-adminRouter.post("/category/template/field", createCategoryTemplateField);
-adminRouter.post("/category/template/field/update", updateCategoryTemplateField);
-adminRouter.post("/category/template/field/delete", deleteCategoryTemplateField);
-adminRouter.post("/category/template/field/reorder", reorderCategoryAttributes);
-adminRouter.post("/category/settings", configureCategorySettings);
-adminRouter.get("/category/:id/template", getCategoryTemplate);
-adminRouter.post("/category/ai-fill", aiFillCategory);
-adminRouter.post("/category/template/ai-fill", aiFillCategoryTemplate);
+adminRouter.get("/categories", requirePermission("products"), getAllCategories);
+adminRouter.post("/category/create", requirePermission("products"), createCategory);
+adminRouter.post("/category/update", requirePermission("products"), updateCategory);
+adminRouter.post("/category/delete", requirePermission("products"), deleteCategory);
+adminRouter.post("/category/reorder", requirePermission("products"), reorderCategories);
+adminRouter.post("/category/duplicate", requirePermission("products"), duplicateCategory);
+adminRouter.post("/category/archive", requirePermission("products"), archiveCategory);
+adminRouter.post("/category/restore", requirePermission("products"), restoreCategory);
+adminRouter.post("/category/template/field", requirePermission("products"), createCategoryTemplateField);
+adminRouter.post("/category/template/field/update", requirePermission("products"), updateCategoryTemplateField);
+adminRouter.post("/category/template/field/delete", requirePermission("products"), deleteCategoryTemplateField);
+adminRouter.post("/category/template/field/reorder", requirePermission("products"), reorderCategoryAttributes);
+adminRouter.post("/category/settings", requirePermission("products"), configureCategorySettings);
+adminRouter.get("/category/:id/template", requirePermission("products"), getCategoryTemplate);
+adminRouter.post("/category/ai-fill", requirePermission("products"), aiFillCategory);
+adminRouter.post("/category/template/ai-fill", requirePermission("products"), aiFillCategoryTemplate);
 
 // Collection Management
-adminRouter.get("/collections", getAllCollections);
-adminRouter.post("/collection/create", createCollection);
-adminRouter.post("/collection/update", updateCollection);
-adminRouter.post("/collection/delete", deleteCollection);
+adminRouter.get("/collections", requirePermission("products"), getAllCollections);
+adminRouter.post("/collection/create", requirePermission("products"), createCollection);
+adminRouter.post("/collection/update", requirePermission("products"), updateCollection);
+adminRouter.post("/collection/delete", requirePermission("products"), deleteCollection);
 
 // Brand Management
-adminRouter.get("/brands", getAllBrands);
-adminRouter.post("/brand/create", createBrand);
-adminRouter.post("/brand/update", updateBrand);
-adminRouter.post("/brand/delete", deleteBrand);
+adminRouter.get("/brands", requirePermission("products"), getAllBrands);
+adminRouter.post("/brand/create", requirePermission("products"), createBrand);
+adminRouter.post("/brand/update", requirePermission("products"), updateBrand);
+adminRouter.post("/brand/delete", requirePermission("products"), deleteBrand);
 
 // Product Moderation
-adminRouter.get("/products", getAllProductsAdmin);
-adminRouter.post("/product/status", updateProductStatus);
-adminRouter.post("/product/fake", flagFakeProduct);
-adminRouter.delete("/product/:id", removeProduct);
+adminRouter.get("/products", requirePermission("products"), getAllProductsAdmin);
+adminRouter.post("/product/status", requirePermission("products"), updateProductStatus);
+adminRouter.post("/product/fake", requirePermission("products"), flagFakeProduct);
+adminRouter.delete("/product/:id", requirePermission("products"), removeProduct);
 
 // Image Moderation & Configuration
-adminRouter.get("/product/:id/images", getProductMediaAdmin);
-adminRouter.post("/images/config", configureImageRules);
-adminRouter.post("/images/moderate", moderateProductMedia);
+adminRouter.get("/product/:id/images", requirePermission("products"), getProductMediaAdmin);
+adminRouter.post("/images/config", requirePermission("products"), configureImageRules);
+adminRouter.post("/images/moderate", requirePermission("products"), moderateProductMedia);
 
 // Order Management
-adminRouter.get("/orders", getAllOrdersAdmin);
-adminRouter.post("/order/reassign", reassignOrderAgent);
-adminRouter.post("/order/cancel", cancelOrderAdmin);
-adminRouter.post("/order/resolve", resolveDispute);
+adminRouter.get("/orders", requirePermission("orders"), getAllOrdersAdmin);
+adminRouter.post("/order/reassign", requirePermission("orders"), reassignOrderAgent);
+adminRouter.post("/order/cancel", requirePermission("orders"), cancelOrderAdmin);
+adminRouter.post("/order/resolve", requirePermission("orders"), resolveDispute);
 
 // Returns
-adminRouter.get("/returns", getAllReturnRequestsAdmin);
-adminRouter.post("/return/status", updateReturnStatus);
+adminRouter.get("/returns", requirePermission("returns"), getAllReturnRequestsAdmin);
+adminRouter.post("/return/status", requirePermission("returns"), updateReturnStatus);
 
 // Reviews
-adminRouter.post("/review/hide", hideProductReview);
-adminRouter.post("/review/delete", deleteProductReview);
+adminRouter.post("/review/hide", requirePermission("products"), hideProductReview);
+adminRouter.post("/review/delete", requirePermission("products"), deleteProductReview);
 
 // Finance & Commissions
-adminRouter.get("/finance", getFinanceSettings);
-adminRouter.post("/finance/update", updateFinanceSettings);
+adminRouter.get("/finance", requirePermission("finance"), getFinanceSettings);
+adminRouter.post("/finance/update", requirePermission("finance"), updateFinanceSettings);
 
 // Announcements
 adminRouter.post("/announce", sendAnnouncement);
 
-// Audit logs
-adminRouter.get("/logs", getAuditLogs);
+// Audit logs (Superadmin only)
+adminRouter.get("/logs", requirePermission("*"), getAuditLogs);
 
-// Maintenance Mode Settings
-adminRouter.get("/maintenance", getMaintenanceAdmin);
-adminRouter.put("/maintenance", updateMaintenanceAdmin);
+// Maintenance Mode Settings (Superadmin only)
+adminRouter.get("/maintenance", requirePermission("*"), getMaintenanceAdmin);
+adminRouter.put("/maintenance", requirePermission("*"), updateMaintenanceAdmin);
 
 // Analytics
-adminRouter.get("/analytics/revenue", getAdminRevenueAnalytics);
-adminRouter.get("/analytics/orders", getAdminOrderAnalytics);
-adminRouter.get("/analytics/products", getAdminProductAnalytics);
-adminRouter.get("/analytics/sellers", getAdminSellerAnalytics);
-adminRouter.get("/analytics/customers", getAdminCustomerAnalytics);
-adminRouter.get("/analytics/delivery", getAdminDeliveryAnalytics);
+adminRouter.get("/analytics/revenue", requirePermission("finance"), getAdminRevenueAnalytics);
+adminRouter.get("/analytics/orders", requirePermission("orders"), getAdminOrderAnalytics);
+adminRouter.get("/analytics/products", requirePermission("products"), getAdminProductAnalytics);
+adminRouter.get("/analytics/sellers", requirePermission("sellers"), getAdminSellerAnalytics);
+adminRouter.get("/analytics/customers", requirePermission("customers"), getAdminCustomerAnalytics);
+adminRouter.get("/analytics/delivery", requirePermission("deliverymen"), getAdminDeliveryAnalytics);
 adminRouter.get("/dashboard-summary", getDashboardSummary);
 
 export default adminRouter;

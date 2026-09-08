@@ -313,7 +313,7 @@ const Login = () => {
           initial="hidden"
           animate="visible"
           variants={containerVariants}
-          className="mx-auto grid max-w-[1160px] w-full h-[calc(100vh-68px)] max-h-[640px] overflow-hidden rounded-lg border border-slate-200/90 dark:border-[#242A3B] bg-white dark:bg-[#151823] backdrop-blur-2xl shadow-xl dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] lg:grid-cols-[1.1fr_1fr] z-10"
+          className="mx-auto grid max-w-[1160px] w-full h-[calc(100vh-68px)] max-h-[675px] overflow-hidden rounded-lg border border-slate-200/90 dark:border-[#242A3B] bg-white dark:bg-[#151823] backdrop-blur-2xl shadow-xl dark:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] lg:grid-cols-[1.1fr_1fr] z-10"
         >
           {/* ================= LEFT SIDE: PREMIUM LOGISTICS & AI VISUALIZER ================= */}
           <motion.div
@@ -459,8 +459,8 @@ const Login = () => {
           </motion.div>
 
           {/* ================= RIGHT SIDE: PREMIUM AUTHENTICATION CARD ================= */}
-          <div className="flex items-center justify-center p-6 sm:p-8 xl:p-10 text-left bg-white dark:bg-[#151823] h-full overflow-hidden relative">
-            <motion.div variants={containerVariants} className="w-full max-w-[380px] space-y-5">
+          <div className="flex items-center justify-center p-6 sm:p-7 xl:p-8 text-left bg-white dark:bg-[#151823] h-full overflow-y-auto relative">
+            <motion.div variants={containerVariants} className="w-full max-w-[380px] space-y-3.5 sm:space-y-4 my-auto">
 
               {/* Header Title */}
               <div className="space-y-1">
@@ -576,7 +576,7 @@ const Login = () => {
                   whileTap={{ scale: 0.99 }}
                   type="submit"
                   disabled={loadingSubmit}
-                  className="w-full flex items-center justify-center gap-2 rounded-md bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 py-3 text-xs font-black uppercase tracking-wider text-white transition duration-200 cursor-pointer shadow-lg shadow-blue-500/20 disabled:opacity-75 disabled:cursor-not-allowed border border-blue-400/20"
+                  className="w-full flex items-center justify-center gap-2 rounded-md bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 py-2.5 text-xs font-black uppercase tracking-wider text-white transition duration-200 cursor-pointer shadow-lg shadow-blue-500/20 disabled:opacity-75 disabled:cursor-not-allowed border border-blue-400/20"
                 >
                   {loadingSubmit ? (
                     <>
@@ -602,6 +602,55 @@ const Login = () => {
                   Create an Account
                 </button>
               </p>
+
+              {/* Partner Access: Seller & Deliveryman Links */}
+              <div className="pt-3 border-t border-slate-200 dark:border-[#242A3B]">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Partner Access
+                  </span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500">
+                    Looking to partner?
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-2.5">
+                  <a
+                    href="https://cartnow-seller.vercel.app/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex items-center gap-2.5 px-3 py-2 rounded-lg border border-slate-200 dark:border-[#242A3B] bg-slate-50/80 dark:bg-[#1B2030]/60 hover:border-amber-400 dark:hover:border-amber-500/60 hover:bg-amber-50/40 dark:hover:bg-amber-950/20 transition-all duration-200 shadow-xs cursor-pointer"
+                  >
+                    <div className="h-7 w-7 rounded-md bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
+                      <Store size={14} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[11px] font-bold text-slate-800 dark:text-slate-200 group-hover:text-amber-600 dark:group-hover:text-amber-400 flex items-center justify-between">
+                        <span className="truncate">Seller Hub</span>
+                        <ExternalLink size={10} className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 group-hover:text-amber-500 shrink-0" />
+                      </div>
+                      <p className="text-[9.5px] text-slate-500 dark:text-slate-400 truncate">Merchant Login</p>
+                    </div>
+                  </a>
+
+                  <a
+                    href="https://cart-now-deliveryagent.vercel.app/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex items-center gap-2.5 px-3 py-2 rounded-lg border border-slate-200 dark:border-[#242A3B] bg-slate-50/80 dark:bg-[#1B2030]/60 hover:border-emerald-400 dark:hover:border-emerald-500/60 hover:bg-emerald-50/40 dark:hover:bg-emerald-950/20 transition-all duration-200 shadow-xs cursor-pointer"
+                  >
+                    <div className="h-7 w-7 rounded-md bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
+                      <Truck size={14} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[11px] font-bold text-slate-800 dark:text-slate-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 flex items-center justify-between">
+                        <span className="truncate">Delivery Man</span>
+                        <ExternalLink size={10} className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 group-hover:text-emerald-500 shrink-0" />
+                      </div>
+                      <p className="text-[9.5px] text-slate-500 dark:text-slate-400 truncate">Rider Portal</p>
+                    </div>
+                  </a>
+                </div>
+              </div>
 
             </motion.div>
           </div>

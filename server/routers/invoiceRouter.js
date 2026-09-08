@@ -8,7 +8,7 @@ import {
 } from "../controllers/invoiceController.js";
 import authUser from "../middleware/auth.js";
 import sellerAuth from "../middleware/sellerAuth.js";
-import adminAuth from "../middleware/adminAuth.js";
+import adminAuth, { requirePermission } from "../middleware/adminAuth.js";
 import jwt from "jsonwebtoken";
 
 const invoiceRouter = express.Router();
@@ -51,8 +51,8 @@ const flexibleAuth = async (req, res, next) => {
 
 invoiceRouter.get("/my-invoices", authUser, getMyInvoices);
 invoiceRouter.get("/seller-invoices", sellerAuth, getSellerInvoices);
-invoiceRouter.get("/admin-invoices", adminAuth, getAdminInvoices);
+invoiceRouter.get("/admin-invoices", adminAuth, requirePermission("finance"), getAdminInvoices);
 invoiceRouter.get("/download/:id", flexibleAuth, downloadInvoicePdf);
-invoiceRouter.post("/regenerate", adminAuth, regenerateInvoice);
+invoiceRouter.post("/regenerate", adminAuth, requirePermission("finance"), regenerateInvoice);
 
 export default invoiceRouter;
