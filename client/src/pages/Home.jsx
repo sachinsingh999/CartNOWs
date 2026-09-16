@@ -7,7 +7,8 @@ import { backendUrl } from "../config";
 import { cachedGet } from "../utils/apiCache";
 
 // Critical above-the-fold components (Eagerly Loaded)
-import HeroSplitBanner from "../components/Home/HeroSplitBanner";
+import PanoramicHeroBanner from "../components/Home/PanoramicHeroBanner";
+import ExploreByStyle from "../components/Home/ExploreByStyle";
 import QuickViewModal from "../components/Home/QuickViewModal";
 import PremiumDealBanner from "../components/Home/PremiumDealBanner";
 
@@ -301,13 +302,11 @@ const Home = () => {
         .animate-float-slow { animation: float-slow 4.5s ease-in-out infinite; }
       `}</style>
 
-      {/* 1. SPLIT HERO BANNER (Campaign Models on Left + 2x2 Bazaar Deals on Right) */}
-      <HeroSplitBanner homepageData={homepageData} />
+      {/* 1. PANORAMIC HERO CAMPAIGN BANNER (Matching Screenshot 1) */}
+      <PanoramicHeroBanner homepageData={homepageData} />
 
-      {/* 2. DYNAMIC TECH / PROMOTIONAL AD BANNER (Directly Below Hero Section) */}
-      <LazySection height="260px">
-        <TechAdBanner />
-      </LazySection>
+      {/* 2. EXPLORE BY STYLE - ORGANIC BLOB CATEGORY SHOWCASE (Matching Screenshot 2) */}
+      <ExploreByStyle />
 
       {/* REVEALED PREMIUM DEAL SPOTLIGHT OVERLAY */}
       <AnimatePresence>
