@@ -319,13 +319,23 @@ const BudgetStoreRadar = ({
 
   // Dynamic products filtering from available catalog + fallback items
   const displayProducts = useMemo(() => {
-    const allCatalog = [
+    const rawCatalog = [
       ...(homepageData.dealsOfDay || []),
       ...(homepageData.bestSellers || []),
       ...(homepageData.newArrivals || []),
       ...(homepageData.trending || []),
       ...(homepageData.recommended || [])
     ];
+
+    // Deduplicate items by _id
+    const seenIds = new Set();
+    const allCatalog = [];
+    rawCatalog.forEach((p) => {
+      if (p && p._id && !seenIds.has(p._id.toString())) {
+        seenIds.add(p._id.toString());
+        allCatalog.push(p);
+      }
+    });
 
     let filtered = [];
     if (activeTier === "under299") {
@@ -348,7 +358,7 @@ const BudgetStoreRadar = ({
     if (filtered.length < 4) {
       const combined = [...filtered];
       fallbacks.forEach((fb) => {
-        if (!combined.some((c) => c._id === fb._id || c.name === fb.name)) {
+        if (!combined.some((c) => (c._id && fb._id && c._id.toString() === fb._id.toString()) || c.name === fb.name)) {
           combined.push(fb);
         }
       });
@@ -506,7 +516,7 @@ const BudgetStoreRadar = ({
           id="budget-radar-slider"
           className="flex gap-3 sm:gap-3.5 overflow-x-hidden scroll-smooth snap-x snap-mandatory pb-1"
         >
-          {displayProducts.map((p) => {
+          {displayProducts.map((p, idx) => {
             const isFav = wishlist.includes(p._id);
             const origVal = p.originalPrice || Math.round(p.price * 1.4);
             const discountPct = Math.round(((origVal - p.price) / origVal) * 100);
@@ -514,7 +524,7 @@ const BudgetStoreRadar = ({
 
             return (
               <div
-                key={p._id}
+                key={p._id || `budget-${activeTier}-${idx}`}
                 className="min-w-[72vw] max-w-[290px] sm:min-w-[calc((100%-0.875rem)/2)] sm:max-w-[calc((100%-0.875rem)/2)] md:min-w-[calc((100%-1.75rem)/3)] md:max-w-[calc((100%-1.75rem)/3)] lg:min-w-[calc((100%-2.625rem)/4)] lg:max-w-[calc((100%-2.625rem)/4)] snap-start flex-shrink-0"
               >
                 <div
