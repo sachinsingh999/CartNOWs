@@ -7,8 +7,7 @@ import { backendUrl } from "../config";
 import { cachedGet } from "../utils/apiCache";
 
 // Critical above-the-fold components (Eagerly Loaded)
-import PanoramicHeroBanner from "../components/Home/PanoramicHeroBanner";
-import ExploreByStyle from "../components/Home/ExploreByStyle";
+import HeroSplitBanner from "../components/Home/HeroSplitBanner";
 import QuickViewModal from "../components/Home/QuickViewModal";
 import PremiumDealBanner from "../components/Home/PremiumDealBanner";
 
@@ -104,7 +103,7 @@ const Home = () => {
     try {
       const saved = JSON.parse(localStorage.getItem("wishlist")) || [];
       setWishlist(saved);
-    } catch (e) {}
+    } catch (e) { }
   }, []);
 
   useEffect(() => {
@@ -196,7 +195,7 @@ const Home = () => {
     let guestCart = {};
     try {
       guestCart = JSON.parse(localStorage.getItem("cart") || "{}");
-    } catch (err) {}
+    } catch (err) { }
 
     // Only check guest localStorage if user is not logged in
     if (!token) {
@@ -302,11 +301,13 @@ const Home = () => {
         .animate-float-slow { animation: float-slow 4.5s ease-in-out infinite; }
       `}</style>
 
-      {/* 1. PANORAMIC HERO CAMPAIGN BANNER (Matching Screenshot 1) */}
-      <PanoramicHeroBanner homepageData={homepageData} />
+      {/* 1. SPLIT HERO BANNER (Campaign Models on Left + 2x2 Bazaar Deals on Right) */}
+      <HeroSplitBanner homepageData={homepageData} />
 
-      {/* 2. EXPLORE BY STYLE - ORGANIC BLOB CATEGORY SHOWCASE (Matching Screenshot 2) */}
-      <ExploreByStyle />
+      {/* 2. DYNAMIC TECH / PROMOTIONAL AD BANNER (Directly Below Hero Section) */}
+      <LazySection height="260px">
+        <TechAdBanner />
+      </LazySection>
 
       {/* REVEALED PREMIUM DEAL SPOTLIGHT OVERLAY */}
       <AnimatePresence>
@@ -409,28 +410,7 @@ const Home = () => {
         </motion.div>
       </LazySection>
 
-      {/* 10. 3-COLUMN FEATURE HUB (Deal of Day, Seller Spotlight, AI Robot Chat) */}
-      <LazySection height="360px">
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
-          className="w-full px-2 sm:px-4 lg:px-6 py-1 select-none"
-        >
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-left">
-            <DealOfTheDay
-              deals={homepageData.dealsOfDay}
-              activeDeal={activeDeal}
-              onAddToCart={onAddToCart}
-            />
-            <SellerSpotlight />
-            <AiRobotChat />
-          </div>
-        </motion.section>
-      </LazySection>
-
-      {/* 11. BUDGET STORE & PRICE DROP RADAR (Bottom Placement) */}
+      {/* 10. BUDGET STORE & PRICE DROP RADAR */}
       <LazySection height="460px">
         <motion.section
           initial={{ opacity: 0, y: 20 }}
@@ -449,7 +429,7 @@ const Home = () => {
         </motion.section>
       </LazySection>
 
-      {/* 12. "THIS OR THAT?" COMMUNITY PRODUCT DUELS (Bottom Placement) */}
+      {/* 11. "THIS OR THAT?" COMMUNITY PRODUCT DUELS */}
       <LazySection height="520px">
         <motion.section
           initial={{ opacity: 0, y: 20 }}
@@ -462,6 +442,27 @@ const Home = () => {
             onQuickView={setQuickViewProduct}
             onAddToCart={onAddToCart}
           />
+        </motion.section>
+      </LazySection>
+
+      {/* 12. 3-COLUMN FEATURE HUB (Deal of Day, Seller Spotlight, AI Robot Chat) - BOTTOM PLACEMENT */}
+      <LazySection height="360px">
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          className="w-full px-2 sm:px-4 lg:px-6 py-1 select-none"
+        >
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-left">
+            <DealOfTheDay
+              deals={homepageData.dealsOfDay}
+              activeDeal={activeDeal}
+              onAddToCart={onAddToCart}
+            />
+            <SellerSpotlight />
+            <AiRobotChat />
+          </div>
         </motion.section>
       </LazySection>
 
