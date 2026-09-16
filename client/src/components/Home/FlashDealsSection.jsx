@@ -413,7 +413,7 @@ const FlashDealsSection = ({ homepageData }) => {
                       className="group/item cursor-pointer flex flex-col items-center select-none"
                     >
                       {/* Inner Deal Image Box */}
-                      <div className="w-full aspect-square rounded-sm overflow-hidden bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-700/80 relative group-hover/item:border-rose-500 dark:group-hover/item:border-rose-400 group-hover/item:shadow-xs transition-all duration-200 p-2.5 sm:p-3.5 flex items-center justify-center">
+                      <div className="w-full aspect-square rounded-sm overflow-hidden bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-700/80 relative group-hover/item:border-rose-500 dark:group-hover/item:border-rose-400 group-hover/item:shadow-xs transition-all duration-200 flex items-center justify-center">
                         {/* Discount Tag */}
                         <span className="absolute top-1.5 right-1.5 z-10 px-1.5 py-0.5 rounded-sm text-[7.5px] sm:text-[8.5px] font-black uppercase tracking-tight bg-rose-600 text-white shadow-2xs leading-none pointer-events-none">
                           {deal.discount}
@@ -425,7 +425,7 @@ const FlashDealsSection = ({ homepageData }) => {
                             e.currentTarget.onerror = null;
                             e.currentTarget.src = deal.fallbackImage || dealLaptop;
                           }}
-                          className="w-full h-full object-contain group-hover/item:scale-108 transition-transform duration-300 filter drop-shadow-2xs"
+                          className="w-full h-full object-cover group-hover/item:scale-105 transition-transform duration-300"
                           loading="lazy"
                           decoding="async"
                         />

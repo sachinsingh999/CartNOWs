@@ -339,13 +339,13 @@ const ProductDuel = ({ onQuickView, onAddToCart }) => {
             initial={{ width: 0 }}
             animate={{ width: `${voteStats.percentA}%` }}
             transition={{ duration: 0.6, ease: "easeOut" }}
-            className="h-full bg-gradient-to-r from-blue-600 via-indigo-500 to-cyan-400 relative"
+            className="h-full bg-blue-600 relative"
           />
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${voteStats.percentB}%` }}
             transition={{ duration: 0.6, ease: "easeOut" }}
-            className="h-full bg-gradient-to-r from-purple-500 via-pink-500 to-rose-500 relative"
+            className="h-full bg-purple-600 relative"
           />
         </div>
       </div>
@@ -356,7 +356,7 @@ const ProductDuel = ({ onQuickView, onAddToCart }) => {
         {/* Center Floating "VS" Emblem (Desktop/Tablet) */}
         <div className="hidden md:flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none items-center justify-center">
           <div className="w-10 h-10 rounded-full bg-slate-950 dark:bg-slate-900 border-2 border-white dark:border-slate-700 shadow-xl flex items-center justify-center text-white font-black text-xs tracking-wider ring-4 ring-slate-200/60 dark:ring-slate-800/80">
-            <span className="bg-gradient-to-r from-amber-400 to-rose-400 bg-clip-text text-transparent">VS</span>
+            <span className="text-white font-black">VS</span>
           </div>
         </div>
 
