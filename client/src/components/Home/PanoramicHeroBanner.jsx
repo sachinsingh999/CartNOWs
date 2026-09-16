@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 
 // Hero Images
+import exactHeroModels from "../../assets/new_home/exact_hero_models.png";
 import heroModelsCollage from "../../assets/new_home/hero_models_collage.jpg";
 import heroSlide1 from "../../assets/hero_slide_1.webp";
 import heroSlide2 from "../../assets/hero_slide_2.webp";
@@ -31,7 +32,7 @@ const SLIDES = [
     discountBadge: "UP TO 50% OFF",
     tooltipText: "THE SEASON'S MUST-HAVE COLLECTION - Elevate Your Everyday",
     festiveBadge: "FESTIVAL OFFER",
-    image: heroModelsCollage,
+    image: exactHeroModels,
     imageAlt: "Fashion Models Elevate Your Everyday Collection",
     bgGradient: "from-[#F0EDFF] via-[#F4F1FF] to-[#FAF8FF] dark:from-slate-900 dark:via-purple-950/30 dark:to-slate-900",
     pillHighlightColor: "from-blue-600 via-indigo-600 to-purple-600 dark:from-blue-400 dark:via-indigo-400 dark:to-purple-400"
