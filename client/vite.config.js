@@ -21,7 +21,16 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/') || id.includes('node_modules/scheduler/')) {
+          if (
+            id.includes('node_modules/react') ||
+            id.includes('node_modules/react-dom') ||
+            id.includes('node_modules/react-router') ||
+            id.includes('node_modules/@remix-run/router') ||
+            id.includes('node_modules/scheduler') ||
+            id.includes('node_modules/@react-oauth') ||
+            id.includes('node_modules/zustand') ||
+            id.includes('node_modules/react-toastify')
+          ) {
             return 'vendor-react';
           }
           if (id.includes('node_modules/framer-motion')) {
@@ -30,8 +39,8 @@ export default defineConfig({
           if (id.includes('node_modules/lucide-react')) {
             return 'vendor-icons';
           }
-          if (id.includes('node_modules/axios') || id.includes('node_modules/react-router-dom') || id.includes('node_modules/@remix-run/router')) {
-            return 'vendor-core';
+          if (id.includes('node_modules/axios') || id.includes('node_modules/socket.io-client') || id.includes('node_modules/lenis')) {
+            return 'vendor-utils';
           }
         }
       }
