@@ -4,6 +4,7 @@ import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import axios from "axios";
 import { backendUrl } from "../../config";
 import { cachedGet } from "../../utils/apiCache";
+import { getOptimizedImageUrl } from "../../utils/imageOptimizer";
 import {
   ArrowRight,
   ShieldCheck,
@@ -212,20 +213,21 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
     return baseList;
   }, [slides, isDark]);
 
-  // Comprehensive Image Preloader for All Hero Slides to eliminate transition flicker & boost performance
+  // Preload only the NEXT slide image lazily
   useEffect(() => {
     const list = showBanners && customBanners.length > 0 ? customBanners : activeSlides;
-    if (!list || list.length === 0) return;
+    if (!list || list.length <= 1) return;
 
-    list.forEach((item) => {
-      let url = item.imageUrl || item.modelImage || item.image;
-      if (url) {
-        const fullUrl = url.startsWith("http") || url.startsWith("/") ? url : `${backendUrl}${url}`;
-        const img = new Image();
-        img.src = fullUrl;
-      }
-    });
-  }, [showBanners, customBanners, activeSlides]);
+    const nextItem = list[(currentSlide + 1) % list.length];
+    const url = nextItem?.imageUrl || nextItem?.modelImage || nextItem?.image;
+    if (url) {
+      const fullUrl = url.startsWith("http") || url.startsWith("/") ? url : `${backendUrl}${url}`;
+      const optimized = getOptimizedImageUrl(fullUrl, { width: 1000, quality: 80 });
+      const img = new Image();
+      img.decoding = "async";
+      img.src = optimized;
+    }
+  }, [currentSlide, showBanners, customBanners, activeSlides]);
 
   // Fetch campaign slideshow assets and banners from server in parallel
   useEffect(() => {
@@ -242,14 +244,19 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
         }
 
         if (bannerRes.status === "fulfilled" && bannerRes.value.data?.success && bannerRes.value.data?.banners?.length > 0) {
-          setCustomBanners(bannerRes.value.data.banners);
+          const optBanners = bannerRes.value.data.banners.map(b => ({
+            ...b,
+            imageUrl: b.imageUrl ? getOptimizedImageUrl(b.imageUrl.startsWith("http") ? b.imageUrl : `${backendUrl}${b.imageUrl}`, { width: 1200, quality: 80 }) : b.imageUrl
+          }));
+          setCustomBanners(optBanners);
         }
 
         if (assetRes.status === "fulfilled" && assetRes.value.data?.success && assetRes.value.data?.assets?.length > 0) {
           const mapped = assetRes.value.data.assets.map(asset => {
             const scaleClass = "scale-[1.0] sm:scale-[1.05] lg:scale-[1.08]";
+            const rawUrl = asset.imageUrl?.startsWith("http") ? asset.imageUrl : `${backendUrl}${asset.imageUrl}`;
             return {
-              imageUrl: asset.imageUrl.startsWith("http") ? asset.imageUrl : `${backendUrl}${asset.imageUrl}`,
+              imageUrl: getOptimizedImageUrl(rawUrl, { width: 1000, quality: 80 }),
               name: asset.name,
               category: asset.category,
               tagline: asset.tagline,

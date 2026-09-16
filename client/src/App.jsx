@@ -120,6 +120,10 @@ const App = () => {
               <Route path="/product/kid" element={<AudienceCatalog audience="kids" />} />
               <Route path="/product/:id" element={<ProductDetail />} />
               <Route path="/help" element={<Help />} />
+              <Route path="/catalog/:type/:slug" element={<CatalogDetail />} />
+              <Route path="/catalog/collection/:slug" element={<CatalogDetail type="collection" />} />
+              <Route path="/catalog/category/:slug" element={<CatalogDetail type="category" />} />
+              <Route path="/catalog/brand/:slug" element={<CatalogDetail type="brand" />} />
               <Route path="/category/:slug" element={<CatalogDetail type="category" />} />
               <Route path="/discover" element={<Discover />} />
               <Route path="/categories" element={<Categories />} />

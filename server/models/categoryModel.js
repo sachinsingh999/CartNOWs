@@ -8,6 +8,7 @@ const categorySchema = new mongoose.Schema(
     description: { type: String, default: "" },
     icon: { type: String, default: "" },
     bannerImage: { type: String, default: "" },
+    quote: { type: String, default: "" },
     parentCategoryId: { type: mongoose.Schema.Types.ObjectId, ref: "category", default: null },
     displayOrder: { type: Number, default: 0 },
     status: { type: String, enum: ["active", "pending", "disabled", "archived"], default: "active" },

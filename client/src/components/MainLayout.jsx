@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import ComparisonTray from "./ComparisonTray";
+import FloatingAiWidget from "./FloatingAiWidget";
 import { useSystem } from "../context/SystemContext";
 
 const MainLayout = () => {
@@ -93,6 +94,7 @@ const MainLayout = () => {
 
       {!isPromoOrFooterExcluded && <Footer />}
       <ComparisonTray />
+      <FloatingAiWidget />
 
       {/* ──────────────────────────────────────────────────────────
           GLOBAL PROMO/ADVERTISING PARTNERSHIP WIDGET

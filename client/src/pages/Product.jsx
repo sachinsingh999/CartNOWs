@@ -6,9 +6,11 @@ import ProductCard from "../pages/ProductCard";
 import FilterSidebar from "../components/FilterSidebar";
 import { backendUrl } from "../config";
 import { getAverageRating } from "../utils/productRatings";
-import { Star, X, ShoppingCart, Eye, AlertTriangle, ArrowRight, Filter, ChevronLeft, ChevronRight, SlidersHorizontal, Search, Heart, RotateCcw, PackageSearch } from "lucide-react";
+import { Star, X, ShoppingCart, Eye, AlertTriangle, ArrowRight, Filter, ChevronLeft, ChevronRight, SlidersHorizontal, Search, Heart, RotateCcw, PackageSearch, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ProductCardSkeleton } from "../components/SkeletonLoader";
+import BrandLogo from "../components/BrandLogo";
+import { matchesFuzzySearch, rankProductsBySearchRelevance, normalizeAndCorrectQuery } from "../utils/fuzzySearch";
 
 
 const Product = () => {
@@ -25,6 +27,11 @@ const Product = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Dynamic filter facet data from MongoDB backend
+  const [dynamicFilters, setDynamicFilters] = useState({});
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 200000 });
+  const [categoryMeta, setCategoryMeta] = useState(null);
+
   // Active filter state variables initialized from searchParams
   const [sortBy, setSortBy] = useState("featured");
   const [category, setCategory] = useState(searchParams.get("category") || "all");
@@ -33,6 +40,13 @@ const Product = () => {
   const [selectedSubCategories, setSelectedSubCategories] = useState([]);
   const [selectedBrands, setSelectedBrands] = useState(searchParams.get("brand") ? (searchParams.get("brand") || "").split(",") : []);
   const [selectedLocations, setSelectedLocations] = useState([]);
+  const [selectedAttributes, setSelectedAttributes] = useState(() => {
+    try {
+      const attrParam = searchParams.get("attributes");
+      if (attrParam) return JSON.parse(attrParam);
+    } catch (e) {}
+    return {};
+  });
   const [price, setPrice] = useState(200000);
   const [rating, setRating] = useState(0);
   const [minDiscount, setMinDiscount] = useState(0);
@@ -60,6 +74,10 @@ const Product = () => {
     }
   });
 
+  // Typo & Fuzzy Search states
+  const [searchMeta, setSearchMeta] = useState(null);
+  const typoInfo = useMemo(() => normalizeAndCorrectQuery(searchQuery), [searchQuery]);
+
   const maxPrice = 200000;
   const prevFiltersRef = useRef(null);
 
@@ -71,6 +89,7 @@ const Product = () => {
     const audienceParam = searchParams.get("audience") || "all";
     const brandParam = searchParams.get("brand");
     const categoriesParam = searchParams.get("categories");
+    const attributesParam = searchParams.get("attributes");
 
     if (categoryParam !== category) {
       setCategory(categoryParam);
@@ -92,6 +111,15 @@ const Product = () => {
     const categoriesDiffer = selectedCategoryIds.length !== nextCategoriesIds.length || selectedCategoryIds.some((c, i) => c !== nextCategoriesIds[i]);
     if (categoriesDiffer) {
       setSelectedCategoryIds(nextCategoriesIds);
+    }
+
+    if (attributesParam) {
+      try {
+        const parsedAttrs = JSON.parse(attributesParam);
+        if (JSON.stringify(parsedAttrs) !== JSON.stringify(selectedAttributes)) {
+          setSelectedAttributes(parsedAttrs);
+        }
+      } catch (e) {}
     }
 
     if (qParam !== searchValue) {
@@ -134,6 +162,12 @@ const Product = () => {
         next.delete("categories");
       }
 
+      if (Object.keys(selectedAttributes).length > 0) {
+        next.set("attributes", JSON.stringify(selectedAttributes));
+      } else {
+        next.delete("attributes");
+      }
+
       if (searchQuery) {
         next.set("search", searchQuery);
       } else {
@@ -143,11 +177,10 @@ const Product = () => {
 
       return next;
     }, { replace: true });
-  }, [category, collection, audience, selectedBrands, selectedCategoryIds, searchQuery]);
+  }, [category, collection, audience, selectedBrands, selectedCategoryIds, selectedAttributes, searchQuery]);
 
   // Fetch admin created categories for pills
   const [adminCategories, setAdminCategories] = useState([]);
-  const [baseProducts, setBaseProducts] = useState([]);
 
   useEffect(() => {
     axios.get(`${backendUrl}/api/product/categories`)
@@ -158,18 +191,6 @@ const Product = () => {
       })
       .catch(err => console.log(err));
   }, []);
-
-  // Fetch base products matching search term to compute filter metadata & counts locally
-  useEffect(() => {
-    const params = { q: searchQuery || undefined, limit: 10000 };
-    axios.get(`${backendUrl}/api/product/list`, { params })
-      .then((res) => {
-        if (res.data.success) {
-          setBaseProducts(res.data.products || []);
-        }
-      })
-      .catch(() => {});
-  }, [searchQuery]);
 
   // Main product loader
   const fetchProducts = async (pageToFetch) => {
@@ -201,6 +222,9 @@ const Product = () => {
     if (selectedLocations.length > 0) {
       params.location = selectedLocations.join(",");
     }
+    if (Object.keys(selectedAttributes).length > 0) {
+      params.attributes = JSON.stringify(selectedAttributes);
+    }
 
     try {
       const res = await axios.get(`${backendUrl}/api/products`, { params });
@@ -210,6 +234,18 @@ const Product = () => {
         setTotalCount(res.data.total || 0);
         setTotalPages(res.data.totalPages || 1);
         setHasMore(res.data.hasMore ?? (newProducts.length === 20));
+        setSearchMeta(res.data.searchMeta || null);
+        if (res.data.filters) {
+          setDynamicFilters(res.data.filters);
+        }
+        if (res.data.priceRange) {
+          setPriceRange(res.data.priceRange);
+        }
+        if (res.data.category) {
+          setCategoryMeta(res.data.category);
+        } else {
+          setCategoryMeta(null);
+        }
       } else {
         setError(res.data.message || "Failed to load products");
       }
@@ -231,6 +267,7 @@ const Product = () => {
       selectedSubCategories,
       selectedBrands,
       selectedLocations,
+      selectedAttributes,
       price,
       rating,
       minDiscount,
@@ -260,6 +297,7 @@ const Product = () => {
     selectedSubCategories,
     selectedBrands,
     selectedLocations,
+    selectedAttributes,
     price,
     rating,
     minDiscount,
@@ -318,144 +356,46 @@ const Product = () => {
     return { categoryMapping: mapping };
   }, [adminCategories]);
 
-  // Dynamic filter checklists computed from search results
+  // Dynamic filter checklists computed from backend & admin categories
   const categoriesList = useMemo(() => {
+    const list = new Set();
     if (adminCategories.length > 0) {
-      const unique = adminCategories.map(c => c.name);
-      return ["all", ...unique.sort()];
+      adminCategories.forEach(c => list.add(c.name));
     }
-    const unique = [...new Set(baseProducts.map(p => p.category).filter(Boolean))];
-    return ["all", ...unique.sort()];
-  }, [adminCategories, baseProducts]);
+    if (dynamicFilters.Category) {
+      dynamicFilters.Category.forEach(item => list.add(item.value));
+    }
+    return ["all", ...Array.from(list).sort()];
+  }, [adminCategories, dynamicFilters]);
 
-  const baseFilteredByCategory = useMemo(() => {
-    let base = baseProducts;
-    
-    if (selectedCategoryIds && selectedCategoryIds.length > 0) {
-      let allowedNames = [];
-      selectedCategoryIds.forEach(id => {
-        const doc = adminCategories.find(c => c._id === id);
-        if (doc) {
-          allowedNames.push(doc.name);
-          if (doc.subcategories) {
-            allowedNames.push(...doc.subcategories);
-          }
-          const children = adminCategories.filter(c => c.parentCategoryId === id);
-          allowedNames.push(...children.map(c => c.name));
-        }
+  const categoryCountsMap = useMemo(() => {
+    const counts = {};
+    if (dynamicFilters.Category) {
+      dynamicFilters.Category.forEach(item => {
+        counts[item.value] = item.count;
+        counts[item.value.toLowerCase()] = item.count;
       });
-      if (allowedNames.length > 0) {
-        const lowerAllowed = allowedNames.map(n => n.toLowerCase());
-        if (lowerAllowed.includes("fashion")) {
-          allowedNames.push(
-            "Fashion", "Men", "Women", "Kids", "Accessories", "Footwear",
-            "Fashion (Men)", "Fashion (Women)", "Fashion (Kids)",
-            "clothing", "apparel", "shirts", "trousers", "t-shirts", "jackets", "sportswear", "jeans"
-          );
-        }
-        if (lowerAllowed.includes("electronics") || lowerAllowed.includes("electrinocs")) {
-          allowedNames.push("Electronics", "Electrinocs");
-        }
-        base = base.filter(p => 
-          allowedNames.some(name => name.toLowerCase() === p.category?.toLowerCase())
-        );
-      }
-    } else if (category !== "all") {
-      const allowed = categoryMapping[category] || [category];
-      base = base.filter(p => allowed.some(a => a.toLowerCase() === p.category?.toLowerCase()));
     }
-    
-    return base;
-  }, [baseProducts, category, selectedCategoryIds, categoryMapping, adminCategories]);
-
-  const collectionsList = useMemo(() => {
-    const unique = [...new Set(baseFilteredByCategory.map(p => p.collection).filter(Boolean))];
-    return unique.sort();
-  }, [baseFilteredByCategory]);
+    return counts;
+  }, [dynamicFilters]);
 
   const subCategoriesList = useMemo(() => {
-    const unique = [...new Set(baseFilteredByCategory.map(p => p.subCategory).filter(Boolean))];
-    return unique.sort();
-  }, [baseFilteredByCategory]);
+    if (dynamicFilters.Subcategory) {
+      return dynamicFilters.Subcategory.map(item => item.value);
+    }
+    return [];
+  }, [dynamicFilters]);
 
   const brandsList = useMemo(() => {
-    const unique = [...new Set(baseFilteredByCategory.map(p => p.brand).filter(Boolean))];
-    return unique.sort();
-  }, [baseFilteredByCategory]);
+    if (dynamicFilters.Brand) {
+      return dynamicFilters.Brand.map(item => item.value);
+    }
+    return [];
+  }, [dynamicFilters]);
 
   const locationsList = ["Delhi", "Mumbai", "Bangalore", "Chennai"];
 
-  // Filter counters calculations
-  const categoryCounts = useMemo(() => {
-    const counts = {};
-    baseProducts.forEach(p => {
-      if (p.category) counts[p.category] = (counts[p.category] || 0) + 1;
-    });
-    return counts;
-  }, [baseProducts]);
-
-  const subCategoryCounts = useMemo(() => {
-    const counts = {};
-    baseProducts.forEach(p => {
-      if (p.subCategory) counts[p.subCategory] = (counts[p.subCategory] || 0) + 1;
-    });
-    return counts;
-  }, [baseProducts]);
-
-  const brandCounts = useMemo(() => {
-    const counts = {};
-    baseProducts.forEach(p => {
-      if (p.brand) counts[p.brand] = (counts[p.brand] || 0) + 1;
-    });
-    return counts;
-  }, [baseProducts]);
-
-  const locationCounts = useMemo(() => {
-    const counts = {};
-    baseProducts.forEach(p => {
-      const loc = p.location || "Delhi";
-      counts[loc] = (counts[loc] || 0) + 1;
-    });
-    return counts;
-  }, [baseProducts]);
-
-  const inStockCount = useMemo(() => {
-    return baseProducts.filter(p => p.stock > 0).length;
-  }, [baseProducts]);
-
-  const ratingCounts = useMemo(() => {
-    const counts = { 4: 0, 3: 0, 2: 0, 1: 0 };
-    baseProducts.forEach(p => {
-      const avg = getAverageRating(p);
-      if (avg >= 4) counts[4]++;
-      if (avg >= 3) counts[3]++;
-      if (avg >= 2) counts[2]++;
-      if (avg >= 1) counts[1]++;
-    });
-    return counts;
-  }, [baseProducts]);
-
-  const discountCounts = useMemo(() => {
-    const counts = { 10: 0, 20: 0, 30: 0, 40: 0, 50: 0 };
-    baseProducts.forEach(p => {
-      const originalVal = p.originalPrice || Math.round(p.price * 1.25);
-      const discount = Math.round(((originalVal - p.price) / originalVal) * 100);
-      if (discount >= 10) counts[10]++;
-      if (discount >= 20) counts[20]++;
-      if (discount >= 30) counts[30]++;
-      if (discount >= 40) counts[40]++;
-      if (discount >= 50) counts[50]++;
-    });
-    return counts;
-  }, [baseProducts]);
-
   // Multiselect toggle handlers
-  const handleToggleCategory = (val) => {
-    setSelectedCategories(prev =>
-      prev.includes(val) ? prev.filter(x => x !== val) : [...prev, val]
-    );
-  };
-
   const handleToggleSubCategory = (val) => {
     setSelectedSubCategories(prev =>
       prev.includes(val) ? prev.filter(x => x !== val) : [...prev, val]
@@ -474,11 +414,42 @@ const Product = () => {
     );
   };
 
+  const handleAttributeToggle = (groupKey, value) => {
+    const normKey = groupKey.toLowerCase();
+
+    if (normKey === "subcategory" || normKey === "subcategories") {
+      handleToggleSubCategory(value);
+      return;
+    }
+    if (normKey === "brand" || normKey === "brands") {
+      handleToggleBrand(value);
+      return;
+    }
+
+    setSelectedAttributes((prev) => {
+      const current = prev[groupKey] || prev[normKey] || [];
+      const exists = current.some((v) => String(v).toLowerCase() === String(value).toLowerCase());
+      const updated = exists
+        ? current.filter((v) => String(v).toLowerCase() !== String(value).toLowerCase())
+        : [...current, value];
+
+      const next = { ...prev };
+      if (updated.length > 0) {
+        next[groupKey] = updated;
+      } else {
+        delete next[groupKey];
+        delete next[normKey];
+      }
+      return next;
+    });
+  };
+
   const handleCategoryPillChange = (val) => {
     setCategory(val);
     setSelectedSubCategories([]);
     setSelectedBrands([]);
     setSelectedLocations([]);
+    setSelectedAttributes({});
   };
 
   const handleReset = () => {
@@ -488,7 +459,8 @@ const Product = () => {
     setSelectedSubCategories([]);
     setSelectedBrands([]);
     setSelectedLocations([]);
-    setPrice(maxPrice);
+    setSelectedAttributes({});
+    setPrice(priceRange.max || maxPrice);
     setRating(0);
     setMinDiscount(0);
     setInStockOnly(false);
@@ -496,6 +468,13 @@ const Product = () => {
     setSearchParams((cur) => {
       const n = new URLSearchParams(cur);
       n.delete("q");
+      n.delete("search");
+      n.delete("attributes");
+      n.delete("brand");
+      n.delete("category");
+      n.delete("categories");
+      n.delete("collection");
+      n.delete("audience");
       return n;
     });
   };
@@ -509,7 +488,8 @@ const Product = () => {
       setSelectedSubCategories([]);
       setSelectedBrands([]);
       setSelectedLocations([]);
-      setPrice(maxPrice);
+      setSelectedAttributes({});
+      setPrice(priceRange.max || maxPrice);
       setRating(0);
       setMinDiscount(0);
       setInStockOnly(false);
@@ -517,24 +497,25 @@ const Product = () => {
     }
   }, [searchQuery]);
 
-  // Autocomplete suggestion list logic
+  // Autocomplete suggestion list logic with typo tolerance
   const filteredSuggestions = useMemo(() => {
     if (!searchValue.trim()) return { products: [], categories: [], brands: [] };
-    const query = searchValue.toLowerCase().trim();
+    const query = searchValue.trim();
     
-    // Matched product names
-    const matchedProducts = baseProducts
-      .filter(p => p.name?.toLowerCase().includes(query))
-      .slice(0, 5);
+    // Matched product names from currently loaded catalog with fuzzy match & relevance ranking
+    const matchedProducts = rankProductsBySearchRelevance(
+      productList.filter(p => matchesFuzzySearch(p, query)),
+      query
+    ).slice(0, 5);
       
     // Matched categories
     const matchedCategories = categoriesList
-      .filter(c => c !== "all" && c.toLowerCase().includes(query))
+      .filter(c => c !== "all" && matchesFuzzySearch({ name: c, category: c }, query))
       .slice(0, 3);
       
     // Matched brands
     const matchedBrands = brandsList
-      .filter(b => b.toLowerCase().includes(query))
+      .filter(b => matchesFuzzySearch({ name: b, brand: b }, query))
       .slice(0, 3);
 
     return {
@@ -542,7 +523,7 @@ const Product = () => {
       categories: matchedCategories,
       brands: matchedBrands
     };
-  }, [searchValue, baseProducts, categoriesList, brandsList]);
+  }, [searchValue, productList, categoriesList, brandsList]);
 
   const submitSearch = (val) => {
     const term = (val !== undefined ? val : searchValue).trim();
@@ -650,7 +631,9 @@ const Product = () => {
     if (category !== "all") {
       chips.push({
         key: "category",
-        label: `Dept: ${category}`,
+        groupLabel: "Category",
+        label: category,
+        onRemove: () => setCategory("all"),
         clear: () => setCategory("all")
       });
     }
@@ -658,61 +641,93 @@ const Product = () => {
       const found = adminCategories.find(c => c._id === id);
       chips.push({
         key: `categories_${id}`,
+        groupLabel: "Category",
         label: found ? found.name : "Category",
+        onRemove: () => setSelectedCategoryIds(selectedCategoryIds.filter(x => x !== id)),
         clear: () => setSelectedCategoryIds(selectedCategoryIds.filter(x => x !== id))
       });
     });
     selectedSubCategories.forEach(s => {
       chips.push({
         key: `sub_${s}`,
+        groupLabel: "Subcategory",
         label: s,
+        onRemove: () => handleToggleSubCategory(s),
         clear: () => handleToggleSubCategory(s)
       });
     });
     selectedBrands.forEach(b => {
       chips.push({
         key: `brand_${b}`,
+        groupLabel: "Brand",
         label: b,
+        onRemove: () => handleToggleBrand(b),
         clear: () => handleToggleBrand(b)
       });
     });
     selectedLocations.forEach(l => {
       chips.push({
         key: `loc_${l}`,
+        groupLabel: "Location",
         label: `${l} Origin`,
+        onRemove: () => handleToggleLocation(l),
         clear: () => handleToggleLocation(l)
       });
     });
-    if (price < maxPrice) {
+
+    // Dynamic Attribute Chips
+    Object.entries(selectedAttributes).forEach(([attrKey, vals]) => {
+      const arr = Array.isArray(vals) ? vals : [vals];
+      arr.forEach(val => {
+        chips.push({
+          key: `attr_${attrKey}_${val}`,
+          groupLabel: attrKey,
+          label: val,
+          onRemove: () => handleAttributeToggle(attrKey, val),
+          clear: () => handleAttributeToggle(attrKey, val)
+        });
+      });
+    });
+
+    const currentMax = priceRange.max || maxPrice;
+    if (price < currentMax) {
       chips.push({
         key: "price",
+        groupLabel: "Price",
         label: `Under ₹${price.toLocaleString("en-IN")}`,
-        clear: () => setPrice(maxPrice)
+        onRemove: () => setPrice(currentMax),
+        clear: () => setPrice(currentMax)
       });
     }
     if (rating > 0) {
       chips.push({
         key: "rating",
+        groupLabel: "Rating",
         label: `${rating}★ & above`,
+        onRemove: () => setRating(0),
         clear: () => setRating(0)
       });
     }
     if (minDiscount > 0) {
       chips.push({
         key: "discount",
+        groupLabel: "Discount",
         label: `${minDiscount}% Off & above`,
+        onRemove: () => setMinDiscount(0),
         clear: () => setMinDiscount(0)
       });
     }
     if (inStockOnly) {
       chips.push({
         key: "availability",
+        groupLabel: "Stock",
         label: "In Stock",
+        onRemove: () => setInStockOnly(false),
         clear: () => setInStockOnly(false)
       });
     }
     return chips;
-  }, [category, selectedSubCategories, selectedBrands, selectedLocations, price, rating, minDiscount, inStockOnly]);
+  }, [category, selectedCategoryIds, adminCategories, selectedSubCategories, selectedBrands, selectedLocations, selectedAttributes, price, priceRange, rating, minDiscount, inStockOnly]);
 
   // Variant selector and cart trigger inside Quick View Modal
   const openQuickView = (p) => {
@@ -807,14 +822,14 @@ const Product = () => {
         className="sticky z-30 bg-white dark:bg-slate-950 border-b border-slate-200/40 dark:border-slate-800/40 py-2 sm:py-2.5 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-all duration-300"
         style={{ top: "var(--navbar-height, 80px)" }}
       >
-        <div className="max-w-full mx-auto px-4 sm:px-8 lg:px-12 flex flex-col md:flex-row md:items-center justify-between gap-2.5 md:gap-4">
+        <div className="w-full px-2.5 sm:px-4 lg:px-6 flex flex-col md:flex-row md:items-center justify-between gap-2.5 md:gap-4">
           {/* Title & Count (Myntra style) */}
           <div className="flex flex-col text-left justify-center">
             <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider leading-none">
-              Home / Products Catalog
+              Home / {categoryMeta ? (categoryMeta.parentCategory ? `${categoryMeta.parentCategory} / ` : "") + categoryMeta.name : "Products Catalog"}
             </span>
             <h2 className="text-xs sm:text-sm font-black text-slate-800 dark:text-white uppercase tracking-wider mt-1 leading-tight">
-              Products Collection <span className="text-[11px] font-normal text-slate-400 dark:text-slate-500 lowercase normal-case ml-1"> - {totalCount} items</span>
+              {categoryMeta ? `${categoryMeta.name} Collection` : "Products Collection"} <span className="text-[11px] font-normal text-slate-400 dark:text-slate-500 lowercase normal-case ml-1"> - {totalCount} items</span>
             </h2>
           </div>
 
@@ -863,67 +878,71 @@ const Product = () => {
           </div>
         </div>
 
-        {/* Active Filter Chips block */}
-        {activeFiltersChips.length > 0 && (
-          <div className="max-w-full mx-auto px-4 sm:px-8 lg:px-12 flex flex-wrap gap-1.5 items-center mt-2 pt-2 border-t border-slate-200/30 dark:border-slate-800/30">
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider mr-1">Active:</span>
-            {activeFiltersChips.map((chip) => (
-              <button
-                key={chip.key}
-                onClick={chip.clear}
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-500/5 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-900/30 text-[10px] font-extrabold text-indigo-600 dark:text-indigo-400 hover:border-rose-500 hover:text-rose-500 transition-all cursor-pointer capitalize shadow-2xs"
+        {/* Active Filter Chips bar at the top */}
+        {activeFiltersChips && activeFiltersChips.length > 0 && (
+          <div className="w-full px-2.5 sm:px-4 lg:px-6 flex flex-wrap gap-1.5 items-center mt-2 pt-2 border-t border-slate-200/40 dark:border-slate-800/40">
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mr-1">
+              Active Filters ({activeFiltersChips.length}):
+            </span>
+            {activeFiltersChips.map((chip, idx) => (
+              <span
+                key={`${chip.key}-${idx}`}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-indigo-50/70 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 text-[11px] font-bold border border-indigo-200/80 dark:border-indigo-800/60 shadow-2xs group hover:border-rose-400 dark:hover:border-rose-600 transition-all"
               >
-                <span>{chip.label}</span>
-                <X size={10} className="stroke-[3px]" />
-              </button>
+                {chip.groupLabel && chip.groupLabel.toLowerCase() !== String(chip.label || "").toLowerCase() && (
+                  <span className="text-[9.5px] text-slate-400 font-semibold">{chip.groupLabel}:</span>
+                )}
+                <span className="capitalize">{chip.label}</span>
+                <button
+                  type="button"
+                  onClick={chip.onRemove || chip.clear}
+                  className="p-0.5 rounded-full hover:bg-rose-100 dark:hover:bg-rose-900/50 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition cursor-pointer border-none bg-transparent"
+                  title="Remove filter"
+                >
+                  <X size={11} className="stroke-[3]" />
+                </button>
+              </span>
             ))}
             <button
               onClick={handleReset}
-              className="text-[10px] font-black uppercase tracking-wider text-orange-500 hover:text-orange-600 cursor-pointer ml-2"
+              className="inline-flex items-center gap-1 text-[11px] font-black uppercase tracking-wider text-[#ff3f6c] hover:opacity-80 bg-transparent border-none cursor-pointer transition-opacity ml-2"
             >
-              Clear All
+              <RotateCcw size={11} className="stroke-[2.5]" />
+              <span>Clear All</span>
             </button>
           </div>
         )}
       </div>
 
       {/* ── Layout Grid Columns ── */}
-      <div className="max-w-full mx-auto px-4 sm:px-8 lg:px-12 py-5 grid grid-cols-1 md:grid-cols-[260px_1fr] gap-6 items-start relative">
+      <div className="w-full px-2 sm:px-3 lg:px-4 py-3 grid grid-cols-1 md:grid-cols-[240px_1fr] lg:grid-cols-[250px_1fr] gap-2.5 sm:gap-3 items-start relative">
         
         {/* Desktop Sidebar filter card */}
         <div className="hidden md:block sticky top-[135px] max-h-[calc(100vh-140px)] overflow-y-auto select-none scrollbar-hide">
           <FilterSidebar
+            category={category}
+            searchQuery={searchQuery}
+            dynamicFilters={dynamicFilters}
+            selectedAttributes={selectedAttributes}
+            selectedBrands={selectedBrands}
+            selectedSubCategories={selectedSubCategories}
+            onAttributeToggle={handleAttributeToggle}
+            activeFilterChips={activeFiltersChips}
             categories={categoriesList}
-            subCategories={subCategoriesList}
-            brands={brandsList}
-            locations={locationsList}
-            selectedCollection={collection}
-            onCollectionToggle={setCollection}
             selectedCategories={[category]}
             onCategoryToggle={(val) => handleCategoryPillChange(val === category ? "all" : val)}
-            selectedSubCategories={selectedSubCategories}
-            selectedBrands={selectedBrands}
-            selectedLocations={selectedLocations}
+            categoryCounts={categoryCountsMap}
             price={price}
-            maxPrice={maxPrice}
+            minPrice={priceRange.min || 0}
+            maxPrice={priceRange.max || maxPrice}
             rating={rating}
             minDiscount={minDiscount}
             inStockOnly={inStockOnly}
-            onSubCategoryToggle={handleToggleSubCategory}
-            onBrandToggle={handleToggleBrand}
-            onLocationToggle={handleToggleLocation}
             onPriceChange={setPrice}
             onRatingChange={setRating}
             onDiscountChange={setMinDiscount}
             onInStockOnlyChange={setInStockOnly}
             onReset={handleReset}
-            categoryCounts={categoryCounts}
-            subCategoryCounts={subCategoryCounts}
-            brandCounts={brandCounts}
-            locationCounts={locationCounts}
-            ratingCounts={ratingCounts}
-            discountCounts={discountCounts}
-            inStockCount={inStockCount}
             totalResultsCount={totalCount}
           />
         </div>
@@ -947,37 +966,29 @@ const Product = () => {
 
               <div className="flex-1 overflow-y-auto space-y-4 pr-1 scrollbar-hide">
                 <FilterSidebar
+                  category={category}
+                  searchQuery={searchQuery}
+                  dynamicFilters={dynamicFilters}
+                  selectedAttributes={selectedAttributes}
+                  selectedBrands={selectedBrands}
+                  selectedSubCategories={selectedSubCategories}
+                  onAttributeToggle={handleAttributeToggle}
+                  activeFilterChips={activeFiltersChips}
                   categories={categoriesList}
-                  subCategories={subCategoriesList}
-                  brands={brandsList}
-                  locations={locationsList}
-                  selectedCollection={collection}
-                  onCollectionToggle={setCollection}
                   selectedCategories={[category]}
                   onCategoryToggle={(val) => handleCategoryPillChange(val === category ? "all" : val)}
-                  selectedSubCategories={selectedSubCategories}
-                  selectedBrands={selectedBrands}
-                  selectedLocations={selectedLocations}
+                  categoryCounts={categoryCountsMap}
                   price={price}
-                  maxPrice={maxPrice}
+                  minPrice={priceRange.min || 0}
+                  maxPrice={priceRange.max || maxPrice}
                   rating={rating}
                   minDiscount={minDiscount}
                   inStockOnly={inStockOnly}
-                  onSubCategoryToggle={handleToggleSubCategory}
-                  onBrandToggle={handleToggleBrand}
-                  onLocationToggle={handleToggleLocation}
                   onPriceChange={setPrice}
                   onRatingChange={setRating}
                   onDiscountChange={setMinDiscount}
                   onInStockOnlyChange={setInStockOnly}
                   onReset={handleReset}
-                  categoryCounts={categoryCounts}
-                  subCategoryCounts={subCategoryCounts}
-                  brandCounts={brandCounts}
-                  locationCounts={locationCounts}
-                  ratingCounts={ratingCounts}
-                  discountCounts={discountCounts}
-                  inStockCount={inStockCount}
                   totalResultsCount={totalCount}
                   onCloseMobileFilters={() => setShowMobileFilters(false)}
                 />
@@ -1005,8 +1016,8 @@ const Product = () => {
               </button>
             </div>
           ) : loading ? (
-            <div className="grid grid-cols-1 min-[450px]:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-              {Array.from({ length: 8 }).map((_, i) => (
+            <div className="grid grid-cols-1 min-[450px]:grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2 sm:gap-2.5">
+              {Array.from({ length: 10 }).map((_, i) => (
                 <ProductCardSkeleton key={i} />
               ))}
             </div>
@@ -1063,7 +1074,7 @@ const Product = () => {
               {/* Product Card grid - Animate items stagger entry */}
               <motion.div 
                 layout
-                className="grid grid-cols-1 min-[450px]:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3.5 sm:gap-4"
+                className="grid grid-cols-1 min-[450px]:grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2 sm:gap-2.5"
               >
                 {productList.map((item) => (
                   <motion.div
@@ -1185,9 +1196,16 @@ const Product = () => {
               <div className="flex-1 flex flex-col justify-between space-y-5">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-[10px] font-black tracking-widest uppercase text-indigo-600 dark:text-indigo-400">
-                      {quickViewProduct.brand || "CartNOW Curated"}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <BrandLogo
+                        brand={quickViewProduct.brand || "CartNOW"}
+                        brandDomain={quickViewProduct.brandDomain}
+                        className="w-4 h-4 rounded-xs"
+                      />
+                      <span className="text-[10px] font-black tracking-widest uppercase text-indigo-600 dark:text-indigo-400">
+                        {quickViewProduct.brand || "CartNOW Curated"}
+                      </span>
+                    </div>
                     {quickViewProduct.stock > 0 && quickViewProduct.stock <= 5 && (
                       <span className="text-[9px] font-black text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded-md border border-rose-500/15 uppercase tracking-wide">
                         Only {quickViewProduct.stock} Left
@@ -1446,9 +1464,10 @@ const AutocompleteSuggestions = ({
                 <button
                   key={b}
                   onClick={() => onSelect(b, 'brand')}
-                  className="px-2.5 py-1 rounded-lg bg-indigo-50/50 dark:bg-indigo-950/20 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white transition cursor-pointer border border-indigo-100/40 dark:border-indigo-900/30"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-50/50 dark:bg-indigo-950/20 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white transition cursor-pointer border border-indigo-100/40 dark:border-indigo-900/30"
                 >
-                  {b}
+                  <BrandLogo brand={b} className="w-3.5 h-3.5 rounded-2xs shrink-0" />
+                  <span>{b}</span>
                 </button>
               ))}
             </div>
@@ -1488,7 +1507,10 @@ const AutocompleteSuggestions = ({
                     onClick={() => onSelect(b, 'brand')}
                     className="flex items-center justify-between w-full text-left py-1.5 px-2.5 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-indigo-50/50 dark:hover:bg-slate-800/40 transition capitalize"
                   >
-                    <span>{b}</span>
+                    <div className="flex items-center gap-2">
+                      <BrandLogo brand={b} className="w-4 h-4 rounded-xs shrink-0" />
+                      <span>{b}</span>
+                    </div>
                     <span className="text-[10px] bg-indigo-50 dark:bg-indigo-950/30 px-2 py-0.5 rounded text-indigo-500 font-bold border border-indigo-100/20">Brand</span>
                   </button>
                 ))}

@@ -5,7 +5,16 @@ import ProductCard from "../../pages/ProductCard";
 import Loader from "../Loader";
 
 /* ─────────────── Main Component ─────────────── */
-const TrendingProducts = ({ bestSellers = [], newArrivals = [], mostViewed = [], loading, onQuickView, onAddToCart, onToggleFavorite, wishlist }) => {
+const TrendingProducts = ({
+  bestSellers = [],
+  newArrivals = [],
+  mostViewed = [],
+  loading,
+  onQuickView,
+  onAddToCart,
+  onToggleFavorite,
+  wishlist
+}) => {
   const navigate = useNavigate();
   const [activeTrendingTab, setActiveTrendingTab] = useState("bestseller");
 
@@ -18,109 +27,112 @@ const TrendingProducts = ({ bestSellers = [], newArrivals = [], mostViewed = [],
   const scrollSlider = (direction) => {
     const el = document.getElementById("trending-slider");
     if (el) {
-      const cardWidth = el.querySelector(".snap-start")?.offsetWidth || 280;
-      const gap = 20; // gap-5 is 20px
+      const card = el.querySelector(".snap-start");
+      const cardWidth = card?.offsetWidth || 280;
+      const gap = 8; // gap-2 is 8px
       const scrollAmt = direction === "left" ? -(cardWidth + gap) : (cardWidth + gap);
       el.scrollBy({ left: scrollAmt, behavior: "smooth" });
     }
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[22%_78%] gap-6 lg:gap-8 items-stretch mb-8 select-none text-left">
+    <div className="grid grid-cols-1 lg:grid-cols-[22%_1fr] gap-2 sm:gap-2.5 lg:gap-3 items-stretch mb-2 select-none text-left">
 
-      {/* Sidebar column with spacer to align with product card tops */}
+      {/* Sidebar column: Trending Hub */}
       <div className="flex flex-col h-full">
-        <div className="hidden lg:block h-[46px]" />
         <div 
-          className="relative p-5 text-slate-100 dark:text-white flex flex-col justify-between shadow-xl shadow-blue-500/5 dark:shadow-black/50 flex-1 min-h-[390px] h-full text-left border border-slate-800/80 rounded-md overflow-hidden bg-[#020617]"
+          className="relative p-3.5 sm:p-4 text-white flex flex-col justify-between shadow-[0_4px_25px_rgba(0,0,0,0.25)] flex-1 min-h-[360px] h-full text-left border border-slate-800/90 rounded-sm overflow-hidden bg-gradient-to-br from-[#070A14] via-[#0B0F1D] to-[#030610]"
         >
           {/* Glowing Mesh Animation */}
           <div className="absolute top-[-30%] left-[-30%] w-[100%] h-[100%] bg-gradient-to-tr from-blue-500/15 to-transparent rounded-full blur-[90px] pointer-events-none animate-pulse" style={{ animationDuration: "9s" }} />
           <div className="absolute bottom-[-30%] right-[30%] w-[100%] h-[100%] bg-gradient-to-tr from-indigo-500/15 to-transparent rounded-full blur-[90px] pointer-events-none animate-pulse" style={{ animationDuration: "7s" }} />
 
-          <div className="space-y-3.5 relative z-10">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-500/10 border border-blue-500/30 rounded-full text-[9px] font-black uppercase tracking-wider text-blue-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+          <div className="space-y-2 relative z-10">
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-blue-500/15 border border-blue-500/40 rounded-sm text-[9px] font-black uppercase tracking-wider text-blue-300 shadow-2xs">
+              <span className="w-1.5 h-1.5 rounded-sm bg-blue-400 animate-pulse" />
               <span>Hot Picks</span>
             </div>
-            <h2 className="text-2xl lg:text-3xl font-extrabold tracking-tight leading-none bg-gradient-to-r from-white via-slate-100 to-blue-200 bg-clip-text text-transparent">Trending Hub</h2>
-            <p className="text-[11px] text-slate-400 font-medium leading-relaxed">
+            <h2 className="text-xl lg:text-2xl font-black tracking-tight leading-none text-white">
+              Trending Hub
+            </h2>
+            <p className="text-[11px] text-slate-400 font-medium leading-tight">
               Discover what's hot and in high demand right now across the CartNOW marketplace.
             </p>
           </div>
 
           {/* Stacked Vertical Tabs */}
-          <div className="flex flex-col gap-2 relative z-10 w-full">
+          <div className="flex flex-col gap-1.5 relative z-10 w-full my-2">
             {[
-              { id: "bestseller", label: "Best Sellers", icon: Flame, iconColor: "text-orange-500" },
-              { id: "new", label: "New Arrivals", icon: Sparkles, iconColor: "text-amber-500" },
-              { id: "viewed", label: "Most Viewed", icon: Eye, iconColor: "text-blue-500" }
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTrendingTab(tab.id)}
-                className={`flex items-center gap-3 px-4 py-2.5 rounded-md text-[11px] font-bold uppercase tracking-wider text-left transition-all duration-200 cursor-pointer ${activeTrendingTab === tab.id ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-slate-100 dark:text-white shadow-md hover:brightness-105 active:scale-[0.98]" : "bg-slate-900/40 text-slate-400 hover:bg-slate-900/60 hover:text-white border border-white/5"}`}
-              >
-                {React.createElement(tab.icon, { size: 13, className: `${tab.iconColor} shrink-0` })}
-                <span>{tab.label}</span>
-              </button>
-            ))}
+              { id: "bestseller", label: "Best Sellers", icon: Flame, iconColor: "text-orange-400" },
+              { id: "new", label: "New Arrivals", icon: Sparkles, iconColor: "text-amber-400" },
+              { id: "viewed", label: "Most Viewed", icon: Eye, iconColor: "text-blue-400" }
+            ].map((tab) => {
+              const isActive = activeTrendingTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTrendingTab(tab.id)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-sm text-[10.5px] font-black uppercase tracking-wider text-left transition-all duration-200 cursor-pointer ${
+                    isActive
+                      ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-[0_4px_14px_rgba(37,99,235,0.35)] hover:brightness-105 active:scale-[0.98]"
+                      : "bg-slate-900/60 hover:bg-slate-800/80 text-slate-300 hover:text-white border border-white/5 hover:border-blue-500/30 shadow-2xs"
+                  }`}
+                >
+                  {React.createElement(tab.icon, { size: 13, className: `${isActive ? "text-white" : tab.iconColor} shrink-0 stroke-[2.5]` })}
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
           </div>
 
           <button
             onClick={() => navigate("/product")}
-            className="group relative w-full py-3 bg-slate-900 hover:bg-slate-800 text-slate-100 dark:text-white font-extrabold text-[10px] uppercase tracking-wider rounded-md shadow-md transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 border border-white/5 z-10"
+            className="group relative w-full py-2 bg-slate-900/90 hover:bg-slate-800 text-white font-black text-[10.5px] uppercase tracking-wider rounded-sm shadow-2xs transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 border border-slate-700/80 hover:border-blue-400 z-10"
           >
             <span>Explore Catalog</span>
-            <ArrowRight size={12} className="transition-transform duration-200 group-hover:translate-x-1" />
+            <ArrowRight size={12} className="stroke-[2.5] transition-transform duration-200 group-hover:translate-x-1" />
           </button>
         </div>
       </div>
 
       {/* Horizontal Trending Slider */}
-      <div className="flex flex-col justify-between">
-        {/* Header - Aligned precisely with layout */}
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-extrabold text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-2">
-            <span>Trending Lineup</span>
-            <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
-          </h3>
-
-          {/* Glassmorphism navigation buttons */}
-          <div className="flex gap-2">
+      <div className="flex flex-col justify-between min-w-0 relative">
+        {/* Top Controls Bar (without title text) */}
+        <div className="flex items-center justify-end mb-2">
+          <div className="flex gap-1.5">
             <button
               type="button"
               onClick={() => scrollSlider("left")}
               aria-label="Previous trending products"
-              className="h-8.5 w-8.5 rounded-full border border-slate-200/50 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md hover:bg-white dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center shadow-sm hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
+              className="h-7.5 w-7.5 sm:h-8 sm:w-8 rounded-sm border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 flex items-center justify-center shadow-2xs hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 transition-all duration-200 cursor-pointer"
             >
-              <ChevronLeft size={15} />
+              <ChevronLeft size={15} className="stroke-[2.5]" />
             </button>
             <button
               type="button"
               onClick={() => scrollSlider("right")}
               aria-label="Next trending products"
-              className="h-8.5 w-8.5 rounded-full border border-slate-200/50 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md hover:bg-white dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center shadow-sm hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
+              className="h-7.5 w-7.5 sm:h-8 sm:w-8 rounded-sm border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 flex items-center justify-center shadow-2xs hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 transition-all duration-200 cursor-pointer"
             >
-              <ChevronRight size={15} />
+              <ChevronRight size={15} className="stroke-[2.5]" />
             </button>
           </div>
         </div>
 
         {/* Loader or Slider */}
         {loading ? (
-          <div className="flex-1 flex items-center justify-center bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-slate-200/60 dark:border-slate-800 rounded-none">
+          <div className="flex-1 flex items-center justify-center bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-slate-200/60 dark:border-slate-800 rounded-sm min-h-[320px]">
             <Loader message="" size="sm" color="blue" />
           </div>
         ) : (
           <div
             id="trending-slider"
-            className="flex gap-3 md:gap-4 lg:gap-5 overflow-x-hidden scroll-smooth snap-x snap-mandatory pb-1"
+            className="flex gap-2 overflow-x-hidden scroll-smooth snap-x snap-mandatory pb-1"
           >
             {trendingFiltered.map((p) => (
               <div
                 key={p._id}
-                className="min-w-[calc((100%-0.75rem)/2)] max-w-[calc((100%-0.75rem)/2)] w-[calc((100%-0.75rem)/2)] md:min-w-[calc((100%-2*1rem)/3)] md:max-w-[calc((100%-2*1rem)/3)] md:w-[calc((100%-2*1rem)/3)] lg:min-w-[calc((100%-2*1.25rem)/3)] lg:max-w-[calc((100%-2*1.25rem)/3)] lg:w-[calc((100%-2*1.25rem)/3)] snap-start flex-shrink-0"
+                className="min-w-[calc((100%-0.5rem)/2)] max-w-[calc((100%-0.5rem)/2)] w-[calc((100%-0.5rem)/2)] md:min-w-[calc((100%-1rem)/3)] md:max-w-[calc((100%-1rem)/3)] md:w-[calc((100%-1rem)/3)] lg:min-w-[calc((100%-1rem)/3)] lg:max-w-[calc((100%-1rem)/3)] lg:w-[calc((100%-1rem)/3)] snap-start flex-shrink-0"
               >
                 <ProductCard
                   product={p}

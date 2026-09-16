@@ -319,7 +319,7 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
 
     const basePrice = parseFloat(newProduct.price) || 0;
     const hasExplicitStock = newProduct.stock !== "" && newProduct.stock !== undefined && !isNaN(parseInt(newProduct.stock));
-    const baseStock = hasExplicitStock ? parseInt(newProduct.stock) : (basePrice > 0 ? 10 : 0);
+    const baseStock = hasExplicitStock ? parseInt(newProduct.stock) : (basePrice > 0 ? 10 : 10);
     const baseSku = newProduct.sku || (newProduct.name ? newProduct.name.substring(0, 5).toUpperCase() : "PROD");
 
     const newVariants = combinations.map((comb, idx) => {
@@ -331,8 +331,8 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
       const sizeVal = comb.Size || comb.size || Object.entries(comb).find(([k]) => k.toLowerCase().includes("size"))?.[1] || "";
 
       const comboSuffix = Object.values(comb).join("-").toUpperCase();
-      const variantPrice = (existing?.price !== undefined && existing?.price > 0) ? existing.price : basePrice;
-      const variantStock = (existing?.stock !== undefined && (existing?.stock > 0 || hasExplicitStock)) ? existing.stock : baseStock;
+      const variantPrice = (existing?.price !== undefined && Number(existing?.price) > 0) ? existing.price : basePrice;
+      const variantStock = (existing?.stock !== undefined && Number(existing?.stock) > 0) ? existing.stock : baseStock;
 
       return {
         Color: colorVal,
@@ -944,10 +944,14 @@ const AddProduct = ({ token, addProduct, products = [], fetchProducts }) => {
       }
 
       if (product.variants && Array.isArray(product.variants) && product.variants.length > 0) {
+        const fallbackStock = parseInt(safeStockVal, 10) || 10;
+        const fallbackPrice = parseFloat(product.price) || parseFloat(safePriceVal) || 0;
         const loadedVariants = product.variants.map((v, idx) => ({
+          Color: v.Color || v.color || v.attributes?.Color || v.attributes?.color || "",
+          Size: v.Size || v.size || v.attributes?.Size || v.attributes?.size || "",
           sku: v.sku || `${product.sku || "PROD"}-${idx}`,
-          price: Math.max(0, v.price !== undefined ? parseFloat(v.price) || 0 : (parseFloat(product.price) || 0)),
-          stock: Math.max(0, v.stock !== undefined ? parseInt(v.stock, 10) || 0 : (parseInt(safeStockVal, 10) || 10)),
+          price: Math.max(0, (v.price !== undefined && Number(v.price) > 0) ? parseFloat(v.price) : fallbackPrice),
+          stock: Math.max(0, (v.stock !== undefined && Number(v.stock) > 0) ? parseInt(v.stock, 10) : fallbackStock),
           images: v.images || [],
           barcode: v.barcode || "",
           availability: v.availability !== false,

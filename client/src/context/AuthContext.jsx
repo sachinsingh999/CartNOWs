@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
-import axios from "axios";
-import { backendUrl } from "../config";
+import { authApi } from "../services";
 import { toast } from "react-toastify";
 
 const AuthContext = createContext();
@@ -46,39 +45,36 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (email, password, selectedRole) => {
-    let endpoint = "";
-    if (selectedRole === "admin") {
-      endpoint = `${backendUrl}/api/user/admin`;
-    } else if (selectedRole === "seller") {
-      endpoint = `${backendUrl}/api/seller/login`;
-    } else if (selectedRole === "agent") {
-      endpoint = `${backendUrl}/api/deliveryman/login`;
-    } else {
-      endpoint = `${backendUrl}/api/user/login`;
-    }
-
     try {
-      const response = await axios.post(endpoint, { email, password });
-      if (response.data.success) {
-        const receivedToken = response.data.token;
+      let data;
+      if (selectedRole === "admin") {
+        data = await authApi.loginAdmin(email, password);
+      } else if (selectedRole === "seller") {
+        data = await authApi.loginSeller(email, password);
+      } else if (selectedRole === "agent") {
+        data = await authApi.loginAgent(email, password);
+      } else {
+        data = await authApi.login(email, password);
+      }
+
+      if (data.success) {
+        const receivedToken = data.token;
         const receivedRole = selectedRole;
         let receivedUser = null;
 
         if (selectedRole === "seller") {
-          receivedUser = response.data.seller;
+          receivedUser = data.seller;
         } else if (selectedRole === "agent") {
-          receivedUser = response.data.driver;
+          receivedUser = data.driver;
         } else if (selectedRole === "admin") {
           receivedUser = { email, name: "Administrator", role: "admin" };
         } else {
           // For Customer, fetch profile
-          const profileRes = await axios.get(`${backendUrl}/api/user/profile`, {
-            headers: { Authorization: `Bearer ${receivedToken}` }
-          });
-          if (profileRes.data.success) {
-            receivedUser = profileRes.data.user;
+          const profileData = await authApi.getProfile(receivedToken);
+          if (profileData.success) {
+            receivedUser = profileData.user;
           } else {
-            return { success: false, message: profileRes.data.message || "Failed to fetch user profile" };
+            return { success: false, message: profileData.message || "Failed to fetch user profile" };
           }
         }
 
@@ -90,10 +86,10 @@ export const AuthProvider = ({ children }) => {
         setRole(receivedRole);
         setUser(receivedUser);
 
-        toast.success(response.data.message || "Login successful");
+        toast.success(data.message || "Login successful");
         return { success: true, token: receivedToken, role: receivedRole };
       } else {
-        return { success: false, message: response.data.message || "Login failed" };
+        return { success: false, message: data.message || "Login failed" };
       }
     } catch (error) {
       const msg = error.response?.data?.message || error.message || "Something went wrong";
@@ -111,33 +107,24 @@ export const AuthProvider = ({ children }) => {
 
       try {
         if (role === "customer") {
-          const res = await axios.get(`${backendUrl}/api/user/profile`, {
-            headers: { Authorization: `Bearer ${token}` },
-            timeout: 3000,
-          });
-          if (res.data.success) {
-            setUser(res.data.user);
-            localStorage.setItem("user", JSON.stringify(res.data.user));
+          const resData = await authApi.getProfile(token);
+          if (resData.success) {
+            setUser(resData.user);
+            localStorage.setItem("user", JSON.stringify(resData.user));
           } else {
             logout();
           }
         } else if (role === "seller") {
-          const res = await axios.get(`${backendUrl}/api/seller/profile`, {
-            headers: { token: token },
-            timeout: 3000,
-          });
-          if (res.data.success) {
-            setUser(res.data.seller);
-            localStorage.setItem("user", JSON.stringify(res.data.seller));
+          const resData = await authApi.getSellerProfile(token);
+          if (resData.success) {
+            setUser(resData.seller);
+            localStorage.setItem("user", JSON.stringify(resData.seller));
           } else {
             logout();
           }
         } else if (role === "agent") {
-          const res = await axios.get(`${backendUrl}/api/deliveryman/stats`, {
-            headers: { token: token },
-            timeout: 3000,
-          });
-          if (!res.data.success) {
+          const resData = await authApi.getAgentStats(token);
+          if (!resData.success) {
             logout();
           }
         } else if (role === "admin") {

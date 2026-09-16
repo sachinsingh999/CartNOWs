@@ -90,8 +90,8 @@ const AdminLayout = () => {
         />
 
         {/* MAIN CONTENT */}
-        <main className="flex-1 min-w-0 bg-slate-50 dark:bg-slate-950 p-4 md:p-6 overflow-y-scroll overflow-x-hidden custom-scrollbar h-full">
-          <div className="mx-auto w-full max-w-[1600px] space-y-5">
+        <main className="flex-1 min-w-0 bg-slate-50 dark:bg-slate-950 p-3 sm:p-4 md:p-4.5 pt-2.5 sm:pt-3 md:pt-3.5 overflow-y-scroll overflow-x-hidden custom-scrollbar h-full">
+          <div className="mx-auto w-full max-w-[1600px] space-y-4">
             <Outlet context={{ token }} />
           </div>
         </main>

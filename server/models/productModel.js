@@ -27,6 +27,11 @@ const productSchema = new mongoose.Schema({
     required: true
   },
 
+  bgRemovedImage: {
+    type: String, // Auto background-removed transparent version of first/cover image for product cards
+    default: ""
+  },
+
   category: {
     type: String,
     required: true
@@ -281,6 +286,32 @@ const productSchema = new mongoose.Schema({
   date: {
     type: Date,
     default: Date.now
+  },
+
+  isFeatured: {
+    type: Boolean,
+    default: false,
+    index: true
+  },
+
+  featuredPriority: {
+    type: Number,
+    default: 0
+  },
+
+  featuredDiscount: {
+    type: Number,
+    default: 0
+  },
+
+  featuredStartDate: {
+    type: Date,
+    default: null
+  },
+
+  featuredEndDate: {
+    type: Date,
+    default: null
   }
 }, {
   suppressReservedKeysWarning: true
@@ -294,6 +325,7 @@ productSchema.index({ status: 1, isDeleted: 1, wishlistCount: -1, createdAt: -1 
 productSchema.index({ status: 1, isDeleted: 1, averageRating: -1, totalReviews: -1 });
 productSchema.index({ status: 1, isDeleted: 1, category: 1 });
 productSchema.index({ status: 1, isDeleted: 1, brand: 1 });
+productSchema.index({ isFeatured: 1, status: 1, isDeleted: 1, stock: 1, featuredPriority: -1 });
 
 const productModel =
   mongoose.models.product ||

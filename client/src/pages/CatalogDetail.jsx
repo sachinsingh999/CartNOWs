@@ -20,10 +20,14 @@ import {
 } from "lucide-react";
 import NewArrivalsLanding from "../components/NewArrivalsLanding";
 import TrendingNowLanding from "../components/TrendingNowLanding";
+import BestSellersLanding from "../components/BestSellersLanding";
+import FestivalOffersLanding from "../components/FestivalOffersLanding";
 import { ProductGridSkeleton } from "../components/SkeletonLoader";
 
-const CatalogDetail = ({ type }) => {
-  const { slug } = useParams();
+const CatalogDetail = ({ type: propType }) => {
+  const params = useParams();
+  const type = propType || params.type || "collection";
+  const slug = params.slug;
   const navigate = useNavigate();
 
   // Parse cached catalog products from sessionStorage for 0ms instant display
@@ -78,6 +82,36 @@ const CatalogDetail = ({ type }) => {
           );
         };
 
+        const isBestSellersSlug = (s) => {
+          const clean = (s || "").toLowerCase().trim();
+          return (
+            clean === "best-sellers" ||
+            clean === "best-seller" ||
+            clean === "bestsellers" ||
+            clean === "bestseller" ||
+            clean === "best_sellers" ||
+            clean === "bestselling" ||
+            clean === "top-rated" ||
+            clean === "hall-of-fame" ||
+            clean === "most-loved"
+          );
+        };
+
+        const isFestivalOffersSlug = (s) => {
+          const clean = (s || "").toLowerCase().trim();
+          return (
+            clean === "festival-offers" ||
+            clean === "festive-offers" ||
+            clean === "festival-deals" ||
+            clean === "festive-deals" ||
+            clean === "mega-deals" ||
+            clean === "festive" ||
+            clean === "festival" ||
+            clean === "offers" ||
+            clean === "deals"
+          );
+        };
+
         const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
         const now = Date.now();
 
@@ -97,7 +131,29 @@ const CatalogDetail = ({ type }) => {
           });
         }
 
-        // If targeted category/brand/collection query returned 0 products (and not new-arrivals), try fallback search
+        // If collection is best-sellers, ensure it's sorted by best selling score
+        if (type === "collection" && isBestSellersSlug(slug)) {
+          filtered.sort((a, b) => {
+            const scoreA = (a.isBestSeller || a.bestseller ? 100 : 0) +
+                           (a.totalSold || 0) * 2 +
+                           ((a.averageRating || a.rating?.average || a.rating || 4.5) * 10);
+            const scoreB = (b.isBestSeller || b.bestseller ? 100 : 0) +
+                           (b.totalSold || 0) * 2 +
+                           ((b.averageRating || b.rating?.average || b.rating || 4.5) * 10);
+            return scoreB - scoreA;
+          });
+        }
+
+        // If collection is festival-offers, ensure it's sorted by highest savings
+        if (type === "collection" && isFestivalOffersSlug(slug)) {
+          filtered.sort((a, b) => {
+            const savA = (a.originalPrice || a.price) - a.price;
+            const savB = (b.originalPrice || b.price) - b.price;
+            return savB - savA;
+          });
+        }
+
+        // If targeted category/brand/collection query returned 0 products (and not new-arrivals/best-sellers/festival-offers), try fallback search
         if (filtered.length === 0 && !isNewArrivalsSlug(slug)) {
           const fallbackRes = await axios.get(`${backendUrl}/api/product/list`);
           if (fallbackRes.data.success) {
@@ -125,7 +181,34 @@ const CatalogDetail = ({ type }) => {
                   return cat === "electronics" || cat === "computers" || sub.includes("gaming") || sub.includes("tech") || name.includes("laptop") || name.includes("dell") || name.includes("hp") || name.includes("macbook") || name.includes("headphone") || name.includes("keyboard") || name.includes("mouse") || name.includes("monitor") || name.includes("pc");
                 });
               } else if (cleanSlug.includes("festiv") || cleanSlug.includes("offer") || cleanSlug.includes("deal") || cleanSlug.includes("sale") || cleanSlug.includes("discount")) {
-                filtered = allProds.filter(p => (p.originalPrice && p.originalPrice > p.price) || p.isBestSeller || (p.rating && p.rating >= 4.5));
+                const festReg = /festival|festive|diwali|celebrat|holiday/i;
+                filtered = allProds.filter(p => {
+                  const colls = Array.isArray(p.collections) ? p.collections : [];
+                  const coll = p.collection || "";
+                  const tags = Array.isArray(p.tags) ? p.tags : [];
+                  const keys = Array.isArray(p.keywords) ? p.keywords : [];
+                  const cat = p.category || "";
+                  const sub = p.subCategory || "";
+                  const name = p.name || "";
+                  const attrs = p.attributes || {};
+                  const specs = Array.isArray(p.specifications) ? p.specifications : [];
+
+                  return (
+                    festReg.test(coll) ||
+                    colls.some(c => festReg.test(c)) ||
+                    tags.some(t => festReg.test(t) || /kundan|temple|ethnic|traditional/i.test(t)) ||
+                    keys.some(k => festReg.test(k)) ||
+                    festReg.test(cat) ||
+                    festReg.test(sub) ||
+                    festReg.test(attrs.occasion || attrs.Occasion || attrs.Event || attrs.event || "") ||
+                    attrs.Festival !== undefined ||
+                    attrs.festive === true ||
+                    attrs.festive === "true" ||
+                    specs.some(s => festReg.test(s.key || "") || festReg.test(s.value || "")) ||
+                    festReg.test(name) ||
+                    (p.originalPrice && p.originalPrice > p.price)
+                  );
+                });
               } else if (cleanSlug.includes("electro") || cleanSlug.includes("tech") || cleanSlug.includes("gadget")) {
                 filtered = allProds.filter(p => (p.category || "").toLowerCase() === "electronics" || (p.subCategory || "").toLowerCase().includes("tech"));
               } else if (cleanSlug.includes("fashion") || cleanSlug.includes("lifestyle") || cleanSlug.includes("wear") || cleanSlug.includes("cloth")) {
@@ -232,14 +315,28 @@ const CatalogDetail = ({ type }) => {
         slug.toLowerCase().trim() === "new"
       );
 
+      const isBestSellers = slug && (
+        slug.toLowerCase().trim() === "best-sellers" ||
+        slug.toLowerCase().trim() === "best-seller" ||
+        slug.toLowerCase().trim() === "bestsellers" ||
+        slug.toLowerCase().trim() === "bestseller" ||
+        slug.toLowerCase().trim() === "best_sellers" ||
+        slug.toLowerCase().trim() === "bestselling" ||
+        slug.toLowerCase().trim() === "top-rated" ||
+        slug.toLowerCase().trim() === "hall-of-fame" ||
+        slug.toLowerCase().trim() === "most-loved"
+      );
+
       return {
-        icon: isGaming ? Laptop : isFestive ? Flame : isNewArrivals ? Sparkles : Award,
+        icon: isGaming ? Laptop : isFestive ? Flame : isNewArrivals ? Sparkles : isBestSellers ? Award : Award,
         badgeLabel: isGaming 
           ? "PRO GAMING BUNDLE CAPSULE" 
           : isFestive 
           ? "LIMITED TIME FESTIVAL OFFERS" 
           : isNewArrivals
           ? "FRESH DROPS (ADDED IN LAST 7 DAYS)"
+          : isBestSellers
+          ? "ALL-TIME BEST SELLERS & HALL OF FAME"
           : "CURATED COLLECTION CAPSULE",
         badgeColor: isGaming
           ? "text-indigo-700 bg-indigo-50 border border-indigo-200 dark:text-indigo-300 dark:bg-indigo-950/60 dark:border-indigo-900/40"
@@ -247,19 +344,25 @@ const CatalogDetail = ({ type }) => {
           ? "text-rose-700 bg-rose-50 border border-rose-200 dark:text-rose-300 dark:bg-rose-950/60 dark:border-rose-900/40" 
           : isNewArrivals
           ? "text-emerald-700 bg-emerald-50 border border-emerald-200 dark:text-emerald-300 dark:bg-emerald-950/60 dark:border-emerald-900/40"
+          : isBestSellers
+          ? "text-amber-800 bg-amber-50 border border-amber-300 dark:text-amber-300 dark:bg-amber-950/60 dark:border-amber-900/40"
           : "text-purple-700 bg-purple-50 border border-purple-200 dark:text-purple-300 dark:bg-purple-950/60 dark:border-purple-900/40",
         backLabel: "All Collections",
         backPath: "/collections",
-        title: isGaming ? "Gaming Setup" : isFestive ? "Festival Offers & Mega Deals" : isNewArrivals ? "New Arrivals" : capitalizedSlug,
+        title: isGaming ? "Gaming Setup" : isFestive ? "Festival Offers & Mega Deals" : isNewArrivals ? "New Arrivals" : isBestSellers ? "Best Sellers" : capitalizedSlug,
         subtitle: isGaming
           ? "Pro-grade laptops, high-refresh displays, precision peripherals, and hardware."
           : isFestive 
           ? "Exclusive festive discounts, bundle offers, and verified mega savings." 
           : isNewArrivals
           ? "Discover products added to our catalog within the last 7 days."
+          : isBestSellers
+          ? "CartNOW's most loved products. Verified top-rated customer favorites."
           : "Explore handpicked products curated for this lookbook collection.",
         emptyText: isNewArrivals
           ? "No products have been added in the last 7 days. Check back soon for fresh drops!"
+          : isBestSellers
+          ? "No best seller products found currently. Check back soon!"
           : `There are currently no matching products inside the "${slug}" collection.`
       };
     } else {
@@ -297,6 +400,30 @@ const CatalogDetail = ({ type }) => {
     slug.toLowerCase().trim() === "trending-drops"
   );
 
+  const isBestSellersPage = type === "collection" && slug && (
+    slug.toLowerCase().trim() === "best-sellers" ||
+    slug.toLowerCase().trim() === "best-seller" ||
+    slug.toLowerCase().trim() === "bestsellers" ||
+    slug.toLowerCase().trim() === "bestseller" ||
+    slug.toLowerCase().trim() === "best_sellers" ||
+    slug.toLowerCase().trim() === "bestselling" ||
+    slug.toLowerCase().trim() === "top-rated" ||
+    slug.toLowerCase().trim() === "hall-of-fame" ||
+    slug.toLowerCase().trim() === "most-loved"
+  );
+
+  const isFestivalOffersPage = type === "collection" && slug && (
+    slug.toLowerCase().trim() === "festival-offers" ||
+    slug.toLowerCase().trim() === "festive-offers" ||
+    slug.toLowerCase().trim() === "festival-deals" ||
+    slug.toLowerCase().trim() === "festive-deals" ||
+    slug.toLowerCase().trim() === "mega-deals" ||
+    slug.toLowerCase().trim() === "festive" ||
+    slug.toLowerCase().trim() === "festival" ||
+    slug.toLowerCase().trim() === "offers" ||
+    slug.toLowerCase().trim() === "deals"
+  );
+
   if (isNewArrivalsPage) {
     return (
       <NewArrivalsLanding
@@ -316,6 +443,38 @@ const CatalogDetail = ({ type }) => {
   if (isTrendingNowPage) {
     return (
       <TrendingNowLanding
+        products={products}
+        loading={loading}
+        navigate={navigate}
+        meta={meta}
+        currentPage={currentPage}
+        itemsPerPage={itemsPerPage}
+        setItemsPerPage={setItemsPerPage}
+        setCurrentPage={setCurrentPage}
+        handlePageChange={handlePageChange}
+      />
+    );
+  }
+
+  if (isBestSellersPage) {
+    return (
+      <BestSellersLanding
+        products={products}
+        loading={loading}
+        navigate={navigate}
+        meta={meta}
+        currentPage={currentPage}
+        itemsPerPage={itemsPerPage}
+        setItemsPerPage={setItemsPerPage}
+        setCurrentPage={setCurrentPage}
+        handlePageChange={handlePageChange}
+      />
+    );
+  }
+
+  if (isFestivalOffersPage) {
+    return (
+      <FestivalOffersLanding
         products={products}
         loading={loading}
         navigate={navigate}

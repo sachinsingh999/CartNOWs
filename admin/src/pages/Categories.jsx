@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { backendUrl } from "../config";
 import { toast } from "react-toastify";
@@ -30,16 +31,23 @@ import {
   HelpCircle,
   AlertTriangle,
   FileCode,
-  Heart
+  Heart,
+  Megaphone,
+  Upload,
+  Wand2,
+  Loader2
 } from "lucide-react";
+import { removeImageBackground } from "../utils/removeBackground";
 
 const Categories = ({ token }) => {
+  const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
   const [parentCategoryId, setParentCategoryId] = useState("");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [icon, setIcon] = useState("");
   const [bannerImage, setBannerImage] = useState("");
+  const [quote, setQuote] = useState("");
   const [status, setStatus] = useState("active");
   const [isFeatured, setIsFeatured] = useState(false);
 
@@ -51,6 +59,10 @@ const Categories = ({ token }) => {
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [viewArchived, setViewArchived] = useState(false);
+
+  // Background removal state
+  const [isRemovingCatBg, setIsRemovingCatBg] = useState(false);
+  const [catBgProgress, setCatBgProgress] = useState(0);
 
   // Tab state for the customization panel
   const [panelTab, setPanelTab] = useState("settings"); // "settings", "attributes", "rules", "preview"
@@ -180,12 +192,12 @@ const Categories = ({ token }) => {
   const fetchCategories = async (selectFirst = false) => {
     try {
       const { data } = await axios.get(
-        `${backendUrl}/api/admin/categories?includeArchived=${viewArchived}`,
+        `${backendUrl}/api/admin/categories${viewArchived ? "?status=archived" : ""}`,
         { headers: { token } }
       );
       if (data.success) {
-        setCategories(data.categories);
-        if (data.categories.length > 0 && (selectFirst || !selectedCategory)) {
+        setCategories(data.categories || []);
+        if (selectFirst && data.categories && data.categories.length > 0 && !selectedCategory) {
           const firstCat = data.categories[0];
           setSelectedCategory(firstCat);
           fetchTemplateAndSettings(firstCat._id);
@@ -232,6 +244,7 @@ const Categories = ({ token }) => {
         description,
         icon,
         bannerImage,
+        quote,
         parentCategoryId: parentCategoryId || null,
         status,
         isFeatured,
@@ -279,6 +292,7 @@ const Categories = ({ token }) => {
     setDescription("");
     setIcon("");
     setBannerImage("");
+    setQuote("");
     setParentCategoryId("");
     setStatus("active");
     setIsFeatured(false);
@@ -293,6 +307,7 @@ const Categories = ({ token }) => {
     setDescription(cat.description || "");
     setIcon(cat.icon || "");
     setBannerImage(cat.bannerImage || "");
+    setQuote(cat.quote || "");
     setParentCategoryId(cat.parentCategoryId || "");
     setStatus(cat.status || "active");
     setIsFeatured(cat.isFeatured || false);
@@ -698,6 +713,15 @@ const Categories = ({ token }) => {
 
           <div className="flex items-center gap-2">
             <button
+              onClick={() => navigate("/promo-banners")}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-black transition active:scale-95 cursor-pointer shadow-xs"
+              title="Add or update Categories Page top hero model image and perks"
+            >
+              <Megaphone size={13} />
+              <span>Categories Hero Model</span>
+            </button>
+
+            <button
               onClick={() => {
                 setSelectedCategory(null);
                 resetCategoryForm();
@@ -901,15 +925,115 @@ const Categories = ({ token }) => {
                     />
                   </div>
 
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Category Banner Image URL</label>
-                    <input
-                      type="text"
-                      placeholder="https://images.unsplash.com/example-banner-url"
-                      value={bannerImage}
-                      onChange={(e) => setBannerImage(e.target.value)}
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none transition focus:border-blue-500"
-                    />
+                  {/* Category Image & Quote for Storefront Cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                          Category Card Image URL / Photo
+                        </label>
+                        {bannerImage && (
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              setIsRemovingCatBg(true);
+                              setCatBgProgress(0);
+                              try {
+                                const { previewUrl } = await removeImageBackground(bannerImage, (pct) => setCatBgProgress(pct));
+                                setBannerImage(previewUrl);
+                                toast.success("Background stripped with AI! ✨");
+                              } catch (err) {
+                                console.error("Cat BG removal error:", err);
+                                toast.error("Could not remove BG from image");
+                              } finally {
+                                setIsRemovingCatBg(false);
+                                setCatBgProgress(0);
+                              }
+                            }}
+                            disabled={isRemovingCatBg}
+                            className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:from-violet-700 hover:to-indigo-700 transition cursor-pointer disabled:opacity-50"
+                            title="Remove background from this image"
+                          >
+                            <Sparkles size={10} />
+                            <span>Remove BG</span>
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          placeholder="https://images.unsplash.com/photo-..."
+                          value={bannerImage}
+                          onChange={(e) => setBannerImage(e.target.value)}
+                          className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none transition focus:border-blue-500"
+                        />
+                        <label className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 cursor-pointer transition shrink-0" title="Upload local photo & remove background">
+                          <Upload size={14} />
+                          <input
+                            type="file"
+                            accept="image/*"
+                            hidden
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              setIsRemovingCatBg(true);
+                              setCatBgProgress(0);
+                              try {
+                                const { previewUrl } = await removeImageBackground(file, (pct) => setCatBgProgress(pct));
+                                setBannerImage(previewUrl);
+                                toast.success("Image uploaded & background removed! ✨");
+                              } catch (err) {
+                                console.error("Upload error:", err);
+                                setBannerImage(URL.createObjectURL(file));
+                                toast.warning("Loaded original photo (BG removal failed).");
+                              } finally {
+                                setIsRemovingCatBg(false);
+                                setCatBgProgress(0);
+                              }
+                            }}
+                          />
+                        </label>
+                      </div>
+
+                      {/* Processing bar */}
+                      {isRemovingCatBg && (
+                        <div className="p-2.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/60 flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 text-xs font-bold text-indigo-700 dark:text-indigo-300">
+                            <Loader2 size={13} className="animate-spin" />
+                            <span>AI Stripping Background...</span>
+                          </div>
+                          <span className="text-xs font-black text-indigo-600 dark:text-indigo-400">{catBgProgress}%</span>
+                        </div>
+                      )}
+
+                      {bannerImage && (
+                        <div className="mt-2 relative w-full h-24 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 flex items-center justify-center p-1">
+                          <img
+                            src={bannerImage}
+                            alt="Preview"
+                            className="max-w-full max-h-full w-auto h-auto object-contain"
+                            onError={(e) => { e.target.style.display = 'none'; }}
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                        Card Handwritten Quote (Storefront Overlay)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Style for every move / Trendy looks for every you ♡"
+                        value={quote}
+                        onChange={(e) => setQuote(e.target.value)}
+                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 text-slate-800 dark:text-white text-xs outline-none transition focus:border-blue-500"
+                      />
+                      <p className="text-[10px] text-slate-400 mt-1">
+                        Displays in cursive handwriting on the Popular Categories card overlay on /categories.
+                      </p>
+                    </div>
                   </div>
 
                   {/* SEO Metadata Card */}

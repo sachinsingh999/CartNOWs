@@ -16,9 +16,14 @@ const DealOfTheDay = ({ deals = [], activeDeal = null, onAddToCart }) => {
     new Date(activeDeal.endDate) >= now &&
     !isExpired;
 
+  const daySeed = Math.floor(
+    (Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) - Date.UTC(2025, 0, 1)) /
+      (1000 * 60 * 60 * 24)
+  );
+
   const dealProduct = isCampaignActive
     ? (activeDeal.productId || null)
-    : (deals && deals.length > 0 ? deals[0] : null);
+    : (deals && deals.length > 0 ? deals[((daySeed % deals.length) + deals.length) % deals.length] : null);
 
   const endDate = isCampaignActive ? activeDeal.endDate : null;
 

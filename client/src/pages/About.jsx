@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import axios from "axios";
-import { backendUrl } from "../config";
+import { systemApi } from "../services";
 import aboutHeroIllustration from "../assets/about_hero_illustration.webp";
 import { 
   ChevronLeft, 
@@ -145,7 +144,7 @@ const About = () => {
 
     try {
       // 2. Save inquiry to CartNow database
-      await axios.post(`${backendUrl}/api/system/contact`, formData);
+      await systemApi.sendContactMessage(formData);
     } catch (err) {
       console.warn("Backend database save notification:", err.message);
     }

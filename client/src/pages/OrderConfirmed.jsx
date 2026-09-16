@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { backendUrl } from "../config";
 import { toast } from "react-toastify";
+import { authApi, orderApi, productApi } from "../services";
 
 const OrderConfirmed = () => {
   const { orderId } = useParams();
@@ -36,17 +37,16 @@ const OrderConfirmed = () => {
   const [copied, setCopied] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
   const [deliveryVerificationKey, setDeliveryVerificationKey] = useState("");
+  const [productImagesMap, setProductImagesMap] = useState({});
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) return;
-        const res = await axios.get(`${backendUrl}/api/user/profile`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (res.data.success) {
-          setDeliveryVerificationKey(res.data.user.deliveryVerificationKey);
+        const resData = await authApi.getProfile();
+        if (resData.success && resData.user) {
+          setDeliveryVerificationKey(resData.user.deliveryVerificationKey);
         }
       } catch (err) {
         console.log("FETCH PROFILE ERROR 👉", err);
@@ -64,14 +64,9 @@ const OrderConfirmed = () => {
           return;
         }
 
-        const res = await axios.post(
-          `${backendUrl}/api/order/userOrder`,
-          {},
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-
-        if (res.data.success) {
-          const foundOrder = res.data.orders.find(
+        const resData = await orderApi.getUserOrders();
+        if (resData.success && resData.orders) {
+          const foundOrder = resData.orders.find(
             (o) => String(o._id) === String(orderId)
           );
           if (foundOrder) {
@@ -92,6 +87,46 @@ const OrderConfirmed = () => {
       fetchOrderDetails();
     }
   }, [orderId, order, navigate]);
+
+  // Hydrate missing product images if order item has empty image
+  useEffect(() => {
+    const hydrateImages = async () => {
+      if (!order?.items || !order.items.length) return;
+      const idsToFetch = [];
+      order.items.forEach((it) => {
+        const img = 
+          (Array.isArray(it.images) && it.images[0]) ||
+          (Array.isArray(it.image) && it.image[0]) ||
+          (typeof it.image === "string" && it.image) ||
+          (typeof it.productImage === "string" && it.productImage) ||
+          (typeof it.images === "string" && it.images) ||
+          "";
+        if (!img && (it.productId || it._id)) {
+          idsToFetch.push(it.productId || it._id);
+        }
+      });
+
+      if (idsToFetch.length > 0) {
+        try {
+          const bulkRes = await productApi.getBulkProducts(idsToFetch);
+          if (bulkRes.success && bulkRes.products) {
+            const map = {};
+            bulkRes.products.forEach((p) => {
+              const pImg = (Array.isArray(p.images) && p.images[0]) ||
+                (Array.isArray(p.image) && p.image[0]) ||
+                p.image || p.images || "";
+              if (pImg) map[p._id] = pImg;
+            });
+            setProductImagesMap((prev) => ({ ...prev, ...map }));
+          }
+        } catch (e) {
+          console.warn("Failed to load bulk images for order confirmed:", e);
+        }
+      }
+    };
+
+    hydrateImages();
+  }, [order]);
 
   const handleCopyId = () => {
     navigator.clipboard.writeText(orderId);
@@ -238,12 +273,21 @@ const OrderConfirmed = () => {
                 {/* Items List */}
                 <div className="space-y-4 max-h-[380px] overflow-y-auto pr-1 custom-scrollbar">
                   {order.items?.map((item, idx) => {
-                    const imgUrl = Array.isArray(item.image)
-                      ? item.image[0]
-                      : (item.image || item.productImage || "");
-                    const finalSrc = imgUrl.startsWith("http") || imgUrl.startsWith("data:")
-                      ? imgUrl
-                      : `${backendUrl}/${imgUrl.replace(/^\//, '')}`;
+                    const resolvedImg = 
+                      (Array.isArray(item.images) && item.images[0]) ||
+                      (Array.isArray(item.image) && item.image[0]) ||
+                      (typeof item.image === "string" && item.image) ||
+                      (typeof item.productImage === "string" && item.productImage) ||
+                      (typeof item.images === "string" && item.images) ||
+                      productImagesMap[item.productId || item._id] ||
+                      "";
+
+                    let finalSrc = "https://placehold.co/100x100?text=Product";
+                    if (resolvedImg) {
+                      finalSrc = (resolvedImg.startsWith("http") || resolvedImg.startsWith("data:"))
+                        ? resolvedImg
+                        : `${backendUrl}/${resolvedImg.replace(/^\//, '')}`;
+                    }
 
                     return (
                       <div

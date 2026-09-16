@@ -14,7 +14,10 @@ import {
   getBrandsPublic,
   trackProductViewApi,
   getHomepageData,
-  getSearchSuggestions
+  getSearchSuggestions,
+  getFeaturedProducts,
+  updateProductFeaturedStatus,
+  listFeaturedProductsAdmin
 } from '../controllers/productController.js'
 import upload from '../middleware/multer.js';
 import adminAuth, { requirePermission } from '../middleware/adminAuth.js';
@@ -49,6 +52,12 @@ productRouter.get('/category/:id/template', getCategoryTemplatePublic)
 productRouter.get('/homepage', authUserOptional, getHomepageData)
 productRouter.post('/track-view', authUserOptional, trackProductViewApi)
 productRouter.get('/search-suggestions', getSearchSuggestions)
+
+// Single-Product Showcase Carousel Featured Routes
+productRouter.get('/featured', getFeaturedProducts)
+productRouter.get('/featured/admin', adminAuth, requirePermission("products"), listFeaturedProductsAdmin)
+productRouter.put('/featured/:id', adminAuth, requirePermission("products"), updateProductFeaturedStatus)
+productRouter.post('/featured/:id', adminAuth, requirePermission("products"), updateProductFeaturedStatus)
 
 export default productRouter;
 

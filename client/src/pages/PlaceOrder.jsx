@@ -996,15 +996,25 @@ const PlaceOrder = () => {
       }
     }
 
-    const items = products.map((item) => ({
-      productId: item._id,
-      name: item.name,
-      price: item.price,
-      qty: item.qty,
-      size: item.size,
-      selectedAttributes: item.selectedAttributes,
-      image: item.images?.[0],
-    }));
+    const items = products.map((item) => {
+      const itemImage = 
+        (Array.isArray(item.images) && item.images[0]) ||
+        (Array.isArray(item.image) && item.image[0]) ||
+        (typeof item.image === "string" ? item.image : "") ||
+        (typeof item.images === "string" ? item.images : "") ||
+        "";
+
+      return {
+        productId: item._id,
+        name: item.name,
+        price: item.price,
+        qty: item.qty,
+        size: item.size,
+        selectedAttributes: item.selectedAttributes,
+        image: itemImage,
+        images: Array.isArray(item.images) && item.images.length ? item.images : (itemImage ? [itemImage] : []),
+      };
+    });
 
     try {
       setLoading(true);

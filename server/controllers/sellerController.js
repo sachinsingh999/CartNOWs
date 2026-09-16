@@ -25,6 +25,7 @@ import { autoAssignDeliveryAgent } from "../utils/assignmentHelper.js";
 import { validateEmail, validatePhone, validatePassword, validateName } from "../utils/validation.js";
 import returnRequestModel from "../models/returnRequestModel.js";
 import { createNotification } from "../utils/notificationHelper.js";
+import { autoProcessProductCardImage } from "../services/bgRemovalService.js";
 
 const createToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "7d" });
@@ -665,22 +666,43 @@ export const createProduct = async (req, res) => {
           return img;
         }).filter(Boolean);
       }
+      const variantColor = v.Color || v.color || v.attributes?.Color || v.attributes?.color || "";
+      const variantSize = v.Size || v.size || v.attributes?.Size || v.attributes?.size || "";
+      const variantStock = (v.stock !== undefined && v.stock !== null && !isNaN(Number(v.stock)) && Number(v.stock) > 0)
+        ? Number(v.stock)
+        : (Number(stock) || 0);
+
       return {
+        Color: variantColor,
+        Size: variantSize,
         sku: v.sku || "",
         price: Math.max(0, (v.price !== undefined && v.price !== null && !isNaN(Number(v.price))) ? Number(v.price) : Number(price)),
-        stock: Math.max(0, (v.stock !== undefined && v.stock !== null && !isNaN(Number(v.stock))) ? Number(v.stock) : 0),
+        stock: Math.max(0, variantStock),
         images: vImages,
         barcode: v.barcode || "",
         availability: v.availability !== undefined ? !!v.availability : true,
-        attributes: v.attributes || {}
+        attributes: v.attributes || (variantColor || variantSize ? { ...(variantColor && { Color: variantColor }), ...(variantSize && { Size: variantSize }) } : {})
       };
     });
+
+    // Auto-remove background of first/cover product image for client product cards
+    let bgRemovedImage = "";
+    try {
+      const coverUrl = finalImageUrls[0] || imageUrls[0];
+      if (coverUrl) {
+        console.log(`[Seller] Auto-removing background for first product image: ${coverUrl}`);
+        bgRemovedImage = await autoProcessProductCardImage({ firstImageUrl: coverUrl });
+      }
+    } catch (bgErr) {
+      console.warn("[Seller] Auto bg removal warning in createProduct:", bgErr.message);
+    }
 
     const product = await productModel.create({
       name,
       description,
       price: Math.max(0, Number(price)),
       images: finalImageUrls,
+      bgRemovedImage: bgRemovedImage || "",
       category: catObj ? catObj.name : category,
       subCategory: subCategory || "",
       collection: collection || "",
@@ -2032,12 +2054,18 @@ export const generateProduct = async (req, res) => {
       : (req.body.sizes ? (Array.isArray(req.body.sizes) ? req.body.sizes : req.body.sizes.split(",")) : []);
 
     // 11. Generate variants
+    const variantDefaultStock = (finalStock !== undefined && Number(finalStock) > 0)
+      ? Number(finalStock)
+      : ((stock !== undefined && Number(stock) > 0) ? Number(stock) : (Number(req.body.stock) || 10));
+
     let dynamicVariants = [];
     if (req.body.variants && Array.isArray(req.body.variants) && req.body.variants.length > 0) {
       dynamicVariants = req.body.variants.map(v => ({
+        Color: v.Color || v.color || v.attributes?.Color || v.attributes?.color || "",
+        Size: v.Size || v.size || v.attributes?.Size || v.attributes?.size || "",
         sku: v.sku || "",
-        price: Number(v.price) || Number(price),
-        stock: Number(v.stock) || 0,
+        price: (v.price !== undefined && Number(v.price) > 0) ? Number(v.price) : Number(price),
+        stock: (v.stock !== undefined && Number(v.stock) > 0) ? Number(v.stock) : variantDefaultStock,
         images: Array.isArray(v.images) ? v.images : [],
         barcode: v.barcode || "",
         availability: v.availability !== undefined ? !!v.availability : true,
@@ -2066,9 +2094,11 @@ export const generateProduct = async (req, res) => {
         dynamicVariants = combinations.map((comb, idx) => {
           const suffix = Object.values(comb).join("+");
           return {
+            Color: comb.Color || comb.color || "",
+            Size: comb.Size || comb.size || "",
             sku: `${baseSku}-${suffix}`,
             price: Number(price),
-            stock: 0,
+            stock: variantDefaultStock,
             images: [],
             barcode: "",
             availability: true,
@@ -2132,6 +2162,17 @@ export const generateProduct = async (req, res) => {
       }
     }
 
+    // Auto-remove background of first image for client product card display
+    let bgRemovedImage = "";
+    try {
+      if (images && images.length > 0 && images[0]) {
+        console.log(`[Seller-Gen] Auto-removing background for first product image: ${images[0]}`);
+        bgRemovedImage = await autoProcessProductCardImage({ firstImageUrl: images[0] });
+      }
+    } catch (bgErr) {
+      console.warn("[Seller-Gen] Auto bg removal warning in generateProduct:", bgErr.message);
+    }
+
     // Save final product directly to database
     const product = await productModel.create({
       name,
@@ -2140,6 +2181,7 @@ export const generateProduct = async (req, res) => {
       description: desc,
       price: Number(price),
       images: images,
+      bgRemovedImage: bgRemovedImage || "",
       category: catObj ? catObj.name : category,
       subCategory: subCategory || "",
       collection: "",

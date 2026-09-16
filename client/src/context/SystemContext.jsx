@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
-import axios from "axios";
-import { backendUrl } from "../config";
+import { systemApi } from "../services";
 import { AnimatePresence } from "framer-motion";
 import SplashLoader from "../components/SplashLoader";
 import Maintenance from "../pages/Maintenance";
@@ -35,7 +34,7 @@ export const SystemProvider = ({ children }) => {
 
     const checkMaintenance = async () => {
       try {
-        const { data } = await axios.get(`${backendUrl}/api/system/maintenance`, { timeout: 1000 });
+        const data = await systemApi.getMaintenanceStatus(1000);
         if (data.success && isMounted) {
           setMaintenanceSettings(data.settings);
           try {

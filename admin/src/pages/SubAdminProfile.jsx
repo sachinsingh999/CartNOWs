@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { backendUrl } from "../config";
@@ -29,22 +29,18 @@ import {
   RefreshCw,
   Award,
   Layers,
-  CheckSquare
+  CheckSquare,
+  Crown,
+  Briefcase,
+  ArrowRight,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-
-const AVAILABLE_MODULES = [
-  { id: "orders", label: "Orders Management", desc: "Process orders, update delivery statuses, and manage fulfillment workflows" },
-  { id: "products", label: "Catalog & Moderation", desc: "Manage product listings, approve merchant submissions, categories, and brands" },
-  { id: "returns", label: "Returns & RMA", desc: "Review customer return requests, inspections, and authorize refund payouts" },
-  { id: "deliverymen", label: "Delivery Fleet", desc: "Manage drivers, assign operational dispatch zones, and review customer ratings" },
-  { id: "sellers", label: "Sellers & Vendors", desc: "Approve merchant accounts, adjust commission rates, and review payout schedules" },
-  { id: "customers", label: "Customer Accounts", desc: "Inspect user profiles, shipping addresses, and control access suspensions" },
-  { id: "support", label: "Support Tickets", desc: "Triage customer inquiries, reply to issues, and resolve dispute tickets" },
-  { id: "promos", label: "Marketing & Promos", desc: "Generate coupon codes, manage flash sales, and configure hero banners" },
-  { id: "finance", label: "Finance & Invoices", desc: "Inspect revenue metrics, platform fee splits, and regenerate tax invoices", sensitive: true },
-  { id: "subadmins", label: "Staff & Sub-Admins", desc: "Provision sub-administrators and grant granular role-based permissions", sensitive: true },
-];
+import {
+  ROLE_PRESETS,
+  PERMISSION_GROUPS,
+  ALL_AVAILABLE_MODULES,
+  detectRolePreset,
+} from "../utils/subAdminRoles";
 
 const SubAdminProfile = ({ token: propToken }) => {
   const { id } = useParams();
@@ -69,6 +65,10 @@ const SubAdminProfile = ({ token: propToken }) => {
     permissions: [],
   });
   const [showEditPassword, setShowEditPassword] = useState(false);
+
+  // Quick Role Modal State
+  const [quickRoleOpen, setQuickRoleOpen] = useState(false);
+  const [quickRoleSaving, setQuickRoleSaving] = useState(false);
 
   const fetchProfile = async () => {
     if (!token || !canManageSubAdmins) {
@@ -178,6 +178,14 @@ const SubAdminProfile = ({ token: propToken }) => {
     toast.info("Generated new strong password");
   };
 
+  const applyRolePreset = (preset) => {
+    setEditForm((prev) => ({
+      ...prev,
+      permissions: [...preset.permissions],
+    }));
+    toast.success(`Selected role: ${preset.name}`);
+  };
+
   const togglePermission = (permId) => {
     setEditForm((prev) => {
       const exists = prev.permissions.includes(permId);
@@ -190,10 +198,25 @@ const SubAdminProfile = ({ token: propToken }) => {
     });
   };
 
+  const toggleGroupPermissions = (group, selectAll) => {
+    const groupPermIds = group.modules.map((m) => m.id);
+    setEditForm((prev) => {
+      let current = [...prev.permissions];
+      if (selectAll) {
+        for (const pid of groupPermIds) {
+          if (!current.includes(pid)) current.push(pid);
+        }
+      } else {
+        current = current.filter((pid) => !groupPermIds.includes(pid));
+      }
+      return { ...prev, permissions: current };
+    });
+  };
+
   const selectAllPermissions = () => {
     setEditForm((prev) => ({
       ...prev,
-      permissions: AVAILABLE_MODULES.map((m) => m.id),
+      permissions: ALL_AVAILABLE_MODULES.map((m) => m.id),
     }));
   };
 
@@ -230,7 +253,7 @@ const SubAdminProfile = ({ token: propToken }) => {
         { headers: { token } }
       );
       if (res.data?.success) {
-        toast.success("Profile details updated successfully");
+        toast.success("Profile details and role updated successfully");
         setSubAdmin(res.data.subAdmin);
         setEditModalOpen(false);
       } else {
@@ -242,6 +265,37 @@ const SubAdminProfile = ({ token: propToken }) => {
       setSaving(false);
     }
   };
+
+  const handleQuickAssignRole = async (preset) => {
+    if (!subAdmin) return;
+    try {
+      setQuickRoleSaving(true);
+      const res = await axios.put(
+        `${backendUrl}/api/subadmins/${subAdmin._id}`,
+        { permissions: preset.permissions },
+        { headers: { token } }
+      );
+      if (res.data?.success) {
+        toast.success(`Role changed to "${preset.name}"`);
+        setSubAdmin(res.data.subAdmin);
+        setQuickRoleOpen(false);
+      } else {
+        toast.error(res.data?.message || "Failed to assign role");
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to update role");
+    } finally {
+      setQuickRoleSaving(false);
+    }
+  };
+
+  const detectedRole = useMemo(() => {
+    return detectRolePreset(subAdmin?.permissions || []);
+  }, [subAdmin?.permissions]);
+
+  const modalActiveRole = useMemo(() => {
+    return detectRolePreset(editForm.permissions);
+  }, [editForm.permissions]);
 
   if (!canManageSubAdmins) {
     return (
@@ -269,7 +323,7 @@ const SubAdminProfile = ({ token: propToken }) => {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3 text-slate-400 animate-fadeIn">
         <Loader2 size={32} className="animate-spin text-blue-500" />
-        <span className="text-sm font-medium">Loading staff profile & permissions...</span>
+        <span className="text-sm font-medium">Loading staff profile &amp; assigned roles...</span>
       </div>
     );
   }
@@ -289,7 +343,7 @@ const SubAdminProfile = ({ token: propToken }) => {
             to="/sub-admins"
             className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl hover:bg-slate-200 transition"
           >
-            ← Back to Sub-Admins
+            &larr; Back to Sub-Admins
           </Link>
           <button
             onClick={fetchProfile}
@@ -309,8 +363,9 @@ const SubAdminProfile = ({ token: propToken }) => {
 
   const isActive = subAdmin.status === "active";
   const grantedCount = subAdmin.permissions?.length || 0;
-  const totalCount = AVAILABLE_MODULES.length;
+  const totalCount = ALL_AVAILABLE_MODULES.length;
   const permissionPct = Math.round((grantedCount / totalCount) * 100);
+  const RoleIcon = detectedRole.icon || Shield;
 
   return (
     <div className="space-y-5 animate-fadeIn text-slate-800 dark:text-slate-100 pb-12 w-full">
@@ -337,7 +392,7 @@ const SubAdminProfile = ({ token: propToken }) => {
                 <span className="text-slate-700 dark:text-slate-300 font-bold">{subAdmin.name}</span>
               </div>
               <h1 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2 mt-0.5">
-                <span>Staff Profile &amp; Privileges</span>
+                <span>Staff Profile &amp; Role Inspector</span>
                 <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800/60">
                   RBAC Inspector
                 </span>
@@ -358,6 +413,14 @@ const SubAdminProfile = ({ token: propToken }) => {
 
             {isSuperAdmin && (
               <>
+                <button
+                  onClick={() => setQuickRoleOpen(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 rounded-xl text-xs font-bold transition active:scale-95 shadow-2xs cursor-pointer"
+                >
+                  <Briefcase size={13} />
+                  <span>Change Role Preset</span>
+                </button>
+
                 <button
                   onClick={openEditModal}
                   className="flex items-center gap-1.5 px-3.5 py-1.5 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white rounded-xl text-xs font-bold transition active:scale-95 shadow-2xs cursor-pointer"
@@ -425,14 +488,18 @@ const SubAdminProfile = ({ token: propToken }) => {
                 title={isActive ? "Account Active" : "Account Suspended"}
               />
             </div>
-            <div className="min-w-0 space-y-1">
+            <div className="min-w-0 space-y-1.5">
               <div className="flex items-center gap-2.5 flex-wrap">
                 <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight truncate">
                   {subAdmin.name}
                 </h2>
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                  Sub-Admin
+                
+                {/* Prominent Assigned Role Badge */}
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-black uppercase tracking-wider border shadow-2xs ${detectedRole.badgeClasses}`}>
+                  <RoleIcon size={14} />
+                  <span>{detectedRole.name}</span>
                 </span>
+
                 <span
                   className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider inline-flex items-center gap-1 ${
                     isActive
@@ -445,7 +512,11 @@ const SubAdminProfile = ({ token: propToken }) => {
                 </span>
               </div>
 
-              <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                {detectedRole.desc}
+              </p>
+
+              <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400 pt-0.5">
                 <div className="flex items-center gap-1.5 font-mono">
                   <Mail size={13} className="text-slate-400" />
                   <span className="font-semibold text-slate-800 dark:text-slate-200">{subAdmin.email}</span>
@@ -491,11 +562,11 @@ const SubAdminProfile = ({ token: propToken }) => {
             </div>
 
             <div className="p-2.5 sm:p-3 rounded-xl bg-slate-50/80 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800 text-center min-w-[100px]">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Status</span>
-              <span className={`text-xs sm:text-sm font-black uppercase mt-1 block ${isActive ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
-                {subAdmin.status}
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Role Type</span>
+              <span className="text-xs sm:text-sm font-black uppercase mt-1 block truncate text-blue-600 dark:text-blue-400">
+                {detectedRole.name.split(" ")[0]}
               </span>
-              <span className="text-[10px] text-slate-400 block">{isActive ? "Full Session" : "Locked Out"}</span>
+              <span className="text-[10px] text-slate-400 block">{detectedRole.tagline}</span>
             </div>
 
             <div className="p-2.5 sm:p-3 rounded-xl bg-slate-50/80 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800 text-center col-span-2 sm:col-span-1 min-w-[100px]">
@@ -642,22 +713,11 @@ const SubAdminProfile = ({ token: propToken }) => {
               </div>
             </div>
 
-            {/* Session Guard Notice */}
-            <div className="p-3 rounded-xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200/60 dark:border-blue-900/40 text-blue-800 dark:text-blue-300 text-xs leading-relaxed space-y-1">
-              <div className="flex items-center gap-1.5 font-bold">
-                <Shield size={13} className="text-blue-600 dark:text-blue-400" />
-                <span>Zero-Trust Session Guard</span>
-              </div>
-              <p className="text-[11px] text-slate-600 dark:text-slate-400">
-                Permissions are sealed into JWT signatures upon login. If privileges change, the sub-admin's session updates on their next refresh.
-              </p>
-            </div>
-
           </div>
 
         </div>
 
-        {/* Right Column: Module Access Rights & Permissions (lg:col-span-8) */}
+        {/* Right Column: Categorized Module Access Matrix (lg:col-span-8) */}
         <div className="lg:col-span-8 space-y-4">
           
           <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 shadow-2xs space-y-4">
@@ -667,75 +727,103 @@ const SubAdminProfile = ({ token: propToken }) => {
                 <ShieldCheck size={16} className="text-blue-600 dark:text-blue-400" />
                 <div>
                   <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                    Module Access Matrix ({grantedCount}/{totalCount} Assigned)
+                    Role &amp; Permissions Matrix ({grantedCount}/{totalCount} Modules Granted)
                   </h3>
                   <p className="text-xs text-slate-400">
-                    Comprehensive overview of permitted administrative operations and restricted domains
+                    Categorized operational privileges permitted under current role configuration
                   </p>
                 </div>
               </div>
 
               {isSuperAdmin && (
-                <button
-                  type="button"
-                  onClick={openEditModal}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 text-xs font-bold hover:bg-blue-100 transition cursor-pointer shrink-0"
-                >
-                  <Edit3 size={12} />
-                  <span>Adjust Permissions</span>
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setQuickRoleOpen(true)}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 text-xs font-bold hover:bg-indigo-100 transition cursor-pointer shrink-0 border border-indigo-200 dark:border-indigo-800/60"
+                  >
+                    <Briefcase size={12} />
+                    <span>Change Role</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={openEditModal}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-500 transition cursor-pointer shrink-0"
+                  >
+                    <Edit3 size={12} />
+                    <span>Customize</span>
+                  </button>
+                </div>
               )}
             </div>
 
-            {/* Permission Cards Grid (Spacious 2-column layout using full width) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {AVAILABLE_MODULES.map((mod) => {
-                const isGranted = subAdmin.permissions?.includes(mod.id);
-                return (
-                  <div
-                    key={mod.id}
-                    className={`p-3.5 rounded-xl border transition-all flex items-start gap-3 ${
-                      isGranted
-                        ? "bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900/50 shadow-2xs"
-                        : "bg-slate-50/50 dark:bg-slate-950/40 border-slate-200/70 dark:border-slate-800/60 opacity-60"
-                    }`}
-                  >
-                    <div
-                      className={`h-6 w-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5 font-bold ${
-                        isGranted
-                          ? "bg-emerald-600 text-white shadow-2xs"
-                          : "bg-slate-200 dark:bg-slate-800 text-slate-400"
-                      }`}
-                    >
-                      {isGranted ? <Check size={14} strokeWidth={3} /> : <X size={14} strokeWidth={2.5} />}
-                    </div>
+            {/* Categorized Permission Groups Matrix */}
+            <div className="space-y-4">
+              {PERMISSION_GROUPS.map((group) => {
+                const GroupIcon = group.icon;
+                const groupGrantedCount = group.modules.filter((m) => subAdmin.permissions?.includes(m.id)).length;
 
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-1 flex-wrap">
-                        <span className={`text-xs font-bold ${isGranted ? "text-slate-900 dark:text-white" : "text-slate-500 line-through"}`}>
-                          {mod.label}
-                        </span>
-                        <div className="flex items-center gap-1">
-                          {mod.sensitive && isGranted && (
-                            <span className="px-1.5 py-0.2 rounded text-[8px] font-black uppercase tracking-wider bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400">
-                              High Privilege
-                            </span>
-                          )}
-                          <span
-                            className={`px-1.5 py-0.2 rounded text-[9px] font-bold uppercase tracking-wider ${
-                              isGranted
-                                ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300"
-                                : "bg-slate-200 dark:bg-slate-800 text-slate-500"
-                            }`}
-                          >
-                            {isGranted ? "Authorized" : "Restricted"}
-                          </span>
+                return (
+                  <div key={group.id} className="p-3.5 rounded-2xl bg-slate-50/60 dark:bg-slate-950/40 border border-slate-200/80 dark:border-slate-800 space-y-2.5">
+                    {/* Group Header */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="p-1.5 rounded-lg bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400">
+                          <GroupIcon size={15} />
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-bold text-slate-900 dark:text-white">
+                            {group.title}
+                          </h4>
+                          <span className="text-[10px] text-slate-400 block">{group.description}</span>
                         </div>
                       </div>
+                      <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 px-2.5 py-0.5 rounded-md border border-slate-200 dark:border-slate-800">
+                        {groupGrantedCount}/{group.modules.length} Modules Authorized
+                      </span>
+                    </div>
 
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed mt-1">
-                        {mod.desc}
-                      </p>
+                    {/* Modules in Group */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {group.modules.map((mod) => {
+                        const isGranted = subAdmin.permissions?.includes(mod.id);
+                        return (
+                          <div
+                            key={mod.id}
+                            className={`p-3 rounded-xl border transition-all flex items-start gap-2.5 ${
+                              isGranted
+                                ? "bg-white dark:bg-slate-900 border-emerald-200 dark:border-emerald-900/50 shadow-2xs"
+                                : "bg-slate-100/50 dark:bg-slate-900/30 border-slate-200/70 dark:border-slate-800/60 opacity-60"
+                            }`}
+                          >
+                            <div
+                              className={`h-5 w-5 rounded-md flex items-center justify-center shrink-0 mt-0.5 font-bold ${
+                                isGranted
+                                  ? "bg-emerald-600 text-white shadow-2xs"
+                                  : "bg-slate-200 dark:bg-slate-800 text-slate-400"
+                              }`}
+                            >
+                              {isGranted ? <Check size={12} strokeWidth={3} /> : <X size={12} strokeWidth={2.5} />}
+                            </div>
+
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center justify-between gap-1 flex-wrap">
+                                <span className={`text-xs font-bold ${isGranted ? "text-slate-900 dark:text-white" : "text-slate-500 line-through"}`}>
+                                  {mod.label}
+                                </span>
+                                {mod.sensitive && isGranted && (
+                                  <span className="px-1.5 py-0.2 rounded text-[8px] font-black uppercase tracking-wider bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400">
+                                    High Privilege
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight mt-0.5">
+                                {mod.desc}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 );
@@ -750,11 +838,11 @@ const SubAdminProfile = ({ token: propToken }) => {
                 </div>
                 <div>
                   <h4 className="text-xs font-bold text-slate-900 dark:text-white">
-                    Operational Scope Status
+                    Operational Scope Status: {detectedRole.name}
                   </h4>
                   <p className="text-[11px] text-slate-400">
                     {grantedCount === totalCount
-                      ? "Staff member has unrestricted access across all platform operations."
+                      ? "Staff member has full co-admin operational access across all 10 platform modules."
                       : `Staff member is constrained strictly to the ${grantedCount} authorized operational modules above.`}
                   </p>
                 </div>
@@ -785,10 +873,111 @@ const SubAdminProfile = ({ token: propToken }) => {
 
       </div>
 
-      {/* ── Edit Account Modal Dialog (Width-Optimized max-w-6xl Landscape) ── */}
+      {/* ── Quick Role Reassign Modal ── */}
+      {quickRoleOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 dark:bg-black/80 backdrop-blur-xs overflow-y-auto">
+          <div className="relative w-full max-w-2xl rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col my-auto max-h-[90vh]">
+            
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0 bg-slate-50/50 dark:bg-slate-950/40">
+              <div className="flex items-center gap-2.5">
+                <div className="h-9 w-9 rounded-xl bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                  <Briefcase size={18} />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                    Assign Role to {subAdmin.name}
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Click any role preset below to instantly reconfigure this staff member's operational permissions
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setQuickRoleOpen(false)}
+                type="button"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Presets List */}
+            <div className="p-6 overflow-y-auto space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {ROLE_PRESETS.map((preset) => {
+                  const Icon = preset.icon;
+                  const isCurrent = detectedRole.id === preset.id;
+
+                  return (
+                    <div
+                      key={preset.id}
+                      onClick={() => !quickRoleSaving && handleQuickAssignRole(preset)}
+                      className={`p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col justify-between gap-2 group ${
+                        isCurrent
+                          ? "ring-2 ring-blue-500 bg-blue-50/50 dark:bg-blue-950/30 border-blue-300 dark:border-blue-800"
+                          : "bg-slate-50/50 dark:bg-slate-950/40 border-slate-200 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-700 hover:bg-white dark:hover:bg-slate-850"
+                      }`}
+                    >
+                      <div className="flex items-start gap-2.5">
+                        <div className={`p-2 rounded-xl ${preset.pillClasses} shrink-0`}>
+                          <Icon size={18} />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-1">
+                            <h4 className="text-xs font-black text-slate-900 dark:text-white">
+                              {preset.name}
+                            </h4>
+                            {isCurrent && (
+                              <span className="px-1.5 py-0.2 rounded text-[9px] font-black uppercase tracking-wider bg-blue-600 text-white">
+                                Active Role
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 block mt-0.5">
+                            {preset.tagline}
+                          </span>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight mt-1 line-clamp-2">
+                            {preset.desc}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-2 border-t border-slate-200/60 dark:border-slate-800/60 text-[10px] text-slate-400">
+                        <span>{preset.permissions.length} modules granted</span>
+                        <span className="text-blue-600 dark:text-blue-400 font-bold group-hover:translate-x-0.5 transition-transform flex items-center gap-0.5">
+                          <span>Assign</span>
+                          <ArrowRight size={10} />
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-3.5 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-950/40 shrink-0">
+              <span className="text-xs text-slate-500">
+                Or use the full edit modal for custom permissions.
+              </span>
+              <button
+                type="button"
+                onClick={() => setQuickRoleOpen(false)}
+                className="px-4 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold hover:bg-slate-100 transition cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* ── Edit Account Modal Dialog with 1-Click Role Presets Grid ── */}
       {editModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 dark:bg-black/80 backdrop-blur-xs overflow-y-auto">
-          <div className="relative w-full max-w-6xl rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col my-auto max-h-[92vh]">
+          <div className="relative w-full max-w-6xl rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col my-auto max-h-[94vh]">
             
             {/* Modal Header */}
             <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0 bg-slate-50/50 dark:bg-slate-950/40">
@@ -797,9 +986,14 @@ const SubAdminProfile = ({ token: propToken }) => {
                   <Edit3 size={16} />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                    Edit Staff Profile: {subAdmin.name}
-                  </h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                      Edit Staff Profile: {subAdmin.name}
+                    </h3>
+                    <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${modalActiveRole.badgeClasses}`}>
+                      {modalActiveRole.name}
+                    </span>
+                  </div>
                   <p className="text-xs text-slate-500">
                     Update account identity, reset access password, and modify assigned module privileges
                   </p>
@@ -816,6 +1010,78 @@ const SubAdminProfile = ({ token: propToken }) => {
 
             {/* Modal Form */}
             <form onSubmit={handleSaveProfile} className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+              
+              {/* ── Section 1: Role Preset 1-Click Cards Grid ── */}
+              <div className="p-4 rounded-2xl bg-slate-50/80 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800 space-y-3">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <Crown size={15} className="text-amber-500" />
+                    <h4 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">
+                      1-Click Role Presets (Click any preset to auto-assign permissions)
+                    </h4>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[11px] text-slate-400">Current Role:</span>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wide border ${modalActiveRole.badgeClasses}`}>
+                      {modalActiveRole.name}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+                  {ROLE_PRESETS.map((preset) => {
+                    const Icon = preset.icon;
+                    const isSelected = modalActiveRole.id === preset.id;
+
+                    return (
+                      <div
+                        key={preset.id}
+                        type="button"
+                        onClick={() => applyRolePreset(preset)}
+                        className={`p-3 rounded-xl border text-left transition-all cursor-pointer select-none flex flex-col justify-between gap-1.5 relative overflow-hidden group ${
+                          isSelected
+                            ? preset.borderActive
+                            : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className={`p-1.5 rounded-lg ${preset.pillClasses} shrink-0`}>
+                            <Icon size={15} />
+                          </div>
+                          {isSelected && (
+                            <span className="h-5 w-5 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-2xs">
+                              <Check size={11} strokeWidth={3} />
+                            </span>
+                          )}
+                        </div>
+
+                        <div>
+                          <h5 className="text-xs font-black text-slate-900 dark:text-white leading-tight">
+                            {preset.name}
+                          </h5>
+                          <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 block mt-0.5">
+                            {preset.tagline}
+                          </span>
+                          <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight mt-1 line-clamp-2">
+                            {preset.desc}
+                          </p>
+                        </div>
+
+                        <div className="pt-1.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[9px] text-slate-400">
+                          <span className="font-bold text-slate-600 dark:text-slate-300">
+                            {preset.permissions.length} modules
+                          </span>
+                          <span className="text-blue-600 dark:text-blue-400 font-bold group-hover:underline">
+                            {isSelected ? "Selected" : "Select Preset"}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* ── Section 2: Account Identity & Categorized Permissions Matrix ── */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 
                 {/* Left Column: Account Credentials (5 cols on lg) */}
@@ -881,7 +1147,7 @@ const SubAdminProfile = ({ token: propToken }) => {
                         className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
                       >
                         <Sparkles size={11} />
-                        <span>Generate</span>
+                        <span>Generate Strong</span>
                       </button>
                     </div>
                     <div className="relative">
@@ -907,21 +1173,21 @@ const SubAdminProfile = ({ token: propToken }) => {
                   <div className="p-3 rounded-xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200/60 dark:border-blue-900/40 text-blue-800 dark:text-blue-300 space-y-1">
                     <div className="flex items-center gap-1.5 font-bold text-xs">
                       <Shield size={13} className="text-blue-600 dark:text-blue-400" />
-                      <span>Role-Based Access</span>
+                      <span>Role-Based Access Control</span>
                     </div>
                     <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-[11px]">
-                      Sub-admins log in with these credentials and are granted access strictly to selected modules.
+                      {modalActiveRole.desc}
                     </p>
                   </div>
                 </div>
 
-                {/* Right Column: Permissions Checklist (7 cols on lg) */}
-                <div className="lg:col-span-7 space-y-3">
+                {/* Right Column: Categorized Module Permissions Matrix (7 cols on lg) */}
+                <div className="lg:col-span-7 space-y-4">
                   <div className="flex items-center justify-between pb-1.5 border-b border-slate-100 dark:border-slate-800">
                     <div className="flex items-center gap-2">
                       <ShieldCheck size={14} className="text-blue-600 dark:text-blue-400" />
                       <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                        Module Access Permissions ({editForm.permissions.length}/{AVAILABLE_MODULES.length})
+                        Module Access Permissions ({editForm.permissions.length}/{ALL_AVAILABLE_MODULES.length})
                       </h4>
                     </div>
                     <div className="flex items-center gap-2 text-xs font-semibold">
@@ -930,7 +1196,7 @@ const SubAdminProfile = ({ token: propToken }) => {
                         onClick={selectAllPermissions}
                         className="text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
                       >
-                        Select All
+                        Select All (10)
                       </button>
                       <span className="text-slate-300 dark:text-slate-700">&bull;</span>
                       <button
@@ -943,47 +1209,97 @@ const SubAdminProfile = ({ token: propToken }) => {
                     </div>
                   </div>
 
-                  <div className="grid sm:grid-cols-2 gap-2.5">
-                    {AVAILABLE_MODULES.map((mod) => {
-                      const isChecked = editForm.permissions.includes(mod.id);
+                  {/* 4 Categorized Group Cards */}
+                  <div className="space-y-3">
+                    {PERMISSION_GROUPS.map((group) => {
+                      const GroupIcon = group.icon;
+                      const groupModules = group.modules;
+                      const selectedCount = groupModules.filter((m) => editForm.permissions.includes(m.id)).length;
+                      const isAllSelected = selectedCount === groupModules.length;
+
                       return (
                         <div
-                          key={mod.id}
-                          onClick={() => togglePermission(mod.id)}
-                          className={`p-2.5 rounded-xl border transition-all cursor-pointer select-none flex items-start gap-2.5 ${
-                            isChecked
-                              ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-300 dark:border-blue-800 shadow-2xs"
-                              : "bg-slate-50/50 dark:bg-slate-950/40 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
-                          }`}
+                          key={group.id}
+                          className="p-3.5 rounded-2xl bg-slate-50/60 dark:bg-slate-950/40 border border-slate-200/80 dark:border-slate-800 space-y-2.5"
                         >
-                          <div 
-                            className={`h-4 w-4 rounded-md border flex items-center justify-center shrink-0 mt-0.5 transition-colors ${
-                              isChecked
-                                ? "bg-blue-600 border-blue-600 text-white"
-                                : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900"
-                            }`}
-                          >
-                            {isChecked && <Check size={11} strokeWidth={3} />}
-                          </div>
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="text-xs font-bold text-slate-900 dark:text-white leading-tight">
-                                {mod.label}
-                              </span>
-                              {mod.sensitive && (
-                                <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400">
-                                  High Privilege
+                          {/* Group Header */}
+                          <div className="flex items-center justify-between flex-wrap gap-2">
+                            <div className="flex items-center gap-2">
+                              <div className="p-1 rounded-lg bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400">
+                                <GroupIcon size={14} />
+                              </div>
+                              <div>
+                                <h5 className="text-xs font-bold text-slate-900 dark:text-white">
+                                  {group.title}
+                                </h5>
+                                <span className="text-[10px] text-slate-400 block">
+                                  {group.description}
                                 </span>
-                              )}
+                              </div>
                             </div>
-                            <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight mt-0.5 line-clamp-1">
-                              {mod.desc}
-                            </p>
+
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-800">
+                                {selectedCount}/{groupModules.length} Active
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => toggleGroupPermissions(group, !isAllSelected)}
+                                className="text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                              >
+                                {isAllSelected ? "Deselect Group" : "Select Group"}
+                              </button>
+                            </div>
                           </div>
+
+                          {/* Module Checklist in Group */}
+                          <div className="grid sm:grid-cols-2 gap-2">
+                            {groupModules.map((mod) => {
+                              const isChecked = editForm.permissions.includes(mod.id);
+                              return (
+                                <div
+                                  key={mod.id}
+                                  onClick={() => togglePermission(mod.id)}
+                                  className={`p-2.5 rounded-xl border transition-all cursor-pointer select-none flex items-start gap-2.5 ${
+                                    isChecked
+                                      ? "bg-white dark:bg-slate-900 border-blue-400 dark:border-blue-600 shadow-2xs"
+                                      : "bg-slate-100/50 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
+                                  }`}
+                                >
+                                  <div 
+                                    className={`h-4 w-4 rounded-md border flex items-center justify-center shrink-0 mt-0.5 transition-colors ${
+                                      isChecked
+                                        ? "bg-blue-600 border-blue-600 text-white"
+                                        : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900"
+                                    }`}
+                                  >
+                                    {isChecked && <Check size={11} strokeWidth={3} />}
+                                  </div>
+                                  <div className="min-w-0">
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                      <span className="text-xs font-bold text-slate-900 dark:text-white leading-tight">
+                                        {mod.label}
+                                      </span>
+                                      {mod.sensitive && (
+                                        <span className="px-1.5 py-0.2 rounded text-[8px] font-black uppercase tracking-wider bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400">
+                                          High Privilege
+                                        </span>
+                                      )}
+                                    </div>
+                                    <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight mt-0.5 line-clamp-1">
+                                      {mod.desc}
+                                    </p>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+
                         </div>
                       );
                     })}
                   </div>
+
                 </div>
 
               </div>
@@ -1005,10 +1321,10 @@ const SubAdminProfile = ({ token: propToken }) => {
                   {saving ? (
                     <>
                       <Loader2 size={14} className="animate-spin" />
-                      <span>Saving...</span>
+                      <span>Saving Profile &amp; Role...</span>
                     </>
                   ) : (
-                    <span>Save Profile Changes</span>
+                    <span>Save Profile &amp; Role</span>
                   )}
                 </button>
               </div>

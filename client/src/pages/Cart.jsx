@@ -23,6 +23,7 @@ import {
   Copy,
   Check
 } from "lucide-react";
+import BrandLogo from "../components/BrandLogo";
 import { backendUrl } from "../config";
 import { toast } from "react-toastify";
 import { useLanguage } from "../context/LanguageContext";
@@ -700,9 +701,16 @@ const Cart = () => {
                             <h3 className="text-sm font-black text-slate-900 dark:text-white leading-snug line-clamp-2 pr-4 tracking-tight">
                               {item.product.name}
                             </h3>
-                            <p className="text-[10px] font-black uppercase tracking-wider text-[#10B981] mt-1">
-                              {item.product.category} · {item.product.brand || "Acme"}
-                            </p>
+                            <div className="flex items-center gap-1.5 mt-1">
+                              <BrandLogo
+                                brand={item.product.brand || "Acme"}
+                                brandDomain={item.product.brandDomain}
+                                className="w-3.5 h-3.5 rounded-2xs shrink-0"
+                              />
+                              <p className="text-[10px] font-black uppercase tracking-wider text-[#10B981]">
+                                {item.product.category} · {item.product.brand || "Acme"}
+                              </p>
+                            </div>
                             
                             {/* Rating and details */}
                             <div className="flex items-center gap-2.5 mt-1.5 flex-wrap">
@@ -841,9 +849,16 @@ const Cart = () => {
                           </h3>
                           
                           {/* Brand & Category */}
-                          <p className="text-[9px] font-bold uppercase tracking-wider text-[#10B981] mt-1">
-                            {item.product.category} · {item.product.brand || "Acme"}
-                          </p>
+                          <div className="flex items-center gap-1.5 mt-1">
+                            <BrandLogo
+                              brand={item.product.brand || "Acme"}
+                              brandDomain={item.product.brandDomain}
+                              className="w-3 h-3 rounded-2xs shrink-0"
+                            />
+                            <p className="text-[9px] font-bold uppercase tracking-wider text-[#10B981]">
+                              {item.product.category} · {item.product.brand || "Acme"}
+                            </p>
+                          </div>
 
                           {/* Selected Size Badge */}
                           {item.size && (

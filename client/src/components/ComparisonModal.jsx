@@ -21,6 +21,7 @@ import { backendUrl } from "../config";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { getAverageRating } from "../utils/productRatings";
+import BrandLogo from "./BrandLogo";
 
 const ComparisonModal = ({ onClose }) => {
   const navigate = useNavigate();
@@ -339,7 +340,14 @@ const ComparisonModal = ({ onClose }) => {
                   }
                   return (
                     <td key={`brand-${idx}`} className="p-3.5 text-xs font-bold text-slate-800 dark:text-slate-200 capitalize border-r border-slate-200/70 dark:border-slate-800 last:border-r-0">
-                      {product.brand || "CartNOW"}
+                      <div className="inline-flex items-center gap-1.5">
+                        <BrandLogo
+                          brand={product.brand || "CartNOW"}
+                          brandDomain={product.brandDomain}
+                          className="w-4 h-4 rounded-xs shrink-0"
+                        />
+                        <span>{product.brand || "CartNOW"}</span>
+                      </div>
                     </td>
                   );
                 })}

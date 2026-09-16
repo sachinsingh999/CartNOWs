@@ -7,9 +7,10 @@ import {
   Image as ImageIcon, Loader2, Sparkles, Send, Globe,
   Bookmark, MoreHorizontal, Smile, Paperclip, Home as HomeIcon,
   Search, Bell, User, MessageSquare, Compass, Play, Users, 
-  FolderHeart, ShoppingCart, HelpCircle, Eye, Star, ChevronLeft, ChevronRight, Tag, Upload,
+  FolderHeart, ShoppingCart, HelpCircle, Eye, Star, ChevronLeft, ChevronRight,
+  ChevronUp, ChevronDown, Share2, Music2, Volume2, VolumeX, Flame, Tag, Upload,
   Undo, Redo, Sliders, Music, BarChart2, Calendar, Trash2, Layers,
-  Type, Copy, RotateCw, Maximize2, Sun, Moon, MapPin, Hash
+  Type, Copy, RotateCw, Maximize2, Sun, Moon, MapPin, Hash, Sparkle, ArrowRight
 } from "lucide-react";
 import { backendUrl } from "../config";
 import Logo from "../components/Logo";
@@ -17,7 +18,7 @@ import StoryCreatorModal from "../components/StoryCreatorModal";
 import StorySlideshowOverlay from "../components/StorySlideshowOverlay";
 import CreatePostModal from "../components/CreatePostModal";
 import LikesModal from "../components/LikesModal";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 const SocialFeed = () => {
   const [posts, setPosts] = useState([]);
@@ -30,6 +31,13 @@ const SocialFeed = () => {
   const [activeTab, setActiveTab] = useState("For You");
   const [slideDirection, setSlideDirection] = useState("next");
   const isScrollingRef = useRef(false);
+
+  // Mobile drawer states
+  const [commentsDrawerOpen, setCommentsDrawerOpen] = useState(false);
+  const [productDrawerOpen, setProductDrawerOpen] = useState(false);
+  const [captionExpanded, setCaptionExpanded] = useState(false);
+  const [showStoriesRow, setShowStoriesRow] = useState(true);
+  const touchStartY = useRef(0);
 
   const displayedPosts = useMemo(() => {
     if (activeTab === "Following") {
@@ -81,6 +89,46 @@ const SocialFeed = () => {
       isScrollingRef.current = false;
     }, 550);
   };
+
+  const handleTouchStart = (e) => {
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (e) => {
+    const diff = touchStartY.current - e.changedTouches[0].clientY;
+    if (Math.abs(diff) > 45) {
+      if (diff > 0) handleNextPost();
+      else handlePrevPost();
+    }
+  };
+
+  const handleShare = (post) => {
+    const shareUrl = `${window.location.origin}/social`;
+    if (navigator.share) {
+      navigator.share({
+        title: post?.caption || "CartNow Social Feed",
+        url: shareUrl
+      }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(shareUrl);
+      toast.success("Link copied to clipboard! 📋");
+    }
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (["input", "textarea"].includes(document.activeElement?.tagName?.toLowerCase())) return;
+      if (e.key === "ArrowDown" || e.key === "j") {
+        e.preventDefault();
+        handleNextPost();
+      } else if (e.key === "ArrowUp" || e.key === "k") {
+        e.preventDefault();
+        handlePrevPost();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [displayedPosts, currentPostIndex]);
 
   useEffect(() => {
     if (activePost) {
@@ -1143,284 +1191,598 @@ const SocialFeed = () => {
   return (
     <div 
       onWheel={handleWheel}
-      className="w-full h-[calc(100vh-var(--navbar-height,76px))] bg-[#f4f6fb] text-slate-900 flex flex-col md:flex-row overflow-hidden relative select-none font-sans antialiased"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      className="w-full h-[calc(100vh-var(--navbar-height,76px))] bg-slate-950 sm:bg-[#0b0f19] text-white flex items-center justify-center relative overflow-hidden select-none font-sans antialiased"
     >
       <style>{`
         @keyframes heartPop {
           0% { transform: scale(0) rotate(-10deg); opacity: 0; }
-          15% { transform: scale(1.2) rotate(5deg); opacity: 0.9; }
+          15% { transform: scale(1.3) rotate(6deg); opacity: 1; }
           30% { transform: scale(0.95) rotate(-3deg); opacity: 1; }
           85% { transform: scale(1) rotate(0deg); opacity: 1; }
-          100% { transform: scale(1.4) rotate(5deg); opacity: 0; }
+          100% { transform: scale(1.5) rotate(6deg); opacity: 0; }
         }
         .animate-heart-pop {
-          animation: heartPop 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+          animation: heartPop 0.75s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes discSpin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        .animate-disc-spin {
+          animation: discSpin 4s linear infinite;
         }
       `}</style>
 
-      {/* LEFT FULL-PAGE POST STAGE */}
-      <div className="flex-1 flex flex-col justify-between h-full bg-[#f4f6fb] relative overflow-hidden border-r border-slate-200/80">
-        
-        {/* Top Floating Control Header */}
-        <div className="p-4 sm:p-6 flex items-center justify-between z-30">
-          {/* Tab Filter Switcher + (+) Button */}
-          <div className="flex items-center gap-1.5 bg-white p-1 rounded-full border border-slate-200/80 shadow-xs">
-            {["For You", "Following"].map(tab => (
+      {/* Desktop Floating Navigation Chevrons (Previous / Next Reel) */}
+      <div className="hidden lg:flex flex-col gap-3 absolute right-[calc(50%-270px)] top-1/2 -translate-y-1/2 z-40">
+        <button
+          onClick={handlePrevPost}
+          disabled={currentPostIndex === 0}
+          className="h-11 w-11 rounded-full bg-slate-900/90 hover:bg-slate-800 text-white border border-slate-700/80 shadow-2xl flex items-center justify-center transition cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed hover:scale-105 active:scale-95"
+          title="Previous Reel (Up Arrow)"
+        >
+          <ChevronUp size={22} className="stroke-[2.5]" />
+        </button>
+        <button
+          onClick={handleNextPost}
+          disabled={currentPostIndex >= displayedPosts.length - 1}
+          className="h-11 w-11 rounded-full bg-slate-900/90 hover:bg-slate-800 text-white border border-slate-700/80 shadow-2xl flex items-center justify-center transition cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed hover:scale-105 active:scale-95"
+          title="Next Reel (Down Arrow)"
+        >
+          <ChevronDown size={22} className="stroke-[2.5]" />
+        </button>
+      </div>
+
+      {/* ═══════════ SMARTPHONE MOBILE VIEWPORT SHELL ═══════════ */}
+      <div className="relative w-full max-w-[430px] h-full sm:h-[calc(100vh-96px)] sm:max-h-[860px] bg-black sm:rounded-[36px] sm:border sm:border-slate-800/90 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.9)] overflow-hidden flex flex-col justify-between">
+
+        {/* ── Top Header Bar (Overlaid on Reel Media) ── */}
+        <div className="absolute top-0 inset-x-0 z-30 bg-gradient-to-b from-black/85 via-black/40 to-transparent p-3 sm:p-4 flex flex-col gap-2">
+          
+          {/* Top Bar Controls */}
+          <div className="flex items-center justify-between">
+            {/* Feed Tab Switcher */}
+            <div className="flex items-center gap-1 bg-black/40 backdrop-blur-md p-1 rounded-full border border-white/10 shadow-xs">
+              {["For You", "Following"].map((tab) => (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => {
+                    if (tab === "Following" && !token) {
+                      toast.info("Please log in to see posts from creators you follow.");
+                      return;
+                    }
+                    setActiveTab(tab);
+                    setCurrentPostIndex(0);
+                  }}
+                  className={`text-[11px] font-black uppercase tracking-wider px-3.5 py-1 rounded-full transition cursor-pointer border-none ${
+                    activeTab === tab
+                      ? "bg-white text-black shadow-xs font-black"
+                      : "text-white/70 hover:text-white bg-transparent"
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+
+            {/* Right Action Icons: Stories Toggle & Create Post */}
+            <div className="flex items-center gap-2">
               <button
-                key={tab}
+                type="button"
+                onClick={() => setShowStoriesRow((p) => !p)}
+                className={`h-8 px-2.5 rounded-full backdrop-blur-md border text-[10px] font-black uppercase tracking-wider flex items-center gap-1 transition cursor-pointer ${
+                  showStoriesRow
+                    ? "bg-rose-500/20 text-rose-300 border-rose-500/40"
+                    : "bg-black/40 text-white/80 border-white/10 hover:bg-black/60"
+                }`}
+                title="Toggle Stories"
+              >
+                <Sparkles size={12} className="text-rose-400" />
+                <span>Stories</span>
+              </button>
+
+              <button
                 type="button"
                 onClick={() => {
-                  if (tab === "Following" && !token) {
-                    toast.info("Please log in to see posts from creators you follow.");
-                    return;
-                  }
-                  setActiveTab(tab);
-                  setCurrentPostIndex(0);
+                  if (token) setCreateModalOpen(true);
+                  else toast.info("Please log in to share your style!");
                 }}
-                className={`text-xs font-black uppercase tracking-wider px-4 py-1.5 rounded-full transition cursor-pointer border-none ${
-                  activeTab === tab 
-                    ? "bg-[#5842f6] text-white shadow-xs" 
-                    : "text-[#475569] hover:text-slate-900 bg-transparent"
-                }`}
+                className="h-8 w-8 rounded-full bg-gradient-to-tr from-[#FF6A00] to-rose-500 hover:scale-105 active:scale-95 text-white flex items-center justify-center shadow-lg transition cursor-pointer border-none shrink-0"
+                title="Create New Post"
               >
-                {tab}
+                <Plus size={16} className="stroke-[3]" />
               </button>
-            ))}
-
-            <button
-              type="button"
-              onClick={() => {
-                if (token) {
-                  setCreateModalOpen(true);
-                } else {
-                  toast.info("Please log in to share your style!");
-                }
-              }}
-              className="h-7 w-7 rounded-full bg-[#d946ef] hover:bg-[#c026d3] text-white flex items-center justify-center hover:scale-105 active:scale-95 transition cursor-pointer border-none shadow-xs ml-0.5 shrink-0"
-              title="Create New Post"
-            >
-              <Plus size={16} className="stroke-[3]" />
-            </button>
+            </div>
           </div>
 
-          {/* Post Counter Badge */}
-          <div>
-            <span className="text-[11px] font-black uppercase tracking-widest text-slate-800 bg-white px-4 py-2 rounded-full border border-slate-200/80 shadow-xs">
-              Post {displayedPosts.length > 0 ? currentPostIndex + 1 : 0} of {displayedPosts.length}
-            </span>
-          </div>
+          {/* Collapsible Top Stories Strip */}
+          <AnimatePresence>
+            {showStoriesRow && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+                className="flex items-center gap-2.5 overflow-x-auto scrollbar-hide py-1 pt-0.5 select-none"
+              >
+                {/* Add Story Button */}
+                <div 
+                  onClick={() => {
+                    if (token) setStoryModalOpen(true);
+                    else toast.info("Please log in to add a story.");
+                  }}
+                  className="flex flex-col items-center gap-1 shrink-0 cursor-pointer group"
+                >
+                  <div className="relative h-12 w-12 rounded-full p-0.5 bg-gradient-to-tr from-amber-500 via-rose-500 to-indigo-500">
+                    <div className="h-full w-full rounded-full bg-slate-950 flex items-center justify-center overflow-hidden border-2 border-black">
+                      {currentUser?.profilePhoto ? (
+                        <img src={currentUser.profilePhoto} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        <span className="text-xs font-black">{currentUser?.name?.charAt(0) || "+"}</span>
+                      )}
+                    </div>
+                    <div className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-blue-500 text-white flex items-center justify-center border-2 border-black">
+                      <Plus size={10} className="stroke-[3]" />
+                    </div>
+                  </div>
+                  <span className="text-[9px] font-bold text-white/80 max-w-[50px] truncate">Your Story</span>
+                </div>
+
+                {/* Other User Stories */}
+                {stories.map((group) => {
+                  const seen = isGroupSeen(group);
+                  return (
+                    <div
+                      key={group._id}
+                      onClick={() => {
+                        setActiveStoryGroup(group);
+                        setActiveStoryIndex(0);
+                      }}
+                      className="flex flex-col items-center gap-1 shrink-0 cursor-pointer group"
+                    >
+                      <div className={`h-12 w-12 rounded-full p-[2px] ${
+                        seen
+                          ? "bg-slate-700"
+                          : "bg-gradient-to-tr from-amber-400 via-rose-500 to-purple-600 animate-pulse"
+                      }`}>
+                        <div className="h-full w-full rounded-full bg-black overflow-hidden border-2 border-black">
+                          {group.user?.profilePhoto ? (
+                            <img src={group.user.profilePhoto} alt="" className="h-full w-full object-cover" />
+                          ) : (
+                            <div className="h-full w-full bg-slate-800 text-white flex items-center justify-center text-xs font-bold uppercase">
+                              {group.user?.name?.charAt(0) || "U"}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <span className="text-[9px] font-bold text-white/90 max-w-[50px] truncate">{group.user?.name || "Story"}</span>
+                    </div>
+                  );
+                })}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* Post Media Stage with Smooth Framer Motion Slide Transition */}
-        <div className="flex-1 flex items-center justify-center relative p-4 sm:p-8 overflow-hidden">
-          
-          {/* Left Arrow Nav */}
-          {currentPostIndex > 0 && (
-            <button
-              onClick={handlePrevPost}
-              className="absolute left-6 sm:left-10 top-1/2 -translate-y-1/2 z-40 h-10 w-10 rounded-full bg-white hover:bg-slate-50 text-slate-800 border border-slate-100 shadow-md flex items-center justify-center transition cursor-pointer active:scale-90"
-              title="Previous Post"
-            >
-              <ChevronLeft size={20} className="stroke-[2.5]" />
-            </button>
-          )}
-
-          {/* Right Arrow Nav */}
-          {currentPostIndex < displayedPosts.length - 1 && (
-            <button
-              onClick={handleNextPost}
-              className="absolute right-6 sm:right-10 top-1/2 -translate-y-1/2 z-40 h-10 w-10 rounded-full bg-white hover:bg-slate-50 text-slate-800 border border-slate-100 shadow-md flex items-center justify-center transition cursor-pointer active:scale-90"
-              title="Next Post"
-            >
-              <ChevronRight size={20} className="stroke-[2.5]" />
-            </button>
-          )}
-
+        {/* ── Main Reel Media Stage ── */}
+        <div 
+          onDoubleClick={() => activePost && handleImageDoubleClick(activePost._id)}
+          className="relative flex-1 w-full h-full bg-slate-950 flex items-center justify-center overflow-hidden"
+        >
           {loading ? (
-            <div className="flex flex-col items-center justify-center text-slate-500">
-              <Loader2 size={28} className="animate-spin text-[#5842f6] mb-2" />
-              <span className="text-xs font-black uppercase tracking-widest">Loading Feed...</span>
+            <div className="flex flex-col items-center justify-center text-slate-400">
+              <Loader2 size={32} className="animate-spin text-[#FF6A00] mb-2.5" />
+              <span className="text-xs font-black uppercase tracking-widest text-slate-300">Loading Reel...</span>
             </div>
           ) : displayedPosts.length === 0 ? (
-            <div className="text-center p-8">
-              <ShoppingBag className="mx-auto text-slate-400 mb-3" size={48} />
-              <h3 className="text-sm font-black uppercase tracking-wider text-slate-800">No posts found</h3>
-              <p className="text-xs text-slate-500 mt-1">Be the first to share your purchase!</p>
+            <div className="text-center p-8 text-slate-400">
+              <ShoppingBag className="mx-auto text-slate-500 mb-3" size={44} />
+              <h3 className="text-sm font-black uppercase tracking-wider text-slate-200">No posts in feed</h3>
+              <p className="text-xs text-slate-400 mt-1">Be the first creator to share your look!</p>
             </div>
           ) : activePost ? (
-            <motion.div
-              key={activePost._id}
-              initial={{ x: slideDirection === "next" ? 350 : -350, opacity: 0.1, scale: 0.95 }}
-              animate={{ x: 0, opacity: 1, scale: 1 }}
-              exit={{ x: slideDirection === "next" ? -350 : 350, opacity: 0 }}
-              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-              className="w-full h-full flex flex-col items-center justify-center relative"
-            >
-              {/* Media Image Container */}
-              <div 
-                onDoubleClick={() => handleImageDoubleClick(activePost._id)}
-                className="relative max-h-[calc(100vh-220px)] max-w-full rounded-lg overflow-hidden shadow-md flex items-center justify-center bg-white border border-slate-200/80"
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activePost._id}
+                initial={{ y: slideDirection === "next" ? 180 : -180, opacity: 0.2 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: slideDirection === "next" ? -180 : 180, opacity: 0.2 }}
+                transition={{ duration: 0.28, ease: "easeOut" }}
+                className="w-full h-full relative flex items-center justify-center"
               >
+                {/* Full-bleed Reel Background Media */}
                 <img
                   src={activePost.mediaUrl}
-                  alt=""
-                  className="max-h-[calc(100vh-220px)] max-w-full object-contain select-none"
+                  alt={activePost.caption || "Reel"}
+                  className="w-full h-full object-cover object-center select-none"
                 />
 
-                {/* Double Tap Heart Animation */}
+                {/* Double Tap Heart Pop Effect */}
                 {likedAnimationPostId === activePost._id && (
-                  <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
-                    <Heart size={80} className="fill-rose-500 text-rose-500 drop-shadow-[0_4px_30px_rgba(244,63,94,0.7)] animate-heart-pop" />
+                  <div className="absolute inset-0 flex items-center justify-center z-40 pointer-events-none">
+                    <Heart size={96} className="fill-rose-500 text-rose-500 drop-shadow-[0_4px_30px_rgba(244,63,94,0.9)] animate-heart-pop" />
                   </div>
                 )}
 
                 {/* Tag Overlay hotspots */}
-                {activePost.taggedProducts?.map(tag => {
+                {activePost.taggedProducts?.map((tag) => {
                   if (!tag.productId) return null;
                   return (
-                    <div 
+                    <div
                       key={tag._id}
                       style={{ left: `${tag.x}%`, top: `${tag.y}%` }}
-                      className="absolute -translate-x-1/2 -translate-y-1/2 group/tag select-none z-10"
+                      className="absolute -translate-x-1/2 -translate-y-1/2 group/tag select-none z-30"
                     >
-                      <div className="relative h-5 w-5 flex items-center justify-center cursor-pointer">
-                        <span className="absolute inline-flex h-full w-full rounded-full bg-rose-500/30 animate-ping" />
-                        <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-500 border border-white" />
+                      <div className="relative h-6 w-6 flex items-center justify-center cursor-pointer">
+                        <span className="absolute inline-flex h-full w-full rounded-full bg-rose-500/40 animate-ping" />
+                        <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-rose-500 border-2 border-white shadow-md" />
                       </div>
-                      <div className="absolute top-6 left-1/2 -translate-x-1/2 bg-white/95 backdrop-blur-md border border-slate-200 p-2.5 rounded-xl shadow-xl w-48 text-left opacity-0 pointer-events-none group-hover/tag:opacity-100 group-hover/tag:pointer-events-auto transition duration-200 z-30">
-                        <div className="flex gap-2">
-                          <img src={tag.productId.images?.[0]} alt="" className="h-9 w-9 object-cover rounded-lg bg-slate-50 border border-slate-100" />
+                      <div className="absolute bottom-7 left-1/2 -translate-x-1/2 bg-slate-950/95 backdrop-blur-md border border-white/15 p-2.5 rounded-xl shadow-2xl w-44 text-left opacity-0 pointer-events-none group-hover/tag:opacity-100 group-hover/tag:pointer-events-auto transition duration-200 z-40">
+                        <div className="flex gap-2 items-center">
+                          <img
+                            src={tag.productId.images?.[0]}
+                            alt=""
+                            className="h-8 w-8 object-cover rounded-md bg-slate-800 shrink-0"
+                          />
                           <div className="min-w-0 flex-1">
-                            <h5 className="text-[10px] font-black text-slate-900 truncate uppercase tracking-tight">{tag.productId.name}</h5>
-                            <span className="text-[10px] font-black text-[#5842f6] block mt-0.5">₹{tag.productId.price?.toLocaleString("en-IN")}</span>
+                            <h5 className="text-[10px] font-black text-white truncate uppercase tracking-tight">
+                              {tag.productId.name}
+                            </h5>
+                            <span className="text-[10px] font-black text-[#FF6A00] block">
+                              ₹{tag.productId.price?.toLocaleString("en-IN")}
+                            </span>
                           </div>
                         </div>
                       </div>
                     </div>
                   );
                 })}
-              </div>
-            </motion.div>
+              </motion.div>
+            </AnimatePresence>
           ) : null}
-        </div>
 
-        {/* Bottom Creator Info & Actions Overlay */}
-        {activePost && (
-          <div className="p-4 sm:p-6 z-30">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3 text-left min-w-0 flex-1">
-                <div className="h-10 w-10 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center text-xs font-black uppercase overflow-hidden shrink-0 shadow-2xs">
+          {/* ── Right-Side Vertical Action Column (Reels Style) ── */}
+          {activePost && (
+            <div className="absolute right-3 bottom-24 z-30 flex flex-col items-center gap-4 select-none">
+              
+              {/* Creator Avatar with Follow Badge */}
+              <div className="relative mb-1">
+                <div className="h-10 w-10 rounded-full border-2 border-white overflow-hidden bg-slate-800 shadow-md">
                   {activePost.userId?.profilePhoto ? (
                     <img src={activePost.userId.profilePhoto} alt="" className="h-full w-full object-cover" />
                   ) : (
-                    <span>{activePost.userId?.name?.charAt(0) || "U"}</span>
+                    <div className="h-full w-full bg-gradient-to-tr from-amber-500 to-rose-500 text-white flex items-center justify-center text-xs font-bold uppercase">
+                      {activePost.userId?.name?.charAt(0) || "U"}
+                    </div>
                   )}
                 </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-black uppercase tracking-wide text-slate-900 truncate">{activePost.userId?.name || "Anonymous"}</span>
-                    {currentUser && activePost.userId && activePost.userId._id !== currentUser._id && (
-                      <button
-                        onClick={() => handleToggleFollowCreator(activePost.userId._id)}
-                        className="text-xs font-black uppercase text-rose-500 hover:text-rose-600 cursor-pointer border-none bg-transparent"
-                      >
-                        {activePost.isFollowingCreator ? "Unfollow" : "Follow"}
-                      </button>
-                    )}
-                  </div>
-                  <p className="text-xs text-slate-600 font-medium truncate mt-0.5">{activePost.caption}</p>
-                </div>
+                {currentUser && activePost.userId && activePost.userId._id !== currentUser._id && !activePost.isFollowingCreator && (
+                  <button
+                    onClick={() => handleToggleFollowCreator(activePost.userId._id)}
+                    className="absolute -bottom-1 left-1/2 -translate-x-1/2 h-4 w-4 rounded-full bg-rose-500 text-white flex items-center justify-center border-2 border-black cursor-pointer hover:scale-110 active:scale-95 transition"
+                    title="Follow Creator"
+                  >
+                    <Plus size={10} className="stroke-[3]" />
+                  </button>
+                )}
               </div>
 
-              {/* Actions */}
-              <div className="flex items-center gap-4 shrink-0">
+              {/* Like Button */}
+              <div className="flex flex-col items-center gap-0.5">
                 <button
+                  type="button"
                   onClick={() => handleLike(activePost._id)}
-                  className="flex items-center gap-1.5 text-slate-700 hover:text-rose-500 transition border-none bg-transparent cursor-pointer"
+                  className="h-10 w-10 rounded-full bg-black/40 backdrop-blur-md text-white hover:bg-black/60 flex items-center justify-center cursor-pointer border-none active:scale-90 transition shadow-md"
+                  title="Like Post"
                 >
-                  <Heart size={20} className={activePost.isLiked ? "fill-rose-500 text-rose-500" : ""} />
-                  <span className="text-xs font-black">{activePost.likesCount}</span>
+                  <Heart
+                    size={22}
+                    className={`transition-all duration-200 ${
+                      activePost.isLiked
+                        ? "fill-rose-500 text-rose-500 scale-110"
+                        : "text-white stroke-[2.2]"
+                    }`}
+                  />
                 </button>
-
-                <button
-                  onClick={() => toggleSave(activePost._id)}
-                  className="text-slate-700 hover:text-slate-900 transition border-none bg-transparent cursor-pointer"
-                >
-                  <Bookmark size={20} className={savedPosts.has(activePost._id) ? "fill-slate-900 text-slate-900" : ""} />
-                </button>
+                <span className="text-[10px] font-black text-white drop-shadow-md">
+                  {activePost.likesCount || 0}
+                </span>
               </div>
-            </div>
-          </div>
-        )}
-      </div>
 
-      {/* RIGHT FULL-HEIGHT COMMENTS PANEL */}
-      <div className="w-full md:w-[380px] lg:w-[400px] bg-white border-l border-slate-200/80 flex flex-col h-full shrink-0 z-30">
-        <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-white">
-          <div>
-            <h3 className="text-sm font-black uppercase tracking-wider text-slate-900">Comments</h3>
-            <span className="text-[9.5px] font-black text-slate-400 uppercase tracking-widest block mt-0.5">Live Discussion</span>
-          </div>
-          <span className="h-6 w-6 rounded-full bg-indigo-50 text-indigo-600 font-black text-xs flex items-center justify-center border border-indigo-100/50">
-            {comments.length}
-          </span>
-        </div>
+              {/* Comments Button */}
+              <div className="flex flex-col items-center gap-0.5">
+                <button
+                  type="button"
+                  onClick={() => setCommentsDrawerOpen(true)}
+                  className="h-10 w-10 rounded-full bg-black/40 backdrop-blur-md text-white hover:bg-black/60 flex items-center justify-center cursor-pointer border-none active:scale-90 transition shadow-md"
+                  title="View Comments"
+                >
+                  <MessageCircle size={22} className="stroke-[2.2] text-white" />
+                </button>
+                <span className="text-[10px] font-black text-white drop-shadow-md">
+                  {activePost.commentsCount || comments.length || 0}
+                </span>
+              </div>
 
-        {/* Comments List */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
-          {loadingComments ? (
-            <div className="py-20 flex flex-col items-center justify-center text-slate-400">
-              <Loader2 size={24} className="animate-spin text-[#5842f6] mb-2" />
-              <span className="text-[9px] font-black uppercase tracking-widest">Loading Comments...</span>
+              {/* Bookmark / Save Button */}
+              <button
+                type="button"
+                onClick={() => toggleSave(activePost._id)}
+                className="h-10 w-10 rounded-full bg-black/40 backdrop-blur-md text-white hover:bg-black/60 flex items-center justify-center cursor-pointer border-none active:scale-90 transition shadow-md"
+                title="Save Post"
+              >
+                <Bookmark
+                  size={20}
+                  className={savedPosts.has(activePost._id) ? "fill-amber-400 text-amber-400" : "text-white stroke-[2.2]"}
+                />
+              </button>
+
+              {/* Tagged Products Icon (If tagged) */}
+              {activePost.taggedProducts && activePost.taggedProducts.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setProductDrawerOpen(true)}
+                  className="h-10 w-10 rounded-full bg-[#FF6A00]/90 backdrop-blur-md text-white flex items-center justify-center cursor-pointer border-none hover:scale-105 active:scale-90 transition shadow-lg animate-bounce"
+                  title="View Tagged Products"
+                >
+                  <ShoppingBag size={19} className="stroke-[2.5]" />
+                </button>
+              )}
+
+              {/* Share Button */}
+              <button
+                type="button"
+                onClick={() => handleShare(activePost)}
+                className="h-10 w-10 rounded-full bg-black/40 backdrop-blur-md text-white hover:bg-black/60 flex items-center justify-center cursor-pointer border-none active:scale-90 transition shadow-md"
+                title="Share Reel"
+              >
+                <Share2 size={19} className="stroke-[2.2] text-white" />
+              </button>
             </div>
-          ) : comments.length === 0 ? (
-            <div className="py-20 text-center text-slate-400">
-              <MessageCircle size={24} className="mx-auto text-slate-300 mb-2" />
-              <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 block">No discussions yet</span>
-              <p className="text-[9px] text-slate-400 mt-1">Be the first to comment on this fit!</p>
-            </div>
-          ) : (
-            comments.map(c => (
-              <div key={c._id} className="border-b border-slate-100/80 pb-3 mb-3 last:border-none">
-                <div className="flex items-start gap-3 text-left">
-                  <div className="h-8 w-8 rounded-full bg-indigo-50 text-indigo-600 font-black text-[10px] flex items-center justify-center shrink-0 border border-indigo-100/40">
-                    {c.userId?.profilePhoto ? (
-                      <img src={c.userId.profilePhoto} alt="" className="h-full w-full object-cover rounded-full" />
-                    ) : (
-                      <span>{c.userId?.name?.charAt(0) || "U"}</span>
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-black text-slate-900 uppercase">{c.userId?.name}</span>
-                      <span className="text-[10px] text-slate-400 font-medium">• {new Date(c.createdAt).toLocaleDateString([], { month: "short", day: "numeric" })}</span>
-                    </div>
-                    <p className="text-xs font-medium text-slate-700 leading-relaxed mt-0.5 break-words">{c.text}</p>
-                  </div>
+          )}
+
+          {/* ── Bottom Creator Info & Tagged Product Banner (Overlaid) ── */}
+          {activePost && (
+            <div className="absolute bottom-0 inset-x-0 z-30 bg-gradient-to-t from-black/95 via-black/60 to-transparent p-3 sm:p-4 pt-10 text-left">
+              
+              {/* Creator Username + Follow */}
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="text-sm font-black text-white tracking-wide drop-shadow-md">
+                  @{activePost.userId?.name?.replace(/\s+/g, "").toLowerCase() || "creator"}
+                </span>
+                <CheckCircle2 size={14} className="fill-blue-500 text-white" />
+                {currentUser && activePost.userId && activePost.userId._id !== currentUser._id && (
+                  <button
+                    onClick={() => handleToggleFollowCreator(activePost.userId._id)}
+                    className="text-[11px] font-black uppercase text-rose-400 hover:text-rose-300 ml-1 cursor-pointer border-none bg-transparent"
+                  >
+                    {activePost.isFollowingCreator ? "Following" : "• Follow"}
+                  </button>
+                )}
+              </div>
+
+              {/* Caption */}
+              <div className="mb-2">
+                <p className={`text-xs text-white/90 font-medium leading-relaxed drop-shadow ${captionExpanded ? "" : "line-clamp-2"}`}>
+                  {activePost.caption}
+                </p>
+                {activePost.caption && activePost.caption.length > 70 && (
+                  <button
+                    type="button"
+                    onClick={() => setCaptionExpanded((p) => !p)}
+                    className="text-[10px] font-black text-white/60 hover:text-white uppercase mt-0.5 cursor-pointer border-none bg-transparent"
+                  >
+                    {captionExpanded ? "less" : "more"}
+                  </button>
+                )}
+              </div>
+
+              {/* Tagged Product Shop Pill (Direct Tap to Buy) */}
+              {activePost.taggedProducts?.[0]?.productId && (
+                <div 
+                  onClick={() => {
+                    const prod = activePost.taggedProducts[0].productId;
+                    if (prod?._id) window.location.href = `/product/${prod._id}`;
+                  }}
+                  className="inline-flex items-center gap-2 bg-white/15 hover:bg-white/25 backdrop-blur-md border border-white/20 px-2.5 py-1 rounded-full text-xs font-bold text-white transition cursor-pointer mb-2 max-w-[85%] truncate"
+                >
+                  <ShoppingBag size={12} className="text-[#FF6A00] shrink-0" />
+                  <span className="truncate">{activePost.taggedProducts[0].productId.name}</span>
+                  <span className="text-emerald-400 font-black shrink-0">
+                    ₹{activePost.taggedProducts[0].productId.price?.toLocaleString("en-IN")}
+                  </span>
+                  <ArrowRight size={11} className="text-white/70 shrink-0" />
+                </div>
+              )}
+
+              {/* Audio Sound Wave Ticker */}
+              <div className="flex items-center justify-between text-[11px] text-white/70 font-semibold">
+                <div className="flex items-center gap-1.5 truncate">
+                  <Music2 size={12} className="text-rose-400 shrink-0 animate-pulse" />
+                  <span className="truncate">Original Sound • {activePost.userId?.name || "CartNow"}</span>
+                </div>
+                {/* Spinning Disc */}
+                <div className="h-6 w-6 rounded-full bg-slate-900 border-2 border-white/40 flex items-center justify-center shrink-0 animate-disc-spin">
+                  <div className="h-2 w-2 rounded-full bg-white" />
                 </div>
               </div>
-            ))
+            </div>
           )}
-        </div>
 
-        {/* Comment Form */}
-        <form onSubmit={handleAddComment} className="p-4 bg-white border-t border-slate-100 flex items-center gap-3 shrink-0">
-          <input
-            type="text"
-            placeholder={token ? "Write a comment..." : "Log in to comment"}
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            disabled={!token}
-            className="flex-1 px-4 py-2.5 text-xs border border-slate-200/80 bg-white text-slate-800 rounded-full outline-none focus:border-[#5842f6] transition placeholder-slate-400 font-medium"
-          />
-          <button
-            type="submit"
-            disabled={!newComment.trim() || !token}
-            className="h-9 w-9 rounded-full bg-indigo-50 text-indigo-600 hover:bg-[#5842f6] hover:text-white flex items-center justify-center transition cursor-pointer border-none shrink-0 shadow-2xs disabled:bg-slate-100 disabled:text-slate-300"
-          >
-            <Send size={14} />
-          </button>
-        </form>
+          {/* ── Slide-up Comments Drawer (Bottom Sheet) ── */}
+          <AnimatePresence>
+            {commentsDrawerOpen && (
+              <>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setCommentsDrawerOpen(false)}
+                  className="absolute inset-0 z-40 bg-black/60 backdrop-blur-xs"
+                />
+                <motion.div
+                  initial={{ y: "100%" }}
+                  animate={{ y: 0 }}
+                  exit={{ y: "100%" }}
+                  transition={{ duration: 0.28, ease: "easeOut" }}
+                  className="absolute inset-x-0 bottom-0 max-h-[72%] h-[72%] bg-slate-900 border-t border-slate-700/80 rounded-t-[28px] z-50 flex flex-col shadow-2xl text-left overflow-hidden"
+                >
+                  {/* Drawer Handle & Header */}
+                  <div className="p-3.5 pb-2 border-b border-slate-800 flex items-center justify-between">
+                    <div className="w-10 h-1 bg-slate-700 rounded-full mx-auto absolute top-2 left-1/2 -translate-x-1/2" />
+                    <div>
+                      <h4 className="text-xs font-black uppercase tracking-wider text-white">
+                        Comments ({comments.length})
+                      </h4>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setCommentsDrawerOpen(false)}
+                      className="h-7 w-7 rounded-full bg-slate-800 text-slate-300 hover:text-white flex items-center justify-center cursor-pointer border-none"
+                    >
+                      <X size={15} />
+                    </button>
+                  </div>
+
+                  {/* Comments List */}
+                  <div className="flex-1 overflow-y-auto p-4 space-y-3.5 scrollbar-thin">
+                    {loadingComments ? (
+                      <div className="py-12 flex flex-col items-center justify-center text-slate-400">
+                        <Loader2 size={22} className="animate-spin text-[#FF6A00] mb-2" />
+                        <span className="text-[10px] font-black uppercase tracking-widest">Loading...</span>
+                      </div>
+                    ) : comments.length === 0 ? (
+                      <div className="py-12 text-center text-slate-400">
+                        <MessageCircle size={24} className="mx-auto text-slate-600 mb-2" />
+                        <p className="text-xs font-bold text-slate-300">No comments yet</p>
+                        <p className="text-[10px] text-slate-500 mt-0.5">Be the first to comment on this reel!</p>
+                      </div>
+                    ) : (
+                      comments.map((c) => (
+                        <div key={c._id} className="flex items-start gap-2.5 text-left">
+                          <div className="h-7 w-7 rounded-full bg-slate-800 text-white font-bold text-[10px] flex items-center justify-center shrink-0 border border-slate-700">
+                            {c.userId?.profilePhoto ? (
+                              <img src={c.userId.profilePhoto} alt="" className="h-full w-full object-cover rounded-full" />
+                            ) : (
+                              <span>{c.userId?.name?.charAt(0) || "U"}</span>
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs font-bold text-white uppercase">{c.userId?.name}</span>
+                              <span className="text-[9px] text-slate-500">• {new Date(c.createdAt).toLocaleDateString([], { month: "short", day: "numeric" })}</span>
+                            </div>
+                            <p className="text-xs text-slate-200 mt-0.5 leading-snug break-words">{c.text}</p>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {/* Comment Input Form */}
+                  <form onSubmit={handleAddComment} className="p-3 bg-slate-950 border-t border-slate-800 flex items-center gap-2">
+                    <input
+                      type="text"
+                      placeholder={token ? "Add a comment..." : "Log in to comment"}
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      disabled={!token}
+                      className="flex-1 px-3.5 py-2 text-xs border border-slate-700 bg-slate-900 text-white rounded-full outline-none focus:border-[#FF6A00] transition placeholder-slate-500"
+                    />
+                    <button
+                      type="submit"
+                      disabled={!newComment.trim() || !token}
+                      className="h-8 w-8 rounded-full bg-[#FF6A00] text-white flex items-center justify-center transition cursor-pointer border-none shrink-0 disabled:opacity-40"
+                    >
+                      <Send size={13} />
+                    </button>
+                  </form>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
+
+          {/* ── Tagged Products Quick Drawer ── */}
+          <AnimatePresence>
+            {productDrawerOpen && activePost?.taggedProducts && (
+              <>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setProductDrawerOpen(false)}
+                  className="absolute inset-0 z-40 bg-black/60 backdrop-blur-xs"
+                />
+                <motion.div
+                  initial={{ y: "100%" }}
+                  animate={{ y: 0 }}
+                  exit={{ y: "100%" }}
+                  transition={{ duration: 0.28, ease: "easeOut" }}
+                  className="absolute inset-x-0 bottom-0 bg-slate-900 border-t border-slate-700/80 rounded-t-[28px] z-50 p-4 text-left shadow-2xl"
+                >
+                  <div className="w-10 h-1 bg-slate-700 rounded-full mx-auto mb-3" />
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-xs font-black uppercase tracking-wider text-white flex items-center gap-1.5">
+                      <ShoppingBag size={14} className="text-[#FF6A00]" />
+                      <span>Tagged Products ({activePost.taggedProducts.length})</span>
+                    </h4>
+                    <button
+                      type="button"
+                      onClick={() => setProductDrawerOpen(false)}
+                      className="h-6 w-6 rounded-full bg-slate-800 text-slate-300 flex items-center justify-center cursor-pointer border-none"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+
+                  <div className="space-y-2.5 max-h-[300px] overflow-y-auto">
+                    {activePost.taggedProducts.map((tag) => {
+                      const prod = tag.productId;
+                      if (!prod) return null;
+                      return (
+                        <div
+                          key={tag._id}
+                          onClick={() => {
+                            if (prod._id) window.location.href = `/product/${prod._id}`;
+                          }}
+                          className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 cursor-pointer transition"
+                        >
+                          <img
+                            src={prod.images?.[0]}
+                            alt={prod.name}
+                            className="h-12 w-12 rounded-lg object-cover bg-slate-900 shrink-0"
+                          />
+                          <div className="min-w-0 flex-1">
+                            <h5 className="text-xs font-bold text-white truncate">{prod.name}</h5>
+                            <div className="flex items-baseline gap-2 mt-0.5">
+                              <span className="text-xs font-black text-emerald-400">
+                                ₹{prod.price?.toLocaleString("en-IN")}
+                              </span>
+                              {prod.originalPrice && (
+                                <span className="text-[10px] text-slate-500 line-through">
+                                  ₹{prod.originalPrice?.toLocaleString("en-IN")}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            className="px-3 py-1.5 rounded-lg bg-[#FF6A00] text-white text-[10px] font-black uppercase tracking-wider shrink-0 cursor-pointer border-none"
+                          >
+                            Buy Now
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
 
       {/* STORY CREATOR MODAL */}

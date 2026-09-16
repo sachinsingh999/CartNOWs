@@ -35,6 +35,8 @@ import SystemSettings from "./pages/SystemSettings";
 import HeroSlideshow from "./pages/HeroSlideshow";
 import Banners from "./pages/Banners";
 import DealOfTheDay from "./pages/DealOfTheDay";
+import FeaturedProducts from "./pages/FeaturedProducts";
+import PromoBanners from "./pages/PromoBanners";
 import SubAdmins from "./pages/SubAdmins";
 import SubAdminProfile from "./pages/SubAdminProfile";
 
@@ -182,6 +184,8 @@ const AppContent = () => {
             <Route path="/hero-slideshow" element={<RouteWrapper Component={HeroSlideshow} permission="promos" moduleName="Hero Slideshow" />} />
             <Route path="/banners" element={<RouteWrapper Component={Banners} permission="promos" moduleName="Hero Banners" />} />
             <Route path="/deal-of-the-day" element={<RouteWrapper Component={DealOfTheDay} permission="promos" moduleName="Deal of the Day" />} />
+            <Route path="/featured-showcase" element={<RouteWrapper Component={FeaturedProducts} permission="promos" moduleName="Featured Showcase" />} />
+            <Route path="/promo-banners" element={<RouteWrapper Component={PromoBanners} permission="promos" moduleName="Promotional Banners" />} />
             <Route path="/finance" element={<RouteWrapper Component={Finance} permission="finance" moduleName="Finance & Revenue" />} />
             <Route path="/invoices" element={<RouteWrapper Component={InvoiceManagement} permission="finance" moduleName="Invoice Management" />} />
             <Route path="/sub-admins" element={<RouteWrapper Component={SubAdmins} permission="subadmins" moduleName="Staff & Sub-Admins" />} />

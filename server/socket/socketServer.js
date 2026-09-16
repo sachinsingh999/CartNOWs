@@ -24,15 +24,26 @@ export const initSocketServer = (httpServer, app) => {
   io.use((socket, next) => {
     try {
       const token = socket.handshake.auth?.token || socket.handshake.query?.token;
-      if (!token) {
-        return next(new Error("Authentication error. Token missing."));
+      if (token) {
+        try {
+          const decoded = jwt.verify(token, process.env.JWT_SECRET);
+          socket.userId = decoded.id || decoded._id;
+          socket.isAuthenticated = true;
+          return next();
+        } catch (jwtErr) {
+          // Token expired or invalid, fallback to guest gracefully
+        }
       }
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      socket.userId = decoded.id || decoded._id;
+      
+      // Allow guest / unauthenticated sockets for real-time notifications and progress tracking
+      const requestedUserId = socket.handshake.auth?.userId || socket.handshake.query?.userId;
+      socket.userId = requestedUserId || `guest_${socket.id}`;
+      socket.isAuthenticated = false;
       next();
     } catch (err) {
-      console.error("Socket Auth Error:", err.message);
-      return next(new Error("Authentication error. Invalid token."));
+      socket.userId = `guest_${socket.id}`;
+      socket.isAuthenticated = false;
+      next();
     }
   });
 

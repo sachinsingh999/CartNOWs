@@ -1,7 +1,7 @@
 import React from "react";
-import logoLight from "../assets/logo_light.png";
-import logoDark from "../assets/logo_dark.png";
-import logoIcon from "../assets/logo_icon.png";
+import logoLight from "../assets/logo_light.webp";
+import logoDark from "../assets/logo_dark.webp";
+import logoIcon from "../assets/logo_icon.webp";
 
 const Logo = ({ variant = "horizontal", className = "", forceWhite = false, ...props }) => {
   const isIcon = variant === "icon";

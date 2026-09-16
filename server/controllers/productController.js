@@ -10,7 +10,11 @@ import axios from "axios";
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
 import { formatProductResponse } from "../utils/productFormatter.js";
-import { cacheGet, cacheSet } from "../utils/cache.js";
+import { cacheGet, cacheSet, cacheDel } from "../utils/cache.js";
+import { buildTypoTolerantQuery, analyzeSearchTerm } from "../utils/searchEngineHelper.js";
+import { generateDynamicFilters, buildDynamicAttributeConditions } from "../services/filterService.js";
+import { resolveCategoryQuery } from "../services/categoryResolver.js";
+import { autoProcessProductCardImage } from "../services/bgRemovalService.js";
 
 const addProducts = async (req, res) => {
   try {
@@ -133,6 +137,16 @@ const addProducts = async (req, res) => {
       finalStock = variantArray.reduce((sum, v) => sum + (Number(v.stock) || 0), 0);
     }
 
+    let bgRemovedImage = "";
+    try {
+      if (images && images.length > 0 && images[0]) {
+        console.log(`[Admin] Auto-removing background for first product image: ${images[0]}`);
+        bgRemovedImage = await autoProcessProductCardImage({ firstImageUrl: images[0] });
+      }
+    } catch (bgErr) {
+      console.warn("[Admin] Auto bg removal warning in addProducts:", bgErr.message);
+    }
+
     const productData = {
       name,
       description,
@@ -147,7 +161,8 @@ const addProducts = async (req, res) => {
       tags: tagArray,
       specifications: specificationArray,
       variants: variantArray,
-      images
+      images,
+      bgRemovedImage: bgRemovedImage || ""
     };
 
     const product = new productModel(productData);
@@ -194,97 +209,35 @@ const listProducts = async (req, res) => {
     // Build core query
     const query = { isDeleted: { $ne: true }, status: "approved" };
     
-    // Category filter
-    if (categories) {
+    // Category & Subcategory resolution
+    let resolvedCategoryMeta = null;
+    const categoryIds = categories ? categories.split(",").map(id => id.trim()).filter(id => mongoose.Types.ObjectId.isValid(id)) : [];
+    
+    if (categoryIds.length > 0) {
       const adminCats = await categoryModel.find({ status: "active" });
-      const categoryIdList = categories.split(",").map(id => id.trim()).filter(id => mongoose.Types.ObjectId.isValid(id));
-      
-      if (categoryIdList.length > 0) {
-        let allowedCategories = [];
-        
-        categoryIdList.forEach(catId => {
-          const selectedCatDoc = adminCats.find(c => c._id.toString() === catId);
-          if (selectedCatDoc) {
-            allowedCategories.push(selectedCatDoc.name);
-            if (selectedCatDoc.subcategories) {
-              allowedCategories.push(...selectedCatDoc.subcategories);
-            }
-            // Find children that have this parentCategoryId
-            const childrenDocs = adminCats.filter(c => c.parentCategoryId?.toString() === catId);
-            allowedCategories.push(...childrenDocs.map(c => c.name));
-          }
-        });
+      const allowedCategories = [];
+      categoryIds.forEach(catId => {
+        const cat = adminCats.find(c => c._id?.toString() === catId);
+        if (cat) {
+          allowedCategories.push(cat.name);
+          const childrenDocs = adminCats.filter(c => c.parentCategoryId?.toString() === catId);
+          allowedCategories.push(...childrenDocs.map(c => c.name));
+        }
+      });
 
-        // Category mapping expansions for database compatibility
-        const lowerAllowed = allowedCategories.map(c => c.toLowerCase());
-        if (lowerAllowed.includes("fashion")) {
-          allowedCategories.push(
-            "Fashion", "Men", "Women", "Kids", "Accessories", "Footwear",
-            "Fashion (Men)", "Fashion (Women)", "Fashion (Kids)",
-            "clothing", "apparel", "shirts", "trousers", "t-shirts", "jackets", "sportswear", "jeans"
-          );
-        }
-        if (lowerAllowed.includes("electrinocs") || lowerAllowed.includes("electronics")) {
-          allowedCategories.push("Electronics", "Electrinocs");
-        }
-
-        if (allowedCategories.length > 0) {
-          query.category = { $in: allowedCategories.map(c => new RegExp(`^${c}$`, "i")) };
-        }
-      }
-    } else if (category && category !== "all") {
-      const categoryModel = (await import("../models/categoryModel.js")).default;
-      const adminCats = await categoryModel.find({ status: "active" });
-      const selectedCatDoc = adminCats.find(c => c.name.toLowerCase() === category.toLowerCase());
-      if (selectedCatDoc) {
-        const childrenDocs = adminCats.filter(c => c.parentCategoryId?.toString() === selectedCatDoc._id.toString());
-        let allowedCategories = [
-          selectedCatDoc.name,
-          ...(selectedCatDoc.subcategories || []),
-          ...childrenDocs.map(c => c.name)
-        ];
-
-        // Category mapping expansions for database compatibility
-        const lowerAllowed = allowedCategories.map(c => c.toLowerCase());
-        if (lowerAllowed.includes("fashion")) {
-          allowedCategories.push(
-            "Fashion", "Men", "Women", "Kids", "Accessories", "Footwear",
-            "Fashion (Men)", "Fashion (Women)", "Fashion (Kids)",
-            "clothing", "apparel", "shirts", "trousers", "t-shirts", "jackets", "sportswear", "jeans"
-          );
-        }
-        if (lowerAllowed.includes("electrinocs") || lowerAllowed.includes("electronics")) {
-          allowedCategories.push("Electronics", "Electrinocs");
-        }
-
-        // Case-insensitive query match
+      if (allowedCategories.length > 0) {
         query.category = { $in: allowedCategories.map(c => new RegExp(`^${c}$`, "i")) };
-      } else {
-        if (["men", "women", "kids", "kid"].includes(category.toLowerCase())) {
-          const cleanGen = category.toLowerCase() === "kid" ? "kids" : category.toLowerCase();
-          query.$or = [
-            { category: new RegExp(`^${category}$`, "i") },
-            { collection: new RegExp(`^${cleanGen}$`, "i") },
-            { collections: { $in: [new RegExp(`^${cleanGen}$`, "i")] } },
-            { audience: new RegExp(`^${cleanGen}$`, "i") },
-            { audience: new RegExp(`^${category}$`, "i") }
-          ];
-        } else {
-          const cleanPattern = category.replace(/-/g, "[\\s-]*");
-          query.category = new RegExp(`^${cleanPattern}$`, "i");
-        }
+      }
+    } else if ((category && category !== "all") || (subCategory && subCategory !== "all")) {
+      const { meta, condition } = await resolveCategoryQuery(category, subCategory);
+      resolvedCategoryMeta = meta;
+      if (condition) {
+        if (!query.$and) query.$and = [];
+        query.$and.push(condition);
       }
     }
 
     res.setHeader("Cache-Control", "public, max-age=60, s-maxage=300, stale-while-revalidate=600");
-
-    // Subcategory filter (comma-separated or single)
-    if (subCategory) {
-      const subArray = Array.isArray(subCategory) ? subCategory : subCategory.split(",").map(s => s.trim()).filter(Boolean);
-      if (subArray.length > 0) {
-        query.subCategory = { $in: subArray.map(s => new RegExp(`^${s}$`, "i")) };
-      }
-    }
 
     // Collection filter (matches both collection string, collections array, or audience fallback)
     if (collection && collection !== "all") {
@@ -296,6 +249,43 @@ const listProducts = async (req, res) => {
           $or: [
             { createdAt: { $gte: sevenDaysAgo } },
             { date: { $gte: sevenDaysAgo } }
+          ]
+        });
+      } else if (["best-sellers", "best-seller", "bestsellers", "bestseller", "top-sellers", "top-rated"].includes(cleanColl)) {
+        const collRegex = new RegExp(`^${collection}$`, "i");
+        if (!query.$and) query.$and = [];
+        query.$and.push({
+          $or: [
+            { isBestSeller: true },
+            { bestseller: true },
+            { averageRating: { $gte: 4.0 } },
+            { totalSold: { $gt: 0 } },
+            { collection: collRegex },
+            { collections: { $in: [collRegex] } }
+          ]
+        });
+      } else if (["festival-offers", "festive-offers", "festival-deals", "festive-deals", "mega-deals", "festive", "festival", "offers", "deals"].includes(cleanColl)) {
+        const collRegex = new RegExp(`^${collection}$`, "i");
+        const festivalRegex = /festival|festive|diwali|celebrat|holiday/i;
+        if (!query.$and) query.$and = [];
+        query.$and.push({
+          $or: [
+            { collection: collRegex },
+            { collection: festivalRegex },
+            { collections: { $in: [collRegex, festivalRegex, "Festival Offers", "Festive Offers", "Festival Deals", "Festival", "Festive"] } },
+            { tags: { $in: [festivalRegex, /kundan|temple|ethnic|traditional/i] } },
+            { keywords: { $in: [festivalRegex] } },
+            { category: festivalRegex },
+            { subCategory: festivalRegex },
+            { "attributes.occasion": festivalRegex },
+            { "attributes.Occasion": festivalRegex },
+            { "attributes.Event": festivalRegex },
+            { "attributes.event": festivalRegex },
+            { "attributes.Festival": { $exists: true } },
+            { "attributes.festive": { $in: [true, "true", "yes", "Yes"] } },
+            { "attributes.isFestive": { $in: [true, "true", "yes", "Yes"] } },
+            { specifications: { $elemMatch: { key: /occasion|event|theme|festival|festive/i, value: festivalRegex } } },
+            { name: festivalRegex }
           ]
         });
       } else {
@@ -353,82 +343,46 @@ const listProducts = async (req, res) => {
       }
     }
 
-    // Optimized Keyword-Based Text Search
+    let searchMeta = null;
+    // Optimized Typo-Tolerant Keyword & Semantic Search
     if (searchTerm) {
       trackSearch(searchTerm, category || null);
-      const keywordsList = searchTerm.trim().split(/\s+/).filter(Boolean);
-      if (keywordsList.length > 0) {
+      const fuzzyQuery = buildTypoTolerantQuery(searchTerm);
+      if (fuzzyQuery && fuzzyQuery.$or && fuzzyQuery.$or.length > 0) {
         query.$and = query.$and || [];
-        keywordsList.forEach(word => {
-          const wordRegex = new RegExp(word, "i");
-          query.$and.push({
-            $or: [
-              { name: wordRegex },
-              { description: wordRegex },
-              { brand: wordRegex },
-              { category: wordRegex },
-              { subCategory: wordRegex },
-              { tags: { $in: [wordRegex] } },
-              { keywords: { $in: [wordRegex] } },
-              { collections: { $in: [wordRegex] } },
-              { audience: wordRegex }
-            ]
-          });
-        });
+        query.$and.push({ $or: fuzzyQuery.$or });
+        searchMeta = fuzzyQuery.searchMeta;
       }
     }
 
-    // Dynamic Attribute Filters
+    // Dynamic Attribute Filters: Parse from attributes JSON or attrs object or query parameters
     let parsedAttrs = {};
     if (attributes) {
       try {
         parsedAttrs = typeof attributes === "string" ? JSON.parse(attributes) : attributes;
       } catch (e) {}
     }
+    if (req.query.attrs && typeof req.query.attrs === "object") {
+      parsedAttrs = { ...parsedAttrs, ...req.query.attrs };
+    }
 
-    const attrFilterKeys = Object.keys(parsedAttrs).filter(k => {
-      const val = parsedAttrs[k];
-      if (val === undefined || val === null || val === "") return false;
-      if (Array.isArray(val) && val.length === 0) return false;
-      return true;
+    // Also pick up direct query parameters that aren't system keys
+    const reservedQueryParams = new Set([
+      "page", "limit", "sortby", "sort", "category", "categories", "subcategory",
+      "collection", "audience", "brand", "price", "rating", "q", "search",
+      "attributes", "attrs", "location", "discount", "availability"
+    ]);
+
+    Object.keys(req.query).forEach(key => {
+      if (!reservedQueryParams.has(key.toLowerCase()) && req.query[key]) {
+        parsedAttrs[key] = req.query[key];
+      }
     });
 
-    if (attrFilterKeys.length > 0) {
+    const attrConditions = buildDynamicAttributeConditions(parsedAttrs);
+    if (attrConditions.length > 0) {
       if (!query.$and) query.$and = [];
-      attrFilterKeys.forEach(key => {
-        const valFilter = parsedAttrs[key];
-        if (Array.isArray(valFilter)) {
-          query.$and.push({
-            specifications: {
-              $elemMatch: {
-                key: new RegExp(`^${key}$`, "i"),
-                value: { $in: valFilter }
-              }
-            }
-          });
-        } else if (typeof valFilter === "object") {
-          const rangeCond = {};
-          if (valFilter.min !== undefined) rangeCond.$gte = Number(valFilter.min);
-          if (valFilter.max !== undefined) rangeCond.$lte = Number(valFilter.max);
-          query.$and.push({
-            specifications: {
-              $elemMatch: {
-                key: new RegExp(`^${key}$`, "i"),
-                value: rangeCond
-              }
-            }
-          });
-        } else {
-          query.$and.push({
-            specifications: {
-              $elemMatch: {
-                key: new RegExp(`^${key}$`, "i"),
-                value: valFilter
-              }
-            }
-          });
-        }
-      });
+      query.$and.push(...attrConditions);
     }
 
     // Pagination parameters
@@ -485,6 +439,62 @@ const listProducts = async (req, res) => {
       }
     }
 
+    // Dynamic search relevance scoring when search query is present
+    if (searchTerm && searchMeta) {
+      const escapedCorrected = (searchMeta.correctedQuery || searchTerm).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const escapedSearch = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+      pipeline.push({
+        $addFields: {
+          searchRelevance: {
+            $add: [
+              {
+                $cond: {
+                  if: { $regexMatch: { input: { $ifNull: ["$name", ""] }, regex: `^${escapedCorrected}$`, options: "i" } },
+                  then: 100,
+                  else: 0
+                }
+              },
+              {
+                $cond: {
+                  if: { $regexMatch: { input: { $ifNull: ["$name", ""] }, regex: escapedCorrected, options: "i" } },
+                  then: 50,
+                  else: {
+                    $cond: {
+                      if: { $regexMatch: { input: { $ifNull: ["$name", ""] }, regex: escapedSearch, options: "i" } },
+                      then: 40,
+                      else: 0
+                    }
+                  }
+                }
+              },
+              {
+                $cond: {
+                  if: { $regexMatch: { input: { $ifNull: ["$brand", ""] }, regex: escapedCorrected, options: "i" } },
+                  then: 30,
+                  else: 0
+                }
+              },
+              {
+                $cond: {
+                  if: { $regexMatch: { input: { $ifNull: ["$category", ""] }, regex: escapedCorrected, options: "i" } },
+                  then: 25,
+                  else: 0
+                }
+              },
+              {
+                $cond: {
+                  if: { $regexMatch: { input: { $ifNull: ["$subCategory", ""] }, regex: escapedCorrected, options: "i" } },
+                  then: 20,
+                  else: 0
+                }
+              }
+            ]
+          }
+        }
+      });
+    }
+
     // Build the count query pipeline (before sorting/skipping/limiting)
     const countPipeline = [...pipeline, { $count: "count" }];
     const countResult = await productModel.aggregate(countPipeline);
@@ -502,7 +512,11 @@ const listProducts = async (req, res) => {
     } else if (sortBy === "popularity" || sortBy === "best-selling") {
       pipeline.push({ $sort: { reviewCount: -1, avgRating: -1 } });
     } else {
-      pipeline.push({ $sort: { date: -1, _id: -1 } }); // default to newest
+      if (searchTerm && searchMeta) {
+        pipeline.push({ $sort: { searchRelevance: -1, avgRating: -1, reviewCount: -1, date: -1, _id: -1 } });
+      } else {
+        pipeline.push({ $sort: { date: -1, _id: -1 } }); // default to newest
+      }
     }
 
     // Apply skip & limit
@@ -518,6 +532,7 @@ const listProducts = async (req, res) => {
         originalPrice: 1,
         location: 1,
         images: 1,
+        bgRemovedImage: 1,
         category: 1,
         subCategory: 1,
         collection: 1,
@@ -541,10 +556,18 @@ const listProducts = async (req, res) => {
 
     let products = await productModel.aggregate(pipeline);
 
-    // Populate each product with dynamic media if available
-    const enrichedProducts = [];
-    for (const p of products) {
-      const media = await listingMediaModel.find({ listingId: p._id }).sort({ displayOrder: 1 });
+    // Batch enrich dynamic media in a single query to avoid N+1 sequential roundtrips
+    const uniqueIds = products.map(p => p._id);
+    const allMedia = await listingMediaModel.find({ listingId: { $in: uniqueIds } }).sort({ displayOrder: 1 }).lean();
+    const mediaMap = {};
+    allMedia.forEach(m => {
+      const lid = m.listingId.toString();
+      if (!mediaMap[lid]) mediaMap[lid] = [];
+      mediaMap[lid].push(m);
+    });
+
+    const enrichedProducts = products.map(p => {
+      const media = mediaMap[p._id.toString()] || [];
       p.media = media;
       if (media.length > 0) {
         const coverItem = media.find(m => m.isCover);
@@ -553,9 +576,18 @@ const listProducts = async (req, res) => {
           p.images = [coverItem.url, ...media.filter(m => !m.isCover).map(m => m.url)];
         }
       }
-      enrichedProducts.push(p);
-    }
+      return p;
+    });
 
+    const activeFiltersContext = {
+      ...parsedAttrs,
+      ...(brand ? { brand, Brand: brand } : {}),
+      ...(category && category !== "all" ? { category, Category: category } : {}),
+      ...(subCategory && subCategory !== "all" ? { subCategory, Subcategory: subCategory } : {})
+    };
+
+    // Generate dynamic attribute filters and price range based on the current context query
+    const dynamicFilterData = await generateDynamicFilters(query, activeFiltersContext);
     const totalPages = Math.ceil(total / limit);
 
     res.json({
@@ -564,7 +596,11 @@ const listProducts = async (req, res) => {
       total,
       page,
       totalPages,
-      hasMore: page < totalPages
+      hasMore: page < totalPages,
+      searchMeta: searchMeta || undefined,
+      category: resolvedCategoryMeta || undefined,
+      filters: dynamicFilterData.filters || {},
+      priceRange: dynamicFilterData.priceRange || { min: 0, max: 200000 }
     });
   } catch (error) {
     console.log(error);
@@ -1233,7 +1269,7 @@ const getCollectionsPublic = async (req, res) => {
 
       const count = await productModel.countDocuments(queryFilter);
       const sampleProducts = await productModel.find(queryFilter)
-        .select("name price originalPrice images category brand rating")
+        .select("name price originalPrice images bgRemovedImage category brand rating")
         .limit(4);
 
       colObj.count = count > 0 ? count : (sampleProducts.length > 0 ? sampleProducts.length : 12);
@@ -1250,7 +1286,7 @@ const getCollectionsPublic = async (req, res) => {
             isDeleted: { $ne: true },
             status: "approved",
             category: new RegExp(`^${def.slug}$`, "i")
-          }).select("name price originalPrice images category brand rating").limit(4);
+          }).select("name price originalPrice images bgRemovedImage category brand rating").limit(4);
 
           enrichedCollections.push({
             ...def,
@@ -1313,7 +1349,7 @@ const getHomepageData = async (req, res) => {
     const userId = req.user?._id;
 
     // Constrained fields to select for homepage product items
-    const productFields = "_id name description price originalPrice images category brand stock sizes location reviews averageRating totalReviews createdAt viewCount wishlistCount cartCount purchaseCount totalSold status isDeleted";
+    const productFields = "_id name description price originalPrice images bgRemovedImage category brand stock sizes location reviews averageRating totalReviews createdAt viewCount wishlistCount cartCount purchaseCount totalSold status isDeleted";
 
     // Batch enrich media to avoid N+1 query pattern across 7+ arrays
     const enrichProductListBulk = async (products) => {
@@ -1377,7 +1413,7 @@ const getHomepageData = async (req, res) => {
         { $limit: 10 },
         {
           $project: {
-            _id: 1, name: 1, description: 1, price: 1, originalPrice: 1, images: 1,
+            _id: 1, name: 1, description: 1, price: 1, originalPrice: 1, images: 1, bgRemovedImage: 1,
             category: 1, brand: 1, stock: 1, sizes: 1, location: 1, reviews: 1,
             averageRating: 1, totalReviews: 1, createdAt: 1, viewCount: 1,
             wishlistCount: 1, cartCount: 1, purchaseCount: 1, totalSold: 1,
@@ -1489,7 +1525,7 @@ const getHomepageData = async (req, res) => {
         { $limit: 10 },
         {
           $project: {
-            _id: 1, name: 1, description: 1, price: 1, originalPrice: 1, images: 1,
+            _id: 1, name: 1, description: 1, price: 1, originalPrice: 1, images: 1, bgRemovedImage: 1,
             category: 1, brand: 1, stock: 1, sizes: 1, location: 1, reviews: 1,
             averageRating: 1, totalReviews: 1, createdAt: 1, viewCount: 1,
             wishlistCount: 1, cartCount: 1, purchaseCount: 1, totalSold: 1,
@@ -1746,13 +1782,168 @@ const getHomepageData = async (req, res) => {
 /* ================= GET SEARCH SUGGESTIONS ================= */
 const getSearchSuggestions = async (req, res) => {
   try {
+    const { q, search } = req.query;
+    const queryTerm = (q || search || "").trim();
     const searchQueryModel = (await import("../models/searchQueryModel.js")).default;
+    
+    if (queryTerm) {
+      const analysis = analyzeSearchTerm(queryTerm);
+      const keywords = analysis.allKeywords.filter(k => k.length >= 2);
+      
+      const searchLogs = await searchQueryModel.find({
+        query: { $in: keywords.map(k => new RegExp(k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i")) }
+      })
+      .sort({ count: -1 })
+      .limit(6);
+      
+      let suggestions = searchLogs.map(log => log.query);
+      if (analysis.didYouMean && !suggestions.includes(analysis.didYouMean)) {
+        suggestions.unshift(analysis.didYouMean);
+      }
+      return res.json({ success: true, suggestions, searchMeta: analysis });
+    }
+
     const searchLogs = await searchQueryModel.find({})
       .sort({ count: -1, lastSearched: -1 })
       .limit(10);
     const suggestions = searchLogs.map(log => log.query);
     res.json({ success: true, suggestions });
   } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Get active, scheduled featured products for showcase carousel
+// @route   GET /api/product/featured
+// @access  Public
+const getFeaturedProducts = async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit) || 12, 24);
+    const now = new Date();
+
+    // Query active, in-stock products with valid featured dates
+    const query = {
+      status: "approved",
+      isDeleted: { $ne: true },
+      stock: { $gt: 0 },
+      isFeatured: true,
+      $and: [
+        { $or: [{ featuredStartDate: null }, { featuredStartDate: { $lte: now } }] },
+        { $or: [{ featuredEndDate: null }, { featuredEndDate: { $gte: now } }] }
+      ]
+    };
+
+    let products = await productModel.find(query)
+      .select("_id name slug category brand price originalPrice featuredDiscount images bgRemovedImage description shortDescription rating averageRating totalReviews stock isFeatured featuredPriority featuredStartDate featuredEndDate")
+      .sort({ featuredPriority: -1, createdAt: -1 })
+      .limit(limit)
+      .lean();
+
+    // If fewer than limit products have isFeatured: true, supplement with top approved products with stock > 0
+    if (products.length < limit) {
+      const existingIds = products.map(p => p._id);
+      const additionalProducts = await productModel.find({
+        _id: { $nin: existingIds },
+        status: "approved",
+        isDeleted: { $ne: true },
+        stock: { $gt: 0 }
+      })
+      .select("_id name slug category brand price originalPrice featuredDiscount images bgRemovedImage description shortDescription rating averageRating totalReviews stock isFeatured featuredPriority featuredStartDate featuredEndDate")
+      .sort({ totalSold: -1, averageRating: -1, createdAt: -1 })
+      .limit(limit - products.length)
+      .lean();
+
+      products = [...products, ...additionalProducts];
+    }
+
+    const formattedProducts = products.map(p => {
+      const origPrice = p.originalPrice && p.originalPrice > p.price ? p.originalPrice : Math.round(p.price * 1.35);
+      const computedDiscount = Math.max(5, Math.round(((origPrice - p.price) / origPrice) * 100));
+      const discountPercentage = p.featuredDiscount > 0 ? p.featuredDiscount : computedDiscount;
+
+      return {
+        _id: p._id,
+        name: p.name,
+        slug: p.slug || "",
+        category: p.category || "Deals",
+        brand: p.brand || "",
+        price: p.price,
+        originalPrice: origPrice,
+        discountPercentage,
+        images: p.images || [],
+        description: p.description || "",
+        shortDescription: p.shortDescription || (p.description ? p.description.slice(0, 140) + "..." : "Handpicked premium product at an exclusive discounted price."),
+        rating: p.rating?.average || p.averageRating || 4.7,
+        reviewCount: p.rating?.count || p.totalReviews || 128,
+        stock: p.stock,
+        isFeatured: Boolean(p.isFeatured),
+        featuredPriority: p.featuredPriority || 0,
+        featuredStartDate: p.featuredStartDate || null,
+        featuredEndDate: p.featuredEndDate || null
+      };
+    });
+
+    res.json({ success: true, products: formattedProducts });
+  } catch (error) {
+    console.error("getFeaturedProducts error:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Admin: Update product featured status, promotion dates, discount & priority
+// @route   PUT /api/product/featured/:id
+// @access  Private (Admin)
+const updateProductFeaturedStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      isFeatured,
+      featuredPriority,
+      featuredDiscount,
+      featuredStartDate,
+      featuredEndDate
+    } = req.body;
+
+    const updateData = {
+      isFeatured: isFeatured !== undefined ? Boolean(isFeatured) : true,
+      featuredPriority: Number(featuredPriority) || 0,
+      featuredDiscount: Number(featuredDiscount) || 0,
+      featuredStartDate: featuredStartDate ? new Date(featuredStartDate) : null,
+      featuredEndDate: featuredEndDate ? new Date(featuredEndDate) : null
+    };
+
+    const updated = await productModel.findByIdAndUpdate(id, updateData, { new: true });
+    if (!updated) {
+      return res.status(404).json({ success: false, message: "Product not found" });
+    }
+
+    // Clear public homepage cache so changes show immediately
+    await cacheDel("public_homepage_data_v2");
+
+    res.json({
+      success: true,
+      message: updated.isFeatured ? "Product added to Featured Carousel" : "Product removed from Featured Carousel",
+      product: updated
+    });
+  } catch (error) {
+    console.error("updateProductFeaturedStatus error:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Admin: List all featured products for admin table
+// @route   GET /api/product/featured/admin
+// @access  Private (Admin)
+const listFeaturedProductsAdmin = async (req, res) => {
+  try {
+    const products = await productModel.find({ isFeatured: true, isDeleted: { $ne: true } })
+      .select("_id name category brand price originalPrice featuredDiscount images stock status isFeatured featuredPriority featuredStartDate featuredEndDate createdAt")
+      .sort({ featuredPriority: -1, createdAt: -1 })
+      .lean();
+
+    res.json({ success: true, products });
+  } catch (error) {
+    console.error("listFeaturedProductsAdmin error:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -1772,6 +1963,9 @@ export {
   getBrandsPublic,
   trackProductViewApi,
   getHomepageData,
-  getSearchSuggestions
-}
+  getSearchSuggestions,
+  getFeaturedProducts,
+  updateProductFeaturedStatus,
+  listFeaturedProductsAdmin
+};
 

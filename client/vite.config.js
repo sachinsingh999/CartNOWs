@@ -6,7 +6,12 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   base: '/',
   plugins: [react(), tailwindcss()],
-  server: { port: 5173 },
+  server: {
+    port: 5173,
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
+    },
+  },
   optimizeDeps: {
     include: ['@react-oauth/google', 'react-router-dom', 'framer-motion', 'axios', 'lucide-react']
   },
@@ -16,8 +21,17 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
+          if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/') || id.includes('node_modules/scheduler/')) {
+            return 'vendor-react';
+          }
+          if (id.includes('node_modules/framer-motion')) {
+            return 'vendor-framer-motion';
+          }
           if (id.includes('node_modules/lucide-react')) {
             return 'vendor-icons';
+          }
+          if (id.includes('node_modules/axios') || id.includes('node_modules/react-router-dom') || id.includes('node_modules/@remix-run/router')) {
+            return 'vendor-core';
           }
         }
       }

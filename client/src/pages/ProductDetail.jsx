@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { backendUrl } from "../config";
@@ -8,6 +8,7 @@ import CostomersReviews from "../components/CostomersReviews";
 import GiveReview from "../components/GiveReview";
 import WriteReviewModal from "../components/WriteReviewModal";
 import ProductCard from "./ProductCard";
+import BrandLogo from "../components/BrandLogo";
 import { getAverageRating, getReviewCount } from "../utils/productRatings";
 import { trackView } from "../utils/engagement";
 import { toast } from "react-toastify";
@@ -223,8 +224,8 @@ const ProductDetail = () => {
       }
     });
 
-    // Fallback: If no attributes parsed and product has sizes array, map it to 'Size'
-    if (Object.keys(parsed).length === 0 && prod.sizes && prod.sizes.length > 0) {
+    // Fallback: If no attributes parsed and product has sizes array AND has variants, map it to 'Size'
+    if (Object.keys(parsed).length === 0 && prod.sizes && prod.sizes.length > 0 && prod.variants && prod.variants.length > 0) {
       parsed["Size"] = prod.sizes;
     }
 
@@ -280,26 +281,48 @@ const ProductDetail = () => {
   };
 
   const parsedAttributes = product ? parseAttributes(product) : {};
-  const hasDynamicAttrs = Object.keys(parsedAttributes).length > 0;
+  const hasDynamicAttrs = Boolean(product?.variants && product.variants.length > 0 && Object.keys(parsedAttributes).length > 0);
 
   useEffect(() => {
+    if (product?.sizes && product.sizes.length > 0 && !size) {
+      setSize(product.sizes[0]);
+    }
     if (hasDynamicAttrs) {
+      // Pre-select first available/in-stock variant attributes
       const initial = {};
+      const firstVariant = (product.variants || []).find(v => v.availability !== false && (v.stock === undefined || Number(v.stock) > 0)) || product.variants?.[0];
+
       Object.entries(parsedAttributes).forEach(([key, values]) => {
-        if (Array.isArray(values) && values.length === 1) {
-          initial[key] = values[0];
-        } else {
-          initial[key] = "";
+        let matchedVal = "";
+        if (firstVariant) {
+          const varVal = getVariantAttributeValue(firstVariant, key);
+          if (varVal) matchedVal = varVal;
         }
+        if (!matchedVal && Array.isArray(values) && values.length > 0) {
+          matchedVal = values[0];
+        }
+        initial[key] = matchedVal || "";
       });
       setSelectedAttributes(initial);
+      if (initial["Size"] || initial["size"]) {
+        setSize(initial["Size"] || initial["size"]);
+      }
     } else {
       setSelectedAttributes({});
     }
-  }, [product]);
+  }, [product, hasDynamicAttrs]);
 
   const getVariantAttributeValue = (variant, keyName) => {
-    if (!variant || !variant.attributes) return undefined;
+    if (!variant) return undefined;
+    const cleanKey = String(keyName || "").trim().toLowerCase();
+
+    // 1. Direct property check on variant object (e.g. variant.Color, variant.color, variant.Size, variant.size)
+    const directKey = Object.keys(variant).find(k => k.toLowerCase() === cleanKey);
+    if (directKey && variant[directKey]) {
+      return variant[directKey];
+    }
+
+    // 2. Attributes property on variant
     let attrs = variant.attributes;
     if (typeof attrs === "string") {
       try {
@@ -310,26 +333,44 @@ const ProductDetail = () => {
     if (Array.isArray(attrs)) {
       const match = attrs.find(attr => {
         const name = (attr.name || attr.key || "").trim().toLowerCase();
-        return name === keyName.toLowerCase();
+        return name === cleanKey;
       });
-      return match ? match.value : undefined;
-    } else if (typeof attrs === "object") {
-      const targetKey = Object.keys(attrs).find(k => k.toLowerCase() === keyName.toLowerCase());
+      return match ? (match.value || match.val) : undefined;
+    } else if (attrs && typeof attrs === "object") {
+      const targetKey = Object.keys(attrs).find(k => k.toLowerCase() === cleanKey);
       return targetKey ? attrs[targetKey] : undefined;
     }
     return undefined;
   };
 
   const isOptionAvailable = (attrName, optionValue) => {
-    if (!product || !product.variants || product.variants.length === 0) return true;
+    if (!product) return true;
+    if (!product.variants || product.variants.length === 0) return (Number(product.stock) || 0) > 0;
+    
+    const hasExplicitVariantStock = product.variants.some(v => Number(v.stock) > 0);
+    const hasProductStock = (Number(product.stock) || 0) > 0;
+
     const testSelection = { ...selectedAttributes, [attrName]: optionValue };
     return product.variants.some(variant => {
+      if (variant.availability === false) return false;
+      
       const match = Object.entries(testSelection).every(([key, val]) => {
-        if (!val) return true;
+        if (!val || key === attrName) return true;
         const varVal = getVariantAttributeValue(variant, key);
-        return varVal === val;
+        return !varVal || String(varVal).toLowerCase() === String(val).toLowerCase();
       });
-      return match && variant.stock > 0;
+
+      const thisMatch = (() => {
+        const varVal = getVariantAttributeValue(variant, attrName);
+        return varVal && String(varVal).toLowerCase() === String(optionValue).toLowerCase();
+      })();
+
+      if (!match || !thisMatch) return false;
+
+      if (hasExplicitVariantStock) {
+        return Number(variant.stock) > 0;
+      }
+      return hasProductStock;
     });
   };
 
@@ -341,16 +382,34 @@ const ProductDetail = () => {
     return product.variants.find(variant => {
       return attrKeys.every(k => {
         const varVal = getVariantAttributeValue(variant, k);
-        return varVal === selectedAttributes[k];
+        return varVal && String(varVal).toLowerCase() === String(selectedAttributes[k]).toLowerCase();
       });
     });
   };
 
   const currentVariant = getSelectedVariant();
   const displayPrice = currentVariant ? currentVariant.price : (product ? product.price : 0);
-  const displayStock = currentVariant ? currentVariant.stock : (product ? product.stock : 0);
+  const displayStock = (currentVariant && Number(currentVariant.stock) > 0)
+    ? Number(currentVariant.stock)
+    : (product ? Number(product.stock || 0) : 0);
   const displaySku = currentVariant ? (currentVariant.sku || product?.sku) : product?.sku;
-  const displayImagesRaw = currentVariant?.images && currentVariant.images.length > 0 ? currentVariant.images : (product?.images || []);
+  const displayImagesRaw = useMemo(() => {
+    if (currentVariant?.images && currentVariant.images.length > 0) {
+      return currentVariant.images;
+    }
+    const imgs = [];
+    if (product?.bgRemovedImage) {
+      imgs.push(product.bgRemovedImage);
+    }
+    if (Array.isArray(product?.images)) {
+      product.images.forEach(img => {
+        if (img && !imgs.includes(img)) imgs.push(img);
+      });
+    } else if (product?.image && !imgs.includes(product.image)) {
+      imgs.push(product.image);
+    }
+    return imgs;
+  }, [currentVariant, product]);
   
   const [brokenImages, setBrokenImages] = useState(new Set());
 
@@ -367,8 +426,8 @@ const ProductDetail = () => {
   const displayImages = displayImagesRaw.filter((img) => !brokenImages.has(img));
 
   const isAvailable = currentVariant 
-    ? (currentVariant.availability !== false && currentVariant.stock > 0) 
-    : (product ? (product.stock > 0) : false);
+    ? (currentVariant.availability !== false && displayStock > 0) 
+    : (product ? (Number(product.stock || 0) > 0) : false);
   const isPurchaseDisabled = !isAvailable || (hasDynamicAttrs && !currentVariant);
 
   useEffect(() => {
@@ -394,13 +453,14 @@ const ProductDetail = () => {
   useEffect(() => {
     if (product && product._id) {
       let list = JSON.parse(localStorage.getItem("recentlyViewed") || "[]");
-      list = list.filter(item => item._id !== product._id);
+      list = list.filter(item => item && item._id !== product._id);
       list.unshift(product);
-      if (list.length > 6) {
-        list = list.slice(0, 6);
+      if (list.length > 30) {
+        list = list.slice(0, 30);
       }
       localStorage.setItem("recentlyViewed", JSON.stringify(list));
-      setRecentlyViewed(list.filter(item => item._id !== product._id));
+      setRecentlyViewed(list.filter(item => item && item._id !== product._id));
+      window.dispatchEvent(new Event("recentlyViewedUpdate"));
     }
   }, [product]);
 
@@ -466,19 +526,94 @@ const ProductDetail = () => {
   const isFashionItem = (p) => {
     if (!p) return false;
     const cat = (p.category || "").toLowerCase();
+    const sub = (p.subCategory || "").toLowerCase();
     const col = (p.collection || "").toLowerCase();
+    const name = (p.name || "").toLowerCase();
+
+    // Explicitly exclude non-clothing categories
+    if (
+      cat.includes("jewel") ||
+      cat.includes("necklace") ||
+      cat.includes("earring") ||
+      cat.includes("ring") ||
+      cat.includes("watch") ||
+      cat.includes("bag") ||
+      cat.includes("footwear") ||
+      cat.includes("shoe") ||
+      cat.includes("sneaker") ||
+      cat.includes("sandal") ||
+      cat.includes("boot") ||
+      cat.includes("eyewear") ||
+      cat.includes("glass") ||
+      cat.includes("electronics") ||
+      cat.includes("appliance") ||
+      cat.includes("kitchen") ||
+      cat.includes("grocery") ||
+      cat.includes("beauty") ||
+      cat.includes("perfume") ||
+      cat.includes("cosmetic") ||
+      cat.includes("accessory") ||
+      cat.includes("accessories") ||
+      sub.includes("necklace") ||
+      sub.includes("ring") ||
+      sub.includes("watch") ||
+      sub.includes("bag") ||
+      sub.includes("shoe") ||
+      sub.includes("sneaker") ||
+      sub.includes("chopper") ||
+      sub.includes("bottle") ||
+      name.includes("necklace") ||
+      name.includes("pendant") ||
+      name.includes("earring") ||
+      name.includes("watch") ||
+      name.includes("bag") ||
+      name.includes("backpack") ||
+      name.includes("wallet") ||
+      name.includes("shoe") ||
+      name.includes("sneaker") ||
+      name.includes("perfume")
+    ) {
+      return false;
+    }
+
+    // Must be wearable clothing / apparel
     return (
       cat.includes("clothing") ||
-      cat.includes("fashion") ||
       cat.includes("apparel") ||
-      cat.includes("men") ||
-      cat.includes("women") ||
-      cat.includes("kid") ||
-      cat.includes("footwear") ||
-      cat.includes("accessories") ||
-      col.includes("men") ||
-      col.includes("women") ||
-      col.includes("kid")
+      sub.includes("shirt") ||
+      sub.includes("t-shirt") ||
+      sub.includes("trouser") ||
+      sub.includes("jacket") ||
+      sub.includes("jeans") ||
+      sub.includes("dress") ||
+      sub.includes("activewear") ||
+      sub.includes("blazer") ||
+      sub.includes("ethnic") ||
+      sub.includes("kurti") ||
+      sub.includes("kurta") ||
+      sub.includes("saree") ||
+      sub.includes("top") ||
+      sub.includes("skirt") ||
+      sub.includes("sweater") ||
+      sub.includes("hoodie") ||
+      sub.includes("coat") ||
+      sub.includes("suit") ||
+      name.includes("shirt") ||
+      name.includes("t-shirt") ||
+      name.includes("tshirt") ||
+      name.includes("jacket") ||
+      name.includes("blazer") ||
+      name.includes("kurti") ||
+      name.includes("kurta") ||
+      name.includes("dress") ||
+      name.includes("suit") ||
+      name.includes("top") ||
+      name.includes("sweater") ||
+      name.includes("hoodie") ||
+      name.includes("coat") ||
+      name.includes("jeans") ||
+      name.includes("trouser") ||
+      name.includes("pant")
     );
   };
 
@@ -566,7 +701,7 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
         if (data.success && data.product) {
           const parsedProd = parseProductJSONFields(data.product);
           setProduct(parsedProd);
-          setMainImg(parsedProd.images?.[0] || "");
+          setMainImg(parsedProd.bgRemovedImage || parsedProd.images?.[0] || "");
           trackView(parsedProd); // track for personalisation
           setRelatedPage(0);
 
@@ -913,7 +1048,7 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
                 <div className="absolute top-4 left-4 z-25 flex gap-2">
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200 dark:border-slate-800 px-3 py-1 text-[9px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 shadow-xs">
                     <Sparkles size={10} className="text-indigo-600 dark:text-indigo-400 animate-pulse" />
-                    <span>Premium Model</span>
+                    <span>{mainImg === product?.bgRemovedImage ? "Studio Cutout" : "Premium Model"}</span>
                   </span>
                   {displayStock <= 5 && displayStock > 0 && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/30 px-3 py-1 text-[9px] font-black uppercase tracking-wider text-rose-600 dark:text-rose-400 shadow-xs animate-pulse">
@@ -1231,12 +1366,19 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
             
             {/* Store brand / Category Badge */}
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2.5">
-              <span 
+              <div 
                 onClick={() => navigate(`/brand/${encodeURIComponent(product.brand || "FashionAura")}`)}
-                className="text-xs font-black text-blue-500 hover:underline cursor-pointer tracking-wider"
+                className="flex items-center gap-2 cursor-pointer group"
               >
-                {product.brand || "FashionAura"}
-              </span>
+                <BrandLogo
+                  brand={product.brand || "FashionAura"}
+                  brandDomain={product.brandDomain}
+                  className="w-5 h-5 rounded-xs"
+                />
+                <span className="text-xs font-black text-blue-500 group-hover:underline tracking-wider">
+                  {product.brand || "FashionAura"}
+                </span>
+              </div>
               <span className="text-[9px] font-bold text-slate-400">SKU: {displaySku || `CN-${product._id?.substring(0,8).toUpperCase()}`}</span>
             </div>
 
@@ -1484,18 +1626,25 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
                 Seller Information
               </h4>
               <div className="flex items-center justify-between gap-4 pt-1">
-                <div>
-                  <h5 className="text-sm font-black text-slate-900 dark:text-white">
-                    {product.brand || "Fashion Aura Store"}
-                  </h5>
-                  <div className="flex items-center gap-1 mt-1 text-[11px] font-bold text-slate-500 dark:text-slate-400">
-                    <span>{averageRating ? averageRating.toFixed(1) : "4.6"}</span>
-                    <div className="flex text-amber-500">
-                      <Star size={10} className="fill-amber-500 stroke-none" />
-                      <Star size={10} className="fill-amber-500 stroke-none" />
-                      <Star size={10} className="fill-amber-500 stroke-none" />
-                      <Star size={10} className="fill-amber-500 stroke-none" />
-                      <Star size={10} className="fill-amber-500 stroke-none" />
+                <div className="flex items-center gap-3">
+                  <BrandLogo
+                    brand={product.brand || "Fashion Aura Store"}
+                    brandDomain={product.brandDomain}
+                    className="w-10 h-10 rounded-sm border-slate-200/80 dark:border-slate-700"
+                  />
+                  <div>
+                    <h5 className="text-sm font-black text-slate-900 dark:text-white">
+                      {product.brand || "Fashion Aura Store"}
+                    </h5>
+                    <div className="flex items-center gap-1 mt-1 text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                      <span>{averageRating ? averageRating.toFixed(1) : "4.6"}</span>
+                      <div className="flex text-amber-500">
+                        <Star size={10} className="fill-amber-500 stroke-none" />
+                        <Star size={10} className="fill-amber-500 stroke-none" />
+                        <Star size={10} className="fill-amber-500 stroke-none" />
+                        <Star size={10} className="fill-amber-500 stroke-none" />
+                        <Star size={10} className="fill-amber-500 stroke-none" />
+                      </div>
                     </div>
                   </div>
                 </div>

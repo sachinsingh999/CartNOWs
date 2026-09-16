@@ -19,6 +19,7 @@ import sellerRouter from "./routers/sellerRouter.js";
 import tryOnRouter from "./routers/tryOnRouter.js";
 import { bannerRouter, adminBannerRouter } from "./routers/bannerRouter.js";
 import { dealOfDayRouter, adminDealOfDayRouter } from "./routers/dealOfDayRouter.js";
+import promoBannerRouter from "./routers/promoBannerRouter.js";
 import { createServer } from "http";
 import { startTryOnWorker } from "./workers/tryOnWorker.js";
 import maintenanceMiddleware from "./middleware/maintenanceMiddleware.js";
@@ -51,7 +52,8 @@ app.use((req, res, next) => {
   res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
   next();
 });
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use(cors());
 app.use(maintenanceMiddleware);
 
@@ -84,6 +86,7 @@ app.use('/api/banners', bannerRouter);
 app.use('/api/admin/banners', adminBannerRouter);
 app.use('/api/dealofday', dealOfDayRouter);
 app.use('/api/admin/dealofday', adminDealOfDayRouter);
+app.use('/api/promo-banners', promoBannerRouter);
 
 import invoiceRouter from "./routers/invoiceRouter.js";
 import path from "path";
@@ -154,4 +157,4 @@ startTryOnWorker(io);
 httpServer.listen(port, () => {
   console.log("Server started on PORT:", port);
 });
-// Nodemon reload trigger to clear maintenance cache
+// Nodemon reload trigger: ready on port 4000

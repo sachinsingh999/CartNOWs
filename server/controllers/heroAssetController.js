@@ -18,8 +18,17 @@ export const getHeroAssets = async (req, res) => {
 
     const filter = admin === "true" ? {} : { isActive: true };
 
-    const assets = await heroAssetModel.find(filter).sort({ order: 1, createdAt: -1 });
-    res.json({ success: true, assets });
+    const rawAssets = await heroAssetModel.find(filter).lean();
+    rawAssets.sort((a, b) => {
+      const orderA = a.order ?? 0;
+      const orderB = b.order ?? 0;
+      if (orderA !== orderB) return orderA - orderB;
+      const dateA = new Date(a.createdAt || 0).getTime();
+      const dateB = new Date(b.createdAt || 0).getTime();
+      return dateB - dateA;
+    });
+
+    res.json({ success: true, assets: rawAssets });
   } catch (error) {
     console.error("Error fetching hero assets:", error);
     res.status(500).json({ success: false, message: error.message });
@@ -387,5 +396,128 @@ export const reorderHeroAssets = async (req, res) => {
   } catch (error) {
     console.error("Error reordering hero assets:", error);
     res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Generate AI Title & Tagline for Hero Slideshow asset using Gemini AI / smart heuristic engine
+// @route   POST /api/system/hero-assets/ai-generate-title
+// @access  Admin
+export const aiGenerateHeroAssetTitle = async (req, res) => {
+  const { category = "Fashion", currentTitle = "", currentTagline = "" } = req.body;
+
+  const getRuleBasedFallback = (cat) => {
+    const presets = {
+      "Fashion": [
+        { title: "Pastel Summer Silhouette", tagline: "Effortless grace for the sun-kissed season." },
+        { title: "Urban Streetwear Edge", tagline: "Contemporary aesthetic crafted for city rhythms." },
+        { title: "Modern Minimalist Silhouette", tagline: "Clean lines and understated luxury." },
+        { title: "Haute Couture Evening Edit", tagline: "Elevate your signature presence with timeless charm." },
+        { title: "Monochrome City Nomad", tagline: "Bold tailoring meets versatile comfort." },
+        { title: "Luxe Linen Resort Collection", tagline: "Breezy silhouettes tailored for effortless elegance." },
+        { title: "Velvet Elegance Tailored Blazer", tagline: "Structured sophistication designed to turn heads." },
+        { title: "Retro Revival Denim Ensemble", tagline: "Nostalgic vibes infused with cutting-edge streetwear." }
+      ],
+      "Footwear": [
+        { title: "AeroGlide Runner Pro", tagline: "Next-gen responsiveness engineered for every stride." },
+        { title: "Urban Street High-Tops", tagline: "Iconic court legacy refined for everyday dominance." },
+        { title: "Artisan Leather Loafers", tagline: "Handcrafted sophistication and all-day comfort." },
+        { title: "Velocity Sprint Sneakers", tagline: "Unleash maximum agility with cloud-light cushioning." },
+        { title: "TrailForce Waterproof Boots", tagline: "Rugged durability built to conquer every terrain." }
+      ],
+      "Electronics": [
+        { title: "Next-Gen Pro Flagship", tagline: "Uncompromised performance engineered for tomorrow." },
+        { title: "Acoustic Noise-Cancelling Pro", tagline: "Studio-master sound with immersive spatial depth." },
+        { title: "Ultra-Slim OLED Studio Display", tagline: "Hyper-vivid colors and cinematic clarity." },
+        { title: "Smart Apex Fitness Wearable", tagline: "Precision biometrics wrapped in titanium durability." },
+        { title: "HyperFast Mechanical Keyboard", tagline: "Tactile precision tuned for creators and gamers." }
+      ],
+      "Beauty": [
+        { title: "Radiance Dew Organic Glow", tagline: "Nourish, revive, and illuminate your natural beauty." },
+        { title: "Velvet Matte Luxe Pigment", tagline: "High-impact vibrant color with weightless wear." },
+        { title: "Botanical Essence Elixir", tagline: "Deep cellular hydration powered by pure botanicals." },
+        { title: "Celestial Shimmer Illuminator", tagline: "Catch the light from every angle with ethereal brilliance." }
+      ],
+      "Fitness": [
+        { title: "Core Power Performance Gear", tagline: "Engineered flexibility to push past limits." },
+        { title: "Ultra-Endurance Training Kit", tagline: "Breathable moisture-wicking tech for peak sweat." },
+        { title: "Athletic Motion Sculpt", tagline: "Dynamic support designed for unrestricted movement." },
+        { title: "Pro Compression Dynamic Leggings", tagline: "Targeted muscle stabilization for ultimate endurance." }
+      ],
+      "Accessories": [
+        { title: "Midnight Titanium Chronograph", tagline: "Masterpiece precision for the modern connoisseur." },
+        { title: "Minimalist Italian Leather Bag", tagline: "Sleek architecture tailored for daily essentials." },
+        { title: "Polarized Horizon Aviators", tagline: "Timeless optics engineered with UV400 clarity." },
+        { title: "Woven Silk Jacquard Scarf", tagline: "Delicate warmth and refined artisanal charm." }
+      ],
+      "Home & Lifestyle": [
+        { title: "Scandinavian Living Harmony", tagline: "Warm minimalism designed to transform your sanctuary." },
+        { title: "Artisan Ceramic & Amber Blend", tagline: "Curated warmth for modern living spaces." },
+        { title: "Luxe Velvet Accent Lounger", tagline: "Ergonomic comfort meets contemporary interior art." },
+        { title: "Aroma Diffuser & Essential Glow", tagline: "Create a serene spa oasis in the comfort of home." }
+      ],
+      "Kids Collection": [
+        { title: "Little Explorer Adventure Kit", tagline: "Durable comfort ready for endless fun and play." },
+        { title: "Pastel Dreams Cotton Set", tagline: "Ultra-soft hypoallergenic fabrics for sweet moments." },
+        { title: "Playful Sunshine Denim Duo", tagline: "Vibrant styles built to match their joyful energy." }
+      ]
+    };
+
+    const options = presets[cat] || presets["Fashion"];
+    const randomChoice = options[Math.floor(Math.random() * options.length)];
+    return randomChoice;
+  };
+
+  try {
+    const geminiApiKey = process.env.GEMINI_API_KEY;
+    if (!geminiApiKey) {
+      const fallback = getRuleBasedFallback(category);
+      return res.json({ success: true, ...fallback, isFallback: true });
+    }
+
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`;
+
+    const prompt = `You are a world-class creative fashion copywriter and brand director for CartNOW.
+Generate 1 stylish, catchy, high-converting Campaign Title (Asset Name / Title) and 1 concise Tagline (Subtext) for a homepage model banner in the category "${category}".
+${currentTitle ? `User draft title: "${currentTitle}"` : ""}
+${currentTagline ? `User draft tagline: "${currentTagline}"` : ""}
+
+Guidelines:
+- Title: 2-5 words. Punchy, modern, elegant, Zara/Nike editorial quality.
+- Tagline: 5-10 words. Inspiring, benefit-driven, smooth.
+
+Output format MUST be strictly a JSON object with NO markdown formatting, NO backticks:
+{"title": "...", "tagline": "..."}`;
+
+    const response = await fetch(geminiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.75,
+          maxOutputTokens: 250
+        }
+      })
+    });
+
+    if (!response.ok) {
+      const fallback = getRuleBasedFallback(category);
+      return res.json({ success: true, ...fallback, isFallback: true });
+    }
+
+    const data = await response.json();
+    const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
+    const jsonString = rawText.replace(/^```json\s*/i, "").replace(/```$/, "").trim();
+    const parsed = JSON.parse(jsonString);
+
+    return res.json({
+      success: true,
+      title: parsed.title || getRuleBasedFallback(category).title,
+      tagline: parsed.tagline || getRuleBasedFallback(category).tagline
+    });
+  } catch (error) {
+    console.error("AI hero title generator error:", error);
+    const fallback = getRuleBasedFallback(category);
+    return res.json({ success: true, ...fallback, isFallback: true });
   }
 };

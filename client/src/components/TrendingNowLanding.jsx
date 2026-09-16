@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowRight, 
   Sparkles, 
@@ -23,17 +24,19 @@ import {
 } from "lucide-react";
 import ProductCard from "../pages/ProductCard";
 import { ProductGridSkeleton } from "./SkeletonLoader";
+import { backendUrl } from "../config";
+import { cachedGet } from "../utils/apiCache";
 
-import heroImg from "../assets/trending_now_hero.jpg";
-import mensImg from "../assets/cat_mens_new.jpg";
-import womensImg from "../assets/cat_womens_new.jpg";
-import footwearImg from "../assets/cat_footwear_new.jpg";
-import electronicsImg from "../assets/cat_electronics.jpg";
-import jewelryImg from "../assets/cat_jewelry.jpg";
-import beautyImg from "../assets/cat_beauty.jpg";
-import bagsImg from "../assets/cat_bags_new.jpg";
-import accessoriesImg from "../assets/cat_accessories_new.jpg";
-import headwearImg from "../assets/cat_headwear_new.jpg";
+import heroImg from "../assets/trending_now_hero.webp";
+import mensImg from "../assets/cat_mens_new.webp";
+import womensImg from "../assets/cat_womens_new.webp";
+import footwearImg from "../assets/cat_footwear_new.webp";
+import electronicsImg from "../assets/cat_electronics.webp";
+import jewelryImg from "../assets/cat_jewelry.webp";
+import beautyImg from "../assets/cat_beauty.webp";
+import bagsImg from "../assets/cat_bags_new.webp";
+import accessoriesImg from "../assets/cat_accessories_new.webp";
+import headwearImg from "../assets/cat_headwear_new.webp";
 
 const TrendingNowLanding = ({
   products = [],
@@ -54,6 +57,66 @@ const TrendingNowLanding = ({
 
   // Live Simulated Shopper Count for Real-Time Hype
   const [activeShoppers, setActiveShoppers] = useState(2480);
+  const [heroBanners, setHeroBanners] = useState([]);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [direction, setDirection] = useState(1);
+  const [isHovered, setIsHovered] = useState(false);
+
+  // Fetch admin-managed dynamic hero banners
+  useEffect(() => {
+    cachedGet(`${backendUrl}/api/promo-banners/active?placement=trending_hero`, {}, 60000)
+      .then((res) => {
+        if (res.data?.success) {
+          const list = Array.isArray(res.data.banners) && res.data.banners.length > 0
+            ? res.data.banners
+            : (res.data.banner ? [res.data.banner] : []);
+          setHeroBanners(list);
+        }
+      })
+      .catch((err) => {
+        console.warn("Could not load dynamic trending hero banners:", err);
+      });
+  }, []);
+
+  // Compute active slides
+  const slides = useMemo(() => {
+    if (heroBanners.length > 0) return heroBanners;
+    return [{
+      _id: "default_trending_hero",
+      tagline: "VIRAL SELECTION CAPSULE",
+      title: "TRENDING NOW",
+      subtitle: "Most wanted catalog items right now. Curated live from real-time customer views, order velocity & viral ratings.",
+      discountTag: "LIVE STOCK VELOCITY",
+      ctaText: "Explore Trending Drops",
+      linkUrl: "/catalog/collection/trending-now",
+      imageUrl: heroImg
+    }];
+  }, [heroBanners]);
+
+  const totalSlides = slides.length;
+  const currentBanner = slides[currentSlide % totalSlides] || slides[0];
+
+  // Auto-advance slideshow every 5 seconds if more than one active banner
+  useEffect(() => {
+    if (totalSlides <= 1 || isHovered) return;
+    const timer = setInterval(() => {
+      setDirection(1);
+      setCurrentSlide((prev) => (prev + 1) % totalSlides);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [totalSlides, isHovered]);
+
+  const handlePrevSlide = (e) => {
+    e?.stopPropagation();
+    setDirection(-1);
+    setCurrentSlide((prev) => (prev - 1 + totalSlides) % totalSlides);
+  };
+
+  const handleNextSlide = (e) => {
+    e?.stopPropagation();
+    setDirection(1);
+    setCurrentSlide((prev) => (prev + 1) % totalSlides);
+  };
 
   useEffect(() => {
     const shopperInterval = setInterval(() => {
@@ -191,32 +254,51 @@ const TrendingNowLanding = ({
       {/* FULL WIDTH CONTAINER WITH RESPONSIVE PADDING */}
       <div className="w-full px-3 sm:px-6 lg:px-8 pt-2.5">
         
-        {/* 1. EDITORIAL TRENDING HERO SECTION SPLIT IN TWO HALVES (50% LEFT WHITISH-YELLOWISH / 50% RIGHT) */}
-        <div className="relative w-full rounded-sm overflow-hidden bg-[#FAF7EE] dark:bg-stone-950 border border-amber-200/70 dark:border-slate-800 shadow-md flex flex-col lg:flex-row items-stretch h-[calc(100vh-230px)] min-h-[460px] max-h-[590px] mb-3">
-          
+        {/* 1. EDITORIAL TRENDING HERO SECTION (50% LEFT TEXT / 50% RIGHT FULL IMAGE VIEWER) */}
+        <div
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          className="relative w-full rounded-sm overflow-hidden bg-[#FAF7EE] dark:bg-stone-950 border border-amber-200/70 dark:border-slate-800 shadow-md flex flex-col lg:flex-row items-stretch h-[calc(100vh-230px)] min-h-[460px] max-h-[590px] mb-3 group"
+        >
           {/* Left Half (50% Column): Whitish-Yellowish Text Content */}
           <div className="w-full lg:w-1/2 p-6 sm:p-10 lg:p-12 flex flex-col justify-center relative z-10 bg-[#FAF7EE] dark:bg-stone-950 text-slate-900 dark:text-white transition-colors duration-300">
             
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-amber-500/15 border border-amber-500/35 text-amber-900 dark:text-amber-300 text-xs font-bold tracking-wider w-fit mb-3">
-              <span>VIRAL SELECTION CAPSULE</span>
-            </div>
+            <AnimatePresence mode="wait" custom={direction}>
+              <motion.div
+                key={currentSlide % totalSlides}
+                custom={direction}
+                initial={{ opacity: 0, y: direction >= 0 ? 16 : -16, filter: "blur(4px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                exit={{ opacity: 0, y: direction >= 0 ? -16 : 16, filter: "blur(4px)" }}
+                transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
+                className="flex flex-col justify-center"
+              >
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-amber-500/15 border border-amber-500/35 text-amber-900 dark:text-amber-300 text-xs font-bold tracking-wider w-fit mb-3">
+                  <span>{currentBanner?.tagline || "VIRAL SELECTION CAPSULE"}</span>
+                </div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black uppercase tracking-tight text-slate-900 dark:text-white leading-[0.95] mb-3">
-              TRENDING <br />
-              <span className="text-amber-600 dark:text-amber-400">
-                NOW
-              </span>
-            </h1>
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black uppercase tracking-tight text-slate-900 dark:text-white leading-[0.95] mb-3">
+                  {currentBanner?.title ? (
+                    currentBanner.title
+                  ) : (
+                    <>
+                      TRENDING <br />
+                      <span className="text-amber-600 dark:text-amber-400">NOW</span>
+                    </>
+                  )}
+                </h1>
 
-            <p className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 leading-relaxed max-w-md">
-              Most wanted catalog items right now. Curated live from real-time customer views, order velocity & viral ratings.
-            </p>
+                <p className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 leading-relaxed max-w-md">
+                  {currentBanner?.subtitle || "Most wanted catalog items right now. Curated live from real-time customer views, order velocity & viral ratings."}
+                </p>
+              </motion.div>
+            </AnimatePresence>
 
             {/* LIVE VELOCITY HYPEMETER GAUGE */}
             <div className="mt-5 p-3.5 rounded-sm bg-white/90 dark:bg-slate-900/90 border border-amber-200/80 dark:border-slate-800 max-w-xs sm:max-w-sm shadow-xs">
               <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest mb-1.5">
                 <span className="text-amber-800 dark:text-amber-400 font-bold">
-                  LIVE STOCK VELOCITY
+                  {currentBanner?.discountTag || "LIVE STOCK VELOCITY"}
                 </span>
                 <span className="text-slate-900 dark:text-white font-mono font-bold">98.4% HIGH DEMAND</span>
               </div>
@@ -235,30 +317,97 @@ const TrendingNowLanding = ({
               </div>
             </div>
 
-            <div className="mt-6">
-              <button
-                onClick={scrollToGrid}
-                className="inline-flex items-center gap-2.5 bg-slate-950 hover:bg-slate-800 text-white dark:bg-white dark:hover:bg-slate-100 dark:text-slate-950 text-xs sm:text-sm font-bold uppercase tracking-wider px-7 py-3 rounded-sm transition-all duration-200 shadow-md hover:-translate-y-0.5 cursor-pointer group"
+            <div className="mt-6 flex items-center gap-3">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => {
+                  if (currentBanner?.linkUrl && currentBanner.linkUrl !== "/catalog/collection/trending-now") {
+                    navigate(currentBanner.linkUrl);
+                  } else {
+                    scrollToGrid();
+                  }
+                }}
+                className="inline-flex items-center gap-2.5 bg-slate-950 hover:bg-slate-800 text-white dark:bg-white dark:hover:bg-slate-100 dark:text-slate-950 text-xs sm:text-sm font-bold uppercase tracking-wider px-7 py-3 rounded-sm transition-all duration-200 shadow-md cursor-pointer group/btn"
               >
-                <span>Explore Trending Drops</span>
-                <ArrowRight size={16} className="stroke-[2.5] transition-transform duration-200 group-hover:translate-x-1" />
-              </button>
+                <span>{currentBanner?.ctaText || "Explore Trending Drops"}</span>
+                <ArrowRight size={16} className="stroke-[2.5] transition-transform duration-200 group-hover/btn:translate-x-1" />
+              </motion.button>
+
+              {/* Slide Counter Dots if multiple active */}
+              {totalSlides > 1 && (
+                <div className="flex items-center gap-1.5 ml-2">
+                  {slides.map((s, idx) => (
+                    <motion.button
+                      layout
+                      key={s._id || idx}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDirection(idx > currentSlide % totalSlides ? 1 : -1);
+                        setCurrentSlide(idx);
+                      }}
+                      className={`h-2 rounded-full transition-all cursor-pointer ${
+                        idx === currentSlide % totalSlides
+                          ? "w-6 bg-amber-600 dark:bg-amber-400"
+                          : "w-2 bg-slate-300 dark:bg-slate-700 hover:bg-slate-400"
+                      }`}
+                      title={`Slide ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Right Half (50% Column): Full Image Box */}
-          <div className="w-full lg:w-1/2 relative h-full min-h-[280px] overflow-hidden bg-slate-900">
-            <img
-              src={heroImg}
-              alt="Trending Now Editorial Lifestyle"
-              className="w-full h-full object-cover object-center select-none contrast-[105%] hover:scale-105 transition-transform duration-700 rounded-b-sm lg:rounded-b-none lg:rounded-r-sm"
-            />
+          {/* Right Half (50% Column): FULL IMAGE VIEW (Uncropped, Complete View with Motion Transition) */}
+          <div className="w-full lg:w-1/2 relative h-full min-h-[340px] overflow-hidden bg-slate-950 flex items-center justify-center p-2 sm:p-4">
+            {/* Ambient Blurred Backdrop with Crossfade */}
+            <AnimatePresence mode="popLayout">
+              <motion.img
+                key={`ambient-${currentBanner?.imageUrl || currentBanner?.images?.[0] || currentSlide}`}
+                src={currentBanner?.imageUrl || currentBanner?.images?.[0] || heroImg}
+                alt=""
+                aria-hidden="true"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.4 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+                className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110 pointer-events-none select-none"
+              />
+            </AnimatePresence>
 
-            {/* Subtle Gradient Overlay on Image edge */}
-            <div className="absolute inset-0 bg-gradient-to-t lg:bg-gradient-to-r from-slate-950/60 via-transparent to-transparent pointer-events-none" />
+            {/* Sharp, Model Image with Directional Slide & Zoom */}
+            <AnimatePresence mode="popLayout" custom={direction}>
+              <motion.img
+                key={currentBanner?.imageUrl || currentBanner?.images?.[0] || currentSlide}
+                src={currentBanner?.imageUrl || currentBanner?.images?.[0] || heroImg}
+                alt={currentBanner?.title || "Trending Now Editorial Lifestyle"}
+                custom={direction}
+                initial={{ 
+                  opacity: 0, 
+                  x: direction >= 0 ? 45 : -45, 
+                  scale: 0.95,
+                  filter: "blur(2px)"
+                }}
+                animate={{ 
+                  opacity: 1, 
+                  x: 0, 
+                  scale: 1,
+                  filter: "blur(0px)"
+                }}
+                exit={{ 
+                  opacity: 0, 
+                  x: direction >= 0 ? -45 : 45, 
+                  scale: 0.95,
+                  filter: "blur(2px)"
+                }}
+                transition={{ duration: 0.48, ease: [0.16, 1, 0.3, 1] }}
+                className="relative z-10 max-h-full max-w-full w-auto h-auto object-contain object-center select-none contrast-[105%] group-hover:scale-[1.02] drop-shadow-2xl"
+              />
+            </AnimatePresence>
 
             {/* Floating Glass Circular Stamp */}
-            <div className="absolute bottom-6 right-6 sm:bottom-8 sm:right-8 w-26 h-26 sm:w-30 sm:h-30 rounded-full bg-slate-950/85 backdrop-blur-md border border-slate-700/60 flex items-center justify-center shadow-2xl hover:scale-105 transition-transform cursor-pointer z-10">
+            <div className="hidden sm:flex absolute bottom-6 right-6 sm:bottom-8 sm:right-8 w-26 h-26 sm:w-30 sm:h-30 rounded-full bg-slate-950/85 backdrop-blur-md border border-slate-700/60 items-center justify-center shadow-2xl hover:scale-105 transition-transform cursor-pointer z-20">
               <div className="relative w-full h-full flex items-center justify-center">
                 <svg className="w-full h-full animate-[spin_20s_linear_infinite]" viewBox="0 0 100 100">
                   <path id="trendingStampPath" d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" fill="none" />
@@ -270,8 +419,34 @@ const TrendingNowLanding = ({
                 </svg>
               </div>
             </div>
-          </div>
 
+            {/* Slideshow Arrow Navigation on Image */}
+            {totalSlides > 1 && (
+              <div className="absolute top-4 left-4 flex items-center gap-1.5 z-20">
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={handlePrevSlide}
+                  className="w-8 h-8 rounded-full bg-slate-950/80 hover:bg-slate-950 text-white flex items-center justify-center backdrop-blur-md border border-white/20 shadow-md transition cursor-pointer"
+                  title="Previous banner"
+                >
+                  <ChevronLeft size={16} />
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={handleNextSlide}
+                  className="w-8 h-8 rounded-full bg-slate-950/80 hover:bg-slate-950 text-white flex items-center justify-center backdrop-blur-md border border-white/20 shadow-md transition cursor-pointer"
+                  title="Next banner"
+                >
+                  <ChevronRight size={16} />
+                </motion.button>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-950/80 text-white backdrop-blur-md border border-white/10 ml-1">
+                  {(currentSlide % totalSlides) + 1} / {totalSlides}
+                </span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* 2. FRAMELESS CATEGORY ANIMATED TICKER (WITH TOP-TO-BOTTOM SLIDE ENTRANCE) */}

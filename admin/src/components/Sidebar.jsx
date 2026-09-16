@@ -20,7 +20,9 @@ import {
   FileText,
   Settings,
   Flame,
-  ShieldCheck
+  ShieldCheck,
+  Sparkles,
+  Image as ImageIcon
 } from "lucide-react";
 
 import { useAuth } from "../context/AuthContext";
@@ -53,7 +55,7 @@ const Sidebar = ({ isCollapsed, isMobileOpen, setIsMobileOpen }) => {
       ]
     },
     {
-      title: "Commerce",
+      title: "Catalog & Merchants",
       links: [
         { path: "/list", label: "Product List", icon: ClipboardList, permission: "products" },
         { path: "/categories", label: "Categories", icon: Layers, permission: "products" },
@@ -61,32 +63,34 @@ const Sidebar = ({ isCollapsed, isMobileOpen, setIsMobileOpen }) => {
         { path: "/product-moderation", label: "Moderation", icon: Box, permission: "products" },
         { path: "/sellers", label: "Sellers", icon: Store, permission: "sellers" },
         { path: "/customers", label: "Customers", icon: UserCheck, permission: "customers" },
-        { path: "/hero-slideshow", label: "Hero Models", icon: Megaphone, permission: "promos" },
-        { path: "/banners", label: "Hero Banners", icon: Megaphone, permission: "promos" },
-        { path: "/deal-of-the-day", label: "Deal of Day", icon: Flame, permission: "promos" },
       ]
     },
     {
-      title: "Finance & Promos",
+      title: "Marketing & Campaigns",
       links: [
-        { path: "/finance", label: "Finance & Fees", icon: DollarSign, permission: "finance" },
+        { path: "/hero-slideshow", label: "Hero Models", icon: Sparkles, permission: "promos" },
+        { path: "/banners", label: "Hero Banners", icon: Megaphone, permission: "promos" },
+        { path: "/deal-of-the-day", label: "Deal of Day", icon: Flame, permission: "promos" },
+        { path: "/featured-showcase", label: "Featured Deals", icon: Award, permission: "promos" },
+        { path: "/promo-banners", label: "Ad Banners", icon: ImageIcon, permission: "promos" },
         { path: "/sales", label: "Sales & Promos", icon: Megaphone, permission: "promos" },
         { path: "/coupons", label: "Promo Coupons", icon: Ticket, permission: "promos" },
       ]
     },
     {
-      title: "Support",
+      title: "Finance & Support",
       links: [
-        { path: "/support", label: "Tickets", icon: MessageSquare, permission: "support" },
+        { path: "/finance", label: "Finance & Fees", icon: DollarSign, permission: "finance" },
+        { path: "/support", label: "Support Tickets", icon: MessageSquare, permission: "support" },
       ]
     },
     {
-      title: "System",
+      title: "System & Governance",
       links: [
         { path: "/sub-admins", label: "Sub-Admins & Team", icon: ShieldCheck, permission: "subadmins" },
-        { path: "/settings", label: "System Settings", icon: Settings, superAdminOnly: true },
         { path: "/notifications", label: "Notifications", icon: Bell },
-        { path: "/logs", label: "User & Operations Audit", icon: Shield, superAdminOnly: true },
+        { path: "/settings", label: "System Settings", icon: Settings, superAdminOnly: true },
+        { path: "/logs", label: "Audit Logs", icon: Shield, superAdminOnly: true },
       ]
     }
   ];

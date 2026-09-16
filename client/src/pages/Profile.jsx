@@ -691,7 +691,7 @@ const Profile = () => {
           <div className="h-32 sm:h-40 md:h-44 w-full bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-950 relative overflow-hidden">
             <div 
               className="absolute inset-0 opacity-30 mix-blend-screen bg-cover bg-center"
-              style={{ backgroundImage: `url('/diamond_card_crystal_mesh.jpg')` }}
+              style={{ backgroundImage: `url('/diamond_card_crystal_mesh.webp')` }}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
             

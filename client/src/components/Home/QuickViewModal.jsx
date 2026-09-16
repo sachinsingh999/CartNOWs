@@ -8,12 +8,28 @@ import {
 import { backendUrl } from "../../config";
 import { getAverageRating, getReviewCount } from "../../utils/productRatings";
 import { toast } from "react-toastify";
+import BrandLogo from "../BrandLogo";
 
 const QuickViewModal = ({ product, onClose, onAddToCart }) => {
   const [qvQty, setQvQty] = useState(1);
   const [qvSize, setQvSize] = useState("Standard");
   const [activeImgIdx, setActiveImgIdx] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
+
+  React.useEffect(() => {
+    if (product && product._id) {
+      try {
+        let list = JSON.parse(localStorage.getItem("recentlyViewed") || "[]");
+        list = list.filter((item) => item && item._id !== product._id);
+        list.unshift(product);
+        if (list.length > 30) list = list.slice(0, 30);
+        localStorage.setItem("recentlyViewed", JSON.stringify(list));
+        window.dispatchEvent(new Event("recentlyViewedUpdate"));
+      } catch (e) {
+        console.warn("Could not save recently viewed item:", e);
+      }
+    }
+  }, [product]);
 
   if (!product) return null;
 
@@ -157,9 +173,16 @@ const QuickViewModal = ({ product, onClose, onAddToCart }) => {
             {/* Right Column - Product Details */}
             <div className="flex-1 flex flex-col justify-between gap-4">
               <div className="text-left space-y-1.5">
-                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-500">
-                  {product.brand || "SONY"}
-                </span>
+                <div className="flex items-center gap-2">
+                  <BrandLogo
+                    brand={product.brand || "SONY"}
+                    brandDomain={product.brandDomain}
+                    className="w-5 h-5 rounded-xs"
+                  />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-500">
+                    {product.brand || "SONY"}
+                  </span>
+                </div>
                 <h3 className="text-xl font-black text-slate-900 dark:text-white leading-snug">
                   {product.name}
                 </h3>

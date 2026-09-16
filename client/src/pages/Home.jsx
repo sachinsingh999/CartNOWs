@@ -2,26 +2,32 @@ import React, { useEffect, useState, useMemo, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { AnimatePresence, motion } from "framer-motion";
+import axios from "axios";
 import { backendUrl } from "../config";
 import { cachedGet } from "../utils/apiCache";
 
-// Eagerly loaded modular components (critical above-the-fold content)
-import HomeHero from "../components/Home/HomeHero";
-import TopCategories from "../components/Home/TopCategories";
+// Critical above-the-fold components (Eagerly Loaded)
+import HeroSplitBanner from "../components/Home/HeroSplitBanner";
 import QuickViewModal from "../components/Home/QuickViewModal";
 import PremiumDealBanner from "../components/Home/PremiumDealBanner";
 
-// Lazy loaded below-the-fold components to reduce main-thread script evaluation & layout blocking
-const FlashDeals = React.lazy(() => import("../components/Home/FlashDeals"));
-const TrendingProducts = React.lazy(() => import("../components/Home/TrendingProducts"));
+// Lazy-loaded Home sections for optimal performance & fast initial load
+const FlashDealsSection = React.lazy(() => import("../components/Home/FlashDealsSection"));
+const FeaturedDealsCarousel = React.lazy(() => import("../components/Home/FeaturedDealsCarousel"));
+const RecommendedCategories = React.lazy(() => import("../components/Home/RecommendedCategories"));
 const ShopByBrands = React.lazy(() => import("../components/Home/ShopByBrands"));
 const RecommendedProducts = React.lazy(() => import("../components/Home/RecommendedProducts"));
+const TechAdBanner = React.lazy(() => import("../components/Home/TechAdBanner"));
+const TrendingProducts = React.lazy(() => import("../components/Home/TrendingProducts"));
 const ShopByCollections = React.lazy(() => import("../components/Home/ShopByCollections"));
+const HistorySuggestions = React.lazy(() => import("../components/Home/HistorySuggestions"));
+const BudgetStoreRadar = React.lazy(() => import("../components/Home/BudgetStoreRadar"));
+const ProductDuel = React.lazy(() => import("../components/Home/ProductDuel"));
 const DealOfTheDay = React.lazy(() => import("../components/Home/DealOfTheDay"));
 const SellerSpotlight = React.lazy(() => import("../components/Home/SellerSpotlight"));
 const AiRobotChat = React.lazy(() => import("../components/Home/AiRobotChat"));
-const CustomerTestimonials = React.lazy(() => import("../components/Home/CustomerTestimonials"));
 const BenefitsStrip = React.lazy(() => import("../components/Home/BenefitsStrip"));
+
 const LazySection = ({ children, height = "280px" }) => {
   const [isVisible, setIsVisible] = useState(false);
   const ref = React.useRef(null);
@@ -35,7 +41,7 @@ const LazySection = ({ children, height = "280px" }) => {
           observer.disconnect();
         }
       },
-      { rootMargin: "350px 0px" }
+      { rootMargin: "120px 0px" }
     );
     observer.observe(ref.current);
     return () => observer.disconnect();
@@ -78,7 +84,7 @@ const Home = () => {
     const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
     cachedGet(`${backendUrl}/api/product/homepage`, { headers })
-      .then(res => {
+      .then((res) => {
         if (res.data.success) {
           setHomepageData(res.data);
           if (res.data.activeDeal) {
@@ -97,7 +103,7 @@ const Home = () => {
     try {
       const saved = JSON.parse(localStorage.getItem("wishlist")) || [];
       setWishlist(saved);
-    } catch (e) { }
+    } catch (e) {}
   }, []);
 
   useEffect(() => {
@@ -189,7 +195,7 @@ const Home = () => {
     let guestCart = {};
     try {
       guestCart = JSON.parse(localStorage.getItem("cart") || "{}");
-    } catch (err) { }
+    } catch (err) {}
 
     // Only check guest localStorage if user is not logged in
     if (!token) {
@@ -210,14 +216,14 @@ const Home = () => {
     }
 
     // Lock button & set loading state
-    setAddingIds(prev => ({ ...prev, [product._id]: true }));
+    setAddingIds((prev) => ({ ...prev, [product._id]: true }));
 
     if (!token) {
       guestCart[`${product._id}_${size}`] = qty || 1;
       localStorage.setItem("cart", JSON.stringify(guestCart));
       window.dispatchEvent(new Event("cartUpdate"));
       toast.success("Added to cart! 🛍️");
-      setAddingIds(prev => ({ ...prev, [product._id]: false }));
+      setAddingIds((prev) => ({ ...prev, [product._id]: false }));
       navigate("/cart");
     } else {
       try {
@@ -230,15 +236,15 @@ const Home = () => {
         if (res.data.success) {
           window.dispatchEvent(new Event("cartUpdate"));
           toast.success("Added to cart! 🛍️");
-          setAddingIds(prev => ({ ...prev, [product._id]: false }));
+          setAddingIds((prev) => ({ ...prev, [product._id]: false }));
           navigate("/cart");
         } else {
           toast.error(res.data.message || "Failed to add to cart");
-          setAddingIds(prev => ({ ...prev, [product._id]: false }));
+          setAddingIds((prev) => ({ ...prev, [product._id]: false }));
         }
       } catch (err) {
         toast.error(err.response?.data?.message || "Error adding to cart");
-        setAddingIds(prev => ({ ...prev, [product._id]: false }));
+        setAddingIds((prev) => ({ ...prev, [product._id]: false }));
       }
     }
   };
@@ -247,11 +253,18 @@ const Home = () => {
     if (isCampaignActive && activeDeal) return activeDeal;
 
     // Fallback: highest discount product from dealsOfDay
-    const fallbackProduct = homepageData.dealsOfDay?.[0] || homepageData.bestSellers?.[0] || homepageData.newArrivals?.[0];
+    const fallbackProduct =
+      homepageData.dealsOfDay?.[0] ||
+      homepageData.bestSellers?.[0] ||
+      homepageData.newArrivals?.[0];
     if (!fallbackProduct) return null;
 
-    const originalVal = fallbackProduct.originalPrice || Math.round(fallbackProduct.price * 1.25);
-    const discountPercent = Math.max(5, Math.round(((originalVal - fallbackProduct.price) / originalVal) * 100));
+    const originalVal =
+      fallbackProduct.originalPrice || Math.round(fallbackProduct.price * 1.25);
+    const discountPercent = Math.max(
+      5,
+      Math.round(((originalVal - fallbackProduct.price) / originalVal) * 100)
+    );
 
     return {
       _id: "fallback_deal_of_the_day",
@@ -260,20 +273,15 @@ const Home = () => {
       subtitle: "Includes official brand warranty. Free express delivery within 24 hours.",
       discountLabel: `SAVE ${discountPercent}%`,
       startDate: new Date(),
-      endDate: null, // Hide timer in fallback mode
+      endDate: null,
       isActive: true,
       modelImage: fallbackProduct.images?.[0] || ""
     };
   }, [activeDeal, homepageData, isCampaignActive]);
 
-  const handleShowDeal = () => {
-    setShowDeal(true);
-  };
-
   return (
     <div className="bg-[#F8FAFC] dark:bg-slate-950 min-h-screen text-[#0F172A] dark:text-slate-100 font-sans pb-16 antialiased text-left transition-colors duration-200">
-
-      {/* Custom Keyframes & Styles */}
+      {/* Custom Keyframes */}
       <style>{`
         @keyframes float-gentle {
           0%, 100% { transform: translateY(0px) rotate(0deg); }
@@ -293,10 +301,15 @@ const Home = () => {
         .animate-float-slow { animation: float-slow 4.5s ease-in-out infinite; }
       `}</style>
 
-      {/* SECTION 1: PREMIUM HERO SECTION */}
-      <HomeHero onShowDealOfDay={handleShowDeal} hasActiveDeal={!!displayDeal} />
+      {/* 1. SPLIT HERO BANNER (Campaign Models on Left + 2x2 Bazaar Deals on Right) */}
+      <HeroSplitBanner homepageData={homepageData} />
 
-      {/* REVEALED PREMIUM DEAL OF THE DAY SPOTLIGHT OVERLAY */}
+      {/* 2. DYNAMIC TECH / PROMOTIONAL AD BANNER (Directly Below Hero Section) */}
+      <LazySection height="260px">
+        <TechAdBanner />
+      </LazySection>
+
+      {/* REVEALED PREMIUM DEAL SPOTLIGHT OVERLAY */}
       <AnimatePresence>
         {showDeal && displayDeal && (
           <motion.div
@@ -306,7 +319,6 @@ const Home = () => {
             className="fixed inset-0 z-50 flex justify-center py-12 px-4 sm:px-6 bg-slate-950/70 backdrop-blur-md overflow-y-auto"
             onClick={() => setShowDeal(false)}
           >
-            {/* Click-stop container */}
             <div
               className="relative w-full max-w-5xl my-auto select-none"
               onClick={(e) => e.stopPropagation()}
@@ -323,74 +335,60 @@ const Home = () => {
         )}
       </AnimatePresence>
 
-      <motion.section
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-50px" }}
-        transition={{ duration: 0.4, ease: "easeOut" }}
-        className="w-full px-4 sm:px-8 lg:px-12 pt-4 pb-2 select-none"
-      >
-        <TopCategories popularCategories={homepageData.popularCategories} />
-      </motion.section>
+      {/* 3. FEATURED DEALS CAROUSEL (Daily Spotlight & Interactive Angles) */}
+      <LazySection height="520px">
+        <FeaturedDealsCarousel />
+      </LazySection>
 
-      {/* BELOW-THE-FOLD SECTIONS (Lazy Loaded on Scroll for Minimal Main-Thread Execution Time) */}
-      <LazySection height="320px">
+      {/* 4. FLASH DEALS 3x3 MATRIX SECTION */}
+      <LazySection height="480px">
+        <FlashDealsSection homepageData={homepageData} />
+      </LazySection>
+
+      {/* 5. RECENTLY VIEWED & SMART HISTORY SUGGESTIONS (Pick Up Where You Left Off) */}
+      <LazySection height="420px">
+        <HistorySuggestions
+          fallbackProducts={homepageData.recommended || []}
+          onQuickView={setQuickViewProduct}
+        />
+      </LazySection>
+
+      {/* 6. RECOMMENDED CATEGORIES 4-QUADRANT MATRICES */}
+      <LazySection height="480px">
+        <RecommendedCategories homepageData={homepageData} />
+      </LazySection>
+
+      {/* 7. POPULAR BRANDS */}
+      <LazySection height="400px">
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px" }}
           transition={{ duration: 0.4, ease: "easeOut" }}
-          className="w-full px-4 sm:px-8 lg:px-12 py-4 md:py-6 space-y-6 md:space-y-8 select-none"
+          className="w-full px-2 sm:px-4 lg:px-6 pt-1 pb-1 select-none"
         >
-          <div>
-            <ShopByBrands popularBrands={homepageData.popularBrands} />
-          </div>
-
-          <div>
-            <RecommendedProducts
-              recommended={homepageData.recommended}
-              trending={homepageData.trending}
-              topRated={homepageData.topRated}
-              newArrivals={homepageData.newArrivals}
-              onQuickView={setQuickViewProduct}
-              onAddToCart={onAddToCart}
-              onToggleFavorite={onToggleFavorite}
-              wishlist={wishlist}
-            />
-          </div>
+          <ShopByBrands popularBrands={homepageData.popularBrands} />
         </motion.section>
       </LazySection>
 
-      <LazySection height="320px">
+      {/* 8. UNIFIED DISCOVERY & RECOMMENDATION SHOWCASE */}
+      <LazySection height="480px">
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px" }}
           transition={{ duration: 0.4, ease: "easeOut" }}
-          className="w-full px-4 sm:px-8 lg:px-12 py-2"
+          className="w-full px-2 sm:px-4 lg:px-6 pt-1 pb-1 select-none"
         >
-          <FlashDeals
-            deals={(() => {
-              const seen = new Set();
-              const combined = [];
-              [...(homepageData.dealsOfDay || []), ...(homepageData.trending || [])].forEach(p => {
-                if (p && p._id && !seen.has(p._id.toString())) {
-                  seen.add(p._id.toString());
-                  combined.push(p);
-                }
-              });
-              return combined;
-            })()}
-            onQuickView={setQuickViewProduct}
-            onAddToCart={onAddToCart}
-            onToggleFavorite={onToggleFavorite}
-            wishlist={wishlist}
-          />
-
-          <TrendingProducts
+          <RecommendedProducts
+            recommended={homepageData.recommended}
+            trending={homepageData.trending}
             bestSellers={homepageData.bestSellers}
+            topRated={homepageData.topRated}
             newArrivals={homepageData.newArrivals}
             mostViewed={homepageData.mostViewed}
+            dealsOfDay={homepageData.dealsOfDay}
+            mostWishlisted={homepageData.mostWishlisted}
             loading={loading}
             onQuickView={setQuickViewProduct}
             onAddToCart={onAddToCart}
@@ -400,7 +398,8 @@ const Home = () => {
         </motion.section>
       </LazySection>
 
-      <LazySection height="250px">
+      {/* 9. CURATED THEME COLLECTIONS */}
+      <LazySection height="280px">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -411,13 +410,14 @@ const Home = () => {
         </motion.div>
       </LazySection>
 
-      <LazySection height="350px">
+      {/* 10. 3-COLUMN FEATURE HUB (Deal of Day, Seller Spotlight, AI Robot Chat) */}
+      <LazySection height="360px">
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px" }}
           transition={{ duration: 0.4, ease: "easeOut" }}
-          className="w-full px-4 sm:px-8 lg:px-12 py-2 select-none"
+          className="w-full px-2 sm:px-4 lg:px-6 py-1 select-none"
         >
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-left">
             <DealOfTheDay
@@ -425,25 +425,48 @@ const Home = () => {
               activeDeal={activeDeal}
               onAddToCart={onAddToCart}
             />
-
             <SellerSpotlight />
-
             <AiRobotChat />
           </div>
         </motion.section>
       </LazySection>
 
-      <LazySection height="250px">
-        <motion.div
+      {/* 11. BUDGET STORE & PRICE DROP RADAR (Bottom Placement) */}
+      <LazySection height="460px">
+        <motion.section
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px" }}
           transition={{ duration: 0.4, ease: "easeOut" }}
+          className="w-full px-2 sm:px-4 lg:px-6 pt-1 pb-1 select-none"
         >
-          <CustomerTestimonials />
-        </motion.div>
+          <BudgetStoreRadar
+            homepageData={homepageData}
+            onQuickView={setQuickViewProduct}
+            onAddToCart={onAddToCart}
+            onToggleFavorite={onToggleFavorite}
+            wishlist={wishlist}
+          />
+        </motion.section>
       </LazySection>
 
+      {/* 12. "THIS OR THAT?" COMMUNITY PRODUCT DUELS (Bottom Placement) */}
+      <LazySection height="520px">
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          className="w-full px-2 sm:px-4 lg:px-6 pt-1 pb-1 select-none"
+        >
+          <ProductDuel
+            onQuickView={setQuickViewProduct}
+            onAddToCart={onAddToCart}
+          />
+        </motion.section>
+      </LazySection>
+
+      {/* 13. BRAND BENEFITS & TRUST GUARANTEES */}
       <LazySection height="180px">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -455,7 +478,7 @@ const Home = () => {
         </motion.div>
       </LazySection>
 
-      {/* QUICK VIEW INTERACTIVE MODAL */}
+      {/* 16. QUICK VIEW INTERACTIVE MODAL */}
       <QuickViewModal
         product={quickViewProduct}
         onClose={() => setQuickViewProduct(null)}

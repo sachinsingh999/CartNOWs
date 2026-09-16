@@ -152,7 +152,13 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
   const images = rawImages.filter(img => !failedUrls.has(img));
 
   const getSrc = (idx = 0) => {
-    const s = images[idx] || images[0] || rawImages[0];
+    // If viewing the primary card image (idx === 0) and product has bgRemovedImage, use it!
+    let s = "";
+    if (idx === 0 && product.bgRemovedImage && !failedUrls.has(product.bgRemovedImage)) {
+      s = product.bgRemovedImage;
+    } else {
+      s = images[idx] || images[0] || rawImages[0] || product.bgRemovedImage || "";
+    }
     if (!s) return "";
     const rawUrl = s.startsWith("http") ? s : `${backendUrl}/${s.startsWith("/") ? s.slice(1) : s}`;
     return getOptimizedImageUrl(rawUrl, { width: 350, quality: 80 });
@@ -265,11 +271,11 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
                 className="max-h-full max-w-full object-contain"
                 alt={product.name || "Product"}
                 onError={() => {
-                  const currentSrc = images[imgIdx] || images[0];
-                  if (currentSrc) {
-                    setFailedUrls(prev => new Set(prev).add(currentSrc));
+                  const failedSrc = (imgIdx === 0 && product.bgRemovedImage) ? product.bgRemovedImage : (images[imgIdx] || images[0]);
+                  if (failedSrc) {
+                    setFailedUrls(prev => new Set(prev).add(failedSrc));
                   }
-                  if (images.length <= 1) {
+                  if (images.length <= 1 && (!product.bgRemovedImage || failedUrls.has(product.bgRemovedImage))) {
                     setImgError(true);
                   }
                 }}
@@ -379,38 +385,48 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
           </h3>
         </div>
 
-        {/* Pricing block with superscript 00 decimals (Exactly matches mockup design) */}
-        <div className="flex items-baseline gap-2 select-none leading-none">
-          <div className="flex items-start text-slate-955 dark:text-white leading-none font-sans font-black">
-            <span className="text-[10px] mt-0.5 mr-0.5 font-bold">₹</span>
-            <span className="text-xl tracking-tight leading-none">{Math.floor(product.price)}</span>
-            <span className="text-[10px] mt-0.5 ml-0.5 font-bold">00</span>
+        {/* Pricing block with formatted price, MRP, and discount tag */}
+        <div className="flex items-baseline flex-wrap gap-x-2 gap-y-1 select-none">
+          <div className="flex items-start text-slate-900 dark:text-white leading-none font-sans font-black">
+            <span className="text-[11px] font-bold mr-0.5 mt-0.5">₹</span>
+            <span className="text-xl font-black tracking-tight leading-none">
+              {Math.floor(product.price).toLocaleString("en-IN")}
+            </span>
+            <span className="text-[10px] font-bold ml-0.5 mt-0.5 opacity-80">00</span>
           </div>
+
           {originalVal > product.price && (
-            <div className="text-[10px] text-slate-450 dark:text-slate-500 font-bold flex items-center gap-0.5 leading-none">
-              <span>M.R.P.:</span>
-              <span className="line-through">₹{originalVal.toLocaleString("en-IN")}.00</span>
-              <span className="ml-1 text-rose-500 dark:text-rose-400 font-black">({discountPercent}% OFF)</span>
+            <div className="flex items-baseline gap-1.5 text-xs select-none whitespace-nowrap">
+              <span className="text-[11px] text-slate-400 dark:text-slate-500 font-semibold">
+                M.R.P.: <span className="line-through">₹{originalVal.toLocaleString("en-IN")}</span>
+              </span>
+              <span className="text-[11px] font-extrabold text-[#ff3f6c] dark:text-rose-400 whitespace-nowrap">
+                ({discountPercent}% OFF)
+              </span>
             </div>
           )}
         </div>
 
         {/* Ratings and reviews verified bar */}
-        <div className="flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400">
-          <Star size={11} className="fill-amber-500 text-amber-500 stroke-none" />
-          <span className="font-extrabold text-slate-800 dark:text-slate-200">{averageRating.toFixed(1)}</span>
-          <span className="text-slate-200 dark:text-slate-800">|</span>
-          <span className="font-semibold">({reviewCount} reviews)</span>
-          
-          <div className="flex items-center gap-0.5 text-emerald-600 dark:text-emerald-400 font-extrabold ml-auto">
-            <CheckCircle2 size={11} className="fill-emerald-600 text-white dark:fill-emerald-400 dark:text-slate-900 shrink-0 stroke-[2.5]" />
-            <span className="text-[9px]">Verified</span>
+        <div className="flex items-center justify-between text-xs select-none pt-0.5">
+          <div className="flex items-center gap-1.5 text-[11px]">
+            <div className="flex items-center gap-1 font-bold text-slate-800 dark:text-slate-200">
+              <Star size={12} className="fill-amber-400 text-amber-400 stroke-none" />
+              <span>{averageRating.toFixed(1)}</span>
+            </div>
+            <span className="text-slate-300 dark:text-slate-700">|</span>
+            <span className="text-slate-500 dark:text-slate-400 font-medium">({reviewCount} reviews)</span>
+          </div>
+
+          <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold text-[11px]">
+            <CheckCircle2 size={12} className="stroke-[2.5]" />
+            <span>Verified</span>
           </div>
         </div>
 
         {/* Shipping Text */}
-        <div className="inline-flex items-center gap-1 text-[10px] font-extrabold text-emerald-600 dark:text-emerald-400 select-none">
-          <Truck size={12} className="shrink-0" />
+        <div className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 select-none">
+          <Truck size={13} className="shrink-0 stroke-[2.2]" />
           <span>{deliveryEstimate}</span>
         </div>
 

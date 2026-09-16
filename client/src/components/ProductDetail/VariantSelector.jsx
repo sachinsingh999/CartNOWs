@@ -89,9 +89,11 @@ const VariantSelector = ({
     return result.length > 0 ? result : null;
   };
 
-  const variantAttributes = getVariantsFromVariantsArray() || getVariantAttributes();
+  const variantAttributes = (product?.variants && product.variants.length > 0)
+    ? (getVariantsFromVariantsArray() || getVariantAttributes())
+    : (Array.isArray(product?.attributes) && product.attributes.length > 0 ? getVariantAttributes() : []);
   const hasVariants = variantAttributes.length > 0;
-  const hasSizesFallback = product?.sizes && product.sizes.length > 0;
+  const hasSizesFallback = !hasVariants && product?.sizes && product.sizes.length > 0;
 
   const getColorHex = (c) => {
     const name = c?.toLowerCase().trim() || "";
@@ -157,8 +159,9 @@ const VariantSelector = ({
               
               <div className="flex flex-wrap gap-2">
                 {values.map((val) => {
-                  const isSelected = selectedAttributes[attrName] === val;
-                  const isAvailable = isOptionAvailable(attrName, val);
+                  const isSelected = selectedAttributes[attrName] === val || 
+                    (selectedAttributes && Object.entries(selectedAttributes).some(([k, v]) => k.toLowerCase() === attrName.toLowerCase() && v === val));
+                  const isAvailable = isOptionAvailable ? isOptionAvailable(attrName, val) : true;
                   const hex = getColorHex(val);
 
                   return (
@@ -166,7 +169,10 @@ const VariantSelector = ({
                       key={val}
                       type="button"
                       disabled={!isAvailable}
-                      onClick={() => setSelectedAttributes(prev => ({ ...prev, [attrName]: val }))}
+                      onClick={() => {
+                        setSelectedAttributes(prev => ({ ...prev, [attrName]: val }));
+                        if (isSizeAttr && setSize) setSize(val);
+                      }}
                       whileHover={isAvailable ? { y: -1, boxShadow: "0 2px 6px rgba(0, 0, 0, 0.05)" } : {}}
                       whileTap={isAvailable ? { scale: 0.98 } : {}}
                       transition={{ type: "spring", stiffness: 400, damping: 25 }}
@@ -220,12 +226,15 @@ const VariantSelector = ({
         </div>
         <div className="flex flex-wrap gap-2">
           {product.sizes.map((item) => {
-            const isSelected = size === item;
+            const isSelected = size === item || selectedAttributes?.Size === item;
             return (
               <motion.button
                 key={item}
                 type="button"
-                onClick={() => setSize && setSize(item)}
+                onClick={() => {
+                  if (setSize) setSize(item);
+                  if (setSelectedAttributes) setSelectedAttributes(prev => ({ ...prev, Size: item }));
+                }}
                 whileHover={{ y: -1, boxShadow: "0 2px 6px rgba(0, 0, 0, 0.05)" }}
                 whileTap={{ scale: 0.98 }}
                 transition={{ type: "spring", stiffness: 400, damping: 25 }}

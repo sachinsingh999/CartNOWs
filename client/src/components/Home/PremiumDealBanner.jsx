@@ -21,6 +21,7 @@ import {
   RotateCcw,
   ShoppingBag
 } from "lucide-react";
+import BrandLogo from "../BrandLogo";
 
 const PremiumDealBanner = ({
   deal,
@@ -249,9 +250,16 @@ const PremiumDealBanner = ({
 
             {/* Brand & Product Title */}
             <div className="space-y-1 mt-2 max-w-[95%] lg:max-w-[88%]">
-              <span className="text-[8.5px] uppercase tracking-[0.25em] font-black text-slate-400 block">
-                {product.brand || "GENERIC"}
-              </span>
+              <div className="flex items-center gap-1.5">
+                <BrandLogo
+                  brand={product.brand || "GENERIC"}
+                  brandDomain={product.brandDomain}
+                  className="w-4 h-4 rounded-xs"
+                />
+                <span className="text-[8.5px] uppercase tracking-[0.25em] font-black text-slate-400 block">
+                  {product.brand || "GENERIC"}
+                </span>
+              </div>
 
               <h2 className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight leading-tight bg-gradient-to-r from-white via-white to-slate-300 bg-clip-text text-transparent select-text">
                 {renderTitle()}

@@ -3,7 +3,8 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { assets } from "../assets/assets";
 import { backendUrl } from "../config";
-import { PlusCircle, Upload, Sparkles } from "lucide-react";
+import { PlusCircle, Upload, Sparkles, Wand2, Loader2, Trash2 } from "lucide-react";
+import { removeImageBackground } from "../utils/removeBackground";
 
 const inputClass = "w-full rounded-xl border border-slate-200 bg-slate-50/30 px-4 py-3 text-sm text-slate-900 outline-none transition duration-200 placeholder:text-slate-400 focus:bg-white focus:border-slate-950 focus:ring-4 focus:ring-slate-950/5";
 const labelClass = "mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-500";
@@ -13,6 +14,7 @@ const Add = ({ token }) => {
   const [image2, setImage2] = useState(false);
   const [image3, setImage3] = useState(false);
   const [image4, setImage4] = useState(false);
+  const [removingBgSlot, setRemovingBgSlot] = useState(null);
 
   const [form, setForm] = useState({
     name: "",
@@ -138,6 +140,21 @@ const Add = ({ token }) => {
     }
   };
 
+  const handleProductBgRemoval = async (slotId, currentImage, setter) => {
+    if (!currentImage) return;
+    setRemovingBgSlot(slotId);
+    try {
+      const { file: transparentFile } = await removeImageBackground(currentImage);
+      setter(transparentFile);
+      toast.success("Background stripped to transparent PNG! ✨");
+    } catch (err) {
+      console.error("BG removal failed:", err);
+      toast.error("Failed to remove background from product image");
+    } finally {
+      setRemovingBgSlot(null);
+    }
+  };
+
   return (
     <form onSubmit={onSubmitHandler} className="space-y-6">
       <div className="w-full max-w-5xl rounded-2xl border border-slate-200/80 bg-white dark:bg-slate-900 p-8 md:p-10 shadow-sm">
@@ -157,47 +174,82 @@ const Add = ({ token }) => {
 
         {/* Media Upload Area */}
         <div className="mb-8">
-          <h3 className={labelClass}>
-            Product Images
-          </h3>
+          <div className="flex items-center justify-between mb-1.5">
+            <h3 className={labelClass}>
+              Product Images
+            </h3>
+            <span className="text-[11px] text-slate-400 font-medium">
+              Click &ldquo;✨ Remove BG&rdquo; on any image to strip the background to transparent PNG
+            </span>
+          </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-2">
             {[
-              [image1, setImage1, "image1"],
-              [image2, setImage2, "image2"],
-              [image3, setImage3, "image3"],
-              [image4, setImage4, "image4"],
-            ].map(([image, setter, id]) => (
-              <label 
-                key={id} 
-                htmlFor={id} 
-                className="group relative flex flex-col items-center justify-center h-28 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-slate-400 bg-slate-50/50 hover:bg-slate-50 cursor-pointer overflow-hidden transition-all duration-200"
-              >
-                {image ? (
-                  <div className="absolute inset-0 p-2 flex items-center justify-center bg-white dark:bg-slate-900">
-                    <img
-                      className="h-full w-full object-contain rounded-lg transition duration-200 group-hover:scale-105"
-                      src={URL.createObjectURL(image)}
-                      alt=""
-                    />
-                    <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg">
-                      <span className="text-[10px] font-bold text-slate-100 dark:text-white uppercase tracking-wider">Change</span>
+              [image1, setImage1, "image1", "Main Image"],
+              [image2, setImage2, "image2", "Side Angle"],
+              [image3, setImage3, "image3", "Back Angle"],
+              [image4, setImage4, "image4", "Detail View"],
+            ].map(([image, setter, id, label]) => (
+              <div key={id} className="flex flex-col gap-1.5">
+                <label 
+                  htmlFor={id} 
+                  className="group relative flex flex-col items-center justify-center h-28 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-slate-400 bg-slate-50/50 hover:bg-slate-50 cursor-pointer overflow-hidden transition-all duration-200"
+                >
+                  {image ? (
+                    <div className="absolute inset-0 p-2 flex items-center justify-center bg-white dark:bg-slate-900">
+                      <img
+                        className="h-full w-full object-contain rounded-lg transition duration-200 group-hover:scale-105"
+                        src={URL.createObjectURL(image)}
+                        alt=""
+                      />
+                      {removingBgSlot === id && (
+                        <div className="absolute inset-0 bg-slate-950/70 flex flex-col items-center justify-center text-white z-10 gap-1 text-[10px] font-bold">
+                          <Loader2 size={16} className="animate-spin text-indigo-400" />
+                          <span>Stripping BG...</span>
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg">
+                        <span className="text-[10px] font-bold text-slate-100 dark:text-white uppercase tracking-wider">Change</span>
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center gap-1.5 p-3 text-center">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-400 group-hover:bg-slate-900 group-hover:text-white transition duration-200">
-                      <Upload size={14} />
+                  ) : (
+                    <div className="flex flex-col items-center gap-1.5 p-3 text-center">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-400 group-hover:bg-slate-900 group-hover:text-white transition duration-200">
+                        <Upload size={14} />
+                      </div>
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{label}</span>
                     </div>
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Upload</span>
+                  )}
+                  <input
+                    type="file"
+                    id={id}
+                    hidden
+                    onChange={(e) => setter(e.target.files[0])}
+                  />
+                </label>
+
+                {image && (
+                  <div className="flex items-center justify-between gap-1 px-1">
+                    <button
+                      type="button"
+                      onClick={() => handleProductBgRemoval(id, image, setter)}
+                      disabled={removingBgSlot === id}
+                      className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white shadow-2xs transition-all cursor-pointer disabled:opacity-50"
+                      title="Strip image background using AI"
+                    >
+                      <Sparkles size={10} />
+                      <span>Remove BG</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setter(false)}
+                      className="text-[10px] text-rose-500 hover:text-rose-700 font-bold p-0.5 cursor-pointer"
+                      title="Clear image"
+                    >
+                      <Trash2 size={12} />
+                    </button>
                   </div>
                 )}
-                <input
-                  type="file"
-                  id={id}
-                  hidden
-                  onChange={(e) => setter(e.target.files[0])}
-                />
-              </label>
+              </div>
             ))}
           </div>
         </div>

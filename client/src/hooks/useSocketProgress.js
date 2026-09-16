@@ -10,9 +10,14 @@ const useSocketProgress = (userId) => {
   useEffect(() => {
     if (!userId) return;
 
-    // Establish Socket.io connection
+    const token = localStorage.getItem("token") || "";
+
+    // Establish Socket.io connection with auth token
     const socket = io(backendUrl, {
-      transports: ["polling", "websocket"]
+      auth: { token, userId },
+      transports: ["polling", "websocket"],
+      reconnectionAttempts: 5,
+      timeout: 10000
     });
     socketRef.current = socket;
 

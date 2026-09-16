@@ -40,6 +40,8 @@ import {
 } from "lucide-react";
 import { backendUrl } from "../config";
 import { ProductGridSkeleton } from "../components/SkeletonLoader";
+import BrandLogo from "../components/BrandLogo";
+import { matchesFuzzySearch, rankProductsBySearchRelevance, normalizeAndCorrectQuery } from "../utils/fuzzySearch";
 
 const Discover = () => {
   const navigate = useNavigate();
@@ -463,16 +465,12 @@ const Discover = () => {
     return ["All", "Apple", "Samsung", "Nike", "Adidas", "boAt"];
   }, [dbBrands]);
 
-  // INTELLECTUAL DYNAMIC FILTERING & SMART SEARCH
+  // INTELLECTUAL DYNAMIC FILTERING & SMART SEARCH WITH TYPO TOLERANCE
   const filteredProducts = useMemo(() => {
-    return allProducts.filter((product) => {
-      // 1. Smart Search matching query
+    let list = allProducts.filter((product) => {
+      // 1. Smart Search matching query with Typo Tolerance
       if (searchQuery.trim() !== "") {
-        const query = searchQuery.toLowerCase();
-        const matchesName = product.name?.toLowerCase().includes(query);
-        const matchesBrand = product.brand?.toLowerCase().includes(query);
-        const matchesCategory = product.category?.toLowerCase().includes(query);
-        if (!matchesName && !matchesBrand && !matchesCategory) return false;
+        if (!matchesFuzzySearch(product, searchQuery)) return false;
       }
 
       // 2. Global category pill selection
@@ -516,6 +514,12 @@ const Discover = () => {
 
       return true;
     });
+
+    if (searchQuery.trim() !== "") {
+      list = rankProductsBySearchRelevance(list, searchQuery);
+    }
+
+    return list;
   }, [allProducts, searchQuery, selectedCategory, selectedBrand, selectedPrice, selectedRating, selectedAvailability, selectedDiscount]);
 
   // Dynamically update sub-sections based on category or search
@@ -745,9 +749,10 @@ const Discover = () => {
                           setSelectedBrand(b);
                           setOpenDropdown(null);
                         }}
-                        className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition ${ selectedBrand === b ? "bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 font-extrabold" : "" }`}
+                        className={`w-full text-left px-4 py-2.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition flex items-center gap-2 ${ selectedBrand === b ? "bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 font-extrabold" : "" }`}
                       >
-                        {b}
+                        {b !== "All" && <BrandLogo brand={b} className="w-3.5 h-3.5 rounded-2xs shrink-0" />}
+                        <span>{b}</span>
                       </button>
                     ))}
                   </div>
@@ -998,7 +1003,10 @@ const Discover = () => {
               >
                 {/* Brand header */}
                 <div className="flex justify-between items-center mb-3 z-10">
-                  <span className="font-black text-sm tracking-tight">{brand.logo}</span>
+                  <div className="flex items-center gap-2">
+                    <BrandLogo brand={brand.name} className="w-5 h-5 rounded-xs" />
+                    <span className="font-black text-sm tracking-tight">{brand.name}</span>
+                  </div>
                   <span className="px-2 py-0.5 text-[8px] font-black uppercase tracking-wider rounded bg-rose-600 text-slate-100 dark:text-white">
                     {brand.discount}
                   </span>

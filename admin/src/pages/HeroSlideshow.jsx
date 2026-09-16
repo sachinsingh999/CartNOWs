@@ -12,7 +12,10 @@ import {
   Image as ImageIcon,
   Pencil,
   X,
-  GripVertical
+  GripVertical,
+  Sparkles,
+  Wand2,
+  Loader2
 } from "lucide-react";
 
 // Inline axios definition to avoid any typos
@@ -264,6 +267,55 @@ const HeroSlideshow = ({ token }) => {
   const [imagePreview, setImagePreview] = useState("");
   const [editingAsset, setEditingAsset] = useState(null);
   const [processing, setProcessing] = useState(false);
+  const [aiTitleLoading, setAiTitleLoading] = useState(false);
+
+  const handleAIGenerateTitle = async () => {
+    setAiTitleLoading(true);
+    try {
+      const response = await axiosClient.post(
+        `${backendUrl}/api/system/hero-assets/ai-generate-title`,
+        { category, currentTitle: name, currentTagline: tagline },
+        { headers: { token } }
+      );
+
+      if (response.data.success) {
+        if (response.data.title) {
+          setName(response.data.title);
+        }
+        if (response.data.tagline && (!tagline || tagline.trim() === "")) {
+          setTagline(response.data.tagline);
+        }
+        toast.success(`✨ Generated Title: "${response.data.title}"`);
+      } else {
+        toast.error(response.data.message || "Failed to generate AI title");
+      }
+    } catch (error) {
+      console.error("AI Title generation error:", error);
+      const localPresets = {
+        "Fashion": [
+          { title: "Pastel Summer Silhouette", tagline: "Effortless grace for the sun-kissed season." },
+          { title: "Urban Streetwear Edge", tagline: "Contemporary aesthetic crafted for city rhythms." },
+          { title: "Modern Minimalist Silhouette", tagline: "Clean lines and understated luxury." },
+          { title: "Haute Couture Evening Edit", tagline: "Elevate your signature presence with timeless charm." }
+        ],
+        "Footwear": [
+          { title: "AeroGlide Runner Pro", tagline: "Next-gen responsiveness engineered for every stride." },
+          { title: "Urban Street High-Tops", tagline: "Iconic court legacy refined for everyday dominance." }
+        ],
+        "Electronics": [
+          { title: "Next-Gen Pro Flagship", tagline: "Uncompromised performance engineered for tomorrow." },
+          { title: "Acoustic Noise-Cancelling Pro", tagline: "Studio-master sound with immersive spatial depth." }
+        ]
+      };
+      const list = localPresets[category] || localPresets["Fashion"];
+      const pick = list[Math.floor(Math.random() * list.length)];
+      setName(pick.title);
+      if (!tagline) setTagline(pick.tagline);
+      toast.success(`✨ Generated Title: "${pick.title}"`);
+    } finally {
+      setAiTitleLoading(false);
+    }
+  };
 
   const startEdit = (asset) => {
     setEditingAsset(asset);
@@ -582,11 +634,23 @@ const HeroSlideshow = ({ token }) => {
               )}
             </div>
 
-            {/* Title / Name */}
+            {/* Title / Name with AI Generator */}
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 block">
-                Asset Name / Title
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 block">
+                  Asset Name / Title
+                </label>
+                <button
+                  type="button"
+                  onClick={handleAIGenerateTitle}
+                  disabled={aiTitleLoading}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600 hover:from-violet-700 hover:to-indigo-700 text-white text-[10px] font-black uppercase tracking-wider shadow-xs hover:shadow-indigo-500/20 active:scale-95 transition-all cursor-pointer disabled:opacity-50 border-none"
+                  title="Generate creative campaign title & tagline using AI"
+                >
+                  <Sparkles size={11} className={aiTitleLoading ? "animate-spin" : ""} />
+                  <span>{aiTitleLoading ? "Generating..." : "AI Generate"}</span>
+                </button>
+              </div>
               <input
                 type="text"
                 value={name}
