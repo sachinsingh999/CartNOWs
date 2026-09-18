@@ -155,7 +155,7 @@ const AiRobotChat = () => {
 
   return (
     <div 
-      className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80 rounded-md p-6 shadow-[0_12px_40px_rgba(0,0,0,0.03)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.25)] flex flex-col min-h-[500px] transition-all duration-300 hover:shadow-[0_16px_48px_rgba(99,102,241,0.05)] text-left overflow-hidden"
+      className="bg-slate-50/60 dark:bg-slate-950/40 border border-slate-200/90 dark:border-slate-800 rounded-sm p-5 sm:p-6 shadow-xs flex flex-col justify-between min-h-[480px] text-left overflow-hidden transition-all duration-300 select-none"
     >
       {/* Header */}
       <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800/50 text-left">

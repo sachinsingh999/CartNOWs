@@ -6,7 +6,7 @@ const SellerSpotlight = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm p-6 shadow-xs flex flex-col justify-between min-h-[500px]">
+    <div className="bg-slate-50/60 dark:bg-slate-950/40 border border-slate-200/90 dark:border-slate-800 rounded-sm p-5 sm:p-6 shadow-xs flex flex-col justify-between min-h-[480px] select-none text-left">
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-widest flex items-center gap-1.5">

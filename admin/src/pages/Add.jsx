@@ -15,6 +15,7 @@ const Add = ({ token }) => {
   const [image3, setImage3] = useState(false);
   const [image4, setImage4] = useState(false);
   const [removingBgSlot, setRemovingBgSlot] = useState(null);
+  const [isCustomCategory, setIsCustomCategory] = useState(false);
 
   const [form, setForm] = useState({
     name: "",
@@ -294,19 +295,121 @@ const Add = ({ token }) => {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className={labelClass}>Category</label>
-                <select
-                  value={form.category}
-                  onChange={(e) => updateField("category", e.target.value)}
-                  className={inputClass}
-                >
-                  <option>Fashion</option>
-                  <option>Electronics</option>
-                  <option>Accessories</option>
-                  <option>Footwear</option>
-                  <option>Home</option>
-                  <option>Beauty</option>
-                </select>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">Category</label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsCustomCategory(!isCustomCategory);
+                      if (!isCustomCategory && !form.category) updateField("category", "");
+                    }}
+                    className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+                  >
+                    {isCustomCategory ? "← Choose List" : "+ Custom"}
+                  </button>
+                </div>
+                {isCustomCategory ? (
+                  <input
+                    type="text"
+                    value={form.category}
+                    onChange={(e) => updateField("category", e.target.value)}
+                    placeholder="e.g. Vintage Leather, Smart IoT"
+                    className={inputClass}
+                    required
+                  />
+                ) : (
+                  <select
+                    value={form.category}
+                    onChange={(e) => {
+                      if (e.target.value === "__custom__") {
+                        setIsCustomCategory(true);
+                        updateField("category", "");
+                      } else {
+                        updateField("category", e.target.value);
+                      }
+                    }}
+                    className={inputClass}
+                  >
+                    <optgroup label="Popular Core">
+                      <option value="Fashion">Fashion</option>
+                      <option value="Footwear">Footwear</option>
+                      <option value="Electronics">Electronics</option>
+                      <option value="Beauty">Beauty</option>
+                      <option value="Fitness">Fitness</option>
+                      <option value="Accessories">Accessories</option>
+                      <option value="Home & Lifestyle">Home & Lifestyle</option>
+                      <option value="Kids Collection">Kids Collection</option>
+                    </optgroup>
+
+                    <optgroup label="Apparel & Fashion">
+                      <option value="Men's Fashion">Men's Fashion</option>
+                      <option value="Women's Fashion">Women's Fashion</option>
+                      <option value="Streetwear & Urban">Streetwear & Urban</option>
+                      <option value="Ethnic & Traditional">Ethnic & Traditional</option>
+                      <option value="Winter & Outerwear">Winter & Outerwear</option>
+                      <option value="Activewear & Sportswear">Activewear & Sportswear</option>
+                    </optgroup>
+
+                    <optgroup label="Footwear & Sneakers">
+                      <option value="Sneakers & Athletic">Sneakers & Athletic</option>
+                      <option value="Casual Shoes">Casual Shoes</option>
+                      <option value="Formal Shoes">Formal Shoes</option>
+                      <option value="Boots & Outdoor">Boots & Outdoor</option>
+                    </optgroup>
+
+                    <optgroup label="Electronics & Tech">
+                      <option value="Smartphones & Mobile">Smartphones & Mobile</option>
+                      <option value="Audio & Headphones">Audio & Headphones</option>
+                      <option value="Laptops & Computers">Laptops & Computers</option>
+                      <option value="Smartwatches & Wearables">Smartwatches & Wearables</option>
+                      <option value="Gaming & Consoles">Gaming & Consoles</option>
+                      <option value="Cameras & Photography">Cameras & Photography</option>
+                      <option value="Smart Home & Tech Gadgets">Smart Home & Tech Gadgets</option>
+                    </optgroup>
+
+                    <optgroup label="Beauty & Personal Care">
+                      <option value="Beauty & Cosmetics">Beauty & Cosmetics</option>
+                      <option value="Skincare & Bodycare">Skincare & Bodycare</option>
+                      <option value="Haircare & Styling">Haircare & Styling</option>
+                      <option value="Perfumes & Fragrances">Perfumes & Fragrances</option>
+                      <option value="Men's Grooming">Men's Grooming</option>
+                    </optgroup>
+
+                    <optgroup label="Home, Living & Appliances">
+                      <option value="Kitchen & Dining">Kitchen & Dining</option>
+                      <option value="Furniture & Living">Furniture & Living</option>
+                      <option value="Home Decor & Lighting">Home Decor & Lighting</option>
+                      <option value="Bedding & Bath">Bedding & Bath</option>
+                      <option value="Home Appliances">Home Appliances</option>
+                    </optgroup>
+
+                    <optgroup label="Sports, Fitness & Outdoor">
+                      <option value="Fitness & Gym">Fitness & Gym</option>
+                      <option value="Sports & Outdoor">Sports & Outdoor</option>
+                      <option value="Cycling & Bicycles">Cycling & Bicycles</option>
+                      <option value="Camping & Adventure">Camping & Adventure</option>
+                    </optgroup>
+
+                    <optgroup label="Luxury & Accessories">
+                      <option value="Jewelry & Fine Accessories">Jewelry & Fine Accessories</option>
+                      <option value="Luxury Watches">Luxury Watches</option>
+                      <option value="Bags, Backpacks & Luggage">Bags, Backpacks & Luggage</option>
+                      <option value="Eyewear & Sunglasses">Eyewear & Sunglasses</option>
+                    </optgroup>
+
+                    <optgroup label="Essentials & Lifestyle">
+                      <option value="Books & Stationery">Books & Stationery</option>
+                      <option value="Toys & Baby Care">Toys & Baby Care</option>
+                      <option value="Groceries & Gourmet">Groceries & Gourmet</option>
+                      <option value="Pet Supplies">Pet Supplies</option>
+                      <option value="Health & Wellness">Health & Wellness</option>
+                      <option value="Automotive & Tools">Automotive & Tools</option>
+                      <option value="Gifts & Festive">Gifts & Festive</option>
+                    </optgroup>
+
+                    <option value="__custom__">+ Enter Custom Category...</option>
+                  </select>
+                )}
               </div>
 
               <div>

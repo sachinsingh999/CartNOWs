@@ -16,28 +16,177 @@ import {
   ShieldCheck,
   Star,
   Crown,
-  Check
+  Check,
+  Calendar,
+  Clock,
+  ExternalLink
 } from "lucide-react";
 import { toast } from "react-toastify";
+import { backendUrl } from "../../config";
+import { cachedGet } from "../../utils/apiCache";
 
-/* Curated 1v1 Product Duels */
-const DUELS = [
+// Helper to deterministically calculate current week of the year & time left
+export const getCalendarWeekInfo = () => {
+  const now = new Date();
+  const startOfYear = new Date(now.getFullYear(), 0, 1);
+  const pastDaysOfYear = Math.floor((now - startOfYear) / 86400000);
+  const weekNumber = Math.ceil((pastDaysOfYear + startOfYear.getDay() + 1) / 7);
+
+  // Calculate days & hours left until next weekly rotation (Sunday midnight)
+  const dayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday ... 6 = Saturday
+  const daysLeft = dayOfWeek === 0 ? 0 : 7 - dayOfWeek;
+  const hoursLeft = 23 - now.getHours();
+  const minsLeft = 59 - now.getMinutes();
+
+  return {
+    weekNumber,
+    daysLeft,
+    hoursLeft,
+    minsLeft,
+    formattedCycle: `Week ${weekNumber} • Resets in ${daysLeft > 0 ? `${daysLeft}d ` : ""}${hoursLeft}h`
+  };
+};
+
+// Helper to get clean image URL for real products
+const getProductImage = (product) => {
+  if (!product) return "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80";
+  const raw = (Array.isArray(product.images) && product.images.length > 0)
+    ? product.images[0]
+    : (product.image || product.bgRemovedImage || "");
+  if (!raw || typeof raw !== "string") {
+    return "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80";
+  }
+  if (raw.startsWith("http://") || raw.startsWith("https://") || raw.startsWith("data:")) {
+    return raw;
+  }
+  const cleanPath = raw.startsWith("/") ? raw.slice(1) : raw;
+  return `${backendUrl}/${cleanPath}`;
+};
+
+// Helper to extract clean brand from real product
+const getProductBrand = (product) => {
+  if (product.brand && typeof product.brand === "string" && product.brand.trim()) {
+    return product.brand.trim();
+  }
+  const name = (product.name || "").trim();
+  const firstWord = name.split(" ")[0];
+  if (firstWord && firstWord.length > 2) return firstWord;
+  return product.category || "CartNow";
+};
+
+// Helper to format dynamic specifications from real product data
+const buildContenderSpecs = (product, competitor) => {
+  const specs = [];
+
+  // 1. Real specifications from database if available
+  if (Array.isArray(product.specifications) && product.specifications.length > 0) {
+    product.specifications.slice(0, 4).forEach((s) => {
+      if (s && s.key && s.value) {
+        specs.push({
+          label: s.key,
+          value: s.value,
+          winner: true
+        });
+      }
+    });
+  }
+
+  // 2. Fill with dynamic comparison points if needed
+  if (specs.length < 4) {
+    const rating = typeof product.rating === "number" ? product.rating : 4.8;
+    const compRating = typeof competitor?.rating === "number" ? competitor.rating : 4.6;
+    specs.push({
+      label: "Customer Rating",
+      value: `${rating.toFixed(1)} ★ (${product.ratingsCount || product.reviews?.length || 85}+ Reviews)`,
+      winner: rating >= compRating
+    });
+  }
+
+  if (specs.length < 4) {
+    const origPrice = product.originalPrice || Math.round(product.price * 1.25);
+    const saveAmt = Math.max(0, origPrice - product.price);
+    const compOrig = competitor ? (competitor.originalPrice || Math.round(competitor.price * 1.25)) : origPrice;
+    const compSave = competitor ? Math.max(0, compOrig - competitor.price) : saveAmt;
+    specs.push({
+      label: "Deal Value",
+      value: `Save ₹${saveAmt.toLocaleString("en-IN")} (${Math.round((saveAmt / origPrice) * 100)}% OFF)`,
+      winner: saveAmt >= compSave
+    });
+  }
+
+  if (specs.length < 4) {
+    specs.push({
+      label: "Availability",
+      value: (product.stock > 0 || product.stock === undefined) ? "In Stock • Express Delivery" : "Limited Stock Available",
+      winner: (product.stock > 0 || product.stock === undefined)
+    });
+  }
+
+  if (specs.length < 4) {
+    specs.push({
+      label: "Authenticity",
+      value: "100% Verified Brand Original",
+      winner: true
+    });
+  }
+
+  return specs.slice(0, 4);
+};
+
+// Helper to transform a real database product into a duel contender
+const formatContender = (product, competitor, side = "A") => {
+  const brand = getProductBrand(product);
+  const origPrice = product.originalPrice || Math.round(product.price * 1.25);
+  const rating = typeof product.rating === "number" ? product.rating : 4.8;
+  const compRating = competitor && typeof competitor.rating === "number" ? competitor.rating : 4.6;
+  
+  let badge = "Shopper's Choice";
+  if (rating >= 4.7 && rating >= compRating) {
+    badge = "Top Rated Pick";
+  } else if (product.price < (competitor?.price || product.price)) {
+    badge = "Best Value Favorite";
+  } else if (origPrice - product.price > 1000) {
+    badge = "Biggest Discount";
+  } else if (side === "A") {
+    badge = "Shopper's Value Favorite";
+  } else {
+    badge = "Premium Flagship Pick";
+  }
+
+  return {
+    id: product._id || `prod_${side}`,
+    _id: product._id,
+    name: product.name || "Featured Product",
+    brand,
+    price: product.price || 999,
+    originalPrice: origPrice,
+    rating,
+    image: getProductImage(product),
+    badge,
+    tagline: product.subCategory || product.category || (product.description ? product.description.slice(0, 45) + "..." : "High Performance Gear"),
+    specs: buildContenderSpecs(product, competitor),
+    rawProduct: product
+  };
+};
+
+/* Curated Fallback Duels (Used only if database has 0 products or is loading) */
+const FALLBACK_DUELS = [
   {
     id: "duel_audio",
+    category: "Audio",
     tabLabel: "ANC Audio Titans",
-    category: "Flagship Audio",
     title: "Flagship Studio ANC Crown: Sony vs Apple",
     subtitle: "Battle of ultimate sound isolation, acoustics, and comfort. Which one takes your daily playlist?",
     totalVotesBase: 12480,
     contenderA: {
       id: "duel_sony_xm5",
+      _id: "duel_sony_xm5",
       name: "Sony WH-1000XM5 Studio Wireless",
       brand: "Sony",
       price: 26990,
       originalPrice: 34990,
       rating: 4.9,
       image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80",
-      votesRatio: 0.64, // 64%
       badge: "Shopper's Value Favorite",
       tagline: "30h ANC • LDAC Hi-Res Audio",
       specs: [
@@ -49,13 +198,13 @@ const DUELS = [
     },
     contenderB: {
       id: "duel_airpods_max",
+      _id: "duel_airpods_max",
       name: "Apple AirPods Max Spatial Audio",
       brand: "Apple",
       price: 49900,
       originalPrice: 59900,
       rating: 4.8,
       image: "https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&w=600&q=80",
-      votesRatio: 0.36, // 36%
       badge: "Build Quality King",
       tagline: "Stainless Steel • Spatial Audio",
       specs: [
@@ -67,161 +216,355 @@ const DUELS = [
     }
   },
   {
-    id: "duel_sneakers",
-    tabLabel: "Sneaker Supremacy",
-    category: "Footwear & Streetwear",
-    title: "Streetwear Cushion Clash: Nike vs Adidas",
-    subtitle: "Air-Sole responsiveness vs Continental energy return. Pick your weapon for 20,000 daily steps.",
-    totalVotesBase: 14820,
+    id: "duel_phones",
+    category: "Smartphones",
+    tabLabel: "Flagship Phones",
+    title: "Titanium Powerhouse: iPhone 15 Pro vs Galaxy S24 Ultra",
+    subtitle: "A17 Pro ray-tracing gaming vs Galaxy AI 200MP zoom beast. Choose your everyday driver.",
+    totalVotesBase: 18940,
     contenderA: {
-      id: "duel_nike_pulse",
-      name: "Nike Air Max Pulse Runner",
-      brand: "Nike",
-      price: 9995,
-      originalPrice: 13995,
+      id: "duel_iphone_15pro",
+      _id: "duel_iphone_15pro",
+      name: "Apple iPhone 15 Pro 256GB Titanium",
+      brand: "Apple",
+      price: 124900,
+      originalPrice: 134900,
       rating: 4.9,
-      image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80",
-      votesRatio: 0.53, // 53%
-      badge: "Street Style Icon",
-      tagline: "Point-Loaded Air • Urban Fit",
+      image: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=600&q=80",
+      badge: "Benchmark King",
+      tagline: "A17 Pro Chip • Action Button • Titanium",
       specs: [
-        { label: "Cushioning", value: "Point-Loaded Air Chamber", winner: true },
-        { label: "Upper", value: "Breathable Layered Mesh", winner: false },
-        { label: "Traction", value: "Waffle Rubber Outsole", winner: false },
-        { label: "Weight", value: "295g Agile", winner: true }
+        { label: "Chipset", value: "3nm Apple A17 Pro Bionic", winner: true },
+        { label: "Build", value: "Grade 5 Titanium Frame", winner: true },
+        { label: "Video", value: "4K 60fps ProRes Log Output", winner: true },
+        { label: "OS Support", value: "6+ Years iOS Updates", winner: true }
       ]
     },
     contenderB: {
-      id: "duel_adidas_boost",
-      name: "Adidas Ultraboost Light 23",
-      brand: "Adidas",
-      price: 11999,
-      originalPrice: 17999,
+      id: "duel_galaxy_s24u",
+      _id: "duel_galaxy_s24u",
+      name: "Samsung Galaxy S24 Ultra 5G AI",
+      brand: "Samsung",
+      price: 129999,
+      originalPrice: 144999,
       rating: 4.8,
-      image: "https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=600&q=80",
-      votesRatio: 0.47, // 47%
-      badge: "Marathon Comfort",
-      tagline: "Light BOOST • Continental Grip",
+      image: "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?auto=format&fit=crop&w=600&q=80",
+      badge: "Camera & Productivity Titan",
+      tagline: "Snapdragon 8 Gen 3 • S-Pen • 200MP Quad",
       specs: [
-        { label: "Cushioning", value: "30% Lighter Light BOOST", winner: false },
-        { label: "Upper", value: "Primeknit+ Forged Fit", winner: true },
-        { label: "Traction", value: "Continental™ Natural Rubber", winner: true },
-        { label: "Weight", value: "305g Endurance", winner: false }
+        { label: "Chipset", value: "Snapdragon 8 Gen 3 for Galaxy", winner: false },
+        { label: "Zoom Camera", value: "200MP + 50MP 5x Optical Periscope", winner: true },
+        { label: "Stylus", value: "Embedded S-Pen with Bluetooth", winner: true },
+        { label: "Display", value: "6.8\" QHD+ 2600 nits Anti-Glare", winner: true }
       ]
     }
   },
   {
-    id: "duel_smartwatch",
-    tabLabel: "Smartwatch Titan",
-    category: "Wearables & Health",
-    title: "Health Telemetry Titan: Samsung vs Apple",
-    subtitle: "Sapphire glass & bioelectrical impedance vs Precision S9 Double Tap. Which wrist companion wins?",
-    totalVotesBase: 10930,
+    id: "duel_sneakers",
+    category: "Footwear",
+    tabLabel: "Sneaker Supremacy",
+    title: "Streetwear Icon Duel: Air Jordan 1 vs Yeezy Boost 350",
+    subtitle: "Heritage basketball leather classic vs Cloud-like Primeknit comfort. Which defines your street drip?",
+    totalVotesBase: 14210,
     contenderA: {
-      id: "duel_samsung_watch",
-      name: "Samsung Galaxy Watch 6 Pro",
-      brand: "Samsung",
-      price: 18499,
-      originalPrice: 29999,
-      rating: 4.8,
-      image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=600&q=80",
-      votesRatio: 0.49, // 49%
-      badge: "Body Composition Pro",
-      tagline: "Sapphire Glass • 40h Battery",
+      id: "duel_aj1_chicago",
+      _id: "duel_aj1_chicago",
+      name: "Nike Air Jordan 1 Retro High OG",
+      brand: "Nike",
+      price: 16995,
+      originalPrice: 19995,
+      rating: 4.9,
+      image: "https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=600&q=80",
+      badge: "Timeless Cultural Icon",
+      tagline: "Full-Grain Leather • Air-Sole Cushioning",
       specs: [
-        { label: "Display", value: "Sapphire Crystal AMOLED", winner: true },
-        { label: "Health", value: "BIA Body Fat + ECG + BP", winner: true },
-        { label: "Battery", value: "Up to 40 Hours", winner: true },
-        { label: "Bezel", value: "Rotating Physical Crown", winner: true }
+        { label: "Upper", value: "Premium Full-Grain Leather", winner: true },
+        { label: "Cushioning", value: "Encapsulated Air-Sole Unit", winner: false },
+        { label: "Resale Value", value: "High Collector Demand", winner: true },
+        { label: "Heritage", value: "1985 Iconic Silhouette", winner: true }
       ]
     },
     contenderB: {
-      id: "duel_apple_watch",
-      name: "Apple Watch Series 9 GPS",
-      brand: "Apple",
-      price: 38900,
-      originalPrice: 44900,
-      rating: 4.9,
-      image: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?auto=format&fit=crop&w=600&q=80",
-      votesRatio: 0.51, // 51%
-      badge: "Gesture Magic S9",
-      tagline: "2000 Nits • Double Tap Gesture",
+      id: "duel_yeezy_350",
+      _id: "duel_yeezy_350",
+      name: "Adidas Yeezy Boost 350 V2 Onyx",
+      brand: "Adidas",
+      price: 21999,
+      originalPrice: 24999,
+      rating: 4.8,
+      image: "https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?auto=format&fit=crop&w=600&q=80",
+      badge: "All-Day Comfort King",
+      tagline: "Primeknit Upper • Full-Length Boost",
       specs: [
-        { label: "Display", value: "2000 Nits Edge-to-Edge", winner: false },
-        { label: "Health", value: "ECG + Oxygen + Temp Sensor", winner: false },
-        { label: "Battery", value: "18-36h Low Power Mode", winner: false },
-        { label: "Gesture", value: "Double Tap Hands-Free", winner: true }
+        { label: "Upper", value: "Re-engineered Primeknit", winner: false },
+        { label: "Cushioning", value: "Full-Length TPU Boost Midsole", winner: true },
+        { label: "Breathability", value: "Ultra-Light Monofilament", winner: true },
+        { label: "Fit", value: "Sock-Like Adaptive Wrap", winner: true }
+      ]
+    }
+  },
+  {
+    id: "duel_consoles",
+    category: "Gaming",
+    tabLabel: "Console Warfare",
+    title: "Next-Gen Gaming Crown: PS5 Slim vs Xbox Series X",
+    subtitle: "DualSense adaptive triggers vs Game Pass ultimate power. Who wins your living room?",
+    totalVotesBase: 16520,
+    contenderA: {
+      id: "duel_ps5_slim",
+      _id: "duel_ps5_slim",
+      name: "Sony PlayStation 5 Slim 1TB",
+      brand: "Sony",
+      price: 44990,
+      originalPrice: 54990,
+      rating: 4.9,
+      image: "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?auto=format&fit=crop&w=600&q=80",
+      badge: "Top Rated Gaming",
+      tagline: "Ultra High-Speed SSD • Tempest 3D Audio",
+      specs: [
+        { label: "Storage", value: "1TB Ultra-Fast Custom NVMe", winner: true },
+        { label: "Controller", value: "DualSense Haptic Feedback", winner: true },
+        { label: "Output", value: "4K 120Hz + 8K HDR Support", winner: true },
+        { label: "Ecosystem", value: "PlayStation Exclusives VR2", winner: true }
+      ]
+    },
+    contenderB: {
+      id: "duel_xbox_sx",
+      _id: "duel_xbox_sx",
+      name: "Microsoft Xbox Series X 1TB",
+      brand: "Microsoft",
+      price: 47990,
+      originalPrice: 55990,
+      rating: 4.8,
+      image: "https://images.unsplash.com/photo-1621259182978-fbf93132d53d?auto=format&fit=crop&w=600&q=80",
+      badge: "Pure Raw Power",
+      tagline: "12 Teraflops GPU • Quick Resume",
+      specs: [
+        { label: "Storage", value: "1TB Custom NVMe SSD", winner: false },
+        { label: "Raw Compute", value: "12.15 TFLOPS RDNA 2 GPU", winner: true },
+        { label: "Subscription", value: "Xbox Game Pass Ultimate", winner: true },
+        { label: "Feature", value: "Quick Resume Multi-Game", winner: true }
       ]
     }
   }
 ];
 
-const ProductDuel = ({ onQuickView, onAddToCart }) => {
+/**
+ * Dynamically builds 1v1 Product Duels directly from the product catalog
+ * Auto-rotates pairings every week deterministically based on calendar weekNumber!
+ */
+const buildDynamicDuelsFromProducts = (products, weekNumber = 1) => {
+  if (!Array.isArray(products) || products.length < 2) {
+    return FALLBACK_DUELS;
+  }
+
+  // Group products by category
+  const categoryMap = {};
+  products.forEach((p) => {
+    if (!p || !p.name || (!p.price && p.price !== 0)) return;
+    const cat = (p.category || "Featured").trim();
+    if (!categoryMap[cat]) {
+      categoryMap[cat] = [];
+    }
+    categoryMap[cat].push(p);
+  });
+
+  const dynamicDuels = [];
+
+  // 1. Build category-based duels
+  const categories = Object.keys(categoryMap);
+  categories.forEach((cat, catIdx) => {
+    const catProds = categoryMap[cat];
+    if (catProds.length >= 2) {
+      const N = catProds.length;
+      
+      // Deterministic weekly rotation index selection
+      const indexA = (weekNumber * 3 + catIdx * 2) % N;
+      let indexB = (indexA + 1 + (weekNumber % Math.max(1, N - 1))) % N;
+      if (indexB === indexA) {
+        indexB = (indexA + 1) % N;
+      }
+
+      const prodA = catProds[indexA];
+      const prodB = catProds[indexB];
+
+      const brandA = getProductBrand(prodA);
+      const brandB = getProductBrand(prodB);
+      const tabLabel = `${cat} Clash`;
+      const title = `${brandA} vs ${brandB}: The ${cat} Showdown`;
+      const subtitle = `Compare design, pricing, and specs between ${prodA.name} and ${prodB.name}. Vote for your favorite!`;
+
+      // Deterministic realistic base votes
+      const baseVotes = 8000 + ((catIdx * 1973 + weekNumber * 451) % 11000);
+
+      dynamicDuels.push({
+        id: `duel_cat_${cat.toLowerCase().replace(/[^a-z0-9]/g, "_")}_${weekNumber}`,
+        category: cat,
+        tabLabel,
+        title,
+        subtitle,
+        totalVotesBase: baseVotes,
+        contenderA: formatContender(prodA, prodB, "A"),
+        contenderB: formatContender(prodB, prodA, "B")
+      });
+    }
+  });
+
+  // 2. If fewer than 4 duels, add cross-catalog top-picks duels
+  if (dynamicDuels.length < 4 && products.length >= 4) {
+    const validProds = products.filter(p => p && p.name && (p.price || p.price === 0));
+    const N = validProds.length;
+    const offset1 = (weekNumber * 2) % N;
+    const offset2 = (offset1 + Math.floor(N / 2)) % N;
+
+    if (N >= 2) {
+      const pA = validProds[offset1];
+      const pB = validProds[offset2] || validProds[(offset1 + 1) % N];
+      if (pA && pB && pA._id !== pB._id) {
+        dynamicDuels.push({
+          id: `duel_featured_top_${weekNumber}`,
+          category: "Featured",
+          tabLabel: "Trending Showdown",
+          title: `${getProductBrand(pA)} vs ${getProductBrand(pB)}: Best Sellers Duel`,
+          subtitle: `Community face-off between two of our hottest trending items. Which one wins your vote?`,
+          totalVotesBase: 14850,
+          contenderA: formatContender(pA, pB, "A"),
+          contenderB: formatContender(pB, pA, "B")
+        });
+      }
+    }
+  }
+
+  return dynamicDuels.length > 0 ? dynamicDuels : FALLBACK_DUELS;
+};
+
+const ProductDuel = ({ homepageData, onQuickView, onAddToCart }) => {
   const navigate = useNavigate();
-  const [activeDuelId, setActiveDuelId] = useState("duel_audio");
-  const [userVotes, setUserVotes] = useState({});
+
+  // 1. Calculate deterministic weekly cycle & countdown
+  const weekInfo = useMemo(() => getCalendarWeekInfo(), []);
+
+  // 2. Fetch and manage dynamic catalog products from database
+  const [dbProducts, setDbProducts] = useState(() => {
+    if (homepageData) {
+      const combined = [
+        ...(homepageData.dealsOfDay || []),
+        ...(homepageData.newArrivals || []),
+        ...(homepageData.trending || []),
+        ...(homepageData.bestSellers || []),
+        ...(homepageData.topRated || []),
+        ...(homepageData.mostViewed || [])
+      ];
+      if (combined.length > 0) return combined;
+    }
+    return [];
+  });
 
   useEffect(() => {
+    let isMounted = true;
+    if (homepageData) {
+      const combined = [
+        ...(homepageData.dealsOfDay || []),
+        ...(homepageData.newArrivals || []),
+        ...(homepageData.trending || []),
+        ...(homepageData.bestSellers || []),
+        ...(homepageData.topRated || []),
+        ...(homepageData.mostViewed || [])
+      ];
+      if (combined.length > 0) {
+        setDbProducts(combined);
+      }
+    }
+
+    // Always fetch full database catalogue for complete auto-selection
+    cachedGet(`${backendUrl}/api/product/list?limit=250`)
+      .then((res) => {
+        if (isMounted && res?.data?.success && Array.isArray(res.data.products) && res.data.products.length > 0) {
+          setDbProducts(res.data.products);
+        }
+      })
+      .catch((err) => {
+        console.warn("Could not fetch database products for weekly duel:", err?.message);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [homepageData]);
+
+  // 3. Generate dynamic duels list from real products (auto-rotates weekly)
+  const availableDuels = useMemo(() => {
+    return buildDynamicDuelsFromProducts(dbProducts, weekInfo.weekNumber);
+  }, [dbProducts, weekInfo.weekNumber]);
+
+  // Determine this week's active featured showdown
+  const weeklyFeaturedId = useMemo(() => {
+    if (!availableDuels || availableDuels.length === 0) return "";
+    const idx = (weekInfo.weekNumber - 1) % availableDuels.length;
+    return availableDuels[idx >= 0 ? idx : 0].id;
+  }, [availableDuels, weekInfo.weekNumber]);
+
+  const [activeDuelId, setActiveDuelId] = useState("");
+  const [userVotes, setUserVotes] = useState({});
+
+  // Initialize and auto-switch to active week's showdown
+  useEffect(() => {
+    if (weeklyFeaturedId && (!activeDuelId || !availableDuels.some(d => d.id === activeDuelId))) {
+      setActiveDuelId(weeklyFeaturedId);
+    }
+  }, [weeklyFeaturedId, availableDuels]);
+
+  // Load user votes from localStorage on mount
+  useEffect(() => {
     try {
-      const saved = JSON.parse(localStorage.getItem("cartnow_duel_votes") || "{}");
-      setUserVotes(saved);
-    } catch (e) {}
+      const savedVotes = JSON.parse(localStorage.getItem("cartnow_duel_votes") || "{}");
+      setUserVotes(savedVotes);
+    } catch (e) {
+      console.warn("Failed to load duel votes:", e);
+    }
   }, []);
 
   const currentDuel = useMemo(() => {
-    return DUELS.find((d) => d.id === activeDuelId) || DUELS[0];
-  }, [activeDuelId]);
+    return availableDuels.find((d) => d.id === activeDuelId) || availableDuels[0] || FALLBACK_DUELS[0];
+  }, [availableDuels, activeDuelId]);
 
-  const votedContender = userVotes[currentDuel.id];
-
-  // Dynamic vote calculations with user interaction
+  // Calculate live vote tally with dynamic user voting
   const voteStats = useMemo(() => {
-    let baseVotesA = Math.round(currentDuel.totalVotesBase * currentDuel.contenderA.votesRatio);
-    let baseVotesB = Math.round(currentDuel.totalVotesBase * currentDuel.contenderB.votesRatio);
+    const baseTotal = currentDuel.totalVotesBase || 10000;
+    const userVote = userVotes[currentDuel.id];
 
-    if (votedContender === "A") baseVotesA += 1;
-    if (votedContender === "B") baseVotesB += 1;
+    let countA = Math.round(baseTotal * 0.54);
+    let countB = baseTotal - countA;
 
-    const total = baseVotesA + baseVotesB;
-    const percentA = Math.round((baseVotesA / total) * 100);
+    if (userVote === "A") countA += 1;
+    if (userVote === "B") countB += 1;
+
+    const total = countA + countB;
+    const percentA = Math.round((countA / total) * 100);
     const percentB = 100 - percentA;
 
-    return { total, votesA: baseVotesA, votesB: baseVotesB, percentA, percentB };
-  }, [currentDuel, votedContender]);
+    return { countA, countB, total, percentA, percentB };
+  }, [currentDuel, userVotes]);
 
-  const handleCastVote = (choice) => {
-    const updated = { ...userVotes, [currentDuel.id]: choice };
+  const handleCastVote = (side) => {
+    const updated = { ...userVotes, [currentDuel.id]: side };
     setUserVotes(updated);
     try {
       localStorage.setItem("cartnow_duel_votes", JSON.stringify(updated));
-    } catch (e) {}
+    } catch (e) { }
 
-    const contenderName = choice === "A" ? currentDuel.contenderA.name : currentDuel.contenderB.name;
-    toast.success(`🎉 Voted for ${contenderName}!`);
+    const chosenName = side === "A" ? currentDuel.contenderA.name : currentDuel.contenderB.name;
+    toast.success(`🎉 You voted for ${chosenName}! Your choice is recorded.`);
   };
+
+  const votedContender = userVotes[currentDuel.id];
 
   const handleAddToCartContender = (contender) => {
-    if (onAddToCart) {
+    if (contender.rawProduct && onAddToCart) {
+      onAddToCart(contender.rawProduct, 1, "Standard");
+    } else if (onAddToCart) {
       onAddToCart({
-        _id: contender.id,
-        name: contender.name,
-        price: contender.price,
-        originalPrice: contender.originalPrice,
-        images: [contender.image],
-        category: currentDuel.category,
-        brand: contender.brand,
-        stock: 30
-      }, 1, "Standard");
-    } else {
-      toast.success(`Added ${contender.name} to cart! 🛍️`);
-      navigate("/cart");
-    }
-  };
-
-  const handleQuickViewContender = (contender) => {
-    if (onQuickView) {
-      onQuickView({
-        _id: contender.id,
+        _id: contender._id || contender.id,
         name: contender.name,
         price: contender.price,
         originalPrice: contender.originalPrice,
@@ -229,9 +572,38 @@ const ProductDuel = ({ onQuickView, onAddToCart }) => {
         category: currentDuel.category,
         brand: contender.brand,
         rating: contender.rating,
-        description: `Featured Duel Contender: ${contender.name}. Engineered for premium performance and backed by official brand warranty.`,
-        stock: 30
+        description: `Featured Weekly Duel: ${contender.name}`,
+        stock: 50
+      }, 1, "Standard");
+    } else {
+      toast.success(`Added ${contender.name} to cart! 🛒`);
+    }
+  };
+
+  const handleQuickViewContender = (contender) => {
+    if (contender.rawProduct && onQuickView) {
+      onQuickView(contender.rawProduct);
+    } else if (onQuickView) {
+      onQuickView({
+        _id: contender._id || contender.id,
+        name: contender.name,
+        price: contender.price,
+        originalPrice: contender.originalPrice,
+        images: [contender.image],
+        category: currentDuel.category,
+        brand: contender.brand,
+        rating: contender.rating,
+        description: `Featured Weekly Duel: ${contender.name}`,
+        stock: 50
       });
+    }
+  };
+
+  const handleOpenProductDetail = (contender) => {
+    if (contender._id && !contender._id.startsWith("duel_")) {
+      navigate(`/product/${contender._id}`);
+    } else {
+      navigate("/product");
     }
   };
 
@@ -241,7 +613,7 @@ const ProductDuel = ({ onQuickView, onAddToCart }) => {
       {/* Top Header Row */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3.5">
         <div className="text-left space-y-1">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-rose-50 dark:bg-rose-950/60 border border-rose-200/80 dark:border-rose-800/60 rounded-sm text-[9px] font-black uppercase tracking-wider text-rose-700 dark:text-rose-300 shadow-2xs">
               <Swords size={11} className="stroke-[2.5]" />
               <span>COMMUNITY DUEL</span>
@@ -250,6 +622,12 @@ const ProductDuel = ({ onQuickView, onAddToCart }) => {
             <span className="px-2 py-0.5 rounded-sm bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold">
               1v1 Head-to-Head
             </span>
+
+            {/* Weekly Auto-Rotation Indicator Badge */}
+            <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-sm bg-amber-50 dark:bg-amber-950/50 border border-amber-200/80 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 text-[9.5px] font-extrabold shadow-2xs">
+              <Clock size={10} className="stroke-[2.5] text-amber-600 dark:text-amber-400 animate-pulse" />
+              <span>Weekly Refresh: {weekInfo.daysLeft > 0 ? `${weekInfo.daysLeft}d ` : ""}{weekInfo.hoursLeft}h left</span>
+            </div>
           </div>
 
           <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
@@ -258,7 +636,7 @@ const ProductDuel = ({ onQuickView, onAddToCart }) => {
           </h2>
 
           <p className="text-xs font-bold text-slate-500 dark:text-slate-400">
-            Vote for your favorite gear, see what {voteStats.total.toLocaleString("en-IN")} shoppers prefer, and unlock verified duel pricing.
+            Vote for your favorite gear, see what {voteStats.total.toLocaleString("en-IN")} shoppers prefer, and unlock verified duel pricing. <span className="text-slate-700 dark:text-slate-300 font-extrabold">Auto-selected from our live catalog!</span>
           </p>
         </div>
 
@@ -274,13 +652,14 @@ const ProductDuel = ({ onQuickView, onAddToCart }) => {
         </div>
       </div>
 
-      {/* Dedicated Filter Tabs Strip (Horizontal scrollable) */}
+      {/* Dedicated Filter Tabs Strip (Horizontal scrollable with Weekly Indicators) */}
       <div 
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         className="w-full flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar scrollbar-none [&::-webkit-scrollbar]:hidden pb-2.5 pt-0.5 mb-4 border-b border-slate-100 dark:border-slate-800/80"
       >
-        {DUELS.map((duel) => {
+        {availableDuels.map((duel) => {
           const isActive = activeDuelId === duel.id;
+          const isThisWeek = duel.id === weeklyFeaturedId;
           const userChoice = userVotes[duel.id];
 
           return (
@@ -293,11 +672,21 @@ const ProductDuel = ({ onQuickView, onAddToCart }) => {
               className={`px-3 py-1.5 rounded-sm text-[10.5px] font-black uppercase tracking-wider border transition-colors duration-150 cursor-pointer shadow-2xs flex items-center gap-1.5 shrink-0 select-none ${
                 isActive
                   ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-slate-900 dark:border-white shadow-xs"
+                  : isThisWeek
+                  ? "bg-amber-50/80 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 border-amber-300/80 dark:border-amber-700/60"
                   : "bg-white dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 border-slate-200/90 dark:border-slate-700 hover:border-slate-400 hover:text-slate-950 dark:hover:text-white"
               }`}
             >
-              <Swords size={12} className={isActive ? "text-rose-400 dark:text-rose-600" : "text-slate-400"} />
+              <Swords size={12} className={isActive ? "text-rose-400 dark:text-rose-600" : isThisWeek ? "text-amber-600 dark:text-amber-400" : "text-slate-400"} />
               <span>{duel.tabLabel}</span>
+
+              {/* This Week's Active Showdown Badge */}
+              {isThisWeek && (
+                <span className="text-[8px] px-1 py-0.2 rounded-sm font-black bg-amber-500 text-slate-950 tracking-tight">
+                  THIS WEEK
+                </span>
+              )}
+
               {userChoice && (
                 <span className="text-[8.5px] px-1 py-0.2 rounded-sm font-bold bg-emerald-500 text-white">
                   VOTED
@@ -315,7 +704,7 @@ const ProductDuel = ({ onQuickView, onAddToCart }) => {
             {voteStats.percentA >= voteStats.percentB && (
               <Crown size={12} className="text-amber-500 fill-amber-400" />
             )}
-            <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+            <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
             <span>{currentDuel.contenderA.brand} ({voteStats.percentA}%)</span>
           </div>
 
@@ -324,17 +713,17 @@ const ProductDuel = ({ onQuickView, onAddToCart }) => {
             <span>{voteStats.total.toLocaleString("en-IN")} Shoppers Voted</span>
           </div>
 
-          <div className="flex items-center gap-1.5 text-purple-600 dark:text-purple-400">
+          <div className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400">
             <span>{currentDuel.contenderB.brand} ({voteStats.percentB}%)</span>
-            <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
+            <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
             {voteStats.percentB > voteStats.percentA && (
               <Crown size={12} className="text-amber-500 fill-amber-400" />
             )}
           </div>
         </div>
 
-        {/* Dual Progress Meter */}
-        <div className="relative w-full h-3 bg-slate-200 dark:bg-slate-700 rounded-sm overflow-hidden flex shadow-inner">
+        {/* Single Color Progress Meter */}
+        <div className="relative w-full h-2.5 bg-slate-200 dark:bg-slate-700 rounded-sm overflow-hidden flex shadow-inner">
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${voteStats.percentA}%` }}
@@ -345,7 +734,7 @@ const ProductDuel = ({ onQuickView, onAddToCart }) => {
             initial={{ width: 0 }}
             animate={{ width: `${voteStats.percentB}%` }}
             transition={{ duration: 0.6, ease: "easeOut" }}
-            className="h-full bg-purple-600 relative"
+            className="h-full bg-blue-400/80 dark:bg-blue-800/80 relative"
           />
         </div>
       </div>
@@ -386,11 +775,14 @@ const ProductDuel = ({ onQuickView, onAddToCart }) => {
 
             {/* Product Image & Main Details */}
             <div className="flex flex-col sm:flex-row items-center gap-3.5 mb-3.5">
-              <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-sm overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700 shrink-0">
+              <div 
+                onClick={() => handleOpenProductDetail(currentDuel.contenderA)}
+                className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-sm overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700 shrink-0 cursor-pointer group"
+              >
                 <img
                   src={currentDuel.contenderA.image}
                   alt={currentDuel.contenderA.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
 
@@ -398,10 +790,13 @@ const ProductDuel = ({ onQuickView, onAddToCart }) => {
                 <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-wider block">
                   {currentDuel.contenderA.brand}
                 </span>
-                <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white line-clamp-2 leading-tight">
+                <h3 
+                  onClick={() => handleOpenProductDetail(currentDuel.contenderA)}
+                  className="text-sm sm:text-base font-black text-slate-900 dark:text-white line-clamp-2 leading-tight cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                >
                   {currentDuel.contenderA.name}
                 </h3>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold mt-0.5">
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold mt-0.5 line-clamp-1">
                   {currentDuel.contenderA.tagline}
                 </p>
 
@@ -466,9 +861,9 @@ const ProductDuel = ({ onQuickView, onAddToCart }) => {
               type="button"
               onClick={() => handleQuickViewContender(currentDuel.contenderA)}
               title="Quick View"
-              className="w-8 h-8 rounded-sm bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 flex items-center justify-center shrink-0 transition-colors"
+              className="p-2 rounded-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer shadow-2xs"
             >
-              <Eye size={13} className="stroke-[2.5]" />
+              <Eye size={14} />
             </button>
           </div>
         </motion.div>
@@ -478,14 +873,14 @@ const ProductDuel = ({ onQuickView, onAddToCart }) => {
           whileHover={{ y: -2 }}
           className={`relative bg-white dark:bg-slate-900 border rounded-sm p-4 flex flex-col justify-between transition-all duration-200 ${
             votedContender === "B"
-              ? "border-purple-500 dark:border-purple-400 shadow-md ring-2 ring-purple-500/20"
+              ? "border-blue-500 dark:border-blue-400 shadow-md ring-2 ring-blue-500/20"
               : "border-slate-200/90 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
           }`}
         >
           <div>
             {/* Top Badge & Status */}
             <div className="flex items-center justify-between mb-3">
-              <span className="px-2.5 py-0.5 bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 font-black text-[9px] uppercase tracking-wider rounded-sm">
+              <span className="px-2.5 py-0.5 bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 font-black text-[9px] uppercase tracking-wider rounded-sm">
                 {currentDuel.contenderB.badge}
               </span>
 
@@ -499,22 +894,28 @@ const ProductDuel = ({ onQuickView, onAddToCart }) => {
 
             {/* Product Image & Main Details */}
             <div className="flex flex-col sm:flex-row items-center gap-3.5 mb-3.5">
-              <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-sm overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700 shrink-0">
+              <div 
+                onClick={() => handleOpenProductDetail(currentDuel.contenderB)}
+                className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-sm overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700 shrink-0 cursor-pointer group"
+              >
                 <img
                   src={currentDuel.contenderB.image}
                   alt={currentDuel.contenderB.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
 
               <div className="min-w-0 flex-1 text-center sm:text-left">
-                <span className="text-[10px] font-black text-purple-600 dark:text-purple-400 uppercase tracking-wider block">
+                <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-wider block">
                   {currentDuel.contenderB.brand}
                 </span>
-                <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white line-clamp-2 leading-tight">
+                <h3 
+                  onClick={() => handleOpenProductDetail(currentDuel.contenderB)}
+                  className="text-sm sm:text-base font-black text-slate-900 dark:text-white line-clamp-2 leading-tight cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                >
                   {currentDuel.contenderB.name}
                 </h3>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold mt-0.5">
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold mt-0.5 line-clamp-1">
                   {currentDuel.contenderB.tagline}
                 </p>
 
@@ -540,7 +941,7 @@ const ProductDuel = ({ onQuickView, onAddToCart }) => {
                   <div className="flex items-center gap-1">
                     <span className="font-black text-slate-800 dark:text-slate-200">{spec.value}</span>
                     {spec.winner && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-purple-500" title="Leading Spec" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-500" title="Leading Spec" />
                     )}
                   </div>
                 </div>
@@ -557,8 +958,8 @@ const ProductDuel = ({ onQuickView, onAddToCart }) => {
               onClick={() => handleCastVote("B")}
               className={`flex-1 py-2 px-3 rounded-sm font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs ${
                 votedContender === "B"
-                  ? "bg-purple-600 text-white shadow-purple-500/20"
-                  : "bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-purple-600 hover:text-white"
+                  ? "bg-blue-600 text-white shadow-blue-500/20"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-blue-600 hover:text-white"
               }`}
             >
               <ThumbsUp size={13} className="stroke-[2.5]" />
@@ -579,9 +980,9 @@ const ProductDuel = ({ onQuickView, onAddToCart }) => {
               type="button"
               onClick={() => handleQuickViewContender(currentDuel.contenderB)}
               title="Quick View"
-              className="w-8 h-8 rounded-sm bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 flex items-center justify-center shrink-0 transition-colors"
+              className="p-2 rounded-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer shadow-2xs"
             >
-              <Eye size={13} className="stroke-[2.5]" />
+              <Eye size={14} />
             </button>
           </div>
         </motion.div>

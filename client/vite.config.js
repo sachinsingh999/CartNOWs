@@ -16,8 +16,12 @@ export default defineConfig({
     include: ['@react-oauth/google', 'react-router-dom', 'framer-motion', 'axios', 'lucide-react']
   },
   build: {
+    target: 'esnext',
+    assetsInlineLimit: 4096,
     cssCodeSplit: true,
     cssMinify: 'esbuild',
+    minify: 'esbuild',
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
         manualChunks(id) {

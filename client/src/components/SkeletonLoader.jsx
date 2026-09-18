@@ -116,44 +116,37 @@ export const HeroSplitBannerSkeleton = () => (
 
 /* ─────────────── 2. TECH AD BANNER SKELETON (EXACT 1-TO-1) ─────────────── */
 export const TechAdBannerSkeleton = () => (
-  <section className="w-full px-2 sm:px-4 lg:px-6 pt-1 pb-1.5 select-none animate-pulse">
-    <div className="relative w-full rounded-sm overflow-hidden border border-slate-200/90 dark:border-slate-800 bg-gradient-to-r from-[#F8FAFC] via-[#EEF4FF] to-[#E2ECFF] dark:from-slate-900 dark:via-slate-850 dark:to-slate-900 h-[180px] sm:h-[220px] md:h-[260px] lg:h-[290px] xl:h-[310px] p-4 sm:p-7 flex items-center justify-between">
+  <section className="w-full px-2 sm:px-4 lg:px-6 py-0.5 sm:py-1 select-none animate-pulse">
+    <div className="relative w-full max-w-[1600px] mx-auto rounded-none overflow-hidden border border-slate-200/80 dark:border-slate-800/80 bg-gradient-to-r from-[#F9F7FF] via-[#F4F1FD] to-[#EDF2FE] dark:from-slate-900 dark:via-slate-850 dark:to-slate-900 min-h-[300px] min-[400px]:min-h-[320px] sm:min-h-[360px] md:min-h-[400px] lg:min-h-[430px] xl:min-h-[440px] px-3.5 sm:px-8 md:px-10 lg:px-12 pt-3.5 sm:pt-6 md:pt-7 pb-10 sm:pb-14 lg:pb-14 flex flex-row items-center justify-between">
       
       {/* Left Column: Text & CTA */}
-      <div className="w-full md:w-[50%] lg:w-[46%] flex flex-col justify-center space-y-2.5 sm:space-y-3.5 z-10">
-        <div className="h-4 sm:h-5 w-44 bg-blue-100 dark:bg-blue-950/60 rounded-sm" />
-        <div className="space-y-1.5">
-          <div className="h-6 sm:h-8 md:h-9 w-4/5 bg-slate-300/80 dark:bg-slate-700/80 rounded-sm" />
-          <div className="h-6 sm:h-8 md:h-9 w-3/5 bg-slate-300/80 dark:bg-slate-700/80 rounded-sm" />
+      <div className="w-[58%] min-[480px]:w-[54%] sm:w-[50%] lg:w-[44%] flex flex-col justify-center space-y-2 sm:space-y-3 z-10 pr-2 sm:pr-4">
+        <div className="h-4 sm:h-5 w-32 sm:w-48 bg-indigo-200/70 dark:bg-indigo-950/70 rounded-none" />
+        <div className="space-y-1.5 sm:space-y-2">
+          <div className="h-5 sm:h-8 md:h-10 w-4/5 bg-slate-300/80 dark:bg-slate-700/80 rounded-none" />
+          <div className="h-5 sm:h-8 md:h-10 w-3/5 bg-slate-300/80 dark:bg-slate-700/80 rounded-none" />
         </div>
-        <div className="h-3 sm:h-3.5 w-3/4 max-w-sm bg-slate-200 dark:bg-slate-800 rounded-sm" />
+        <div className="h-3 sm:h-4 w-3/4 max-w-sm bg-slate-200 dark:bg-slate-800 rounded-none" />
         
+        {/* Spec chips */}
+        <div className="flex items-center gap-1 sm:gap-2 pt-1">
+          <div className="h-4 sm:h-6 w-16 sm:w-24 bg-slate-200/80 dark:bg-slate-800/80 rounded-none" />
+          <div className="h-4 sm:h-6 w-16 sm:w-28 bg-slate-200/80 dark:bg-slate-800/80 rounded-none" />
+          <div className="hidden sm:block h-6 w-20 bg-slate-200/80 dark:bg-slate-800/80 rounded-none" />
+        </div>
+
         {/* Action Buttons */}
-        <div className="flex items-center gap-2 sm:gap-3 pt-1">
-          <div className="h-8 sm:h-10 w-32 bg-blue-300 dark:bg-blue-700 rounded-sm" />
-          <div className="h-8 sm:h-10 w-24 bg-amber-100 dark:bg-amber-950/60 rounded-sm" />
-        </div>
-
-        {/* Perks */}
-        <div className="hidden sm:flex items-center gap-4 pt-1">
-          <div className="h-3 w-28 bg-slate-200 dark:bg-slate-800 rounded-sm" />
-          <div className="h-3 w-28 bg-slate-200 dark:bg-slate-800 rounded-sm" />
+        <div className="flex items-center gap-2 sm:gap-3 pt-1 sm:pt-2">
+          <div className="h-7 sm:h-11 w-24 sm:w-36 bg-indigo-400/80 dark:bg-indigo-600/80 rounded-none" />
+          <div className="hidden min-[360px]:block h-7 sm:h-11 w-20 sm:w-28 bg-slate-200/80 dark:bg-slate-800/80 rounded-none" />
         </div>
       </div>
 
-      {/* Right Column: Model Runway Group Silhouettes */}
-      <div className="hidden md:flex h-full w-[48%] items-end justify-end -space-x-8 pr-4">
-        <div className="h-[80%] w-24 bg-slate-200/80 dark:bg-slate-800/80 rounded-t-2xl" />
-        <div className="h-[95%] w-28 bg-slate-300/80 dark:bg-slate-700/80 rounded-t-2xl z-10" />
-        <div className="h-[85%] w-24 bg-slate-200/80 dark:bg-slate-800/80 rounded-t-2xl" />
+      {/* Right Column: 3D Floating Showcase Stage Silhouette */}
+      <div className="w-[42%] min-[480px]:w-[46%] sm:w-[50%] lg:w-[56%] h-full flex items-end justify-center pb-1">
+        <div className="w-[120px] min-[400px]:w-[140px] sm:w-[200px] md:w-[220px] h-[160px] min-[400px]:h-[190px] sm:h-[240px] md:h-[280px] bg-slate-300/60 dark:bg-slate-800/60 rounded-xl" />
       </div>
 
-      {/* Floating Bottom Left Indicator */}
-      <div className="absolute bottom-2.5 left-4 sm:left-7 z-20 flex gap-1.5 bg-white/80 dark:bg-slate-900/80 p-1 rounded-sm border border-slate-200/80 dark:border-slate-800">
-        <div className="h-1.5 w-6 rounded-sm bg-blue-500" />
-        <div className="h-1.5 w-2 rounded-sm bg-slate-200 dark:bg-slate-700" />
-        <div className="h-1.5 w-2 rounded-sm bg-slate-200 dark:bg-slate-700" />
-      </div>
     </div>
   </section>
 );

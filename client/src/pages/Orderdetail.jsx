@@ -36,6 +36,8 @@ import {
   ChevronDown,
   ChevronUp,
   Star,
+  ArrowUpDown,
+  Sparkles,
 } from "lucide-react";
 import { backendUrl } from "../config";
 import { useLanguage } from "../context/LanguageContext";
@@ -63,6 +65,43 @@ const Orderdetail = () => {
   const [expandedOrders, setExpandedOrders] = useState({});
   const toggleOrderExpand = (orderId) => {
     setExpandedOrders((prev) => ({ ...prev, [orderId]: !prev[orderId] }));
+  };
+
+  const cartCount = React.useMemo(() => {
+    try {
+      const cart = JSON.parse(localStorage.getItem("cart") || "{}");
+      return Object.values(cart).reduce((sum, q) => sum + (typeof q === "number" ? q : 0), 0) || 0;
+    } catch (e) {
+      return 0;
+    }
+  }, []);
+
+  const activeCount = React.useMemo(() => {
+    return orderData.filter((item) => {
+      const s = String(item.status || "").toLowerCase();
+      return ["placed", "order placed", "confirmed", "packed", "processing", "shipped", "out for delivery"].includes(s);
+    }).length;
+  }, [orderData]);
+
+  const deliveredCount = React.useMemo(() => {
+    return orderData.filter((item) => {
+      const s = String(item.status || "").toLowerCase();
+      return s === "delivered" || s === "completed";
+    }).length;
+  }, [orderData]);
+
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefreshOrders = async () => {
+    setIsRefreshing(true);
+    try {
+      await fetchOrders();
+      toast.success("Orders refreshed! 🔄");
+    } catch (e) {
+      // handled inside fetchOrders
+    } finally {
+      setTimeout(() => setIsRefreshing(false), 500);
+    }
   };
 
   const getProductRating = (productId, productName) => {
@@ -502,178 +541,144 @@ const Orderdetail = () => {
     <div className="min-h-screen bg-[#F8F9FC] dark:bg-[#050508] px-3 sm:px-6 py-6 sm:py-8 text-[#121217] dark:text-[#FFFFFF] transition-colors duration-200">
       <div className="w-full max-w-[1536px] mx-auto space-y-6">
         
-        {/* MOBILE HEADER BAR */}
-        <div className="block lg:hidden mb-6">
-          <div className="flex items-center justify-between h-14 border-b border-[#E5E7EB] dark:border-slate-800/50 px-1 mb-4">
-            <button 
-              onClick={() => navigate(-1)} 
-              className="p-2 rounded bg-slate-100 hover:bg-slate-200 dark:bg-[#111827] dark:hover:bg-[#1F2937] border border-transparent dark:border-slate-800 transition text-[#4B5563] dark:text-[#CFCFD8] cursor-pointer"
-            >
-              <ChevronLeft size={18} />
-            </button>
-            <h2 className="text-sm font-black text-[#121217] dark:text-[#FFFFFF] tracking-wide">My Orders</h2>
-            <div className="flex items-center gap-2">
-              <button 
-                onClick={() => setShowSearchInput(!showSearchInput)}
-                className="p-2 rounded bg-slate-100 hover:bg-slate-200 dark:bg-[#111827] dark:hover:bg-[#1F2937] border border-transparent dark:border-slate-800 transition text-[#4B5563] dark:text-[#CFCFD8] cursor-pointer"
-              >
-                <Search size={16} />
-              </button>
-              <button
-                onClick={() => navigate("/cart")}
-                className="p-2 rounded bg-slate-100 hover:bg-slate-200 dark:bg-[#111827] dark:hover:bg-[#1F2937] border border-transparent dark:border-slate-800 transition relative cursor-pointer"
-              >
-                <ShoppingBag size={16} />
-                <span className="absolute -top-0.5 -right-0.5 h-3.5 w-3.5 bg-[#10B981] text-[8px] font-black text-slate-100 dark:text-[#FFFFFF] rounded-full flex items-center justify-center border border-white dark:border-[#050508]">
-                  3
-                </span>
-              </button>
-            </div>
-          </div>
-
-          {/* Collapsible Search Input Box */}
-          <AnimatePresence>
-            {showSearchInput && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                className="overflow-hidden w-full mb-4 px-1"
-              >
-                <input
-                  type="text"
-                  placeholder="Search by product name or order ID..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full rounded border border-[#E5E7EB] dark:border-slate-800 bg-[#FFFFFF] dark:bg-[#111827] px-4 py-2.5 text-xs font-semibold outline-none transition text-[#121217] dark:text-[#FFFFFF] placeholder-[#7A7D89] dark:placeholder-[#8E8EA0] focus:ring-2 focus:ring-[#10B981]"
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Page Title & Subtitle below header */}
-          <div className="text-left py-2 px-1">
-            <h1 className="text-2xl font-black text-[#121217] dark:text-[#FFFFFF]">Orders</h1>
-            <p className="text-xs text-[#4B5563] dark:text-[#8E8EA0] font-semibold mt-1">Track, manage and view your orders</p>
-          </div>
-        </div>
-
-        {/* DESKTOP HEADER BLOCK */}
-        <div className="hidden lg:flex flex-col gap-4 text-left mb-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="mt-1 text-2xl sm:text-3xl font-extrabold tracking-tight text-[#121217] dark:text-[#FFFFFF]">{t("my_orders")}</h1>
-            </div>
-            
-            {/* Header Icons */}
+        {/* COMPACT & SHARP HEADER BAR */}
+        <div className="flex flex-col gap-3 mb-5 text-left">
+          {/* Top Line: Title & Fast Action Buttons */}
+          <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <button 
-                onClick={() => setShowSearchInput(!showSearchInput)}
-                className="p-2.5 rounded bg-slate-100 hover:bg-slate-200 dark:bg-[#111827] dark:hover:bg-[#1F2937] border border-transparent dark:border-slate-800 transition text-[#4B5563] dark:text-[#CFCFD8] cursor-pointer"
-                title="Search Orders"
+              <button
+                onClick={() => navigate(-1)}
+                className="h-8 w-8 rounded-xs bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 transition cursor-pointer flex items-center justify-center shrink-0"
+                title="Go Back"
               >
-                <Search size={16} />
+                <ChevronLeft size={16} />
               </button>
+              <div className="flex items-center gap-2.5">
+                <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white uppercase">
+                  {t("my_orders")}
+                </h1>
+                <span className="hidden sm:inline-block px-2 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 rounded-xs">
+                  {orderData.length} Total
+                </span>
+                {activeCount > 0 && (
+                  <span className="hidden sm:inline-flex items-center gap-1.5 px-2 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 rounded-xs">
+                    <span className="h-1.5 w-1.5 rounded-none bg-emerald-500" />
+                    {activeCount} Active
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Quick Actions: Search Toggle / Input, Refresh, Cart */}
+            <div className="flex items-center gap-2 shrink-0">
+              {/* Compact Sharp Search Input */}
+              <div className="relative flex items-center">
+                <Search size={14} className="absolute left-2.5 text-slate-400 dark:text-slate-500 pointer-events-none" />
+                <input
+                  type="text"
+                  placeholder="Search orders or ID..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="h-8 w-36 sm:w-56 pl-7 pr-6 text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-indigo-600 dark:focus:border-indigo-500 transition"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-1.5 p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition cursor-pointer"
+                  >
+                    <X size={12} />
+                  </button>
+                )}
+              </div>
+
+              <button
+                onClick={handleRefreshOrders}
+                disabled={isRefreshing}
+                className="h-8 w-8 rounded-xs bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 flex items-center justify-center transition cursor-pointer disabled:opacity-50"
+                title="Refresh Orders"
+              >
+                <RefreshCw size={14} className={isRefreshing ? "animate-spin text-indigo-600 dark:text-indigo-400" : "text-slate-500 dark:text-slate-400"} />
+              </button>
+
               <button
                 onClick={() => navigate("/cart")}
-                className="p-2.5 rounded bg-slate-100 hover:bg-slate-200 dark:bg-[#111827] dark:hover:bg-[#1F2937] border border-transparent dark:border-slate-800 transition text-[#4B5563] dark:text-[#CFCFD8] relative cursor-pointer"
-                title="View Cart"
+                className="h-8 px-2.5 rounded-xs bg-slate-100 hover:bg-slate-200 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 flex items-center gap-1.5 text-xs font-bold relative transition cursor-pointer"
+                title="Shopping Cart"
               >
-                <ShoppingBag size={16} />
-                <span className="absolute -top-1 -right-1 h-4.5 w-4.5 bg-[#10B981] text-[9px] font-black text-white rounded-full flex items-center justify-center border border-white dark:border-[#050508]">
-                  3
-                </span>
+                <ShoppingBag size={14} />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 w-4 bg-[#10B981] text-[9px] font-black text-white rounded-xs flex items-center justify-center border border-white dark:border-slate-900">
+                    {cartCount}
+                  </span>
+                )}
               </button>
             </div>
           </div>
 
-          {/* Collapsible Search Input Box */}
-          <AnimatePresence>
-            {showSearchInput && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                className="overflow-hidden w-full max-w-md"
+          {/* Bottom Line: Status Filter Tabs & Sort Button (Sharp Corners, Compact) */}
+          <div className="flex flex-wrap items-center justify-between gap-2.5 pt-1">
+            {/* Status Tabs */}
+            <div className="flex items-center overflow-x-auto scrollbar-none gap-1.5 py-0.5">
+              {["All", "Processing", "Shipped", "Delivered", "Returns", "Cancelled"].map((tab) => {
+                const isActive = selectedTab === tab;
+                const count = orderData.filter((item) => {
+                  if (tab === "All") return true;
+                  const s = String(item.status || "").toLowerCase();
+                  if (tab === "Processing") return ["placed", "order placed", "confirmed", "packed", "processing"].includes(s);
+                  if (tab === "Shipped") return ["shipped", "out for delivery"].includes(s);
+                  if (tab === "Delivered") return s === "delivered" || s === "completed";
+                  if (tab === "Returns") {
+                    const hasReq = returnRequests.some((r) => isOrderMatch(r.orderId, item));
+                    const hasRMA = rmaList.some((rma) => isOrderMatch(rma.orderId, item));
+                    return hasReq || hasRMA || s.includes("return") || s.includes("refund");
+                  }
+                  if (tab === "Cancelled") return s === "cancelled";
+                  return true;
+                }).length;
+
+                return (
+                  <button
+                    key={tab}
+                    onClick={() => {
+                      setSelectedTab(tab);
+                      setOpenActionMenuIndex(null);
+                    }}
+                    className={`relative px-3 py-1.5 text-xs font-black uppercase tracking-wider rounded-xs outline-none cursor-pointer flex items-center gap-1.5 transition-colors shrink-0 ${
+                      isActive
+                        ? "bg-indigo-600 text-white border border-indigo-600"
+                        : "bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800"
+                    }`}
+                  >
+                    <span>{tab}</span>
+                    <span
+                      className={`px-1.5 py-0.2 rounded-xs text-[9px] font-mono font-black transition-colors ${
+                        isActive
+                          ? "bg-white/20 text-white"
+                          : "bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                      }`}
+                    >
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Sort Toggle Button with Sharp Corners */}
+            <div className="flex items-center gap-2 shrink-0 ml-auto sm:ml-0">
+              <button
+                onClick={() => {
+                  const nextSort = sortOrder === "latest" ? "oldest" : "latest";
+                  setSortOrder(nextSort);
+                  toast.info(`Sorted by ${nextSort === "latest" ? "Latest First" : "Oldest First"} 🔄`);
+                }}
+                className="h-8 px-3 rounded-xs bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white transition cursor-pointer"
+                title="Toggle sort order"
               >
-                <input
-                  type="text"
-                  placeholder="Search by product name or order ID..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full rounded border border-[#E5E7EB] dark:border-slate-800 bg-[#FFFFFF] dark:bg-[#111827] px-4 py-2 text-xs font-semibold outline-none transition text-[#121217] dark:text-[#FFFFFF] placeholder-[#7A7D89] dark:placeholder-[#8E8EA0] focus:ring-2 focus:ring-[#10B981]"
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
-        {/* Combined Status Tabs, Filter & Sort Bar */}
-        <div className="flex flex-wrap items-center justify-between bg-transparent border-none rounded-xl px-0 py-0 mb-6 gap-3">
-          {/* Left: Status Tabs with Live Order Count Badges */}
-          <div className="flex items-center overflow-x-auto scrollbar-none gap-2 py-0.5">
-            {["All", "Processing", "Shipped", "Delivered", "Returns", "Cancelled"].map((tab) => {
-              const isActive = selectedTab === tab;
-              const count = orderData.filter((item) => {
-                if (tab === "All") return true;
-                const s = String(item.status || "").toLowerCase();
-                if (tab === "Processing") return ["placed", "order placed", "confirmed", "packed", "processing"].includes(s);
-                if (tab === "Shipped") return ["shipped", "out for delivery"].includes(s);
-                if (tab === "Delivered") return s === "delivered" || s === "completed";
-                if (tab === "Returns") {
-                  const hasReq = returnRequests.some((r) => isOrderMatch(r.orderId, item));
-                  const hasRMA = rmaList.some((rma) => isOrderMatch(rma.orderId, item));
-                  return hasReq || hasRMA || s.includes("return") || s.includes("refund");
-                }
-                if (tab === "Cancelled") return s === "cancelled";
-                return true;
-              }).length;
-
-              return (
-                <button
-                  key={tab}
-                  onClick={() => {
-                    setSelectedTab(tab);
-                    setOpenActionMenuIndex(null);
-                  }}
-                  className={`relative py-1.5 px-3.5 text-xs font-black uppercase tracking-wider whitespace-nowrap rounded-sm outline-none cursor-pointer flex items-center gap-2 transition-colors duration-200 ${
-                    isActive
-                      ? "text-white"
-                      : "bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-800"
-                  }`}
-                >
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeTabIndicator"
-                      className="absolute inset-0 bg-indigo-600 rounded-sm z-0 shadow-xs"
-                      transition={{ type: "spring", stiffness: 450, damping: 35 }}
-                    />
-                  )}
-                  <span className="relative z-10">{tab}</span>
-                  <span className={`relative z-10 px-1.5 py-0.5 rounded-sm text-[9px] font-black transition-colors duration-200 ${
-                    isActive ? "bg-white/20 text-white" : "bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
-                  }`}>
-                    {count}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Right: Filter & Sort Actions */}
-          <div className="flex items-center gap-2.5 shrink-0 py-0.5">
-            <button 
-              onClick={() => {
-                setSortOrder(prev => prev === "latest" ? "oldest" : "latest");
-                toast.info(`Sorted by ${sortOrder === "latest" ? "Oldest First" : "Latest First"} 🔄`);
-              }}
-              className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white transition cursor-pointer bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800 px-3.5 py-1.5 rounded-sm"
-            >
-              <svg className="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-              </svg>
-              <span>Sort ({sortOrder === "latest" ? "Latest" : "Oldest"})</span>
-            </button>
+                <ArrowUpDown size={13} className="text-slate-400 shrink-0" />
+                <span>Sort ({sortOrder === "latest" ? "Latest" : "Oldest"})</span>
+              </button>
+            </div>
           </div>
         </div>
 

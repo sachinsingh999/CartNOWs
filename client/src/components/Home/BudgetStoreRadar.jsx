@@ -23,280 +23,8 @@ import {
   Radar
 } from "lucide-react";
 import { toast } from "react-toastify";
-
-/* Curated Fallback Data for Budget Radar Tiers */
-const BUDGET_FALLBACKS = {
-  under499: [
-    {
-      _id: "budget_499_1",
-      name: "Braided 65W Fast Charging Type-C Cable (2M)",
-      price: 349,
-      originalPrice: 899,
-      category: "Electronics",
-      images: ["https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=500&q=80"],
-      dropAmount: 250,
-      dropText: "Dropped ₹250 today",
-      stock: 50,
-      rating: 4.8,
-      reviewsCount: 320
-    },
-    {
-      _id: "budget_499_2",
-      name: "Minimalist Matte Stainless Cardholder Wallet",
-      price: 449,
-      originalPrice: 1199,
-      category: "Accessories",
-      images: ["https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=500&q=80"],
-      dropAmount: 400,
-      dropText: "Lowest in 30 Days",
-      stock: 35,
-      rating: 4.7,
-      reviewsCount: 190
-    },
-    {
-      _id: "budget_499_3",
-      name: "Magnetic Car Air Vent Phone Mount",
-      price: 399,
-      originalPrice: 999,
-      category: "Automotive",
-      images: ["https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?auto=format&fit=crop&w=500&q=80"],
-      dropAmount: 300,
-      dropText: "Dropped ₹300 today",
-      stock: 42,
-      rating: 4.6,
-      reviewsCount: 145
-    },
-    {
-      _id: "budget_499_4",
-      name: "Ergonomic Memory Foam Mouse Wrist Rest",
-      price: 499,
-      originalPrice: 1299,
-      category: "Peripherals",
-      images: ["https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&w=500&q=80"],
-      dropAmount: 450,
-      dropText: "62% Price Drop",
-      stock: 28,
-      rating: 4.9,
-      reviewsCount: 410
-    }
-  ],
-  under999: [
-    {
-      _id: "budget_999_1",
-      name: "Bluetooth 5.3 Deep Bass Neckband Earphones",
-      price: 899,
-      originalPrice: 2499,
-      category: "Audio",
-      images: ["https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=500&q=80"],
-      dropAmount: 800,
-      dropText: "Dropped ₹800 today",
-      stock: 30,
-      rating: 4.8,
-      reviewsCount: 540
-    },
-    {
-      _id: "budget_999_2",
-      name: "Ultra-Compact 10000mAh Power Bank 22.5W",
-      price: 949,
-      originalPrice: 2199,
-      category: "Electronics",
-      images: ["https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?auto=format&fit=crop&w=500&q=80"],
-      dropAmount: 650,
-      dropText: "57% Price Drop",
-      stock: 45,
-      rating: 4.7,
-      reviewsCount: 290
-    },
-    {
-      _id: "budget_999_3",
-      name: "Water-Resistant Anti-Theft Urban Daypack",
-      price: 799,
-      originalPrice: 1999,
-      category: "Bags",
-      images: ["https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=500&q=80"],
-      dropAmount: 600,
-      dropText: "Dropped ₹600 today",
-      stock: 20,
-      rating: 4.9,
-      reviewsCount: 380
-    },
-    {
-      _id: "budget_999_4",
-      name: "Smart RGB Ambient LED Monitor Light Bar",
-      price: 999,
-      originalPrice: 2899,
-      category: "Lighting",
-      images: ["https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&w=500&q=80"],
-      dropAmount: 900,
-      dropText: "66% Price Drop",
-      stock: 18,
-      rating: 4.8,
-      reviewsCount: 460
-    }
-  ],
-  under1999: [
-    {
-      _id: "budget_1999_1",
-      name: "Active Noise Cancelling Wireless Over-Ear Headphones",
-      price: 1799,
-      originalPrice: 4999,
-      category: "Audio",
-      images: ["https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=500&q=80"],
-      dropAmount: 1800,
-      dropText: "Dropped ₹1,800 today",
-      stock: 22,
-      rating: 4.9,
-      reviewsCount: 820
-    },
-    {
-      _id: "budget_1999_2",
-      name: "1.96\" AMOLED Bluetooth Calling Smartwatch",
-      price: 1899,
-      originalPrice: 5999,
-      category: "Wearables",
-      images: ["https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=500&q=80"],
-      dropAmount: 2100,
-      dropText: "68% Mega Drop",
-      stock: 26,
-      rating: 4.8,
-      reviewsCount: 650
-    },
-    {
-      _id: "budget_1999_3",
-      name: "Retro Mechanical Gaming Keyboard Hot-Swappable",
-      price: 1699,
-      originalPrice: 4299,
-      category: "Peripherals",
-      images: ["https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=500&q=80"],
-      dropAmount: 1200,
-      dropText: "Dropped ₹1,200 today",
-      stock: 15,
-      rating: 4.8,
-      reviewsCount: 310
-    },
-    {
-      _id: "budget_1999_4",
-      name: "Ultralight Breathable Cushion Running Shoes",
-      price: 1499,
-      originalPrice: 3999,
-      category: "Footwear",
-      images: ["https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=500&q=80"],
-      dropAmount: 1500,
-      dropText: "63% Price Drop",
-      stock: 35,
-      rating: 4.9,
-      reviewsCount: 920
-    }
-  ],
-  drops50: [
-    {
-      _id: "budget_drop_1",
-      name: "True 65W GaN Fast Charger 3-Port Matrix",
-      price: 1299,
-      originalPrice: 3499,
-      category: "Electronics",
-      images: ["https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=500&q=80"],
-      dropAmount: 2200,
-      dropText: "63% Off Deal",
-      stock: 19,
-      rating: 4.9,
-      reviewsCount: 440
-    },
-    {
-      _id: "budget_drop_2",
-      name: "Titanium Polarized UV400 Wayfarer Sunglasses",
-      price: 899,
-      originalPrice: 2999,
-      category: "Fashion",
-      images: ["https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=500&q=80"],
-      dropAmount: 2100,
-      dropText: "70% Price Drop",
-      stock: 40,
-      rating: 4.8,
-      reviewsCount: 510
-    },
-    {
-      _id: "budget_drop_3",
-      name: "Wireless Magnetic Charging Station 3-in-1",
-      price: 1499,
-      originalPrice: 4499,
-      category: "Electronics",
-      images: ["https://images.unsplash.com/photo-1622445262464-84b1456045b6?auto=format&fit=crop&w=500&q=80"],
-      dropAmount: 3000,
-      dropText: "Dropped ₹3,000 today",
-      stock: 14,
-      rating: 4.9,
-      reviewsCount: 780
-    },
-    {
-      _id: "budget_drop_4",
-      name: "Waterproof Travel Grooming & Trimmer Kit Pro",
-      price: 999,
-      originalPrice: 2799,
-      category: "Grooming",
-      images: ["https://images.unsplash.com/photo-1621607512214-68297480165e?auto=format&fit=crop&w=500&q=80"],
-      dropAmount: 1800,
-      dropText: "64% Price Drop",
-      stock: 28,
-      rating: 4.7,
-      reviewsCount: 260
-    }
-  ],
-  under299: [
-    {
-      _id: "budget_299_1",
-      name: "High-Speed MicroSD / USB-C Card Reader",
-      price: 199,
-      originalPrice: 599,
-      category: "Electronics",
-      images: ["https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=500&q=80"],
-      dropAmount: 200,
-      dropText: "67% Price Drop",
-      stock: 60,
-      rating: 4.6,
-      reviewsCount: 190
-    },
-    {
-      _id: "budget_299_2",
-      name: "Microfiber Display & Lens Cleaning Kit",
-      price: 249,
-      originalPrice: 699,
-      category: "Accessories",
-      images: ["https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?auto=format&fit=crop&w=500&q=80"],
-      dropAmount: 250,
-      dropText: "Dropped ₹250 today",
-      stock: 75,
-      rating: 4.8,
-      reviewsCount: 310
-    },
-    {
-      _id: "budget_299_3",
-      name: "Silicone Cable Management Organizer (5-Pack)",
-      price: 179,
-      originalPrice: 499,
-      category: "Peripherals",
-      images: ["https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&w=500&q=80"],
-      dropAmount: 180,
-      dropText: "64% Off Steal",
-      stock: 80,
-      rating: 4.9,
-      reviewsCount: 420
-    },
-    {
-      _id: "budget_299_4",
-      name: "Anti-Blue Light Computer Gaming Glasses",
-      price: 299,
-      originalPrice: 999,
-      category: "Eyewear",
-      images: ["https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=500&q=80"],
-      dropAmount: 450,
-      dropText: "70% Price Drop",
-      stock: 35,
-      rating: 4.7,
-      reviewsCount: 280
-    }
-  ]
-};
+import { backendUrl } from "../../config";
+import { cachedGet } from "../../utils/apiCache";
 
 const BudgetStoreRadar = ({
   homepageData = {},
@@ -308,6 +36,7 @@ const BudgetStoreRadar = ({
   const navigate = useNavigate();
   const [activeTier, setActiveTier] = useState("under499");
   const [hoveredCardId, setHoveredCardId] = useState(null);
+  const [allDbProducts, setAllDbProducts] = useState([]);
 
   const TIERS = [
     { id: "under499", label: "Under ₹499", tag: "⚡ STEALS", icon: Zap, iconColor: "text-amber-500" },
@@ -317,9 +46,29 @@ const BudgetStoreRadar = ({
     { id: "under299", label: "Under ₹299", tag: "🪙 POCKET", icon: BadgePercent, iconColor: "text-emerald-500" }
   ];
 
-  // Dynamic products filtering from available catalog + fallback items
+  // Fetch full product catalog from DB for complete inventory scanning
+  useEffect(() => {
+    let isMounted = true;
+    const fetchAllProducts = async () => {
+      try {
+        const res = await cachedGet(`${backendUrl}/api/product/list?limit=250`);
+        if (isMounted && res?.data?.success && Array.isArray(res.data.products)) {
+          setAllDbProducts(res.data.products);
+        }
+      } catch (err) {
+        console.error("BudgetRadar: failed to load product catalog:", err);
+      }
+    };
+    fetchAllProducts();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Dynamic products filtering exclusively from real database catalog
   const displayProducts = useMemo(() => {
     const rawCatalog = [
+      ...allDbProducts,
       ...(homepageData.dealsOfDay || []),
       ...(homepageData.bestSellers || []),
       ...(homepageData.newArrivals || []),
@@ -327,46 +76,63 @@ const BudgetStoreRadar = ({
       ...(homepageData.recommended || [])
     ];
 
-    // Deduplicate items by _id
+    // Deduplicate items strictly by database _id & filter out invalid/dummy items
     const seenIds = new Set();
     const allCatalog = [];
     rawCatalog.forEach((p) => {
-      if (p && p._id && !seenIds.has(p._id.toString())) {
-        seenIds.add(p._id.toString());
+      if (
+        p &&
+        p._id &&
+        !seenIds.has(String(p._id)) &&
+        !p.isDeleted &&
+        p.status !== "disabled" &&
+        Number(p.price) > 0 &&
+        !String(p.name || "").toLowerCase().startsWith("test_")
+      ) {
+        seenIds.add(String(p._id));
         allCatalog.push(p);
       }
     });
 
+    if (allCatalog.length === 0) return [];
+
     let filtered = [];
     if (activeTier === "under299") {
-      filtered = allCatalog.filter((p) => p.price <= 299);
+      filtered = allCatalog
+        .filter((p) => Number(p.price) <= 299)
+        .sort((a, b) => Number(a.price) - Number(b.price));
     } else if (activeTier === "under499") {
-      filtered = allCatalog.filter((p) => p.price <= 499);
+      filtered = allCatalog
+        .filter((p) => Number(p.price) <= 499)
+        .sort((a, b) => Number(a.price) - Number(b.price));
     } else if (activeTier === "under999") {
-      filtered = allCatalog.filter((p) => p.price <= 999);
+      filtered = allCatalog
+        .filter((p) => Number(p.price) <= 999)
+        .sort((a, b) => Number(a.price) - Number(b.price));
     } else if (activeTier === "under1999") {
-      filtered = allCatalog.filter((p) => p.price <= 1999);
+      filtered = allCatalog
+        .filter((p) => Number(p.price) <= 1999)
+        .sort((a, b) => Number(a.price) - Number(b.price));
     } else if (activeTier === "drops50") {
-      filtered = allCatalog.filter((p) => {
-        const orig = p.originalPrice || Math.round(p.price * 1.5);
-        return ((orig - p.price) / orig) >= 0.5;
-      });
-    }
-
-    // Merge with high-yield fallback items if catalog has few items
-    const fallbacks = BUDGET_FALLBACKS[activeTier] || BUDGET_FALLBACKS.under499;
-    if (filtered.length < 4) {
-      const combined = [...filtered];
-      fallbacks.forEach((fb) => {
-        if (!combined.some((c) => (c._id && fb._id && c._id.toString() === fb._id.toString()) || c.name === fb.name)) {
-          combined.push(fb);
-        }
-      });
-      return combined;
+      filtered = allCatalog
+        .filter((p) => {
+          const orig = Number(p.originalPrice);
+          const pr = Number(p.price);
+          return orig > pr && ((orig - pr) / orig) >= 0.20;
+        })
+        .sort((a, b) => {
+          const origA = Number(a.originalPrice);
+          const prA = Number(a.price);
+          const origB = Number(b.originalPrice);
+          const prB = Number(b.price);
+          const discA = (origA - prA) / origA;
+          const discB = (origB - prB) / origB;
+          return discB - discA;
+        });
     }
 
     return filtered;
-  }, [homepageData, activeTier]);
+  }, [allDbProducts, homepageData, activeTier]);
 
   useEffect(() => {
     const el = document.getElementById("budget-radar-slider");
@@ -387,7 +153,7 @@ const BudgetStoreRadar = ({
   };
 
   const handleProductCardClick = (product) => {
-    if (product._id && !product._id.startsWith("budget_")) {
+    if (product?._id) {
       navigate(`/product/${product._id}`);
     } else if (onQuickView) {
       onQuickView(product);
@@ -516,11 +282,30 @@ const BudgetStoreRadar = ({
           id="budget-radar-slider"
           className="flex gap-3 sm:gap-3.5 overflow-x-hidden scroll-smooth snap-x snap-mandatory pb-1"
         >
-          {displayProducts.map((p, idx) => {
+          {displayProducts.length === 0 ? (
+            <div className="w-full py-8 px-4 text-center bg-slate-50 dark:bg-slate-800/50 rounded-sm border border-dashed border-slate-200 dark:border-slate-700/80 flex flex-col items-center justify-center gap-2">
+              <Tag size={22} className="text-slate-400 dark:text-slate-500" />
+              <p className="text-xs font-black text-slate-700 dark:text-slate-300">
+                No products currently found in this price bracket.
+              </p>
+              <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 max-w-md">
+                Try switching to another budget tier above, or add new budget items in this price range via Seller/Admin panel.
+              </p>
+            </div>
+          ) : (
+            displayProducts.map((p, idx) => {
             const isFav = wishlist.includes(p._id);
-            const origVal = p.originalPrice || Math.round(p.price * 1.4);
-            const discountPct = Math.round(((origVal - p.price) / origVal) * 100);
-            const dropBadge = p.dropText || `Dropped ₹${Math.max(50, origVal - p.price)} today`;
+            const priceNum = Math.round(Number(p.price) || 0);
+            const origVal = Math.round(
+              Number(p.originalPrice) > priceNum
+                ? Number(p.originalPrice)
+                : Math.round(priceNum * 1.4)
+            );
+            const discountPct = origVal > priceNum
+              ? Math.round(((origVal - priceNum) / origVal) * 100)
+              : 25;
+            const dropDiff = Math.max(50, Math.round(origVal - priceNum));
+            const dropBadge = p.dropText || `Dropped ₹${dropDiff.toLocaleString("en-IN")} today`;
 
             return (
               <div
@@ -537,8 +322,12 @@ const BudgetStoreRadar = ({
                     {/* Top Image Container with Badges */}
                     <div className="relative w-full aspect-square bg-slate-50 dark:bg-slate-800 rounded-sm overflow-hidden mb-2.5 border border-slate-100 dark:border-slate-800">
                       <img
-                        src={p.images?.[0] || p.image || ""}
+                        src={p.images?.[0] || p.image || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=500&q=80"}
                         alt={p.name}
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=500&q=80";
+                        }}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
 
@@ -589,7 +378,7 @@ const BudgetStoreRadar = ({
                     <div className="flex items-baseline justify-between">
                       <div className="flex items-baseline gap-1.5">
                         <span className="text-sm font-black text-slate-900 dark:text-white">
-                          ₹{p.price.toLocaleString("en-IN")}
+                          ₹{priceNum.toLocaleString("en-IN")}
                         </span>
                         <span className="text-[10px] line-through text-slate-400">
                           ₹{origVal.toLocaleString("en-IN")}
@@ -636,7 +425,7 @@ const BudgetStoreRadar = ({
                 </div>
               </div>
             );
-          })}
+          }))}
         </motion.div>
       </AnimatePresence>
 

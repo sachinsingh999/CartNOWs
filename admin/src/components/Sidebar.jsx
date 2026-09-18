@@ -70,6 +70,7 @@ const Sidebar = ({ isCollapsed, isMobileOpen, setIsMobileOpen }) => {
       links: [
         { path: "/hero-slideshow", label: "Hero Models", icon: Sparkles, permission: "promos" },
         { path: "/banners", label: "Hero Banners", icon: Megaphone, permission: "promos" },
+        { path: "/brand-posters", label: "Brand Posters", icon: Award, permission: "promos" },
         { path: "/deal-of-the-day", label: "Deal of Day", icon: Flame, permission: "promos" },
         { path: "/featured-showcase", label: "Featured Deals", icon: Award, permission: "promos" },
         { path: "/promo-banners", label: "Ad Banners", icon: ImageIcon, permission: "promos" },

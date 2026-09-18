@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import { AnimatePresence, motion } from "framer-motion";
 import axios from "axios";
 import { backendUrl } from "../config";
-import { cachedGet } from "../utils/apiCache";
+import { cachedGet, getSyncCachedData } from "../utils/apiCache";
 
 // Critical above-the-fold components (Eagerly Loaded)
 import HeroSplitBanner from "../components/Home/HeroSplitBanner";
@@ -41,28 +41,50 @@ const LazySection = ({ children, height = "280px" }) => {
           observer.disconnect();
         }
       },
-      { rootMargin: "120px 0px" }
+      { rootMargin: "600px 0px" }
     );
     observer.observe(ref.current);
     return () => observer.disconnect();
   }, []);
 
   return (
-    <div ref={ref} style={{ minHeight: isVisible ? undefined : height }}>
-      {isVisible ? <Suspense fallback={null}>{children}</Suspense> : null}
+    <div
+      ref={ref}
+      style={{
+        contentVisibility: "auto",
+        containIntrinsicSize: `auto ${height}`
+      }}
+      className="w-full"
+    >
+      {isVisible ? (
+        <Suspense fallback={<div style={{ height }} className="w-full" />}>
+          {children}
+        </Suspense>
+      ) : (
+        <div style={{ height }} className="w-full" />
+      )}
     </div>
   );
 };
 
 const Home = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
+
+  // Instant SWR state initialization from sessionStorage / memory cache
+  const cachedInitial = useMemo(() => {
+    const token = localStorage.getItem("token") || "";
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const cached = getSyncCachedData(`${backendUrl}/api/product/homepage`, { headers });
+    return cached && cached.success ? cached : null;
+  }, []);
+
+  const [loading, setLoading] = useState(!cachedInitial);
   const [wishlist, setWishlist] = useState([]);
   const [quickViewProduct, setQuickViewProduct] = useState(null);
-  const [activeDeal, setActiveDeal] = useState(null);
+  const [activeDeal, setActiveDeal] = useState(() => cachedInitial?.activeDeal || null);
   const [showDeal, setShowDeal] = useState(false);
   const [isCampaignActive, setIsCampaignActive] = useState(false);
-  const [homepageData, setHomepageData] = useState({
+  const [homepageData, setHomepageData] = useState(() => cachedInitial || {
     newArrivals: [],
     trending: [],
     bestSellers: [],
@@ -79,13 +101,16 @@ const Home = () => {
   });
 
   useEffect(() => {
-    setLoading(true);
     const token = localStorage.getItem("token") || "";
     const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
+    if (!cachedInitial) {
+      setLoading(true);
+    }
+
     cachedGet(`${backendUrl}/api/product/homepage`, { headers })
       .then((res) => {
-        if (res.data.success) {
+        if (res?.data?.success) {
           setHomepageData(res.data);
           if (res.data.activeDeal) {
             setActiveDeal(res.data.activeDeal);
@@ -305,7 +330,7 @@ const Home = () => {
       <HeroSplitBanner homepageData={homepageData} />
 
       {/* 2. DYNAMIC TECH / PROMOTIONAL AD BANNER (Directly Below Hero Section) */}
-      <LazySection height="260px">
+      <LazySection height="360px">
         <TechAdBanner />
       </LazySection>
 
@@ -361,11 +386,11 @@ const Home = () => {
       {/* 7. POPULAR BRANDS */}
       <LazySection height="400px">
         <motion.section
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
-          className="w-full px-2 sm:px-4 lg:px-6 pt-1 pb-1 select-none"
+          viewport={{ once: true, margin: "150px" }}
+          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+          className="w-full px-2 sm:px-4 lg:px-6 py-0.5 sm:py-1 select-none"
         >
           <ShopByBrands popularBrands={homepageData.popularBrands} />
         </motion.section>
@@ -374,11 +399,11 @@ const Home = () => {
       {/* 8. UNIFIED DISCOVERY & RECOMMENDATION SHOWCASE */}
       <LazySection height="480px">
         <motion.section
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
-          className="w-full px-2 sm:px-4 lg:px-6 pt-1 pb-1 select-none"
+          viewport={{ once: true, margin: "150px" }}
+          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+          className="w-full px-2 sm:px-4 lg:px-6 py-0.5 sm:py-1 select-none"
         >
           <RecommendedProducts
             recommended={homepageData.recommended}
@@ -399,25 +424,26 @@ const Home = () => {
       </LazySection>
 
       {/* 9. CURATED THEME COLLECTIONS */}
-      <LazySection height="280px">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
+      <LazySection height="480px">
+        <motion.section
+          initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
+          viewport={{ once: true, margin: "150px" }}
+          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+          className="w-full px-2 sm:px-4 lg:px-6 py-0.5 sm:py-1 select-none"
         >
           <ShopByCollections trendingCollections={homepageData.trendingCollections} />
-        </motion.div>
+        </motion.section>
       </LazySection>
 
       {/* 10. BUDGET STORE & PRICE DROP RADAR */}
       <LazySection height="460px">
         <motion.section
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
-          className="w-full px-2 sm:px-4 lg:px-6 pt-1 pb-1 select-none"
+          viewport={{ once: true, margin: "150px" }}
+          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+          className="w-full px-2 sm:px-4 lg:px-6 py-0.5 sm:py-1 select-none"
         >
           <BudgetStoreRadar
             homepageData={homepageData}
@@ -432,13 +458,14 @@ const Home = () => {
       {/* 11. "THIS OR THAT?" COMMUNITY PRODUCT DUELS */}
       <LazySection height="520px">
         <motion.section
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
-          className="w-full px-2 sm:px-4 lg:px-6 pt-1 pb-1 select-none"
+          viewport={{ once: true, margin: "150px" }}
+          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+          className="w-full px-2 sm:px-4 lg:px-6 py-0.5 sm:py-1 select-none"
         >
           <ProductDuel
+            homepageData={homepageData}
             onQuickView={setQuickViewProduct}
             onAddToCart={onAddToCart}
           />
@@ -446,22 +473,49 @@ const Home = () => {
       </LazySection>
 
       {/* 12. 3-COLUMN FEATURE HUB (Deal of Day, Seller Spotlight, AI Robot Chat) - BOTTOM PLACEMENT */}
-      <LazySection height="360px">
+      <LazySection height="540px">
         <motion.section
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
-          className="w-full px-2 sm:px-4 lg:px-6 py-1 select-none"
+          viewport={{ once: true, margin: "150px" }}
+          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+          className="w-full px-2 sm:px-4 lg:px-6 py-0.5 sm:py-1 select-none text-left"
         >
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-left">
-            <DealOfTheDay
-              deals={homepageData.dealsOfDay}
-              activeDeal={activeDeal}
-              onAddToCart={onAddToCart}
-            />
-            <SellerSpotlight />
-            <AiRobotChat />
+          <div className="w-full bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-sm p-3.5 sm:p-4.5 lg:p-5 shadow-xs transition-colors duration-200">
+            {/* Section Top Header Row */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3.5">
+              <div className="text-left space-y-1">
+                <div className="flex items-center gap-2">
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-amber-50 dark:bg-amber-950/50 border border-amber-200/80 dark:border-amber-800/60 rounded-sm text-[9px] font-black uppercase tracking-wider text-amber-700 dark:text-amber-300 shadow-2xs">
+                    <span>DAILY HIGHLIGHTS</span>
+                  </div>
+
+                  <span className="px-2 py-0.5 rounded-sm bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold">
+                    3-in-1 Feature Hub
+                  </span>
+                </div>
+
+                <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+                  <span>Deals, Spotlight & AI Assistant</span>
+                  <span className="h-1.5 w-1.5 rounded-sm bg-amber-500 dark:bg-amber-400 animate-pulse" />
+                </h2>
+
+                <p className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                  Blockbuster deal of the day, verified top seller spotlight, and smart 24/7 AI shopping assistant.
+                </p>
+              </div>
+            </div>
+
+            {/* 3-Column Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3.5 sm:gap-4 lg:gap-4.5 text-left items-stretch">
+              <DealOfTheDay
+                deals={homepageData.dealsOfDay}
+                activeDeal={activeDeal}
+                onAddToCart={onAddToCart}
+              />
+              <SellerSpotlight />
+              <AiRobotChat />
+            </div>
           </div>
         </motion.section>
       </LazySection>
@@ -469,10 +523,10 @@ const Home = () => {
       {/* 13. BRAND BENEFITS & TRUST GUARANTEES */}
       <LazySection height="180px">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
+          viewport={{ once: true, margin: "150px" }}
+          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
         >
           <BenefitsStrip />
         </motion.div>

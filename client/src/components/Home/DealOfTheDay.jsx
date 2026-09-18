@@ -112,7 +112,7 @@ const DealOfTheDay = ({ deals = [], activeDeal = null, onAddToCart }) => {
   };
 
   return (
-    <div className="group relative w-full rounded-sm overflow-hidden border border-slate-800 text-white shadow-md flex flex-col justify-between min-h-[500px] transition-all duration-300 hover:border-slate-700 select-none p-6 sm:p-8">
+    <div className="group relative w-full rounded-sm overflow-hidden border border-slate-300/80 dark:border-slate-800 text-white shadow-xs flex flex-col justify-between min-h-[480px] transition-all duration-300 hover:border-slate-400 dark:hover:border-slate-700 select-none p-5 sm:p-6 bg-slate-950">
 
       {/* FULL CARD BACKGROUND COVER IMAGE */}
       <img

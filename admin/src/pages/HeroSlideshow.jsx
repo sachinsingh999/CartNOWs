@@ -260,7 +260,9 @@ const HeroSlideshow = ({ token }) => {
   // Form states
   const [name, setName] = useState("");
   const [category, setCategory] = useState("Fashion");
+  const [isCustomCategory, setIsCustomCategory] = useState(false);
   const [tagline, setTagline] = useState("");
+  const [dbCategories, setDbCategories] = useState([]);
 
   // Image and processing states
   const [imageFile, setImageFile] = useState(null);
@@ -298,13 +300,91 @@ const HeroSlideshow = ({ token }) => {
           { title: "Modern Minimalist Silhouette", tagline: "Clean lines and understated luxury." },
           { title: "Haute Couture Evening Edit", tagline: "Elevate your signature presence with timeless charm." }
         ],
+        "Men's Fashion": [
+          { title: "Sharp Tailored Essentials", tagline: "Refined sartorial precision for the modern gentleman." },
+          { title: "Urban Utility Streetwear", tagline: "Durable performance meets effortless contemporary style." }
+        ],
+        "Women's Fashion": [
+          { title: "Ethereal Flora Bloom", tagline: "Breezy silhouettes woven with delicate grace." },
+          { title: "Luxe Evening Radiance", tagline: "Sophisticated glam engineered to captivate every room." }
+        ],
+        "Kids Collection": [
+          { title: "Playful Explorer Fits", tagline: "Ultra-comfy, vibrant styles crafted for non-stop adventure." },
+          { title: "Tiny Trendsetters Edit", tagline: "Adorable, durable fashion for little dreamers." }
+        ],
         "Footwear": [
           { title: "AeroGlide Runner Pro", tagline: "Next-gen responsiveness engineered for every stride." },
-          { title: "Urban Street High-Tops", tagline: "Iconic court legacy refined for everyday dominance." }
+          { title: "Urban Street High-Tops", tagline: "Iconic court legacy refined for everyday dominance." },
+          { title: "Crafted Leather Loafers", tagline: "Timeless artisanal silhouette for effortless sophistication." }
+        ],
+        "Sneakers & Athletic": [
+          { title: "HyperBoost Stride Elite", tagline: "Engineered cushioning for high-intensity movement." },
+          { title: "Retro Court High-Top", tagline: "Vintage hoops aesthetic reimagined for modern streets." }
         ],
         "Electronics": [
           { title: "Next-Gen Pro Flagship", tagline: "Uncompromised performance engineered for tomorrow." },
-          { title: "Acoustic Noise-Cancelling Pro", tagline: "Studio-master sound with immersive spatial depth." }
+          { title: "Acoustic Noise-Cancelling Pro", tagline: "Studio-master sound with immersive spatial depth." },
+          { title: "Ultra-Slim OLED Horizon", tagline: "Hyper-vivid colors and cinematic infinite contrast." }
+        ],
+        "Smartphones & Mobile": [
+          { title: "Titanium Cyber Flagship", tagline: "Computational photography and blazing all-day power." },
+          { title: "Foldable Horizon Pro", tagline: "Expansive multitasking in an ultra-sleek form factor." }
+        ],
+        "Audio & Headphones": [
+          { title: "Studio Spatial Pro ANC", tagline: "Zero distractions with high-fidelity lossless sound." },
+          { title: "True Wireless Pulse Pods", tagline: "Pocket-sized acoustics built for all-day commutes." }
+        ],
+        "Smartwatches & Wearables": [
+          { title: "BioSync Pro Health Titan", tagline: "Precision telemetry tracking every milestone 24/7." },
+          { title: "Sapphire Smart Chrono", tagline: "Elegance on the wrist with next-gen connected intelligence." }
+        ],
+        "Gaming & Consoles": [
+          { title: "Ray-Tracing Console Beast", tagline: "Ultra-fluid 120fps gaming with Tempest 3D immersion." },
+          { title: "Mechanical RGB Battlestation", tagline: "Ultra-fast actuation and tactile mastery." }
+        ],
+        "Beauty": [
+          { title: "Radiant Dew Glow Serum", tagline: "Infused with botanical botanicals for a flawless natural finish." },
+          { title: "Velvet Matte Luxe Palette", tagline: "High-pigment shades that stay vibrant from dusk till dawn." }
+        ],
+        "Beauty & Cosmetics": [
+          { title: "Golden Hour Glow Edit", tagline: "Luminous, glass-skin radiance powered by active nutrients." },
+          { title: "Silk Touch Hydration Elixir", tagline: "Deep cellular moisture with a weightless velvety texture." }
+        ],
+        "Perfumes & Fragrances": [
+          { title: "Oud Royale Extrait", tagline: "Rich amber, smoky cedar, and royal vanilla projection." },
+          { title: "Oceanic Breeze Pure Parfum", tagline: "Crisp bergamot and Mediterranean sea salt freshness." }
+        ],
+        "Fitness": [
+          { title: "Endurance Pro Rig", tagline: "Heavy-duty construction built to break personal records." },
+          { title: "Smart Kinetic Resistance", tagline: "Dynamic resistance technology for full-body conditioning." }
+        ],
+        "Sports & Outdoor": [
+          { title: "All-Terrain Alpine Pack", tagline: "Weatherproof rugged gear engineered for the wild trail." },
+          { title: "Pro Velocity Road Bike", tagline: "Ultralight carbon aerodynamics for maximum speed." }
+        ],
+        "Home & Lifestyle": [
+          { title: "Scandinavian Oak Living", tagline: "Minimalist warmth crafted for mindful, serene spaces." },
+          { title: "Smart Culinary Pro", tagline: "Precision temperature control for restaurant-grade cooking." }
+        ],
+        "Kitchen & Dining": [
+          { title: "Chef Edition Cast Iron", tagline: "Superior heat retention built for generations of flavor." },
+          { title: "Artisan Ceramic Tableware", tagline: "Handcrafted rustic textures elevating every meal." }
+        ],
+        "Accessories": [
+          { title: "Handcrafted Italian Leather", tagline: "Full-grain vegetable-tanned luxury built to age gracefully." },
+          { title: "Chrono Heritage Timepiece", tagline: "Automatic precision movement inside surgical stainless steel." }
+        ],
+        "Jewelry & Fine Accessories": [
+          { title: "Luminescent Diamond Solitaire", tagline: "Brilliant cut perfection catching light at every angle." },
+          { title: "18K Gold Sculptural Cuff", tagline: "Bold geometric modernism with an exquisite high-polish sheen." }
+        ],
+        "Luxury Watches": [
+          { title: "Swiss Automatic Chronograph", tagline: "Master horology engineered with sapphire crystal clarity." },
+          { title: "Ceramic Diver Pro 300M", tagline: "Indestructible nautical toughness with luminous markers." }
+        ],
+        "Bags, Backpacks & Luggage": [
+          { title: "Nomad Carry-On Spinner", tagline: "Aerospace polycarbonate shell with whisper-quiet wheels." },
+          { title: "Waterproof Commuter Rolltop", tagline: "Weatherproof urban utility with dedicated tech compartments." }
         ]
       };
       const list = localPresets[category] || localPresets["Fashion"];
@@ -330,6 +410,7 @@ const HeroSlideshow = ({ token }) => {
     setEditingAsset(null);
     setName("");
     setCategory("Fashion");
+    setIsCustomCategory(false);
     setTagline("");
     setImagePreview("");
     setImageFile(null);
@@ -354,7 +435,8 @@ const HeroSlideshow = ({ token }) => {
     }
   };
 
-  const categoriesList = [
+  const DEFAULT_CATEGORIES = [
+    // Popular Core
     "Fashion",
     "Footwear",
     "Electronics",
@@ -362,7 +444,65 @@ const HeroSlideshow = ({ token }) => {
     "Fitness",
     "Accessories",
     "Home & Lifestyle",
-    "Kids Collection"
+    "Kids Collection",
+
+    // Apparel & Fashion
+    "Men's Fashion",
+    "Women's Fashion",
+    "Streetwear & Urban",
+    "Ethnic & Traditional",
+    "Winter & Outerwear",
+    "Activewear & Sportswear",
+
+    // Footwear & Sneakers
+    "Sneakers & Athletic",
+    "Casual Shoes",
+    "Formal Shoes",
+    "Boots & Outdoor",
+
+    // Electronics & Tech
+    "Smartphones & Mobile",
+    "Audio & Headphones",
+    "Laptops & Computers",
+    "Smartwatches & Wearables",
+    "Gaming & Consoles",
+    "Cameras & Photography",
+    "Smart Home & Tech Gadgets",
+
+    // Beauty & Grooming
+    "Beauty & Cosmetics",
+    "Skincare & Bodycare",
+    "Haircare & Styling",
+    "Perfumes & Fragrances",
+    "Men's Grooming",
+
+    // Home, Living & Kitchen
+    "Kitchen & Dining",
+    "Furniture & Living",
+    "Home Decor & Lighting",
+    "Bedding & Bath",
+    "Home Appliances",
+
+    // Fitness, Sports & Adventure
+    "Fitness & Gym",
+    "Sports & Outdoor",
+    "Cycling & Bicycles",
+    "Camping & Adventure",
+
+    // Accessories & Luxury
+    "Jewelry & Fine Accessories",
+    "Luxury Watches",
+    "Bags, Backpacks & Luggage",
+    "Eyewear & Sunglasses",
+
+    // Groceries, Essentials & Hobbies
+    "Books & Stationery",
+    "Toys & Baby Care",
+    "Groceries & Gourmet",
+    "Pet Supplies",
+    "Health & Wellness",
+    "Automotive & Tools",
+    "Gifts & Festive"
   ];
 
   const fetchAssets = async () => {
@@ -384,6 +524,20 @@ const HeroSlideshow = ({ token }) => {
 
   useEffect(() => {
     fetchAssets();
+
+    // Fetch dynamic store categories from database
+    axiosClient.get(`${backendUrl}/api/product/categories`)
+      .then((res) => {
+        if (res.data?.success && Array.isArray(res.data.categories)) {
+          const names = res.data.categories
+            .map(c => typeof c === "string" ? c : c?.name)
+            .filter(Boolean);
+          setDbCategories(names);
+        }
+      })
+      .catch((err) => {
+        console.warn("Could not fetch store categories:", err?.message);
+      });
   }, []);
 
   const handleImageChange = (e) => {
@@ -660,22 +814,134 @@ const HeroSlideshow = ({ token }) => {
               />
             </div>
 
-            {/* Category Dropdown */}
+            {/* Category Dropdown & Custom Category Option */}
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 block">
-                Category
-              </label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/[0.08] bg-slate-50 dark:bg-slate-900/60 text-slate-900 dark:text-white text-xs outline-none transition dark: font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-              >
-                {categoriesList.map((cat, idx) => (
-                  <option key={idx} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
+              <div className="flex items-center justify-between">
+                <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 block">
+                  Category
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsCustomCategory(!isCustomCategory);
+                    if (!isCustomCategory && !category) setCategory("");
+                  }}
+                  className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+                >
+                  {isCustomCategory ? "← Choose From List" : "+ Custom Category"}
+                </button>
+              </div>
+
+              {isCustomCategory ? (
+                <input
+                  type="text"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  placeholder="Enter custom category (e.g. Vintage Leather, Summer Sale)"
+                  className="w-full px-3 py-2 rounded-xl border border-indigo-300 dark:border-indigo-700 bg-slate-50 dark:bg-slate-900/60 text-slate-900 dark:text-white text-xs outline-none transition font-bold placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  required
+                />
+              ) : (
+                <select
+                  value={category}
+                  onChange={(e) => {
+                    if (e.target.value === "__custom__") {
+                      setIsCustomCategory(true);
+                      setCategory("");
+                    } else {
+                      setCategory(e.target.value);
+                    }
+                  }}
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/[0.08] bg-slate-50 dark:bg-slate-900/60 text-slate-900 dark:text-white text-xs outline-none transition font-bold cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                >
+                  <optgroup label="Popular & Active">
+                    <option value="Fashion">Fashion</option>
+                    <option value="Footwear">Footwear</option>
+                    <option value="Electronics">Electronics</option>
+                    <option value="Beauty">Beauty</option>
+                    <option value="Fitness">Fitness</option>
+                    <option value="Accessories">Accessories</option>
+                    <option value="Home & Lifestyle">Home & Lifestyle</option>
+                    <option value="Kids Collection">Kids Collection</option>
+                  </optgroup>
+
+                  <optgroup label="Apparel & Fashion">
+                    <option value="Men's Fashion">Men's Fashion</option>
+                    <option value="Women's Fashion">Women's Fashion</option>
+                    <option value="Streetwear & Urban">Streetwear & Urban</option>
+                    <option value="Ethnic & Traditional">Ethnic & Traditional</option>
+                    <option value="Winter & Outerwear">Winter & Outerwear</option>
+                    <option value="Activewear & Sportswear">Activewear & Sportswear</option>
+                  </optgroup>
+
+                  <optgroup label="Footwear & Sneakers">
+                    <option value="Sneakers & Athletic">Sneakers & Athletic</option>
+                    <option value="Casual Shoes">Casual Shoes</option>
+                    <option value="Formal Shoes">Formal Shoes</option>
+                    <option value="Boots & Outdoor">Boots & Outdoor</option>
+                  </optgroup>
+
+                  <optgroup label="Electronics & Tech">
+                    <option value="Smartphones & Mobile">Smartphones & Mobile</option>
+                    <option value="Audio & Headphones">Audio & Headphones</option>
+                    <option value="Laptops & Computers">Laptops & Computers</option>
+                    <option value="Smartwatches & Wearables">Smartwatches & Wearables</option>
+                    <option value="Gaming & Consoles">Gaming & Consoles</option>
+                    <option value="Cameras & Photography">Cameras & Photography</option>
+                    <option value="Smart Home & Tech Gadgets">Smart Home & Tech Gadgets</option>
+                  </optgroup>
+
+                  <optgroup label="Beauty & Personal Care">
+                    <option value="Beauty & Cosmetics">Beauty & Cosmetics</option>
+                    <option value="Skincare & Bodycare">Skincare & Bodycare</option>
+                    <option value="Haircare & Styling">Haircare & Styling</option>
+                    <option value="Perfumes & Fragrances">Perfumes & Fragrances</option>
+                    <option value="Men's Grooming">Men's Grooming</option>
+                  </optgroup>
+
+                  <optgroup label="Home, Living & Appliances">
+                    <option value="Kitchen & Dining">Kitchen & Dining</option>
+                    <option value="Furniture & Living">Furniture & Living</option>
+                    <option value="Home Decor & Lighting">Home Decor & Lighting</option>
+                    <option value="Bedding & Bath">Bedding & Bath</option>
+                    <option value="Home Appliances">Home Appliances</option>
+                  </optgroup>
+
+                  <optgroup label="Sports, Fitness & Adventure">
+                    <option value="Fitness & Gym">Fitness & Gym</option>
+                    <option value="Sports & Outdoor">Sports & Outdoor</option>
+                    <option value="Cycling & Bicycles">Cycling & Bicycles</option>
+                    <option value="Camping & Adventure">Camping & Adventure</option>
+                  </optgroup>
+
+                  <optgroup label="Luxury & Accessories">
+                    <option value="Jewelry & Fine Accessories">Jewelry & Fine Accessories</option>
+                    <option value="Luxury Watches">Luxury Watches</option>
+                    <option value="Bags, Backpacks & Luggage">Bags, Backpacks & Luggage</option>
+                    <option value="Eyewear & Sunglasses">Eyewear & Sunglasses</option>
+                  </optgroup>
+
+                  <optgroup label="Essentials & Lifestyle">
+                    <option value="Books & Stationery">Books & Stationery</option>
+                    <option value="Toys & Baby Care">Toys & Baby Care</option>
+                    <option value="Groceries & Gourmet">Groceries & Gourmet</option>
+                    <option value="Pet Supplies">Pet Supplies</option>
+                    <option value="Health & Wellness">Health & Wellness</option>
+                    <option value="Automotive & Tools">Automotive & Tools</option>
+                    <option value="Gifts & Festive">Gifts & Festive</option>
+                  </optgroup>
+
+                  {dbCategories.filter(c => !DEFAULT_CATEGORIES.includes(c)).length > 0 && (
+                    <optgroup label="Store Database Categories">
+                      {dbCategories.filter(c => !DEFAULT_CATEGORIES.includes(c)).map((cat, idx) => (
+                        <option key={`db_${idx}`} value={cat}>{cat}</option>
+                      ))}
+                    </optgroup>
+                  )}
+
+                  <option value="__custom__">+ Enter Custom Category...</option>
+                </select>
+              )}
             </div>
 
             {/* Tagline */}

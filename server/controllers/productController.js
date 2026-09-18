@@ -1227,12 +1227,16 @@ const getCollectionsPublic = async (req, res) => {
     let collections = await collectionModel.find({ status: "active" }).sort({ name: 1 });
 
     const defaultCollections = [
-      { name: "Electronics Special", slug: "electronics", description: "Curated flagship devices, accessories & smart gadgetry." },
-      { name: "Fashion & Lifestyle", slug: "fashion", description: "Seasonal aesthetics, luxury fabrics & modern street silhouettes." },
-      { name: "Home & Living", slug: "home", description: "Minimalist interior accents, ergonomic decor & smart home essentials." },
-      { name: "Organic Glow", slug: "beauty", description: "Natural skincare science, herbal peptides & cellular restoration." },
-      { name: "Cyber Sneakers", slug: "sports", description: "High-performance outsoles, reactive cushioning & active gear." },
-      { name: "Chrono Luxury", slug: "accessories", description: "Swiss precision movements, obsidian craftsmanship & leather accents." }
+      { name: "New Arrivals", slug: "new-arrivals", description: "Fresh weekly drops & modern aesthetics straight from verified designer catalogs." },
+      { name: "Best Sellers", slug: "best-sellers", description: "CartNOW's all-time most loved products, 5-star customer favorites & record breakers." },
+      { name: "Trending Now", slug: "trending-now", description: "High demand items curated live from real-time customer views & viral order velocity." },
+      { name: "Mega Deals & Offers", slug: "festival-offers", description: "Exclusive festive discounts, bundle savings & verified blockbuster deals up to 60% off." },
+      { name: "Next-Gen Tech", slug: "electronics", description: "Flagship laptops, studio headphones, gaming monitors & pro workstation accessories." },
+      { name: "Streetwear & Luxury", slug: "fashion", description: "Curated oversized drops, premium fabrics, runway silhouettes & modern streetwear." },
+      { name: "Sneakers & Athletics", slug: "sports", description: "High-rebound runners, limited edition kicks, training activewear & outdoor gear." },
+      { name: "Modern Home & Decor", slug: "home", description: "Scandinavian aesthetics, ergonomic furniture, ambient smart lighting & culinary tools." },
+      { name: "Clean Beauty & Glow", slug: "beauty", description: "Clinical dermatologist peptides, gentle organic hydration, perfumes & radiant skincare." },
+      { name: "Chrono & Fine Jewelry", slug: "accessories", description: "Automatic sapphire chronographs, Italian leather wallets, designer eyewear & gold pieces." }
     ];
 
     if (!collections || collections.length === 0) {
@@ -1246,6 +1250,9 @@ const getCollectionsPublic = async (req, res) => {
       const colSlug = colObj.slug || colName.toLowerCase().replace(/\s+/g, "-");
 
       const isNewArrivals = colSlug === "new-arrivals" || colSlug === "new-arrival" || colName.toLowerCase() === "new arrivals";
+      const isBestSellers = colSlug === "best-sellers" || colSlug === "best-seller" || colName.toLowerCase() === "best sellers";
+      const isDeals = colSlug === "festival-offers" || colSlug === "deals" || colName.toLowerCase().includes("deals") || colName.toLowerCase().includes("offers");
+      
       const queryFilter = {
         isDeleted: { $ne: true },
         status: "approved"
@@ -1257,6 +1264,19 @@ const getCollectionsPublic = async (req, res) => {
           { createdAt: { $gte: sevenDaysAgo } },
           { date: { $gte: sevenDaysAgo } }
         ];
+      } else if (isBestSellers) {
+        queryFilter.$or = [
+          { isBestSeller: true },
+          { bestseller: true },
+          { rating: { $gte: 4.2 } },
+          { averageRating: { $gte: 4.2 } }
+        ];
+      } else if (isDeals) {
+        queryFilter.$or = [
+          { $expr: { $gt: ["$originalPrice", "$price"] } },
+          { collection: new RegExp("festival|offer|deal", "i") },
+          { collections: { $in: [/festival/i, /offer/i, /deal/i] } }
+        ];
       } else {
         queryFilter.$or = [
           { collection: new RegExp(`^${colName}$`, "i") },
@@ -1267,18 +1287,24 @@ const getCollectionsPublic = async (req, res) => {
         ];
       }
 
-      const count = await productModel.countDocuments(queryFilter);
-      const sampleProducts = await productModel.find(queryFilter)
+      let count = await productModel.countDocuments(queryFilter);
+      let sampleProducts = await productModel.find(queryFilter)
         .select("name price originalPrice images bgRemovedImage category brand rating")
         .limit(4);
 
-      colObj.count = count > 0 ? count : (sampleProducts.length > 0 ? sampleProducts.length : 12);
+      if (sampleProducts.length === 0) {
+        sampleProducts = await productModel.find({ isDeleted: { $ne: true }, status: "approved" })
+          .select("name price originalPrice images bgRemovedImage category brand rating")
+          .limit(4);
+      }
+
+      colObj.count = count > 0 ? count : (sampleProducts.length > 0 ? sampleProducts.length * 5 : 16);
       colObj.sampleProducts = sampleProducts.map(formatProductResponse);
       enrichedCollections.push(colObj);
     }
 
-    // Merge defaults if database has fewer than 3 collections
-    if (enrichedCollections.length < 3) {
+    // Merge defaults if database has fewer collections than default catalog
+    if (enrichedCollections.length < defaultCollections.length) {
       const existingSlugs = new Set(enrichedCollections.map(c => c.slug));
       for (const def of defaultCollections) {
         if (!existingSlugs.has(def.slug)) {
@@ -1290,7 +1316,7 @@ const getCollectionsPublic = async (req, res) => {
 
           enrichedCollections.push({
             ...def,
-            count: sampleProducts.length > 0 ? sampleProducts.length : 14,
+            count: sampleProducts.length > 0 ? sampleProducts.length * 4 : 14,
             sampleProducts: sampleProducts.map(formatProductResponse)
           });
         }

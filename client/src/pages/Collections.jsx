@@ -211,6 +211,24 @@ const Collections = () => {
         categoryTag: "Skincare & Beauty"
       };
     }
+    if (lower.includes("accessory") || lower.includes("accessories") || lower.includes("chrono") || lower.includes("watch") || lower.includes("jewelry") || lower.includes("gold")) {
+      return {
+        colorClass: "bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-slate-200/90 dark:border-slate-800 hover:border-purple-400 dark:hover:border-purple-600",
+        badgeColor: "bg-purple-50 dark:bg-purple-950/70 text-purple-700 dark:text-purple-300 border border-purple-200/60 dark:border-purple-800/40",
+        btnGradient: "from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700",
+        badgeIcon: Gem,
+        categoryTag: "Chrono & Fine Jewelry"
+      };
+    }
+    if (lower.includes("deal") || lower.includes("offer") || lower.includes("discount") || lower.includes("save") || lower.includes("saving") || lower.includes("festival") || lower.includes("mega")) {
+      return {
+        colorClass: "bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-slate-200/90 dark:border-slate-800 hover:border-pink-400 dark:hover:border-pink-600",
+        badgeColor: "bg-pink-50 dark:bg-pink-950/70 text-pink-700 dark:text-pink-300 border border-pink-200/60 dark:border-pink-800/40",
+        btnGradient: "from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700",
+        badgeIcon: Percent,
+        categoryTag: "Mega Deals & Offers"
+      };
+    }
     if (lower.includes("sport") || lower.includes("sneaker") || lower.includes("active") || lower.includes("fitness")) {
       return {
         colorClass: "bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-slate-200/90 dark:border-slate-800 hover:border-cyan-400 dark:hover:border-cyan-600",
@@ -226,16 +244,25 @@ const Collections = () => {
         badgeColor: "bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/40",
         btnGradient: "from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700",
         badgeIcon: Sparkles,
-        categoryTag: "Fresh Drops (7 Days)"
+        categoryTag: "Fresh Drops"
       };
     }
-    if (lower.includes("best") || lower.includes("seller") || lower.includes("top-rated") || lower.includes("festiv") || lower.includes("offer")) {
+    if (lower.includes("best") || lower.includes("seller") || lower.includes("top-rated")) {
       return {
         colorClass: "bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-slate-200/90 dark:border-slate-800 hover:border-amber-400 dark:hover:border-amber-600",
         badgeColor: "bg-amber-50 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 border border-amber-200/60 dark:border-amber-800/40",
         btnGradient: "from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700",
         badgeIcon: Crown,
         categoryTag: "All-Time Best Sellers"
+      };
+    }
+    if (lower.includes("trending") || lower.includes("viral")) {
+      return {
+        colorClass: "bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-slate-200/90 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-600",
+        badgeColor: "bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/40",
+        btnGradient: "from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700",
+        badgeIcon: Flame,
+        categoryTag: "Viral Trending"
       };
     }
     return {
@@ -301,11 +328,14 @@ const Collections = () => {
       if (!matchesSearch) return false;
 
       if (selectedFilter === "all") return true;
-      if (selectedFilter === "electronics" && col.categoryTag.includes("Tech")) return true;
-      if (selectedFilter === "fashion" && col.categoryTag.includes("Fashion")) return true;
-      if (selectedFilter === "home" && col.categoryTag.includes("Home")) return true;
-      if (selectedFilter === "beauty" && col.categoryTag.includes("Beauty")) return true;
-      if (selectedFilter === "sports" && col.categoryTag.includes("Sports")) return true;
+      if (selectedFilter === "trending" && (col.slug?.includes("trending") || col.slug?.includes("new-arrival") || col.slug?.includes("best-seller") || col.categoryTag?.includes("Drops") || col.categoryTag?.includes("Sellers") || col.categoryTag?.includes("Viral"))) return true;
+      if (selectedFilter === "electronics" && (col.categoryTag?.includes("Tech") || col.slug?.includes("electro") || col.slug?.includes("gadget"))) return true;
+      if (selectedFilter === "fashion" && (col.categoryTag?.includes("Fashion") || col.slug?.includes("fashion") || col.slug?.includes("wear") || col.slug?.includes("style"))) return true;
+      if (selectedFilter === "home" && (col.categoryTag?.includes("Home") || col.slug?.includes("home") || col.slug?.includes("decor") || col.slug?.includes("kitchen"))) return true;
+      if (selectedFilter === "beauty" && (col.categoryTag?.includes("Beauty") || col.categoryTag?.includes("Skincare") || col.slug?.includes("beauty") || col.slug?.includes("glow"))) return true;
+      if (selectedFilter === "sports" && (col.categoryTag?.includes("Sports") || col.categoryTag?.includes("Footwear") || col.slug?.includes("sports") || col.slug?.includes("sneaker"))) return true;
+      if (selectedFilter === "accessories" && (col.categoryTag?.includes("Chrono") || col.categoryTag?.includes("Jewelry") || col.categoryTag?.includes("Accessory") || col.slug?.includes("accessories") || col.slug?.includes("watch") || col.slug?.includes("gold"))) return true;
+      if (selectedFilter === "deals" && (col.categoryTag?.includes("Deals") || col.categoryTag?.includes("Offers") || col.categoryTag?.includes("Savings") || col.slug?.includes("offer") || col.slug?.includes("deal") || col.slug?.includes("festival"))) return true;
 
       return true;
     });
@@ -672,11 +702,14 @@ const Collections = () => {
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none no-scrollbar">
             {[
               { id: "all", label: "All Collections" },
-              { id: "fashion", label: "Fashion & Wardrobe" },
+              { id: "trending", label: "Trending & Viral" },
+              { id: "fashion", label: "Fashion & Luxury" },
               { id: "electronics", label: "Tech & Gadgets" },
+              { id: "sports", label: "Sports & Sneakers" },
               { id: "home", label: "Home & Living" },
               { id: "beauty", label: "Beauty & Glow" },
-              { id: "sports", label: "Sports & Footwear" }
+              { id: "accessories", label: "Chrono & Jewelry" },
+              { id: "deals", label: "Mega Deals & Offers" }
             ].map((pill) => (
               <button
                 key={pill.id}

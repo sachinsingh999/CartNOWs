@@ -414,7 +414,7 @@ const BestSellersLanding = ({
           </div>
 
           {/* Right Half (50% Column): FULL IMAGE VIEW (Uncropped, Complete View with Motion Transition) */}
-          <div className="w-full lg:w-1/2 relative h-full min-h-[340px] overflow-hidden bg-slate-950 flex items-center justify-center p-2 sm:p-4">
+          <div className="w-full lg:w-1/2 relative min-h-[380px] sm:min-h-[440px] lg:min-h-[460px] overflow-hidden bg-slate-950 flex items-end justify-center">
             {/* Ambient Blurred Backdrop with Crossfade */}
             <AnimatePresence mode="popLayout">
               <motion.img
@@ -430,35 +430,37 @@ const BestSellersLanding = ({
               />
             </AnimatePresence>
 
-            {/* Sharp, Model Image with Directional Slide & Zoom */}
-            <AnimatePresence mode="popLayout" custom={direction}>
-              <motion.img
-                key={currentBanner?.imageUrl || currentBanner?.images?.[0] || currentSlide}
-                src={currentBanner?.imageUrl || currentBanner?.images?.[0] || heroImg}
-                alt={currentBanner?.title || "Best Sellers Curated Capsule"}
-                custom={direction}
-                initial={{ 
-                  opacity: 0, 
-                  x: direction >= 0 ? 45 : -45, 
-                  scale: 0.95,
-                  filter: "blur(2px)"
-                }}
-                animate={{ 
-                  opacity: 1, 
-                  x: 0, 
-                  scale: 1,
-                  filter: "blur(0px)"
-                }}
-                exit={{ 
-                  opacity: 0, 
-                  x: direction >= 0 ? -45 : 45, 
-                  scale: 0.95,
-                  filter: "blur(2px)"
-                }}
-                transition={{ duration: 0.48, ease: [0.16, 1, 0.3, 1] }}
-                className="relative z-10 max-h-full max-w-full w-auto h-auto object-contain object-center select-none contrast-[105%] group-hover:scale-[1.02] drop-shadow-2xl"
-              />
-            </AnimatePresence>
+            {/* Complete Uncropped Image Container Touching Base */}
+            <div className="absolute inset-0 flex items-end justify-center pointer-events-none z-10 pt-2 px-2 sm:px-4 pb-0">
+              <AnimatePresence mode="popLayout" custom={direction}>
+                <motion.img
+                  key={currentBanner?.imageUrl || currentBanner?.images?.[0] || currentSlide}
+                  src={currentBanner?.imageUrl || currentBanner?.images?.[0] || heroImg}
+                  alt={currentBanner?.title || "Best Sellers Curated Capsule"}
+                  custom={direction}
+                  initial={{ 
+                    opacity: 0, 
+                    x: direction >= 0 ? 45 : -45, 
+                    scale: 0.95,
+                    filter: "blur(2px)"
+                  }}
+                  animate={{ 
+                    opacity: 1, 
+                    x: 0, 
+                    scale: 1, 
+                    filter: "blur(0px)"
+                  }}
+                  exit={{ 
+                    opacity: 0, 
+                    x: direction >= 0 ? -45 : 45, 
+                    scale: 0.95,
+                    filter: "blur(2px)"
+                  }}
+                  transition={{ duration: 0.48, ease: [0.16, 1, 0.3, 1] }}
+                  className="w-auto h-full max-h-full max-w-full object-contain object-bottom select-none contrast-[105%] group-hover:scale-[1.02] drop-shadow-2xl transition-transform duration-300"
+                />
+              </AnimatePresence>
+            </div>
 
             {/* Top Right Gold Banner Ribbon */}
             <div className="absolute top-4 right-4 bg-amber-500 text-slate-950 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-xs shadow-lg flex items-center gap-1.5 z-20">

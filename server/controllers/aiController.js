@@ -631,7 +631,7 @@ export const generateProductImage = async (req, res) => {
       message: "AI product image generated successfully."
     });
   } catch (error) {
-    console.error("Gemini AI image generation failed. Falling back to mock/demo image. Error:", error.message);
+    console.error("Gemini AI image geneareration failed. Falling back to mock/demo image. Error:", error.message);
     
     // Pick a mock image as fallback
     const mockImages = [

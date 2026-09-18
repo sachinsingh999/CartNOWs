@@ -14,15 +14,28 @@ const HistorySuggestions = ({ fallbackProducts = [], onQuickView }) => {
   const [activeCategory, setActiveCategory] = useState("all");
   const [shuffleIndex, setShuffleIndex] = useState(0);
 
-  // Load recently viewed from localStorage
+  const isValidProduct = useCallback((item) => {
+    if (!item || !item._id || typeof item._id !== "string") return false;
+    if (item._id.startsWith("budget_") || item._id.startsWith("mock_")) return false;
+    const name = String(item.name || "").toLowerCase();
+    if (name.startsWith("test_") || name.startsWith("test ai")) return false;
+    if (item.images && Array.isArray(item.images) && item.images[0]?.includes("example.com")) return false;
+    return true;
+  }, []);
+
+  // Load recently viewed from localStorage and sanitize
   const loadHistory = useCallback(() => {
     try {
       const list = JSON.parse(localStorage.getItem("recentlyViewed") || "[]");
-      setRecentlyViewed(Array.isArray(list) ? list.filter(Boolean) : []);
+      const validList = Array.isArray(list) ? list.filter(isValidProduct) : [];
+      if (Array.isArray(list) && list.length !== validList.length) {
+        localStorage.setItem("recentlyViewed", JSON.stringify(validList));
+      }
+      setRecentlyViewed(validList);
     } catch {
       setRecentlyViewed([]);
     }
-  }, []);
+  }, [isValidProduct]);
 
   useEffect(() => {
     loadHistory();
@@ -44,13 +57,30 @@ const HistorySuggestions = ({ fallbackProducts = [], onQuickView }) => {
     };
   }, [loadHistory]);
 
-  // Fetch diverse catalog products to ensure fresh recommendations
+  // Fetch diverse catalog products to ensure fresh recommendations from DB
   useEffect(() => {
     let isMounted = true;
     cachedGet(`${backendUrl}/api/product/list?limit=250`, {}, 300000)
       .then((res) => {
         if (isMounted && res?.data?.success && Array.isArray(res.data.products)) {
-          setCatalogProducts(res.data.products);
+          const validOnly = res.data.products.filter(isValidProduct);
+          setCatalogProducts(validOnly);
+
+          // Synchronize recentlyViewed with live DB catalog
+          try {
+            const rawStored = JSON.parse(localStorage.getItem("recentlyViewed") || "[]");
+            const catalogMap = new Map(validOnly.map((p) => [String(p._id), p]));
+            const refreshedHistory = [];
+
+            rawStored.forEach((item) => {
+              if (item && item._id && catalogMap.has(String(item._id))) {
+                refreshedHistory.push(catalogMap.get(String(item._id)));
+              }
+            });
+
+            localStorage.setItem("recentlyViewed", JSON.stringify(refreshedHistory));
+            setRecentlyViewed(refreshedHistory);
+          } catch {}
         }
       })
       .catch(() => {});
@@ -58,7 +88,7 @@ const HistorySuggestions = ({ fallbackProducts = [], onQuickView }) => {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [isValidProduct]);
 
   const handleClearHistory = () => {
     localStorage.removeItem("recentlyViewed");
@@ -82,7 +112,7 @@ const HistorySuggestions = ({ fallbackProducts = [], onQuickView }) => {
 
   // Extract available distinct categories from catalog & history
   const allPool = useMemo(() => {
-    const combined = [...catalogProducts, ...fallbackProducts];
+    const combined = [...catalogProducts, ...fallbackProducts.filter(isValidProduct)];
     const map = new Map();
     combined.forEach((p) => {
       if (p && p._id && !map.has(p._id.toString())) {
@@ -90,7 +120,7 @@ const HistorySuggestions = ({ fallbackProducts = [], onQuickView }) => {
       }
     });
     return Array.from(map.values());
-  }, [catalogProducts, fallbackProducts]);
+  }, [catalogProducts, fallbackProducts, isValidProduct]);
 
   const categories = useMemo(() => {
     const set = new Set();
@@ -112,10 +142,10 @@ const HistorySuggestions = ({ fallbackProducts = [], onQuickView }) => {
       ? allPool
       : allPool.filter((p) => (p?.category || "").toLowerCase() === activeCategory.toLowerCase());
 
-    // 1. If in "all" view, show recently viewed items first
+    // 1. If in "all" view, show recently viewed items first (only valid real DB items)
     if (activeCategory === "all") {
       recentlyViewed.forEach((p) => {
-        if (p && p._id && !seen.has(p._id.toString())) {
+        if (p && p._id && !seen.has(p._id.toString()) && isValidProduct(p)) {
           seen.add(p._id.toString());
           result.push({ ...p, _historyTag: "Recently Viewed", _isRecentlyViewed: true });
         }
@@ -156,7 +186,7 @@ const HistorySuggestions = ({ fallbackProducts = [], onQuickView }) => {
     }
 
     return result.slice(0, 15);
-  }, [recentlyViewed, allPool, activeCategory, shuffleIndex]);
+  }, [recentlyViewed, allPool, activeCategory, shuffleIndex, isValidProduct]);
 
   const scrollSlider = (direction) => {
     const el = document.getElementById("history-products-slider");
@@ -174,7 +204,7 @@ const HistorySuggestions = ({ fallbackProducts = [], onQuickView }) => {
   const hasHistory = recentlyViewed.length > 0;
 
   return (
-    <section className="w-full px-2 sm:px-4 lg:px-6 pt-1 pb-1 select-none text-left">
+    <section className="w-full px-2 sm:px-4 lg:px-6 py-0.5 sm:py-1 select-none text-left">
       <div className="w-full bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-sm p-3.5 sm:p-4.5 lg:p-5 shadow-xs transition-shadow duration-300">
         
         {/* Section Top Header Row */}

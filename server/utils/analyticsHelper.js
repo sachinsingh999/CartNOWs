@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import productModel from "../models/productModel.js";
 import brandModel from "../models/brandModel.js";
 import categoryModel from "../models/categoryModel.js";
@@ -11,7 +12,7 @@ import searchQueryModel from "../models/searchQueryModel.js";
  */
 export async function trackProductView(productId, userId) {
   try {
-    if (!productId) return;
+    if (!productId || !mongoose.Types.ObjectId.isValid(productId)) return;
     
     // 1. Increment product viewCount
     const product = await productModel.findByIdAndUpdate(
@@ -104,7 +105,7 @@ export async function trackPurchase(items) {
     for (const item of items) {
       const prodId = item.productId || item._id || item.itemId;
       const qty = Number(item.qty || item.quantity || 1);
-      if (!prodId) continue;
+      if (!prodId || !mongoose.Types.ObjectId.isValid(prodId)) continue;
 
       const product = await productModel.findByIdAndUpdate(
         prodId,
@@ -155,7 +156,7 @@ export async function trackPurchase(items) {
  */
 export async function trackWishlistToggle(productId, isAdded) {
   try {
-    if (!productId) return;
+    if (!productId || !mongoose.Types.ObjectId.isValid(productId)) return;
     const diff = isAdded ? 1 : -1;
     await productModel.findByIdAndUpdate(productId, {
       $inc: { wishlistCount: diff }
@@ -170,7 +171,7 @@ export async function trackWishlistToggle(productId, isAdded) {
  */
 export async function trackCartAdd(productId, qty) {
   try {
-    if (!productId) return;
+    if (!productId || !mongoose.Types.ObjectId.isValid(productId)) return;
     const addedQty = Number(qty || 1);
     await productModel.findByIdAndUpdate(productId, {
       $inc: { cartCount: addedQty }

@@ -358,7 +358,7 @@ const NewArrivalsLanding = ({
           </div>
 
           {/* Right Half (50% Column): FULL IMAGE VIEW (Uncropped, Complete View with Motion Transition) */}
-          <div className="w-full lg:w-1/2 relative h-full min-h-[340px] overflow-hidden bg-slate-950 flex items-center justify-center p-2 sm:p-4">
+          <div className="w-full lg:w-1/2 relative min-h-[380px] sm:min-h-[440px] lg:min-h-[460px] overflow-hidden bg-slate-950 flex items-end justify-center">
             {/* Ambient Blurred Backdrop with Crossfade */}
             <AnimatePresence mode="popLayout">
               <motion.img
@@ -374,35 +374,37 @@ const NewArrivalsLanding = ({
               />
             </AnimatePresence>
 
-            {/* Sharp, Model Image with Directional Slide & Zoom */}
-            <AnimatePresence mode="popLayout" custom={direction}>
-              <motion.img
-                key={currentBanner?.imageUrl || currentBanner?.images?.[0] || currentSlide}
-                src={currentBanner?.imageUrl || currentBanner?.images?.[0] || heroImg}
-                alt={currentBanner?.title || "New Arrivals Lifestyle Model"}
-                custom={direction}
-                initial={{ 
-                  opacity: 0, 
-                  x: direction >= 0 ? 45 : -45, 
-                  scale: 0.95,
-                  filter: "blur(2px)"
-                }}
-                animate={{ 
-                  opacity: 1, 
-                  x: 0, 
-                  scale: 1,
-                  filter: "blur(0px)"
-                }}
-                exit={{ 
-                  opacity: 0, 
-                  x: direction >= 0 ? -45 : 45, 
-                  scale: 0.95,
-                  filter: "blur(2px)"
-                }}
-                transition={{ duration: 0.48, ease: [0.16, 1, 0.3, 1] }}
-                className="relative z-10 max-h-full max-w-full w-auto h-auto object-contain object-center select-none contrast-[105%] group-hover:scale-[1.02] drop-shadow-2xl"
-              />
-            </AnimatePresence>
+            {/* Complete Uncropped Image Container Touching Base */}
+            <div className="absolute inset-0 flex items-end justify-center pointer-events-none z-10 pt-2 px-2 sm:px-4 pb-0">
+              <AnimatePresence mode="popLayout" custom={direction}>
+                <motion.img
+                  key={currentBanner?.imageUrl || currentBanner?.images?.[0] || currentSlide}
+                  src={currentBanner?.imageUrl || currentBanner?.images?.[0] || heroImg}
+                  alt={currentBanner?.title || "New Arrivals Lifestyle Model"}
+                  custom={direction}
+                  initial={{ 
+                    opacity: 0, 
+                    x: direction >= 0 ? 45 : -45, 
+                    scale: 0.95,
+                    filter: "blur(2px)"
+                  }}
+                  animate={{ 
+                    opacity: 1, 
+                    x: 0, 
+                    scale: 1, 
+                    filter: "blur(0px)"
+                  }}
+                  exit={{ 
+                    opacity: 0, 
+                    x: direction >= 0 ? -45 : 45, 
+                    scale: 0.95,
+                    filter: "blur(2px)"
+                  }}
+                  transition={{ duration: 0.48, ease: [0.16, 1, 0.3, 1] }}
+                  className="w-auto h-full max-h-full max-w-full object-contain object-bottom select-none contrast-[105%] group-hover:scale-[1.02] drop-shadow-2xl transition-transform duration-300"
+                />
+              </AnimatePresence>
+            </div>
 
             {/* Floating Glass Circular Editorial Stamp (Bottom Right) */}
             <div className="hidden sm:flex absolute bottom-6 right-6 sm:bottom-8 sm:right-8 w-26 h-26 sm:w-30 sm:h-30 rounded-full bg-slate-950/85 backdrop-blur-md border border-slate-700/60 items-center justify-center shadow-2xl hover:scale-105 transition-transform cursor-pointer z-20">

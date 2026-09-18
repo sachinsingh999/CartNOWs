@@ -265,7 +265,7 @@ const FeaturedDealsCarousel = () => {
   };
 
   return (
-    <section className="w-full px-2 sm:px-4 lg:px-6 pt-0.5 pb-1 select-none">
+    <section className="w-full px-2 sm:px-4 lg:px-6 py-0.5 sm:py-1 select-none">
       <div
         className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-none p-3.5 sm:p-4.5 lg:p-5 shadow-xs hover:shadow-md transition-shadow duration-300 relative overflow-hidden"
         onMouseEnter={() => setIsPaused(true)}

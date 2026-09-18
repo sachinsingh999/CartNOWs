@@ -253,7 +253,7 @@ const RecommendedCategories = ({ homepageData }) => {
   const handleScroll = (direction) => {
     if (!scrollContainerRef.current) return;
     const container = scrollContainerRef.current;
-    const scrollAmount = container.clientWidth * 0.95;
+    const scrollAmount = container.clientWidth;
     container.scrollBy({
       left: direction === "left" ? -scrollAmount : scrollAmount,
       behavior: "smooth"
@@ -261,7 +261,7 @@ const RecommendedCategories = ({ homepageData }) => {
   };
 
   return (
-    <section className="w-full px-2 sm:px-4 lg:px-6 pt-1 pb-1 select-none text-left">
+    <section className="w-full px-2 sm:px-4 lg:px-6 py-0.5 sm:py-1 select-none text-left">
       <div className="w-full bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-sm p-3.5 sm:p-4.5 lg:p-5 shadow-xs transition-shadow duration-300">
         {/* Section Top Header Row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3.5">
@@ -358,7 +358,7 @@ const RecommendedCategories = ({ homepageData }) => {
             {categoryGroups.map((group) => (
               <div
                 key={group.id}
-                className="w-[85vw] max-w-[370px] sm:w-[330px] md:w-[360px] lg:w-[calc((100%-32px)/3)] shrink-0 snap-start bg-slate-50/70 dark:bg-slate-800/50 rounded-sm border border-slate-200/80 dark:border-slate-800 p-3.5 sm:p-4 shadow-2xs hover:shadow-xs transition-all duration-200 flex flex-col justify-between select-none"
+                className="w-full sm:w-[330px] md:w-[360px] lg:w-[calc((100%-32px)/3)] shrink-0 snap-start bg-slate-50/70 dark:bg-slate-800/50 rounded-sm border border-slate-200/80 dark:border-slate-800 p-3.5 sm:p-4 shadow-2xs hover:shadow-xs transition-all duration-200 flex flex-col justify-between select-none"
               >
                 {/* Parent Box Header */}
                 <div className="mb-2.5 text-left">

@@ -210,7 +210,7 @@ const ShopByBrands = ({ popularBrands = [] }) => {
           {brandGroups.map((group) => (
             <div
               key={group.id}
-              className="w-[85vw] max-w-[370px] sm:w-[330px] md:w-[360px] lg:w-[calc((100%-32px)/3)] shrink-0 snap-start bg-slate-50/70 dark:bg-slate-800/50 rounded-sm border border-slate-200/80 dark:border-slate-800 p-3.5 sm:p-4 shadow-2xs hover:shadow-xs transition-all duration-200 flex flex-col justify-between select-none"
+              className="w-full sm:w-[330px] md:w-[360px] lg:w-[calc((100%-32px)/3)] shrink-0 snap-start bg-slate-50/70 dark:bg-slate-800/50 rounded-sm border border-slate-200/80 dark:border-slate-800 p-3.5 sm:p-4 shadow-2xs hover:shadow-xs transition-all duration-200 flex flex-col justify-between select-none"
             >
               {/* Card Header */}
               <div className="mb-2.5">

@@ -20,6 +20,7 @@ import tryOnRouter from "./routers/tryOnRouter.js";
 import { bannerRouter, adminBannerRouter } from "./routers/bannerRouter.js";
 import { dealOfDayRouter, adminDealOfDayRouter } from "./routers/dealOfDayRouter.js";
 import promoBannerRouter from "./routers/promoBannerRouter.js";
+import brandPosterRouter from "./routers/brandPosterRouter.js";
 import { createServer } from "http";
 import { startTryOnWorker } from "./workers/tryOnWorker.js";
 import maintenanceMiddleware from "./middleware/maintenanceMiddleware.js";
@@ -87,6 +88,7 @@ app.use('/api/admin/banners', adminBannerRouter);
 app.use('/api/dealofday', dealOfDayRouter);
 app.use('/api/admin/dealofday', adminDealOfDayRouter);
 app.use('/api/promo-banners', promoBannerRouter);
+app.use('/api/brand-posters', brandPosterRouter);
 
 import invoiceRouter from "./routers/invoiceRouter.js";
 import path from "path";

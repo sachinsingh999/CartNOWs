@@ -43,6 +43,20 @@ async function seed() {
   const collectionsSet = new Set();
   const brandsSet = new Set();
 
+  const defaultCuratedCollections = [
+    "New Arrivals",
+    "Best Sellers",
+    "Trending Now",
+    "Mega Deals & Offers",
+    "Next-Gen Tech",
+    "Streetwear & Luxury",
+    "Sneakers & Athletics",
+    "Modern Home & Decor",
+    "Clean Beauty & Glow",
+    "Chrono & Fine Jewelry"
+  ];
+  defaultCuratedCollections.forEach(c => collectionsSet.add(c));
+
   products.forEach(p => {
     // Collect Category & Subcategory
     if (p.category) {
