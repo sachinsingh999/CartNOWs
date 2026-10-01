@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, Suspense } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { AnimatePresence, motion } from "framer-motion";
@@ -6,66 +6,24 @@ import axios from "axios";
 import { backendUrl } from "../config";
 import { cachedGet, getSyncCachedData } from "../utils/apiCache";
 
-// Critical above-the-fold components (Eagerly Loaded)
+// Home Components (Directly imported for rock-solid zero-CLS touch scrolling)
 import HeroSplitBanner from "../components/Home/HeroSplitBanner";
 import QuickViewModal from "../components/Home/QuickViewModal";
 import PremiumDealBanner from "../components/Home/PremiumDealBanner";
-
-// Lazy-loaded Home sections for optimal performance & fast initial load
-const FlashDealsSection = React.lazy(() => import("../components/Home/FlashDealsSection"));
-const FeaturedDealsCarousel = React.lazy(() => import("../components/Home/FeaturedDealsCarousel"));
-const RecommendedCategories = React.lazy(() => import("../components/Home/RecommendedCategories"));
-const ShopByBrands = React.lazy(() => import("../components/Home/ShopByBrands"));
-const RecommendedProducts = React.lazy(() => import("../components/Home/RecommendedProducts"));
-const TechAdBanner = React.lazy(() => import("../components/Home/TechAdBanner"));
-const TrendingProducts = React.lazy(() => import("../components/Home/TrendingProducts"));
-const ShopByCollections = React.lazy(() => import("../components/Home/ShopByCollections"));
-const HistorySuggestions = React.lazy(() => import("../components/Home/HistorySuggestions"));
-const BudgetStoreRadar = React.lazy(() => import("../components/Home/BudgetStoreRadar"));
-const ProductDuel = React.lazy(() => import("../components/Home/ProductDuel"));
-const DealOfTheDay = React.lazy(() => import("../components/Home/DealOfTheDay"));
-const SellerSpotlight = React.lazy(() => import("../components/Home/SellerSpotlight"));
-const AiRobotChat = React.lazy(() => import("../components/Home/AiRobotChat"));
-const BenefitsStrip = React.lazy(() => import("../components/Home/BenefitsStrip"));
-
-const LazySection = ({ children, height = "280px" }) => {
-  const [isVisible, setIsVisible] = useState(false);
-  const ref = React.useRef(null);
-
-  useEffect(() => {
-    if (!ref.current) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin: "600px 0px" }
-    );
-    observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, []);
-
-  return (
-    <div
-      ref={ref}
-      style={{
-        contentVisibility: "auto",
-        containIntrinsicSize: `auto ${height}`
-      }}
-      className="w-full"
-    >
-      {isVisible ? (
-        <Suspense fallback={<div style={{ height }} className="w-full" />}>
-          {children}
-        </Suspense>
-      ) : (
-        <div style={{ height }} className="w-full" />
-      )}
-    </div>
-  );
-};
+import FlashDealsSection from "../components/Home/FlashDealsSection";
+import FeaturedDealsCarousel from "../components/Home/FeaturedDealsCarousel";
+import RecommendedCategories from "../components/Home/RecommendedCategories";
+import ShopByBrands from "../components/Home/ShopByBrands";
+import RecommendedProducts from "../components/Home/RecommendedProducts";
+import TechAdBanner from "../components/Home/TechAdBanner";
+import ShopByCollections from "../components/Home/ShopByCollections";
+import HistorySuggestions from "../components/Home/HistorySuggestions";
+import BudgetStoreRadar from "../components/Home/BudgetStoreRadar";
+import ProductDuel from "../components/Home/ProductDuel";
+import DealOfTheDay from "../components/Home/DealOfTheDay";
+import SellerSpotlight from "../components/Home/SellerSpotlight";
+import AiRobotChat from "../components/Home/AiRobotChat";
+import BenefitsStrip from "../components/Home/BenefitsStrip";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -330,9 +288,7 @@ const Home = () => {
       <HeroSplitBanner homepageData={homepageData} />
 
       {/* 2. DYNAMIC TECH / PROMOTIONAL AD BANNER (Directly Below Hero Section) */}
-      <LazySection height="360px">
-        <TechAdBanner />
-      </LazySection>
+      <TechAdBanner />
 
       {/* REVEALED PREMIUM DEAL SPOTLIGHT OVERLAY */}
       <AnimatePresence>
@@ -361,176 +317,107 @@ const Home = () => {
       </AnimatePresence>
 
       {/* 3. FEATURED DEALS CAROUSEL (Daily Spotlight & Interactive Angles) */}
-      <LazySection height="520px">
-        <FeaturedDealsCarousel />
-      </LazySection>
+      <FeaturedDealsCarousel />
 
       {/* 4. FLASH DEALS 3x3 MATRIX SECTION */}
-      <LazySection height="480px">
-        <FlashDealsSection homepageData={homepageData} />
-      </LazySection>
+      <FlashDealsSection homepageData={homepageData} />
 
       {/* 5. RECENTLY VIEWED & SMART HISTORY SUGGESTIONS (Pick Up Where You Left Off) */}
-      <LazySection height="420px">
-        <HistorySuggestions
-          fallbackProducts={homepageData.recommended || []}
-          onQuickView={setQuickViewProduct}
-        />
-      </LazySection>
+      <HistorySuggestions
+        fallbackProducts={homepageData.recommended || []}
+        onQuickView={setQuickViewProduct}
+      />
 
       {/* 6. RECOMMENDED CATEGORIES 4-QUADRANT MATRICES */}
-      <LazySection height="480px">
-        <RecommendedCategories homepageData={homepageData} />
-      </LazySection>
+      <RecommendedCategories homepageData={homepageData} />
 
       {/* 7. POPULAR BRANDS */}
-      <LazySection height="400px">
-        <motion.section
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "150px" }}
-          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full px-2 sm:px-4 lg:px-6 py-0.5 sm:py-1 select-none"
-        >
-          <ShopByBrands popularBrands={homepageData.popularBrands} />
-        </motion.section>
-      </LazySection>
+      <section className="w-full px-2 sm:px-4 lg:px-6 py-0.5 sm:py-1 select-none">
+        <ShopByBrands popularBrands={homepageData.popularBrands} />
+      </section>
 
       {/* 8. UNIFIED DISCOVERY & RECOMMENDATION SHOWCASE */}
-      <LazySection height="480px">
-        <motion.section
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "150px" }}
-          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full px-2 sm:px-4 lg:px-6 py-0.5 sm:py-1 select-none"
-        >
-          <RecommendedProducts
-            recommended={homepageData.recommended}
-            trending={homepageData.trending}
-            bestSellers={homepageData.bestSellers}
-            topRated={homepageData.topRated}
-            newArrivals={homepageData.newArrivals}
-            mostViewed={homepageData.mostViewed}
-            dealsOfDay={homepageData.dealsOfDay}
-            mostWishlisted={homepageData.mostWishlisted}
-            loading={loading}
-            onQuickView={setQuickViewProduct}
-            onAddToCart={onAddToCart}
-            onToggleFavorite={onToggleFavorite}
-            wishlist={wishlist}
-          />
-        </motion.section>
-      </LazySection>
+      <section className="w-full px-2 sm:px-4 lg:px-6 py-0.5 sm:py-1 select-none">
+        <RecommendedProducts
+          recommended={homepageData.recommended}
+          trending={homepageData.trending}
+          bestSellers={homepageData.bestSellers}
+          topRated={homepageData.topRated}
+          newArrivals={homepageData.newArrivals}
+          mostViewed={homepageData.mostViewed}
+          dealsOfDay={homepageData.dealsOfDay}
+          mostWishlisted={homepageData.mostWishlisted}
+          loading={loading}
+          onQuickView={setQuickViewProduct}
+          onAddToCart={onAddToCart}
+          onToggleFavorite={onToggleFavorite}
+          wishlist={wishlist}
+        />
+      </section>
 
       {/* 9. CURATED THEME COLLECTIONS */}
-      <LazySection height="480px">
-        <motion.section
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "150px" }}
-          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full px-2 sm:px-4 lg:px-6 py-0.5 sm:py-1 select-none"
-        >
-          <ShopByCollections trendingCollections={homepageData.trendingCollections} />
-        </motion.section>
-      </LazySection>
+      <section className="w-full px-2 sm:px-4 lg:px-6 py-0.5 sm:py-1 select-none">
+        <ShopByCollections trendingCollections={homepageData.trendingCollections} />
+      </section>
 
       {/* 10. BUDGET STORE & PRICE DROP RADAR */}
-      <LazySection height="460px">
-        <motion.section
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "150px" }}
-          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full px-2 sm:px-4 lg:px-6 py-0.5 sm:py-1 select-none"
-        >
-          <BudgetStoreRadar
-            homepageData={homepageData}
-            onQuickView={setQuickViewProduct}
-            onAddToCart={onAddToCart}
-            onToggleFavorite={onToggleFavorite}
-            wishlist={wishlist}
-          />
-        </motion.section>
-      </LazySection>
+      <section className="w-full px-2 sm:px-4 lg:px-6 py-0.5 sm:py-1 select-none">
+        <BudgetStoreRadar
+          homepageData={homepageData}
+          onQuickView={setQuickViewProduct}
+          onAddToCart={onAddToCart}
+          onToggleFavorite={onToggleFavorite}
+          wishlist={wishlist}
+        />
+      </section>
 
       {/* 11. "THIS OR THAT?" COMMUNITY PRODUCT DUELS */}
-      <LazySection height="520px">
-        <motion.section
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "150px" }}
-          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full px-2 sm:px-4 lg:px-6 py-0.5 sm:py-1 select-none"
-        >
-          <ProductDuel
-            homepageData={homepageData}
-            onQuickView={setQuickViewProduct}
-            onAddToCart={onAddToCart}
-          />
-        </motion.section>
-      </LazySection>
+      <section className="w-full px-2 sm:px-4 lg:px-6 py-0.5 sm:py-1 select-none">
+        <ProductDuel
+          homepageData={homepageData}
+          onQuickView={setQuickViewProduct}
+          onAddToCart={onAddToCart}
+        />
+      </section>
 
       {/* 12. 3-COLUMN FEATURE HUB (Deal of Day, Seller Spotlight, AI Robot Chat) - BOTTOM PLACEMENT */}
-      <LazySection height="540px">
-        <motion.section
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "150px" }}
-          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full px-2 sm:px-4 lg:px-6 py-0.5 sm:py-1 select-none text-left"
-        >
-          <div className="w-full bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-sm p-3.5 sm:p-4.5 lg:p-5 shadow-xs transition-colors duration-200">
-            {/* Section Top Header Row */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3.5">
-              <div className="text-left space-y-1">
-                <div className="flex items-center gap-2">
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-amber-50 dark:bg-amber-950/50 border border-amber-200/80 dark:border-amber-800/60 rounded-sm text-[9px] font-black uppercase tracking-wider text-amber-700 dark:text-amber-300 shadow-2xs">
-                    <span>DAILY HIGHLIGHTS</span>
-                  </div>
-
-                  <span className="px-2 py-0.5 rounded-sm bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold">
-                    3-in-1 Feature Hub
-                  </span>
+      <section className="w-full px-2 sm:px-4 lg:px-6 py-0.5 sm:py-1 select-none text-left">
+        <div className="w-full bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-none p-3.5 sm:p-4.5 lg:p-5 shadow-xs transition-colors duration-200">
+          {/* Section Top Header Row */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3.5">
+            <div className="text-left space-y-1">
+              <div className="flex items-center gap-2">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-amber-50 dark:bg-amber-950/50 border border-amber-200/80 dark:border-amber-800/60 rounded-none text-[9px] font-black uppercase tracking-wider text-amber-700 dark:text-amber-300 shadow-2xs">
+                  <span>DAILY HIGHLIGHTS</span>
                 </div>
 
-                <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
-                  <span>Deals, Spotlight & AI Assistant</span>
-                  <span className="h-1.5 w-1.5 rounded-sm bg-amber-500 dark:bg-amber-400 animate-pulse" />
-                </h2>
-
-                <p className="text-xs font-bold text-slate-500 dark:text-slate-400">
-                  Blockbuster deal of the day, verified top seller spotlight, and smart 24/7 AI shopping assistant.
-                </p>
+                <span className="px-2 py-0.5 rounded-none bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold">
+                  3-in-1 Feature Hub
+                </span>
               </div>
-            </div>
 
-            {/* 3-Column Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3.5 sm:gap-4 lg:gap-4.5 text-left items-stretch">
-              <DealOfTheDay
-                deals={homepageData.dealsOfDay}
-                activeDeal={activeDeal}
-                onAddToCart={onAddToCart}
-              />
-              <SellerSpotlight />
-              <AiRobotChat />
+              <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+                <span>Deals, Spotlight & AI Assistant</span>
+                <span className="h-1.5 w-1.5 rounded-none bg-amber-500 dark:bg-amber-400 animate-pulse" />
+              </h2>
             </div>
           </div>
-        </motion.section>
-      </LazySection>
+
+          {/* 3-Column Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3.5 sm:gap-4 lg:gap-4.5 text-left items-stretch">
+            <DealOfTheDay
+              deals={homepageData.dealsOfDay}
+              activeDeal={activeDeal}
+              onAddToCart={onAddToCart}
+            />
+            <SellerSpotlight />
+            <AiRobotChat />
+          </div>
+        </div>
+      </section>
 
       {/* 13. BRAND BENEFITS & TRUST GUARANTEES */}
-      <LazySection height="180px">
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "150px" }}
-          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <BenefitsStrip />
-        </motion.div>
-      </LazySection>
+      <BenefitsStrip />
 
       {/* 16. QUICK VIEW INTERACTIVE MODAL */}
       <QuickViewModal

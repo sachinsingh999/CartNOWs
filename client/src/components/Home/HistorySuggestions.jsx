@@ -205,13 +205,13 @@ const HistorySuggestions = ({ fallbackProducts = [], onQuickView }) => {
 
   return (
     <section className="w-full px-2 sm:px-4 lg:px-6 py-0.5 sm:py-1 select-none text-left">
-      <div className="w-full bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-sm p-3.5 sm:p-4.5 lg:p-5 shadow-xs transition-shadow duration-300">
+      <div className="w-full bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-none p-3.5 sm:p-4.5 lg:p-5 shadow-xs transition-shadow duration-300">
         
         {/* Section Top Header Row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3.5">
           <div className="text-left space-y-1">
             <div className="flex items-center gap-2">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-blue-50 dark:bg-blue-950/50 border border-blue-200/80 dark:border-blue-800/60 rounded-sm text-[9px] font-black uppercase tracking-wider text-blue-700 dark:text-blue-300 shadow-2xs">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-blue-50 dark:bg-blue-950/50 border border-blue-200/80 dark:border-blue-800/60 rounded-none text-[9px] font-black uppercase tracking-wider text-blue-700 dark:text-blue-300 shadow-2xs">
                 {hasHistory ? (
                   <History size={11} className="stroke-[2.5]" />
                 ) : (
@@ -221,7 +221,7 @@ const HistorySuggestions = ({ fallbackProducts = [], onQuickView }) => {
               </div>
 
               {hasHistory && (
-                <span className="px-2 py-0.5 rounded-sm bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold">
+                <span className="px-2 py-0.5 rounded-none bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold">
                   {recentlyViewed.length} Viewed {recentlyViewed.length === 1 ? "Item" : "Items"}
                 </span>
               )}
@@ -229,14 +229,8 @@ const HistorySuggestions = ({ fallbackProducts = [], onQuickView }) => {
 
             <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
               <span>{hasHistory ? "Pick Up Where You Left Off" : "Inspired By Your Interests"}</span>
-              <span className="h-1.5 w-1.5 rounded-sm bg-blue-600 dark:bg-blue-400 animate-pulse" />
+              <span className="h-1.5 w-1.5 rounded-none bg-blue-600 dark:bg-blue-400 animate-pulse" />
             </h2>
-
-            <p className="text-xs font-bold text-slate-500 dark:text-slate-400">
-              {hasHistory
-                ? "Items you've viewed recently and tailored recommendations from related collections."
-                : "Explore trending discoveries and popular selections tailored for you."}
-            </p>
           </div>
 
           {/* Action Controls */}
@@ -245,7 +239,7 @@ const HistorySuggestions = ({ fallbackProducts = [], onQuickView }) => {
             <button
               type="button"
               onClick={() => setShuffleIndex((prev) => prev + 1)}
-              className="px-2.5 py-1.5 rounded-sm border border-slate-200 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-600 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 font-black text-[10px] uppercase tracking-wider flex items-center gap-1.5 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 shadow-2xs"
+              className="px-2.5 py-1.5 rounded-none border border-slate-200 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-600 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 font-black text-[10px] uppercase tracking-wider flex items-center gap-1.5 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 shadow-2xs"
               title="Shuffle & see different product suggestions"
             >
               <RefreshCw size={11} className="stroke-[2.5]" />
@@ -256,7 +250,7 @@ const HistorySuggestions = ({ fallbackProducts = [], onQuickView }) => {
               <button
                 type="button"
                 onClick={handleClearHistory}
-                className="px-2.5 py-1.5 rounded-sm border border-slate-200 dark:border-slate-800 hover:border-rose-300 dark:hover:border-rose-700/60 text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50/50 dark:hover:bg-rose-950/20 font-black text-[10px] uppercase tracking-wider flex items-center gap-1.5 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 shadow-2xs"
+                className="px-2.5 py-1.5 rounded-none border border-slate-200 dark:border-slate-800 hover:border-rose-300 dark:hover:border-rose-700/60 text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50/50 dark:hover:bg-rose-950/20 font-black text-[10px] uppercase tracking-wider flex items-center gap-1.5 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 shadow-2xs"
                 title="Clear Browsing History"
               >
                 <Trash2 size={11} className="stroke-[2.5]" />
@@ -266,7 +260,7 @@ const HistorySuggestions = ({ fallbackProducts = [], onQuickView }) => {
 
             <button
               onClick={() => navigate("/product")}
-              className="px-3 py-1.5 rounded-sm border border-slate-300 dark:border-slate-700 hover:border-slate-900 dark:hover:border-white text-slate-800 dark:text-slate-200 hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-950 font-black text-[11px] uppercase tracking-wider flex items-center gap-1.5 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 shadow-2xs"
+              className="px-3 py-1.5 rounded-none border border-slate-300 dark:border-slate-700 hover:border-slate-900 dark:hover:border-white text-slate-800 dark:text-slate-200 hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-950 font-black text-[11px] uppercase tracking-wider flex items-center gap-1.5 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 shadow-2xs"
             >
               <span>Explore All</span>
               <ArrowRight size={12} className="stroke-[2.5]" />
@@ -278,7 +272,7 @@ const HistorySuggestions = ({ fallbackProducts = [], onQuickView }) => {
                 type="button"
                 onClick={() => scrollSlider("left")}
                 aria-label="Previous suggestions"
-                className="w-8 h-8 rounded-sm bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shadow-2xs cursor-pointer"
+                className="w-8 h-8 rounded-none bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shadow-2xs cursor-pointer"
               >
                 <ChevronLeft size={15} className="stroke-[2.5]" />
               </button>
@@ -286,7 +280,7 @@ const HistorySuggestions = ({ fallbackProducts = [], onQuickView }) => {
                 type="button"
                 onClick={() => scrollSlider("right")}
                 aria-label="Next suggestions"
-                className="w-8 h-8 rounded-sm bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shadow-2xs cursor-pointer"
+                className="w-8 h-8 rounded-none bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shadow-2xs cursor-pointer"
               >
                 <ChevronRight size={15} className="stroke-[2.5]" />
               </button>
@@ -309,7 +303,7 @@ const HistorySuggestions = ({ fallbackProducts = [], onQuickView }) => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setActiveCategory(cat)}
-                  className={`px-3 py-1.5 rounded-sm text-[10.5px] font-black uppercase tracking-wider border transition-colors duration-150 cursor-pointer shadow-2xs shrink-0 select-none ${
+                  className={`px-3 py-1.5 rounded-none text-[10.5px] font-black uppercase tracking-wider border transition-colors duration-150 cursor-pointer shadow-2xs shrink-0 select-none ${
                     isActive
                       ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-slate-900 dark:border-white shadow-xs"
                       : "bg-white dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 border-slate-200/90 dark:border-slate-700 hover:border-slate-400 hover:text-slate-950 dark:hover:text-white"
@@ -347,7 +341,7 @@ const HistorySuggestions = ({ fallbackProducts = [], onQuickView }) => {
                   <button
                     type="button"
                     onClick={(e) => handleRemoveSingleItem(e, product._id)}
-                    className="absolute top-2 right-2 z-20 w-6 h-6 rounded-full bg-white/90 dark:bg-slate-900/90 text-slate-500 hover:text-rose-600 hover:bg-white dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
+                    className="absolute top-2 right-2 z-20 w-6 h-6 rounded-none bg-white/90 dark:bg-slate-900/90 text-slate-500 hover:text-rose-600 hover:bg-white dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
                     title="Remove from history"
                   >
                     <X size={12} className="stroke-[2.5]" />

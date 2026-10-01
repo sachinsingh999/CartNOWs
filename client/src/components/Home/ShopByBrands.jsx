@@ -133,29 +133,25 @@ const ShopByBrands = ({ popularBrands = [] }) => {
   }, []);
 
   return (
-    <div className="w-full bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-sm p-3.5 sm:p-4.5 lg:p-5 shadow-xs transition-shadow duration-300 select-none text-left">
+    <div className="w-full bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-none p-3.5 sm:p-4.5 lg:p-5 shadow-xs transition-shadow duration-300 select-none text-left">
       {/* Section Header (Matching Pick Up Where You Left Off style) */}
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-3 mb-4">
         <div className="text-left space-y-1">
           <div className="flex items-center gap-2">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-blue-50 dark:bg-blue-950/50 border border-blue-200/80 dark:border-blue-800/60 rounded-sm text-[9px] font-black uppercase tracking-wider text-blue-700 dark:text-blue-300 shadow-2xs">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-blue-50 dark:bg-blue-950/50 border border-blue-200/80 dark:border-blue-800/60 rounded-none text-[9px] font-black uppercase tracking-wider text-blue-700 dark:text-blue-300 shadow-2xs">
               <ShieldCheck size={11} className="stroke-[2.5]" />
               <span>Trusted Brand Stores</span>
             </div>
 
-            <span className="px-2 py-0.5 rounded-sm bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold">
+            <span className="px-2 py-0.5 rounded-none bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold">
               5 Collections • 20 Official Stores
             </span>
           </div>
 
           <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
             <span>Shop By Brands</span>
-            <span className="h-1.5 w-1.5 rounded-sm bg-blue-600 dark:bg-blue-400 animate-pulse" />
+            <span className="h-1.5 w-1.5 rounded-none bg-blue-600 dark:bg-blue-400 animate-pulse" />
           </h2>
-
-          <p className="text-xs font-bold text-slate-500 dark:text-slate-400">
-            Explore authentic products from top official brand stores and verified global partners.
-          </p>
         </div>
 
         {/* Action Button */}
@@ -163,7 +159,7 @@ const ShopByBrands = ({ popularBrands = [] }) => {
           <button
             type="button"
             onClick={() => navigate("/brands")}
-            className="px-3 py-1.5 rounded-sm border border-slate-200 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-600 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 font-black text-[10px] uppercase tracking-wider flex items-center gap-1.5 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 shadow-2xs group"
+            className="px-3 py-1.5 rounded-none border border-slate-200 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-600 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 font-black text-[10px] uppercase tracking-wider flex items-center gap-1.5 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 shadow-2xs group"
           >
             <span>View All Brands</span>
             <ArrowRight size={12} className="stroke-[2.5] transition-transform duration-200 group-hover:translate-x-0.5" />
@@ -178,7 +174,7 @@ const ShopByBrands = ({ popularBrands = [] }) => {
           onClick={() => handleScroll("left")}
           disabled={!canScrollLeft}
           aria-label="Previous brands"
-          className={`hidden sm:flex absolute -left-2 sm:-left-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-sm bg-white/95 dark:bg-slate-800/95 backdrop-blur-xs border border-slate-200 dark:border-slate-700 shadow-md items-center justify-center text-slate-800 dark:text-white transition-all cursor-pointer ${
+          className={`hidden sm:flex absolute -left-2 sm:-left-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-none bg-white/95 dark:bg-slate-800/95 backdrop-blur-xs border border-slate-200 dark:border-slate-700 shadow-md items-center justify-center text-slate-800 dark:text-white transition-all cursor-pointer ${
             canScrollLeft
               ? "hover:bg-blue-600 hover:text-white hover:border-blue-600 hover:scale-105 active:scale-95 opacity-100"
               : "opacity-0 pointer-events-none"
@@ -192,7 +188,7 @@ const ShopByBrands = ({ popularBrands = [] }) => {
           onClick={() => handleScroll("right")}
           disabled={!canScrollRight}
           aria-label="Next brands"
-          className={`hidden sm:flex absolute -right-2 sm:-right-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-sm bg-white/95 dark:bg-slate-800/95 backdrop-blur-xs border border-slate-200 dark:border-slate-700 shadow-md items-center justify-center text-slate-800 dark:text-white transition-all cursor-pointer ${
+          className={`hidden sm:flex absolute -right-2 sm:-right-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-none bg-white/95 dark:bg-slate-800/95 backdrop-blur-xs border border-slate-200 dark:border-slate-700 shadow-md items-center justify-center text-slate-800 dark:text-white transition-all cursor-pointer ${
             canScrollRight
               ? "hover:bg-blue-600 hover:text-white hover:border-blue-600 hover:scale-105 active:scale-95 opacity-100"
               : "opacity-0 pointer-events-none"
@@ -210,12 +206,12 @@ const ShopByBrands = ({ popularBrands = [] }) => {
           {brandGroups.map((group) => (
             <div
               key={group.id}
-              className="w-full sm:w-[330px] md:w-[360px] lg:w-[calc((100%-32px)/3)] shrink-0 snap-start bg-slate-50/70 dark:bg-slate-800/50 rounded-sm border border-slate-200/80 dark:border-slate-800 p-3.5 sm:p-4 shadow-2xs hover:shadow-xs transition-all duration-200 flex flex-col justify-between select-none"
+              className="w-full sm:w-[330px] md:w-[360px] lg:w-[calc((100%-32px)/3)] shrink-0 snap-start bg-slate-50/70 dark:bg-slate-800/50 rounded-none border border-slate-200/80 dark:border-slate-800 p-3.5 sm:p-4 shadow-2xs hover:shadow-xs transition-all duration-200 flex flex-col justify-between select-none"
             >
               {/* Card Header */}
               <div className="mb-2.5">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-[9.5px] sm:text-[10px] font-black uppercase tracking-wider text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded-sm inline-block border border-blue-200/60 dark:border-blue-900/40">
+                  <span className="text-[9.5px] sm:text-[10px] font-black uppercase tracking-wider text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded-none inline-block border border-blue-200/60 dark:border-blue-900/40">
                     {group.tag}
                   </span>
                   <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
@@ -239,10 +235,10 @@ const ShopByBrands = ({ popularBrands = [] }) => {
                     className="group/item cursor-pointer flex flex-col items-center select-none"
                   >
                     {/* Balanced Logo Box */}
-                    <div className="w-full aspect-square rounded-sm overflow-hidden bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-700/80 relative group-hover/item:border-blue-500 dark:group-hover/item:border-blue-400 group-hover/item:shadow-xs transition-all duration-200 flex items-center justify-center">
+                    <div className="w-full aspect-square rounded-none overflow-hidden bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-700/80 relative group-hover/item:border-blue-500 dark:group-hover/item:border-blue-400 group-hover/item:shadow-xs transition-all duration-200 flex items-center justify-center">
                       {/* Mini Feature Badge */}
                       {brand.badge && (
-                        <span className="absolute top-1.5 right-1.5 z-10 px-1.5 py-0.5 rounded-sm text-[7.5px] sm:text-[8.5px] font-black uppercase tracking-tight bg-blue-600 text-white shadow-2xs leading-none pointer-events-none">
+                        <span className="absolute top-1.5 right-1.5 z-10 px-1.5 py-0.5 rounded-none text-[7.5px] sm:text-[8.5px] font-black uppercase tracking-tight bg-blue-600 text-white shadow-2xs leading-none pointer-events-none">
                           {brand.badge}
                         </span>
                       )}
@@ -281,7 +277,7 @@ const ShopByBrands = ({ popularBrands = [] }) => {
                 onClick={() => {
                   if (group.link) navigate(group.link);
                 }}
-                className="group/btn w-full py-2 px-3 rounded-sm bg-white dark:bg-slate-900 hover:bg-slate-900 dark:hover:bg-white hover:text-white dark:hover:text-slate-900 border border-slate-200 dark:border-slate-700 flex items-center justify-between text-slate-700 dark:text-slate-200 text-[11px] sm:text-xs font-black uppercase tracking-wider transition-all duration-200 cursor-pointer mt-auto shadow-2xs"
+                className="group/btn w-full py-2 px-3 rounded-none bg-white dark:bg-slate-900 hover:bg-slate-900 dark:hover:bg-white hover:text-white dark:hover:text-slate-900 border border-slate-200 dark:border-slate-700 flex items-center justify-between text-slate-700 dark:text-slate-200 text-[11px] sm:text-xs font-black uppercase tracking-wider transition-all duration-200 cursor-pointer mt-auto shadow-2xs"
               >
                 <span>{group.cta}</span>
                 <ArrowRight size={13} className="stroke-[2.5] group-hover/btn:translate-x-1 transition-transform duration-200" />

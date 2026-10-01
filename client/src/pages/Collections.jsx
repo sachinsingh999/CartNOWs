@@ -1,9 +1,23 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 import { backendUrl } from "../config";
 import { cachedGet } from "../utils/apiCache";
 import { CollectionsSkeleton } from "../components/SkeletonLoader";
+
+// Curated High-Resolution Composite Assets
+import electronicsImg from "../assets/electronics_collection_composite.webp";
+import fashionImg from "../assets/fashion_collection_composite.webp";
+import homeImg from "../assets/home_collection_composite.webp";
+import beautyImg from "../assets/brand_asset_beauty.webp";
+import newArrivalsHero from "../assets/new_arrivals_hero.webp";
+import trendingHero from "../assets/trending_now_hero.webp";
+import sneakersImg from "../assets/brand_asset_sneakers.webp";
+import accessoriesImg from "../assets/brand_asset_accessories.webp";
+import mensFashionImg from "../assets/brand_asset_mens_fashion_new.webp";
+import jewelryImg from "../assets/cat_jewelry.webp";
+
 import {
   Sparkles,
   ArrowRight,
@@ -11,20 +25,17 @@ import {
   Shirt,
   Home,
   Laptop,
-  GraduationCap,
   Gem,
   ShoppingBag,
   Award,
   Search,
   CheckCircle,
-  Filter,
   Star,
   Zap,
   Tag,
   Package,
   ChevronRight,
   ChevronLeft,
-  SlidersHorizontal,
   Crown,
   X,
   Truck,
@@ -33,27 +44,253 @@ import {
   ArrowUpDown,
   Layers,
   Heart,
-  Grid
+  Grid3X3,
+  LayoutGrid,
+  Percent,
+  Check,
+  Compass,
+  ArrowUpRight
 } from "lucide-react";
+
+const getCollectionFallbackImage = (name = "", slug = "") => {
+  const lower = `${name} ${slug}`.toLowerCase();
+  if (lower.includes("tech") || lower.includes("electro") || lower.includes("gadget") || lower.includes("phone") || lower.includes("laptop")) {
+    return electronicsImg;
+  }
+  if (lower.includes("men") && (lower.includes("fashion") || lower.includes("wear") || lower.includes("cloth"))) {
+    return mensFashionImg;
+  }
+  if (lower.includes("fashion") || lower.includes("wear") || lower.includes("streetwear") || lower.includes("lifestyle") || lower.includes("cloth") || lower.includes("style")) {
+    return fashionImg;
+  }
+  if (lower.includes("home") || lower.includes("living") || lower.includes("decor") || lower.includes("kitchen")) {
+    return homeImg;
+  }
+  if (lower.includes("beauty") || lower.includes("glow") || lower.includes("skin") || lower.includes("cosmetic")) {
+    return beautyImg;
+  }
+  if (lower.includes("sport") || lower.includes("sneaker") || lower.includes("active") || lower.includes("fitness") || lower.includes("athletic")) {
+    return sneakersImg;
+  }
+  if (lower.includes("accessory") || lower.includes("accessories") || lower.includes("chrono") || lower.includes("watch")) {
+    return accessoriesImg;
+  }
+  if (lower.includes("jewelry") || lower.includes("gold") || lower.includes("silver") || lower.includes("gem")) {
+    return jewelryImg;
+  }
+  if (lower.includes("new") || lower.includes("arrival") || lower.includes("drop")) {
+    return newArrivalsHero;
+  }
+  if (lower.includes("best") || lower.includes("seller") || lower.includes("top-rated")) {
+    return trendingHero;
+  }
+  if (lower.includes("deal") || lower.includes("offer") || lower.includes("discount") || lower.includes("save") || lower.includes("festival")) {
+    return homeImg;
+  }
+  return trendingHero;
+};
+
+const getCollectionStyles = (name = "", slug = "") => {
+  const lower = `${name} ${slug}`.toLowerCase();
+
+  if (lower.includes("tech") || lower.includes("electro") || lower.includes("gadget") || lower.includes("phone") || lower.includes("laptop")) {
+    return {
+      accentRing: "hover:border-indigo-500/60 dark:hover:border-indigo-500/50 hover:shadow-indigo-500/10",
+      badgeColor: "bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-500/20",
+      btnGradient: "from-indigo-600 via-blue-600 to-indigo-700 hover:from-indigo-500 hover:to-blue-500",
+      pillColor: "hover:text-indigo-600 dark:hover:text-indigo-400",
+      glowColor: "from-indigo-500/20 to-blue-500/0",
+      badgeIcon: Laptop,
+      categoryTag: "Tech & Cyber",
+      tags: ["#ProWorkstation", "#SmartDevices", "#Flagship"]
+    };
+  }
+  if (lower.includes("fashion") || lower.includes("wear") || lower.includes("lifestyle") || lower.includes("cloth") || lower.includes("style") || lower.includes("streetwear")) {
+    return {
+      accentRing: "hover:border-rose-500/60 dark:hover:border-rose-500/50 hover:shadow-rose-500/10",
+      badgeColor: "bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/20",
+      btnGradient: "from-[#ff3f6c] via-rose-600 to-pink-600 hover:from-[#e0355c] hover:to-rose-500",
+      pillColor: "hover:text-[#ff3f6c]",
+      glowColor: "from-rose-500/20 to-pink-500/0",
+      badgeIcon: Shirt,
+      categoryTag: "Fashion & Luxury",
+      tags: ["#HauteCouture", "#OversizedDrops", "#Runway"]
+    };
+  }
+  if (lower.includes("home") || lower.includes("living") || lower.includes("decor") || lower.includes("kitchen")) {
+    return {
+      accentRing: "hover:border-amber-500/60 dark:hover:border-amber-500/50 hover:shadow-amber-500/10",
+      badgeColor: "bg-amber-500/10 text-amber-800 dark:text-amber-300 border-amber-500/20",
+      btnGradient: "from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:to-orange-400",
+      pillColor: "hover:text-amber-600 dark:hover:text-amber-400",
+      glowColor: "from-amber-500/20 to-orange-500/0",
+      badgeIcon: Home,
+      categoryTag: "Home & Living",
+      tags: ["#NordicLiving", "#SmartAmbient", "#Ergonomic"]
+    };
+  }
+  if (lower.includes("beauty") || lower.includes("glow") || lower.includes("skin") || lower.includes("cosmetic")) {
+    return {
+      accentRing: "hover:border-teal-500/60 dark:hover:border-teal-500/50 hover:shadow-teal-500/10",
+      badgeColor: "bg-teal-500/10 text-teal-700 dark:text-teal-300 border-teal-500/20",
+      btnGradient: "from-teal-500 via-emerald-500 to-teal-600 hover:from-teal-400 hover:to-emerald-400",
+      pillColor: "hover:text-teal-600 dark:hover:text-teal-400",
+      glowColor: "from-teal-500/20 to-emerald-500/0",
+      badgeIcon: Sparkles,
+      categoryTag: "Skincare & Glow",
+      tags: ["#ClinicalPeptides", "#GentleHydration", "#DermApproved"]
+    };
+  }
+  if (lower.includes("accessory") || lower.includes("accessories") || lower.includes("chrono") || lower.includes("watch") || lower.includes("jewelry") || lower.includes("gold")) {
+    return {
+      accentRing: "hover:border-purple-500/60 dark:hover:border-purple-500/50 hover:shadow-purple-500/10",
+      badgeColor: "bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20",
+      btnGradient: "from-purple-600 via-fuchsia-600 to-indigo-600 hover:from-purple-500 hover:to-fuchsia-500",
+      pillColor: "hover:text-purple-600 dark:hover:text-purple-400",
+      glowColor: "from-purple-500/20 to-fuchsia-500/0",
+      badgeIcon: Gem,
+      categoryTag: "Chrono & Jewelry",
+      tags: ["#AutomaticMovement", "#SapphireGlass", "#FineCraft"]
+    };
+  }
+  if (lower.includes("deal") || lower.includes("offer") || lower.includes("discount") || lower.includes("save") || lower.includes("saving") || lower.includes("festival") || lower.includes("mega")) {
+    return {
+      accentRing: "hover:border-pink-500/60 dark:hover:border-pink-500/50 hover:shadow-pink-500/10",
+      badgeColor: "bg-pink-500/10 text-pink-700 dark:text-pink-300 border-pink-500/20",
+      btnGradient: "from-pink-600 via-rose-600 to-red-600 hover:from-pink-500 hover:to-rose-500",
+      pillColor: "hover:text-pink-600 dark:hover:text-pink-400",
+      glowColor: "from-pink-500/20 to-rose-500/0",
+      badgeIcon: Percent,
+      categoryTag: "Mega Deals & Offers",
+      tags: ["#UpTo60%Off", "#FlashSavings", "#BundlePerks"]
+    };
+  }
+  if (lower.includes("sport") || lower.includes("sneaker") || lower.includes("active") || lower.includes("fitness")) {
+    return {
+      accentRing: "hover:border-cyan-500/60 dark:hover:border-cyan-500/50 hover:shadow-cyan-500/10",
+      badgeColor: "bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border-cyan-500/20",
+      btnGradient: "from-cyan-600 via-teal-600 to-blue-600 hover:from-cyan-500 hover:to-teal-500",
+      pillColor: "hover:text-cyan-600 dark:hover:text-cyan-400",
+      glowColor: "from-cyan-500/20 to-sky-500/0",
+      badgeIcon: Zap,
+      categoryTag: "Sports & Footwear",
+      tags: ["#HighRebound", "#LimitedEdition", "#Performance"]
+    };
+  }
+  if (lower.includes("new") || lower.includes("arrival") || lower.includes("drop")) {
+    return {
+      accentRing: "hover:border-emerald-500/60 dark:hover:border-emerald-500/50 hover:shadow-emerald-500/10",
+      badgeColor: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20",
+      btnGradient: "from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500",
+      pillColor: "hover:text-emerald-600 dark:hover:text-emerald-400",
+      glowColor: "from-emerald-500/20 to-teal-500/0",
+      badgeIcon: Sparkles,
+      categoryTag: "Fresh Drops",
+      tags: ["#WeeklyDrop", "#VerifiedAuthentic", "#LimitedStock"]
+    };
+  }
+  if (lower.includes("best") || lower.includes("seller") || lower.includes("top-rated")) {
+    return {
+      accentRing: "hover:border-amber-500/60 dark:hover:border-amber-500/50 hover:shadow-amber-500/10",
+      badgeColor: "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20",
+      btnGradient: "from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-400 hover:to-yellow-400",
+      pillColor: "hover:text-amber-600 dark:hover:text-amber-400",
+      glowColor: "from-amber-500/20 to-yellow-500/0",
+      badgeIcon: Crown,
+      categoryTag: "Hall of Fame",
+      tags: ["#CustomerFavorite", "#5StarRated", "#TopRepurchase"]
+    };
+  }
+  if (lower.includes("trending") || lower.includes("viral")) {
+    return {
+      accentRing: "hover:border-blue-500/60 dark:hover:border-blue-500/50 hover:shadow-blue-500/10",
+      badgeColor: "bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20",
+      btnGradient: "from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:to-indigo-500",
+      pillColor: "hover:text-blue-600 dark:hover:text-blue-400",
+      glowColor: "from-blue-500/20 to-indigo-500/0",
+      badgeIcon: Flame,
+      categoryTag: "Viral Trending",
+      tags: ["#HighDemand", "#RealTimeVelocity", "#ViralPicks"]
+    };
+  }
+
+  return {
+    accentRing: "hover:border-purple-500/60 dark:hover:border-purple-500/50 hover:shadow-purple-500/10",
+    badgeColor: "bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20",
+    btnGradient: "from-purple-600 via-indigo-600 to-rose-600 hover:from-purple-500 hover:to-rose-500",
+    pillColor: "hover:text-purple-600 dark:hover:text-purple-400",
+    glowColor: "from-purple-500/20 to-indigo-500/0",
+    badgeIcon: Award,
+    categoryTag: "Curated Special",
+    tags: ["#VerifiedAuthentic", "#CuratedPick", "#WhiteGlove"]
+  };
+};
+
+const getCollectionImage = (col) => {
+  // 1. Image or banner configured by Admin on collection
+  if (col.banner && typeof col.banner === "string" && col.banner.trim() !== "" && !col.banner.includes("photo-1511556532299")) {
+    return col.banner.startsWith("http") ? col.banner : `${backendUrl}/${col.banner}`;
+  }
+  if (col.image && typeof col.image === "string" && col.image.trim() !== "" && !col.image.includes("photo-1511556532299")) {
+    return col.image.startsWith("http") ? col.image : `${backendUrl}/${col.image}`;
+  }
+
+  // 2. Real product image from products in this collection (managed by admin/sellers in DB)
+  if (col.sampleProducts && col.sampleProducts.length > 0) {
+    const firstProdImg = col.sampleProducts[0]?.images?.[0] || col.sampleProducts[0]?.image;
+    if (firstProdImg && typeof firstProdImg === "string" && firstProdImg.trim() !== "") {
+      return firstProdImg.startsWith("http") ? firstProdImg : `${backendUrl}/${firstProdImg}`;
+    }
+  }
+
+  // 3. Fallback to rich local composite asset
+  return getCollectionFallbackImage(col.name, col.slug);
+};
 
 // Default typography/theme slide when no admin poster banner is active yet
 const DEFAULT_COLLECTIONS_POSTER_SLIDE = {
   _id: "default_admin_poster",
-  tagline: "OFFICIAL CURATED CAPSULES",
-  title: "Curated Collections",
-  subtitle: "Explore handpicked product capsules engineered for style, innovation, and performance. Find verified items tailored to your lifestyle.",
-  discountTag: "ADMIN CURATED",
-  ctaText: "Explore Collections",
+  tagline: "ARCHIVAL CAPSULES // VOL. 26",
+  title: "Curated Product Capsules",
+  subtitle: "Hand-selected thematic wardrobes and engineering benchmarks. Authenticated directly from global design studios, archived weekly.",
+  discountTag: "LIMITED RELEASES",
+  ctaText: "Shop Capsules",
   linkUrl: "/collections",
-  displayMode: "overlay",
-  theme: "dark",
-  bgColor: "#090d16",
-  images: [],
+  displayMode: "split",
+  theme: "light",
+  bgColor: "#FFFFFF",
+  imageUrl: fashionImg,
+  images: [fashionImg, electronicsImg],
   showPerks: true
+};
+
+const slideVariants = {
+  enter: (dir) => ({
+    opacity: 0,
+    x: dir > 0 ? 30 : -30
+  }),
+  center: {
+    opacity: 1,
+    x: 0,
+    transition: {
+      duration: 0.28,
+      ease: [0.16, 1, 0.3, 1]
+    }
+  },
+  exit: (dir) => ({
+    opacity: 0,
+    x: dir > 0 ? -30 : 30,
+    transition: {
+      duration: 0.22,
+      ease: [0.16, 1, 0.3, 1]
+    }
+  })
 };
 
 const Collections = () => {
   const navigate = useNavigate();
+  const collectionsGridRef = useRef(null);
+
   const [rawCollections, setRawCollections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -63,9 +300,38 @@ const Collections = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6;
+  const [viewMode, setViewMode] = useState("grid"); // "grid" (3/4 cols) | "compact" (2 cols wide)
+  const [likedCollections, setLikedCollections] = useState(() => {
+    try {
+      const saved = localStorage.getItem("cartnow_fav_collections");
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
 
-  // 1. Fetch dynamic hero poster banners controlled by Admin (placement: collections_hero)
+  const itemsPerPage = 12;
+
+  const toggleLike = (slug, e) => {
+    e.stopPropagation();
+    setLikedCollections((prev) => {
+      const updated = { ...prev, [slug]: !prev[slug] };
+      try {
+        localStorage.setItem("cartnow_fav_collections", JSON.stringify(updated));
+      } catch (err) {
+        console.warn("Could not save favorite collections:", err);
+      }
+      return updated;
+    });
+  };
+
+  const scrollToGrid = () => {
+    if (collectionsGridRef.current) {
+      collectionsGridRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  // 1. Fetch dynamic hero poster banners controlled by Admin
   useEffect(() => {
     cachedGet(`${backendUrl}/api/promo-banners/active?placement=collections_hero`, {}, 60000)
       .then((res) => {
@@ -81,7 +347,7 @@ const Collections = () => {
       });
   }, []);
 
-  // 2. Compute active poster slides (Admin-configured banner or Clean default slide)
+  // 2. Compute active poster slides
   const slides = useMemo(() => {
     if (heroBanners.length > 0) {
       const flattened = [];
@@ -107,24 +373,25 @@ const Collections = () => {
               displayMode: "full_image",
               imageUrl: img,
               images: [img],
-              theme: b.theme || "dark",
-              bgColor: b.bgColor || "#020617",
+              theme: b.theme || "light",
+              bgColor: b.bgColor && b.bgColor !== "#070c18" && b.bgColor !== "#070C18" ? b.bgColor : "#FFFFFF",
               showPerks: b.showPerks !== false
             });
           });
         } else {
           flattened.push({
             _id: b._id || `banner_${bIdx}`,
-            title: b.title || "Curated Collections",
-            subtitle: b.subtitle || "Explore handpicked capsules engineered for style, innovation, and performance.",
-            tagline: b.tagline || "OFFICIAL CURATED CAPSULES",
-            discountTag: b.discountTag || "ADMIN CURATED",
-            ctaText: b.ctaText || "Explore Collections",
+            title: b.title || "Curated Product Capsules",
+            subtitle: b.subtitle || "Hand-selected thematic wardrobes and engineering benchmarks. Authenticated directly from global design studios.",
+            tagline: b.tagline || "ARCHIVAL CAPSULES // VOL. 26",
+            discountTag: b.discountTag || "LIMITED RELEASES",
+            ctaText: b.ctaText || "Shop Capsules",
             linkUrl: b.linkUrl || "/collections",
-            displayMode: b.displayMode || "overlay",
-            theme: b.theme || "dark",
-            bgColor: b.bgColor || "#020617",
-            images: normalizedImages,
+            displayMode: b.displayMode || "split",
+            theme: b.theme || "light",
+            bgColor: b.bgColor && b.bgColor !== "#070c18" && b.bgColor !== "#070C18" ? b.bgColor : "#FFFFFF",
+            imageUrl: normalizedImages[0] || fashionImg,
+            images: normalizedImages.length > 0 ? normalizedImages : [fashionImg, electronicsImg],
             showPerks: b.showPerks !== false
           });
         }
@@ -136,24 +403,48 @@ const Collections = () => {
 
   const totalSlides = slides.length;
   const currentBanner = slides[currentSlide % totalSlides] || slides[0];
+  const [slideDirection, setSlideDirection] = useState(1);
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
 
-  // Auto-advance slideshow every 5 seconds (paused on hover)
+  // Auto-advance slideshow every 6 seconds (paused on hover)
   useEffect(() => {
     if (totalSlides <= 1 || isHovered) return;
     const timer = setInterval(() => {
+      setSlideDirection(1);
       setCurrentSlide((prev) => (prev + 1) % totalSlides);
-    }, 5000);
+    }, 6000);
     return () => clearInterval(timer);
   }, [totalSlides, isHovered]);
 
   const handlePrevSlide = (e) => {
     e?.stopPropagation();
+    setSlideDirection(-1);
     setCurrentSlide((prev) => (prev - 1 + totalSlides) % totalSlides);
   };
 
   const handleNextSlide = (e) => {
     e?.stopPropagation();
+    setSlideDirection(1);
     setCurrentSlide((prev) => (prev + 1) % totalSlides);
+  };
+
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.targetTouches[0].clientX;
+    touchEndX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchMove = (e) => {
+    touchEndX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    const swipeDistance = touchStartX.current - touchEndX.current;
+    if (swipeDistance > 45) {
+      handleNextSlide();
+    } else if (swipeDistance < -45) {
+      handlePrevSlide();
+    }
   };
 
   // 3. Fetch product collections from backend
@@ -173,131 +464,10 @@ const Collections = () => {
     fetchCollections();
   }, []);
 
-  const getCollectionStyles = (name = "") => {
-    const lower = name.toLowerCase();
-    if (lower.includes("tech") || lower.includes("electro") || lower.includes("gadget") || lower.includes("phone")) {
-      return {
-        colorClass: "bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-slate-200/90 dark:border-slate-800 hover:border-indigo-400 dark:hover:border-indigo-600",
-        badgeColor: "bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/40",
-        btnGradient: "from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800",
-        badgeIcon: Laptop,
-        categoryTag: "Tech & Electronics"
-      };
-    }
-    if (lower.includes("fashion") || lower.includes("wear") || lower.includes("lifestyle") || lower.includes("cloth") || lower.includes("style")) {
-      return {
-        colorClass: "bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-slate-200/90 dark:border-slate-800 hover:border-rose-400 dark:hover:border-rose-600",
-        badgeColor: "bg-rose-50 dark:bg-rose-950/70 text-[#ff3f6c] dark:text-rose-300 border border-rose-200/60 dark:border-rose-800/40",
-        btnGradient: "from-[#ff3f6c] to-rose-600 hover:from-rose-600 hover:to-rose-700",
-        badgeIcon: Shirt,
-        categoryTag: "Fashion & Lifestyle"
-      };
-    }
-    if (lower.includes("home") || lower.includes("living") || lower.includes("decor") || lower.includes("kitchen")) {
-      return {
-        colorClass: "bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-slate-200/90 dark:border-slate-800 hover:border-amber-400 dark:hover:border-amber-600",
-        badgeColor: "bg-amber-50 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 border border-amber-200/60 dark:border-amber-800/40",
-        btnGradient: "from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700",
-        badgeIcon: Home,
-        categoryTag: "Home & Living"
-      };
-    }
-    if (lower.includes("beauty") || lower.includes("glow") || lower.includes("skin") || lower.includes("cosmetic")) {
-      return {
-        colorClass: "bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-slate-200/90 dark:border-slate-800 hover:border-teal-400 dark:hover:border-teal-600",
-        badgeColor: "bg-teal-50 dark:bg-teal-950/70 text-teal-700 dark:text-teal-300 border border-teal-200/60 dark:border-teal-800/40",
-        btnGradient: "from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700",
-        badgeIcon: Sparkles,
-        categoryTag: "Skincare & Beauty"
-      };
-    }
-    if (lower.includes("accessory") || lower.includes("accessories") || lower.includes("chrono") || lower.includes("watch") || lower.includes("jewelry") || lower.includes("gold")) {
-      return {
-        colorClass: "bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-slate-200/90 dark:border-slate-800 hover:border-purple-400 dark:hover:border-purple-600",
-        badgeColor: "bg-purple-50 dark:bg-purple-950/70 text-purple-700 dark:text-purple-300 border border-purple-200/60 dark:border-purple-800/40",
-        btnGradient: "from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700",
-        badgeIcon: Gem,
-        categoryTag: "Chrono & Fine Jewelry"
-      };
-    }
-    if (lower.includes("deal") || lower.includes("offer") || lower.includes("discount") || lower.includes("save") || lower.includes("saving") || lower.includes("festival") || lower.includes("mega")) {
-      return {
-        colorClass: "bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-slate-200/90 dark:border-slate-800 hover:border-pink-400 dark:hover:border-pink-600",
-        badgeColor: "bg-pink-50 dark:bg-pink-950/70 text-pink-700 dark:text-pink-300 border border-pink-200/60 dark:border-pink-800/40",
-        btnGradient: "from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700",
-        badgeIcon: Percent,
-        categoryTag: "Mega Deals & Offers"
-      };
-    }
-    if (lower.includes("sport") || lower.includes("sneaker") || lower.includes("active") || lower.includes("fitness")) {
-      return {
-        colorClass: "bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-slate-200/90 dark:border-slate-800 hover:border-cyan-400 dark:hover:border-cyan-600",
-        badgeColor: "bg-cyan-50 dark:bg-cyan-950/70 text-cyan-700 dark:text-cyan-300 border border-cyan-200/60 dark:border-cyan-800/40",
-        btnGradient: "from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800",
-        badgeIcon: Zap,
-        categoryTag: "Sports & Footwear"
-      };
-    }
-    if (lower.includes("new") || lower.includes("arrival") || lower.includes("drop")) {
-      return {
-        colorClass: "bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-slate-200/90 dark:border-slate-800 hover:border-emerald-400 dark:hover:border-emerald-600",
-        badgeColor: "bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/40",
-        btnGradient: "from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700",
-        badgeIcon: Sparkles,
-        categoryTag: "Fresh Drops"
-      };
-    }
-    if (lower.includes("best") || lower.includes("seller") || lower.includes("top-rated")) {
-      return {
-        colorClass: "bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-slate-200/90 dark:border-slate-800 hover:border-amber-400 dark:hover:border-amber-600",
-        badgeColor: "bg-amber-50 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 border border-amber-200/60 dark:border-amber-800/40",
-        btnGradient: "from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700",
-        badgeIcon: Crown,
-        categoryTag: "All-Time Best Sellers"
-      };
-    }
-    if (lower.includes("trending") || lower.includes("viral")) {
-      return {
-        colorClass: "bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-slate-200/90 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-600",
-        badgeColor: "bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/40",
-        btnGradient: "from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700",
-        badgeIcon: Flame,
-        categoryTag: "Viral Trending"
-      };
-    }
-    return {
-      colorClass: "bg-white dark:bg-slate-900 text-slate-900 dark:text-white border-slate-200/90 dark:border-slate-800 hover:border-purple-400 dark:hover:border-purple-600",
-      badgeColor: "bg-purple-50 dark:bg-purple-950/70 text-purple-700 dark:text-purple-300 border border-purple-200/60 dark:border-purple-800/40",
-      btnGradient: "from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700",
-      badgeIcon: Award,
-      categoryTag: "Curated Special"
-    };
-  };
-
-  const getCollectionImage = (col) => {
-    // 1. Image or banner configured by Admin on collection
-    if (col.banner && typeof col.banner === "string" && col.banner.trim() !== "" && !col.banner.includes("photo-1511556532299")) {
-      return col.banner.startsWith("http") ? col.banner : `${backendUrl}/${col.banner}`;
-    }
-    if (col.image && typeof col.image === "string" && col.image.trim() !== "" && !col.image.includes("photo-1511556532299")) {
-      return col.image.startsWith("http") ? col.image : `${backendUrl}/${col.image}`;
-    }
-
-    // 2. Real product image from products in this collection (managed by admin/sellers in DB)
-    if (col.sampleProducts && col.sampleProducts.length > 0) {
-      const firstProdImg = col.sampleProducts[0]?.images?.[0] || col.sampleProducts[0]?.image;
-      if (firstProdImg && typeof firstProdImg === "string" && firstProdImg.trim() !== "") {
-        return firstProdImg.startsWith("http") ? firstProdImg : `${backendUrl}/${firstProdImg}`;
-      }
-    }
-
-    return null;
-  };
-
   // Format enriched collections
   const collections = useMemo(() => {
     return rawCollections.map((col) => {
-      const styles = getCollectionStyles(col.name);
+      const styles = getCollectionStyles(col.name, col.slug);
       return {
         ...col,
         title: col.name,
@@ -307,15 +477,45 @@ const Collections = () => {
         badge: col.name,
         badgeIcon: styles.badgeIcon,
         categoryTag: styles.categoryTag,
-        colorClass: styles.colorClass,
+        accentRing: styles.accentRing,
         badgeColor: styles.badgeColor,
         btnGradient: styles.btnGradient,
+        glowColor: styles.glowColor,
+        tags: styles.tags,
         image: getCollectionImage(col),
         sampleProducts: col.sampleProducts || [],
         trending: true
       };
     });
   }, [rawCollections]);
+
+  // Compute dynamic category item counts
+  const categoryCounts = useMemo(() => {
+    const counts = {
+      all: collections.length,
+      trending: 0,
+      fashion: 0,
+      electronics: 0,
+      sports: 0,
+      home: 0,
+      beauty: 0,
+      accessories: 0,
+      deals: 0
+    };
+    collections.forEach((col) => {
+      const slug = (col.slug || "").toLowerCase();
+      const tag = (col.categoryTag || "").toLowerCase();
+      if (slug.includes("trending") || slug.includes("new-arrival") || slug.includes("best-seller") || tag.includes("drops") || tag.includes("sellers") || tag.includes("viral")) counts.trending++;
+      if (tag.includes("tech") || slug.includes("electro") || slug.includes("gadget")) counts.electronics++;
+      if (tag.includes("fashion") || slug.includes("fashion") || slug.includes("wear") || slug.includes("style")) counts.fashion++;
+      if (tag.includes("home") || slug.includes("home") || slug.includes("decor") || slug.includes("kitchen")) counts.home++;
+      if (tag.includes("beauty") || tag.includes("skincare") || slug.includes("beauty") || slug.includes("glow")) counts.beauty++;
+      if (tag.includes("sports") || tag.includes("footwear") || slug.includes("sports") || slug.includes("sneaker")) counts.sports++;
+      if (tag.includes("chrono") || tag.includes("jewelry") || tag.includes("accessory") || slug.includes("accessories") || slug.includes("watch") || slug.includes("gold")) counts.accessories++;
+      if (tag.includes("deals") || tag.includes("offers") || tag.includes("savings") || slug.includes("offer") || slug.includes("deal") || slug.includes("festival")) counts.deals++;
+    });
+    return counts;
+  }, [collections]);
 
   // Filter collections based on search query and category filter pill
   const filteredCollections = useMemo(() => {
@@ -368,232 +568,313 @@ const Collections = () => {
     return collections.reduce((sum, col) => sum + (col.countNum || 0), 0);
   }, [collections]);
 
+  const categoryPills = [
+    { id: "all", label: "All Capsules", icon: Layers, count: categoryCounts.all },
+    { id: "trending", label: "Trending & Viral", icon: Flame, count: categoryCounts.trending },
+    { id: "fashion", label: "Fashion & Luxury", icon: Shirt, count: categoryCounts.fashion },
+    { id: "electronics", label: "Tech & Cyber", icon: Laptop, count: categoryCounts.electronics },
+    { id: "sports", label: "Sneakers & Sports", icon: Zap, count: categoryCounts.sports },
+    { id: "home", label: "Modern Home", icon: Home, count: categoryCounts.home },
+    { id: "beauty", label: "Clean Beauty", icon: Sparkles, count: categoryCounts.beauty },
+    { id: "accessories", label: "Chrono & Jewelry", icon: Gem, count: categoryCounts.accessories },
+    { id: "deals", label: "Mega Deals", icon: Percent, count: categoryCounts.deals }
+  ];
+
   return (
-    <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 text-[#0F172A] dark:text-slate-100 font-sans transition-colors duration-200 text-left pb-16">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#070B14] text-slate-900 dark:text-slate-100 font-sans transition-colors duration-200 text-left pb-20 relative selection:bg-rose-500 selection:text-white">
       
-      {/* ── FULL-WIDTH FLUID CONTAINER ── */}
-      <div className="w-full px-2 sm:px-4 lg:px-6 py-4 space-y-4 sm:space-y-5">
+      {/* Background Subtle Ambient Mesh Gradients (desktop-only for 60+ FPS mobile) */}
+      <div className="hidden md:block fixed inset-0 pointer-events-none overflow-hidden -z-10">
+        <div className="absolute top-0 left-1/4 w-[600px] h-[500px] bg-rose-500/4 dark:bg-rose-600/10 rounded-full blur-[140px]" />
+        <div className="absolute top-1/3 right-10 w-[500px] h-[500px] bg-indigo-500/4 dark:bg-indigo-600/10 rounded-full blur-[140px]" />
+        <div className="absolute bottom-10 left-10 w-[600px] h-[600px] bg-amber-500/4 dark:bg-amber-600/10 rounded-full blur-[150px]" />
+      </div>
+
+      {/* ── MAIN CONTENT WRAPPER (FULL FLUID WIDTH) ── */}
+      <div className="w-full px-2 sm:px-4 lg:px-6 py-3 sm:py-5 space-y-4 sm:space-y-6">
 
         {/* ═══════════════════════════════════════════════════════════════════
-            1. DYNAMIC ADMIN-CONTROLLED HERO POSTER BANNER SLIDESHOW
+            1. CINEMATIC HERO SECTION (TALL, EDITORIAL 2-SIDED SPLIT)
         ═══════════════════════════════════════════════════════════════════ */}
         <div
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
-          className="relative w-full rounded-sm overflow-hidden border border-slate-200/90 dark:border-slate-800 shadow-sm transition-all duration-300 group"
-          style={{ backgroundColor: currentBanner?.bgColor || "#020617" }}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          className="relative w-full rounded-none overflow-hidden border border-slate-200/90 dark:border-slate-800 shadow-sm transition-colors duration-200 group touch-pan-y select-none bg-white dark:bg-slate-900"
+          style={{ backgroundColor: currentBanner?.bgColor && currentBanner.bgColor !== "#070c18" && currentBanner.bgColor !== "#070C18" ? currentBanner.bgColor : undefined }}
         >
-          {/* Glowing Ambient Mesh Gradients */}
-          <div className="absolute top-[-40%] left-[-20%] w-[70%] h-[120%] bg-gradient-to-tr from-purple-600/20 via-indigo-500/15 to-transparent rounded-full blur-[100px] pointer-events-none" />
-          <div className="absolute bottom-[-30%] right-[-10%] w-[60%] h-[100%] bg-gradient-to-bl from-rose-600/20 via-amber-500/10 to-transparent rounded-full blur-[90px] pointer-events-none" />
-
-          {/* Slideshow Previous / Next Chevron Navigation */}
+          {/* Navigation Chevrons */}
           {totalSlides > 1 && (
             <>
               <button
                 type="button"
                 onClick={handlePrevSlide}
-                className="absolute left-3 top-1/2 -translate-y-1/2 z-30 w-8 h-8 rounded-sm bg-slate-900/80 backdrop-blur-md border border-slate-700 text-white hover:bg-white hover:text-slate-900 flex items-center justify-center transition-all duration-200 cursor-pointer shadow-md active:scale-95"
-                title="Previous Poster"
+                className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 z-30 w-8 h-8 sm:w-10 sm:h-10 rounded-none bg-white/95 hover:bg-white text-slate-900 hover:text-black border border-slate-200 dark:bg-slate-900/90 dark:hover:bg-slate-800 dark:text-white dark:border-slate-700 flex items-center justify-center transition-all duration-150 cursor-pointer shadow-md active:scale-95 group/btn touch-manipulation"
+                title="Previous Slide"
                 aria-label="Previous Slide"
               >
-                <ChevronLeft size={16} />
+                <ChevronLeft size={18} className="transition-transform group-hover/btn:-translate-x-0.5" />
               </button>
 
               <button
                 type="button"
                 onClick={handleNextSlide}
-                className="absolute right-3 top-1/2 -translate-y-1/2 z-30 w-8 h-8 rounded-sm bg-slate-900/80 backdrop-blur-md border border-slate-700 text-white hover:bg-white hover:text-slate-900 flex items-center justify-center transition-all duration-200 cursor-pointer shadow-md active:scale-95"
-                title="Next Poster"
+                className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-30 w-8 h-8 sm:w-10 sm:h-10 rounded-none bg-white/95 hover:bg-white text-slate-900 hover:text-black border border-slate-200 dark:bg-slate-900/90 dark:hover:bg-slate-800 dark:text-white dark:border-slate-700 flex items-center justify-center transition-all duration-150 cursor-pointer shadow-md active:scale-95 group/btn touch-manipulation"
+                title="Next Slide"
                 aria-label="Next Slide"
               >
-                <ChevronRight size={16} />
+                <ChevronRight size={18} className="transition-transform group-hover/btn:translate-x-0.5" />
               </button>
             </>
           )}
 
-          {/* Slide Content with Framer Motion AnimatePresence */}
-          <AnimatePresence mode="wait">
+          {/* Animated Slide Content */}
+          <AnimatePresence mode="popLayout" custom={slideDirection} initial={false}>
             <motion.div
               key={currentBanner?._id || currentSlide}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.35, ease: "easeInOut" }}
-              className="relative z-10 w-full"
+              custom={slideDirection}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              className="relative z-10 w-full transform-gpu will-change-transform"
             >
               {currentBanner?.displayMode === "full_image" && (currentBanner.imageUrl || currentBanner.images?.[0]) ? (
-                /* Mode A: Full Image Poster Uploaded by Admin */
+                /* Mode A: Full Image Poster Uploaded by Admin (Balanced Height) */
                 <div 
                   onClick={() => currentBanner.linkUrl && navigate(currentBanner.linkUrl)}
-                  className="relative w-full h-[220px] sm:h-[280px] md:h-[340px] lg:h-[380px] cursor-pointer overflow-hidden flex items-center justify-center"
+                  className="relative w-full h-[320px] sm:h-[380px] md:h-[440px] lg:h-[500px] xl:h-[540px] cursor-pointer overflow-hidden flex items-center justify-center"
                 >
                   <img
                     src={currentBanner.imageUrl || currentBanner.images?.[0]}
                     alt={currentBanner.title || "Collections Poster"}
-                    className="w-full h-full object-cover object-center"
+                    loading="eager"
+                    decoding="async"
+                    draggable="false"
+                    className="w-full h-full object-cover object-center select-none"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-slate-950/20" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/25 to-transparent" />
                   
-                  <div className="absolute bottom-6 left-6 sm:left-10 z-20 space-y-1.5 text-left max-w-2xl text-white">
+                  <div className="absolute bottom-5 sm:bottom-8 left-5 sm:left-10 z-20 space-y-2 text-left max-w-2xl text-white">
                     {currentBanner.tagline && (
-                      <span className="inline-block px-2.5 py-0.5 text-[9px] font-black uppercase tracking-widest bg-amber-500 text-slate-950 rounded-xs">
+                      <span className="inline-block px-2.5 py-0.5 text-[9.5px] font-black uppercase tracking-widest bg-amber-400 text-slate-950 rounded-none shadow-sm">
                         {currentBanner.tagline}
                       </span>
                     )}
-                    <h2 className="text-xl sm:text-3xl font-black uppercase tracking-tight leading-none text-white drop-shadow-md">
+                    <h2 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-black uppercase tracking-tight leading-[1.06] text-white drop-shadow-lg">
                       {currentBanner.title}
                     </h2>
                     {currentBanner.subtitle && (
-                      <p className="text-xs sm:text-sm text-slate-200 font-medium line-clamp-2 drop-shadow-xs">
+                      <p className="text-xs sm:text-sm text-slate-200 font-medium line-clamp-2 drop-shadow-md max-w-xl leading-relaxed">
                         {currentBanner.subtitle}
                       </p>
                     )}
+                    <div className="pt-1.5">
+                      <span className="inline-flex items-center gap-2 px-4 py-2 bg-white text-slate-950 font-black text-xs uppercase tracking-wider rounded-none shadow-md">
+                        <span>{currentBanner.ctaText || "Explore Drop"}</span>
+                        <ArrowRight size={13} />
+                      </span>
+                    </div>
                   </div>
                 </div>
               ) : (
-                /* Mode B: Rich Responsive 2-Column Poster (Default & Overlay mode) */
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center p-5 sm:p-8 lg:p-10 min-h-[260px] sm:min-h-[300px] lg:min-h-[340px]">
+                /* Mode B: Elevated Editorial Light Split Showcase (Balanced Height) */
+                <div className="flex flex-col w-full bg-white dark:bg-slate-900">
                   
-                  {/* Left Column: Taglines, Title, Subtitle, CTA Button & Perks */}
-                  <div className="lg:col-span-7 xl:col-span-7 space-y-3 sm:space-y-4 text-left z-20">
-                    {/* Badge Chips & Slide Indicator */}
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[9.5px] font-black uppercase tracking-widest bg-purple-500/20 text-purple-300 border border-purple-500/30 rounded-xs shadow-2xs">
-                        <Award size={12} className="stroke-[2.5]" />
-                        <span>{currentBanner?.tagline || "OFFICIAL CURATED CAPSULES"}</span>
-                      </span>
-
-                      {currentBanner?.discountTag && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[9.5px] font-bold text-amber-300 bg-amber-500/15 border border-amber-500/30 rounded-xs">
-                          <Zap size={11} className="text-amber-400 fill-amber-400" />
-                          <span>{currentBanner.discountTag}</span>
-                        </span>
-                      )}
-
-                      {totalSlides > 1 && (
-                        <div className="flex items-center gap-1.5 ml-2">
-                          <span className="text-[10px] font-bold text-slate-400">
-                            {(currentSlide % totalSlides) + 1} / {totalSlides}
+                  <div className="grid grid-cols-12 min-h-[380px] sm:min-h-[440px] md:min-h-[480px] lg:min-h-[520px] xl:min-h-[560px] w-full items-stretch">
+                    
+                    {/* ── LEFT SIDE: EDITORIAL NARRATIVE & CTAS (Col 12 on mobile, Col 5 on desktop) ── */}
+                    <div className="col-span-12 md:col-span-5 lg:col-span-5 flex flex-col justify-between p-4 sm:p-6 md:p-7 lg:p-9 text-left z-20 space-y-4">
+                      
+                      {/* Top Meta Tag & Slide Indicators */}
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-[#ff3f6c] animate-pulse" />
+                          <span className="text-[9.5px] sm:text-[11px] font-black uppercase tracking-widest text-slate-900 dark:text-white">
+                            {currentBanner?.tagline || "ARCHIVAL CAPSULES // VOL. 26"}
                           </span>
-                          <div className="flex items-center gap-1 ml-1">
+                        </div>
+
+                        {totalSlides > 1 && (
+                          <div className="flex items-center gap-1.5">
                             {slides.map((_, idx) => (
                               <button
                                 key={idx}
                                 onClick={(e) => {
                                   e.stopPropagation();
+                                  setSlideDirection(idx > currentSlide % totalSlides ? 1 : -1);
                                   setCurrentSlide(idx);
                                 }}
-                                className={`h-1.5 rounded-full transition-all cursor-pointer ${
+                                className={`h-1.5 transition-all duration-200 cursor-pointer rounded-none ${
                                   idx === currentSlide % totalSlides
-                                    ? "w-4 bg-purple-400"
-                                    : "w-1.5 bg-slate-700 hover:bg-slate-500"
+                                    ? "w-5 sm:w-6 bg-slate-950 dark:bg-white"
+                                    : "w-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300"
                                 }`}
                                 title={`Slide ${idx + 1}`}
                               />
                             ))}
                           </div>
+                        )}
+                      </div>
+
+                      {/* Main Center Typography Group */}
+                      <div className="space-y-2.5 sm:space-y-3 my-auto">
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[9px] font-black uppercase tracking-widest bg-rose-50 text-[#ff3f6c] border border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20 rounded-none">
+                          <Sparkles size={11} className="stroke-[2.5]" />
+                          <span>Curated Exclusive Edits</span>
                         </div>
-                      )}
-                    </div>
 
-                    {/* Main Headline */}
-                    <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight text-white uppercase transition-all duration-300">
-                      {currentBanner?.title ? (
-                        currentBanner.title
-                      ) : (
-                        <>
-                          Shop By <span className="bg-gradient-to-r from-purple-400 via-indigo-300 to-rose-400 bg-clip-text text-transparent">Collections</span>
-                        </>
-                      )}
-                    </h1>
+                        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black uppercase tracking-tight text-slate-950 dark:text-white leading-[1.04]">
+                          Curated <br />
+                          <span className="font-serif italic font-normal text-[#ff3f6c]">
+                            Capsule
+                          </span>{" "}
+                          Edits
+                        </h1>
 
-                    {/* Subtitle */}
-                    <p className="text-xs sm:text-sm font-medium text-slate-300 leading-relaxed max-w-2xl transition-all duration-300">
-                      {currentBanner?.subtitle || "Explore handpicked product capsules engineered for style, innovation, and performance. Find verified items tailored to your lifestyle."}
-                    </p>
+                        <p className="text-xs sm:text-[13.5px] font-medium text-slate-600 dark:text-slate-300 leading-relaxed max-w-md">
+                          {currentBanner?.subtitle || "Hand-selected thematic wardrobes and engineering benchmarks. Authenticated directly from global design studios, archived weekly."}
+                        </p>
+                      </div>
 
-                    {/* CTA Button & Trust Perks */}
-                    <div className="flex flex-wrap items-center gap-4 pt-1">
-                      <button
-                        onClick={() => {
-                          if (currentBanner?.linkUrl) {
-                            navigate(currentBanner.linkUrl);
-                          }
-                        }}
-                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 via-indigo-600 to-rose-600 hover:from-purple-500 hover:to-rose-500 text-white text-xs font-black uppercase tracking-wider rounded-xs shadow-md active:scale-98 transition-all cursor-pointer border-none"
-                      >
-                        <ShoppingBag size={14} className="stroke-[2.5]" />
-                        <span>{currentBanner?.ctaText || "Explore Collections"}</span>
-                        <ArrowRight size={13} className="stroke-[3]" />
-                      </button>
+                      {/* Bottom Actions & Trust Strip */}
+                      <div className="space-y-3 pt-1">
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+                          <button
+                            onClick={scrollToGrid}
+                            className="inline-flex items-center gap-2 px-5 sm:px-6 py-2.5 bg-slate-950 hover:bg-slate-800 text-white text-xs font-black uppercase tracking-widest rounded-none shadow-md active:scale-95 transition-all duration-150 cursor-pointer border-none touch-manipulation dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
+                          >
+                            <ShoppingBag size={13} className="stroke-[2.5]" />
+                            <span>Shop Capsules</span>
+                            <ArrowRight size={12} className="stroke-[3]" />
+                          </button>
 
-                      {currentBanner?.showPerks !== false && (
-                        <div className="hidden sm:flex items-center gap-3 text-[10.5px] font-bold text-slate-400">
-                          <span className="flex items-center gap-1 text-slate-300">
-                            <CheckCircle size={12} className="text-emerald-400" />
+                          <button
+                            onClick={() => {
+                              setSelectedFilter("trending");
+                              scrollToGrid();
+                            }}
+                            className="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 bg-white hover:bg-slate-50 text-slate-900 text-xs font-black uppercase tracking-widest rounded-none border border-slate-300 dark:bg-slate-800 dark:text-white dark:border-slate-700 active:scale-95 transition-all duration-150 cursor-pointer touch-manipulation"
+                          >
+                            <Flame size={13} className="text-rose-500 fill-rose-500" />
+                            <span>Trending Drops</span>
+                          </button>
+                        </div>
+
+                        {/* Inline Minimalist Guarantees */}
+                        <div className="flex flex-wrap items-center gap-2.5 sm:gap-3.5 text-[9.5px] sm:text-[10.5px] font-bold text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800/80">
+                          <span className="flex items-center gap-1 text-slate-800 dark:text-slate-200">
+                            <CheckCircle size={11} className="text-emerald-500 stroke-[2.5]" />
                             <span>100% Genuine</span>
                           </span>
-                          <span>•</span>
-                          <span className="flex items-center gap-1 text-slate-300">
-                            <Truck size={12} className="text-blue-400" />
-                            <span>Express Dispatch</span>
+                          <span className="text-slate-300">•</span>
+                          <span className="flex items-center gap-1 text-slate-800 dark:text-slate-200">
+                            <Truck size={11} className="text-blue-500 stroke-[2.5]" />
+                            <span>24H Concierge</span>
                           </span>
-                          <span>•</span>
-                          <span className="flex items-center gap-1 text-slate-300">
-                            <RotateCcw size={12} className="text-amber-400" />
-                            <span>7-Day Return</span>
+                          <span className="text-slate-300">•</span>
+                          <span className="flex items-center gap-1 text-slate-800 dark:text-slate-200">
+                            <RotateCcw size={11} className="text-amber-500 stroke-[2.5]" />
+                            <span>Complimentary Returns</span>
                           </span>
                         </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Right Column: Visual Composite Graphic / Model Poster Cutout */}
-                  <div className="lg:col-span-5 xl:col-span-5 relative flex items-center justify-center min-h-[180px] sm:min-h-[220px] lg:min-h-[260px]">
-                    
-                    {/* Floating Glassmorphic Badges */}
-                    <div className="absolute -top-2 right-4 z-20 bg-slate-900/80 backdrop-blur-md border border-white/15 px-3 py-1.5 rounded-sm shadow-md text-left flex items-center gap-2">
-                      <Crown size={14} className="text-amber-400" />
-                      <div>
-                        <div className="text-[8px] font-black uppercase tracking-wider text-slate-400">Live Capsules</div>
-                        <div className="text-xs font-black text-white">{collections.length} Curations</div>
                       </div>
+
                     </div>
 
-                    <div className="absolute -bottom-2 left-4 z-20 bg-slate-900/80 backdrop-blur-md border border-white/15 px-3 py-1.5 rounded-sm shadow-md text-left flex items-center gap-2">
-                      <Flame size={14} className="text-rose-400 animate-pulse" />
-                      <div>
-                        <div className="text-[8px] font-black uppercase tracking-wider text-slate-400">Verified Stock</div>
-                        <div className="text-xs font-black text-emerald-400">Fast Shipping</div>
-                      </div>
-                    </div>
-
-                    {/* Main Image Banner Visual Showcase (Admin-Uploaded Images Only) */}
-                    <div className="relative w-full h-[200px] sm:h-[240px] lg:h-[270px] flex items-center justify-center p-2">
-                      {currentBanner?.images && currentBanner.images.length > 0 ? (
-                        <div className="flex items-center justify-center gap-3 w-full h-full">
-                          {currentBanner.images.slice(0, 3).map((imgUrl, i) => (
-                            <img
-                              key={i}
-                              src={imgUrl}
-                              alt={currentBanner.title || "Poster visual"}
-                              className={`max-h-full object-contain drop-shadow-2xl transition-transform duration-500 hover:scale-105 ${
-                                i === 0 ? "z-10 scale-105" : "opacity-80 scale-95 hidden sm:block"
-                              }`}
-                            />
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center rounded-sm bg-white/5 border border-white/10 backdrop-blur-md">
-                          <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-purple-500/30 to-indigo-500/30 border border-purple-400/30 flex items-center justify-center text-purple-300 mb-2.5">
-                            <Sparkles size={28} />
+                    {/* ── RIGHT SIDE: TWO SIDE-BY-SIDE LUXURY LOOKBOOK CARDS ── */}
+                    <div className="col-span-12 md:col-span-7 lg:col-span-7 p-3 sm:p-4 md:p-5 lg:p-6 bg-slate-50/70 dark:bg-slate-950/50 border-t md:border-t-0 md:border-l border-slate-200/80 dark:border-slate-800 flex items-center justify-center">
+                      
+                      <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5 lg:gap-4 w-full h-full items-stretch">
+                        
+                        {/* ── CARD 1: FASHION & LUXURY COUTURE ── */}
+                        <div 
+                          onClick={() => { setSelectedFilter("fashion"); scrollToGrid(); }}
+                          className="relative h-full min-h-[220px] sm:min-h-[280px] md:min-h-[340px] lg:min-h-[390px] rounded-none overflow-hidden border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm group/c1 hover:shadow-lg transition-all duration-300 cursor-pointer flex flex-col justify-between"
+                        >
+                          <img
+                            src={currentBanner?.imageUrl || fashionImg}
+                            alt="Fashion Lookbook"
+                            loading="eager"
+                            decoding="async"
+                            draggable="false"
+                            className="absolute inset-0 w-full h-full object-cover object-center group-hover/c1:scale-105 transition-transform duration-700 ease-out select-none transform-gpu"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-transparent pointer-events-none" />
+                          
+                          {/* Top Badge */}
+                          <div className="relative z-10 p-2.5 sm:p-3.5 flex items-center justify-between">
+                            <span className="px-2 py-0.5 text-[8px] sm:text-[9px] font-black uppercase tracking-wider bg-white/95 text-slate-950 border border-white/60 shadow-xs">
+                              Lookbook #01
+                            </span>
+                            <span className="px-1.5 py-0.5 text-[7.5px] sm:text-[8.5px] font-black uppercase tracking-wider bg-rose-500 text-white">
+                              Couture
+                            </span>
                           </div>
-                          <div className="text-xs font-black uppercase tracking-wider text-white">Curated Capsule Showcase</div>
-                          <div className="text-[10.5px] font-medium text-slate-300 mt-0.5 max-w-xs">Verified authentic brands & exclusive catalog drops</div>
+
+                          {/* Bottom Info Banner */}
+                          <div className="relative z-10 p-2.5 sm:p-3.5 text-white flex items-end justify-between gap-1.5">
+                            <div>
+                              <span className="text-[7.5px] sm:text-[8.5px] font-black uppercase tracking-widest text-rose-300 block">
+                                Edition 2026
+                              </span>
+                              <h4 className="text-xs sm:text-sm lg:text-base font-black uppercase tracking-tight text-white leading-tight">
+                                Fashion & Luxe
+                              </h4>
+                            </div>
+                            <div className="flex items-center gap-1 text-[8.5px] sm:text-[10px] font-black bg-white/20 px-1.5 py-0.5 border border-white/30 text-white shrink-0">
+                              <span>4.9 ★</span>
+                            </div>
+                          </div>
                         </div>
-                      )}
+
+                        {/* ── CARD 2: TECH & CYBER FLAGSHIP ── */}
+                        <div 
+                          onClick={() => { setSelectedFilter("electronics"); scrollToGrid(); }}
+                          className="relative h-full min-h-[220px] sm:min-h-[280px] md:min-h-[340px] lg:min-h-[390px] rounded-none overflow-hidden border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm group/c2 hover:shadow-lg transition-all duration-300 cursor-pointer flex flex-col justify-between"
+                        >
+                          <img
+                            src={currentBanner?.images?.[1] || electronicsImg}
+                            alt="Tech Flagship"
+                            loading="eager"
+                            decoding="async"
+                            draggable="false"
+                            className="absolute inset-0 w-full h-full object-cover object-center group-hover/c2:scale-105 transition-transform duration-700 ease-out select-none transform-gpu"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-transparent pointer-events-none" />
+                          
+                          {/* Top Badge */}
+                          <div className="relative z-10 p-2.5 sm:p-3.5 flex items-center justify-between">
+                            <span className="px-2 py-0.5 text-[8px] sm:text-[9px] font-black uppercase tracking-wider bg-white/95 text-slate-950 border border-white/60 shadow-xs">
+                              Flagship 2026
+                            </span>
+                            <span className="px-1.5 py-0.5 text-[7.5px] sm:text-[8.5px] font-black uppercase tracking-wider bg-blue-500 text-white">
+                              Verified
+                            </span>
+                          </div>
+
+                          {/* Bottom Info Banner */}
+                          <div className="relative z-10 p-2.5 sm:p-3.5 text-white flex items-end justify-between gap-1.5">
+                            <div>
+                              <span className="text-[7.5px] sm:text-[8.5px] font-black uppercase tracking-widest text-blue-300 block">
+                                Pro Audio & Devices
+                              </span>
+                              <h4 className="text-xs sm:text-sm lg:text-base font-black uppercase tracking-tight text-white leading-tight">
+                                Tech & Cyber
+                              </h4>
+                            </div>
+                            <div className="flex items-center gap-1 text-[8.5px] sm:text-[10px] font-black bg-white/20 px-1.5 py-0.5 border border-white/30 text-white shrink-0">
+                              <span>Verified</span>
+                            </div>
+                          </div>
+                        </div>
+
+                      </div>
+
                     </div>
+
                   </div>
 
                 </div>
@@ -603,292 +884,423 @@ const Collections = () => {
         </div>
 
         {/* ═══════════════════════════════════════════════════════════════════
-            2. QUICK METRICS STRIP
+            2. EDITORIAL CAPSULE SPECIFICATION RIBBON (CLEAN FULL-WIDTH)
         ═══════════════════════════════════════════════════════════════════ */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 p-3 sm:p-3.5 rounded-sm shadow-xs flex items-center gap-3 text-left">
-            <div className="w-10 h-10 rounded-sm bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800/40 flex items-center justify-center text-purple-600 dark:text-purple-400 shrink-0">
-              <Layers size={18} />
+        <div className="w-full bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-none shadow-xs divide-y sm:divide-y-0 sm:divide-x divide-slate-200/80 dark:divide-slate-800 grid grid-cols-2 lg:grid-cols-4">
+          
+          <div className="p-3.5 sm:p-4 lg:p-5 flex items-center gap-3.5 text-left">
+            <div className="w-10 h-10 rounded-none bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-900 dark:text-white shrink-0">
+              <Layers size={18} className="stroke-[2.5]" />
             </div>
             <div>
-              <span className="text-[9.5px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 block">Live Capsules</span>
-              <span className="text-base sm:text-lg font-black text-slate-900 dark:text-white leading-none mt-0.5 block">{collections.length} Curations</span>
+              <span className="text-[9.5px] font-black uppercase tracking-widest text-slate-400 block">Live Capsules</span>
+              <span className="text-sm sm:text-base font-black text-slate-950 dark:text-white leading-tight block mt-0.5">
+                {collections.length} Curated Drops
+              </span>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 p-3 sm:p-3.5 rounded-sm shadow-xs flex items-center gap-3 text-left">
-            <div className="w-10 h-10 rounded-sm bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/40 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
-              <Package size={18} />
+          <div className="p-3.5 sm:p-4 lg:p-5 flex items-center gap-3.5 text-left">
+            <div className="w-10 h-10 rounded-none bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-900 dark:text-white shrink-0">
+              <Package size={18} className="stroke-[2.5]" />
             </div>
             <div>
-              <span className="text-[9.5px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 block">Curated Products</span>
-              <span className="text-base sm:text-lg font-black text-blue-600 dark:text-blue-400 leading-none mt-0.5 block">{totalProductCount > 0 ? `${totalProductCount}+` : "250+"} Items</span>
+              <span className="text-[9.5px] font-black uppercase tracking-widest text-slate-400 block">Archival Catalog</span>
+              <span className="text-sm sm:text-base font-black text-slate-950 dark:text-white leading-tight block mt-0.5">
+                {totalProductCount > 0 ? `${totalProductCount}+` : "250+"} Verified Pieces
+              </span>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 p-3 sm:p-3.5 rounded-sm shadow-xs flex items-center gap-3 text-left">
-            <div className="w-10 h-10 rounded-sm bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800/40 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
+          <div className="p-3.5 sm:p-4 lg:p-5 flex items-center gap-3.5 text-left">
+            <div className="w-10 h-10 rounded-none bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-amber-500 shrink-0">
               <Star size={18} className="fill-amber-400 text-amber-400" />
             </div>
             <div>
-              <span className="text-[9.5px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 block">Customer Rating</span>
-              <span className="text-base sm:text-lg font-black text-amber-500 dark:text-amber-400 leading-none mt-0.5 block">4.9 ★ Rated</span>
+              <span className="text-[9.5px] font-black uppercase tracking-widest text-slate-400 block">Client Satisfaction</span>
+              <span className="text-sm sm:text-base font-black text-slate-950 dark:text-white leading-tight block mt-0.5">
+                4.9 ★ (18,400+ Reviews)
+              </span>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 p-3 sm:p-3.5 rounded-sm shadow-xs flex items-center gap-3 text-left">
-            <div className="w-10 h-10 rounded-sm bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
-              <Truck size={18} />
+          <div className="p-3.5 sm:p-4 lg:p-5 flex items-center gap-3.5 text-left">
+            <div className="w-10 h-10 rounded-none bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+              <Truck size={18} className="stroke-[2.5]" />
             </div>
             <div>
-              <span className="text-[9.5px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 block">Dispatch Mode</span>
-              <span className="text-base sm:text-lg font-black text-emerald-600 dark:text-emerald-400 leading-none mt-0.5 block">Express Delivery</span>
+              <span className="text-[9.5px] font-black uppercase tracking-widest text-slate-400 block">Dispatch Protocol</span>
+              <span className="text-sm sm:text-base font-black text-slate-950 dark:text-white leading-tight block mt-0.5">
+                White-Glove 24H Shipping
+              </span>
             </div>
           </div>
+
         </div>
 
         {/* ═══════════════════════════════════════════════════════════════════
-            3. SEARCH, CATEGORIES & SORT TOOLBAR
+            3. DISCOVERY & FILTER HUB (SEARCH, PILLS WITH COUNTS, SORT)
         ═══════════════════════════════════════════════════════════════════ */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 p-3 sm:p-4 rounded-sm shadow-xs space-y-3">
+        <div ref={collectionsGridRef} className="space-y-3 w-full">
           
-          {/* Top Row: Search Input + Sorting */}
-          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 p-3 sm:p-4 rounded-none shadow-xs space-y-3 w-full">
             
-            {/* Live Search Input */}
-            <div className="relative flex-1">
-              <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2.5]" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search collections by capsule name, style, or category..."
-                className="w-full pl-10 pr-10 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-sm text-xs font-bold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-purple-500 transition duration-200"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 cursor-pointer"
-                >
-                  <X size={14} />
-                </button>
-              )}
-            </div>
-
-            {/* Sort Selection & Results Count */}
-            <div className="flex items-center gap-2 justify-between md:justify-end shrink-0">
-              <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-3 py-1.5 rounded-sm">
-                <ArrowUpDown size={12} className="text-slate-400 stroke-[2.5]" />
-                <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Sort:</span>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="bg-transparent text-xs font-bold text-slate-800 dark:text-slate-200 outline-none cursor-pointer"
-                >
-                  <option value="popular">Most Popular</option>
-                  <option value="items-high">Largest Catalog</option>
-                  <option value="name-asc">Alphabetical (A → Z)</option>
-                  <option value="name-desc">Alphabetical (Z → A)</option>
-                </select>
+            {/* Top Toolbar: Search + Sort + Layout Toggle */}
+            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5">
+              
+              {/* Search Bar */}
+              <div className="relative flex-1">
+                <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 stroke-[2.5]" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search capsules by title, category, or style tags..."
+                  className="w-full pl-10 pr-9 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200/90 dark:border-slate-800 rounded-none text-xs font-bold text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-slate-900 dark:focus:border-white transition-all duration-200"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:hover:text-white p-1 cursor-pointer"
+                    title="Clear search"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
               </div>
 
-              <div className="text-xs font-extrabold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-sm shrink-0">
-                {filteredCollections.length} Capsules
+              {/* Controls Right */}
+              <div className="flex items-center gap-2 justify-between md:justify-end shrink-0">
+                
+                {/* Sort Dropdown */}
+                <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-200/90 dark:border-slate-800 px-3 py-1.5 rounded-none">
+                  <ArrowUpDown size={12} className="text-slate-400 stroke-[2.5]" />
+                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Sort:</span>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="bg-transparent text-xs font-bold text-slate-800 dark:text-slate-200 outline-none cursor-pointer"
+                  >
+                    <option value="popular">Curator's Choice</option>
+                    <option value="items-high">Largest Catalog</option>
+                    <option value="name-asc">Alphabetical (A → Z)</option>
+                    <option value="name-desc">Alphabetical (Z → A)</option>
+                  </select>
+                </div>
+
+                {/* Grid vs Wide Showcase Switcher */}
+                <div className="hidden sm:flex items-center gap-1 bg-slate-50 dark:bg-slate-950 border border-slate-200/90 dark:border-slate-800 p-0.5 rounded-none">
+                  <button
+                    onClick={() => setViewMode("grid")}
+                    className={`p-1.5 rounded-none transition-all cursor-pointer ${
+                      viewMode === "grid"
+                        ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950 shadow-xs"
+                        : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    }`}
+                    title="Standard Grid (3/4 Columns)"
+                  >
+                    <Grid3X3 size={14} />
+                  </button>
+                  <button
+                    onClick={() => setViewMode("compact")}
+                    className={`p-1.5 rounded-none transition-all cursor-pointer ${
+                      viewMode === "compact"
+                        ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950 shadow-xs"
+                        : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    }`}
+                    title="Wide Showcase (2 Columns)"
+                  >
+                    <LayoutGrid size={14} />
+                  </button>
+                </div>
+
+                {/* Capsule Count Pill */}
+                <div className="text-xs font-black text-slate-800 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-none shrink-0">
+                  {filteredCollections.length} Capsules
+                </div>
               </div>
+
             </div>
+
+            {/* Category Filter Pills Bar with Dynamic Counts */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none no-scrollbar pt-0.5 touch-pan-x overscroll-x-contain select-none">
+              {categoryPills.map((pill) => {
+                const IconComponent = pill.icon;
+                const isActive = selectedFilter === pill.id;
+                return (
+                  <button
+                    key={pill.id}
+                    onClick={() => setSelectedFilter(pill.id)}
+                    className={`px-3 py-1.5 text-[11px] font-black uppercase tracking-wider whitespace-nowrap transition-colors duration-150 border cursor-pointer rounded-none flex items-center gap-1.5 shrink-0 active:scale-95 touch-manipulation ${
+                      isActive
+                        ? "bg-slate-950 text-white border-slate-950 dark:bg-white dark:text-slate-950 dark:border-white shadow-xs"
+                        : "bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-slate-200/80 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
+                    }`}
+                  >
+                    <IconComponent size={13} className={isActive ? "stroke-[2.5]" : ""} />
+                    <span>{pill.label}</span>
+                    <span className={`text-[9px] px-1.5 py-0.2 rounded-none font-bold ${
+                      isActive 
+                        ? "bg-white/20 text-white dark:bg-slate-950/20 dark:text-slate-950" 
+                        : "bg-slate-200/60 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                    }`}>
+                      {pill.count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
           </div>
 
-          {/* Category Filter Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none no-scrollbar">
-            {[
-              { id: "all", label: "All Collections" },
-              { id: "trending", label: "Trending & Viral" },
-              { id: "fashion", label: "Fashion & Luxury" },
-              { id: "electronics", label: "Tech & Gadgets" },
-              { id: "sports", label: "Sports & Sneakers" },
-              { id: "home", label: "Home & Living" },
-              { id: "beauty", label: "Beauty & Glow" },
-              { id: "accessories", label: "Chrono & Jewelry" },
-              { id: "deals", label: "Mega Deals & Offers" }
-            ].map((pill) => (
-              <button
-                key={pill.id}
-                onClick={() => setSelectedFilter(pill.id)}
-                className={`px-3.5 py-1.5 text-[11px] font-black uppercase tracking-wider whitespace-nowrap transition-all duration-200 border cursor-pointer rounded-sm ${
-                  selectedFilter === pill.id
-                    ? "bg-[#ff3f6c] text-white border-[#ff3f6c] shadow-xs"
-                    : "bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
-                }`}
-              >
-                {pill.label}
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* ═══════════════════════════════════════════════════════════════════
-            4. COLLECTIONS CARDS GRID SECTION
+            4. CAPSULE CARDS GRID (EDITORIAL 4:5 HIGH-FASHION ASPECT)
         ═══════════════════════════════════════════════════════════════════ */}
         {loading ? (
-          <CollectionsSkeleton />
+          <CollectionsSkeleton count={viewMode === "compact" ? 4 : 8} />
         ) : filteredCollections.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col items-center justify-center py-20 border border-dashed border-slate-200 dark:border-slate-800 rounded-sm bg-white dark:bg-slate-900 text-center space-y-3"
+            className="flex flex-col items-center justify-center py-20 px-4 border border-dashed border-slate-200 dark:border-slate-800 rounded-none bg-white/60 dark:bg-slate-900/60 text-center space-y-3.5 w-full"
           >
-            <div className="w-14 h-14 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-900/30 flex items-center justify-center text-purple-600 dark:text-purple-400 rounded-sm">
+            <div className="w-14 h-14 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-900 dark:text-white rounded-none">
               <ShoppingBag size={28} />
             </div>
-            <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-wide">No Matching Capsules Found</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold max-w-sm">
-              We couldn't find any collection matching "<span className="text-slate-800 dark:text-white font-bold">{searchQuery}</span>". Try clearing your search or filter.
-            </p>
+            <div className="space-y-1">
+              <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">No Matching Capsules Found</h3>
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium max-w-md">
+                We couldn't find any collection matching "<span className="text-slate-800 dark:text-white font-bold">{searchQuery}</span>". Try clearing your search or picking another category.
+              </p>
+            </div>
             <button
               onClick={() => {
                 setSearchQuery("");
                 setSelectedFilter("all");
               }}
-              className="px-5 py-2.5 bg-[#ff3f6c] hover:bg-[#e0355c] text-white text-xs font-black uppercase tracking-widest rounded-sm transition duration-200 border-none cursor-pointer mt-2"
+              className="px-6 py-2.5 bg-slate-950 hover:bg-slate-800 text-white text-xs font-black uppercase tracking-widest rounded-none transition duration-200 border-none cursor-pointer shadow-md dark:bg-white dark:text-slate-950"
             >
               Reset Filters
             </button>
           </motion.div>
         ) : (
           <div className="space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-              {paginatedCollections.map((col, i) => (
-                <motion.div
-                  key={col.slug || i}
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: i * 0.05 }}
-                  whileHover={{ y: -3 }}
-                  className={`group border p-5 flex flex-col justify-between transition-all duration-300 shadow-xs hover:shadow-md rounded-sm relative overflow-hidden ${col.colorClass}`}
-                >
-                  <div>
-                    {/* Top Row: Category Tag Badge & Trending Indicator */}
-                    <div className="flex justify-between items-center mb-3.5">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[9.5px] font-black uppercase tracking-wider rounded-xs ${col.badgeColor}`}>
-                        {React.createElement(col.badgeIcon, { size: 12 })}
-                        <span>{col.categoryTag || col.badge}</span>
-                      </span>
+            
+            <div className={`grid gap-4 sm:gap-5 lg:gap-6 w-full ${
+              viewMode === "compact"
+                ? "grid-cols-1 md:grid-cols-2"
+                : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+            }`}>
+              {paginatedCollections.map((col, i) => {
+                const isLiked = !!likedCollections[col.slug];
+                const BadgeIconComponent = col.badgeIcon || Award;
 
-                      {col.trending && (
-                        <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-wider bg-rose-500/10 text-[#ff3f6c] dark:bg-rose-500/20 dark:text-rose-400 border border-rose-500/20 px-2 py-0.5 rounded-xs">
-                          <Flame size={11} className="fill-current animate-pulse" />
-                          <span>Trending</span>
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Title & Description */}
-                    <div className="mb-3.5 text-left">
-                      <h2
-                        onClick={() => navigate(`/collections/${col.slug}`)}
-                        className="text-lg sm:text-xl font-black text-slate-900 dark:text-white cursor-pointer hover:text-[#ff3f6c] dark:hover:text-[#ff3f6c] transition-colors tracking-tight uppercase"
-                      >
-                        {col.title}
-                      </h2>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed mt-1 line-clamp-2">
-                        {col.subtitle}
-                      </p>
-                    </div>
-
-                    {/* Main Collection Image (Admin configured / Product visual / Clean category card) */}
-                    {col.image ? (
-                      <div
-                        onClick={() => navigate(`/collections/${col.slug}`)}
-                        className="relative rounded-sm overflow-hidden aspect-[16/10] bg-slate-50 dark:bg-slate-950 p-3 mb-3.5 flex items-center justify-center border border-slate-200/80 dark:border-slate-800 cursor-pointer group/img"
-                      >
+                return (
+                  <motion.div
+                    key={col.slug || i}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.22, delay: Math.min(i * 0.02, 0.08), ease: "easeOut" }}
+                    className="group bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-none overflow-hidden flex flex-col justify-between transition-all duration-300 shadow-xs hover:shadow-xl sm:hover:-translate-y-1 transform-gpu w-full"
+                  >
+                    <div>
+                      {/* ── CARD COVER IMAGE HERO (EDITORIAL 4:5 PORTRAIT RATIO) ── */}
+                      <div className="relative aspect-[4/5] overflow-hidden bg-slate-100 dark:bg-slate-950 cursor-pointer">
                         <img
                           src={col.image}
                           alt={col.title}
                           loading="lazy"
-                          className="max-h-[92%] max-w-[92%] object-contain transition-transform duration-500 group-hover/img:scale-105"
+                          decoding="async"
+                          draggable="false"
+                          onClick={() => navigate(`/collections/${col.slug}`)}
+                          className="w-full h-full object-cover object-center sm:group-hover:scale-105 transition-transform duration-700 ease-out select-none transform-gpu"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/20 via-transparent to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                      </div>
-                    ) : (
-                      <div
-                        onClick={() => navigate(`/collections/${col.slug}`)}
-                        className="relative rounded-sm overflow-hidden aspect-[16/10] bg-slate-50 dark:bg-slate-950/80 p-4 mb-3.5 flex flex-col items-center justify-center border border-slate-200/80 dark:border-slate-800 cursor-pointer group/img text-center"
-                      >
-                        <div className="w-12 h-12 rounded-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-300 shadow-xs mb-2 transition-transform duration-300 group-hover/img:scale-110">
-                          {React.createElement(col.badgeIcon, { size: 24 })}
-                        </div>
-                        <span className="text-[11px] font-black uppercase tracking-wider text-slate-800 dark:text-slate-200">{col.title}</span>
-                        <span className="text-[9.5px] font-bold text-slate-400 dark:text-slate-500 mt-0.5">Explore Capsule</span>
-                      </div>
-                    )}
+                        
+                        {/* Gradient Vignette */}
+                        <div 
+                          onClick={() => navigate(`/collections/${col.slug}`)}
+                          className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-transparent pointer-events-none" 
+                        />
 
-                    {/* Featured Sample Products Mini Deck */}
-                    {col.sampleProducts && col.sampleProducts.length > 0 && (
-                      <div className="mb-3.5 bg-slate-50/80 dark:bg-slate-950 p-2 border border-slate-200/80 dark:border-slate-800 rounded-sm">
-                        <span className="text-[8.5px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 block mb-1 text-left">
-                          Featured in Capsule:
-                        </span>
-                        <div className="grid grid-cols-4 gap-1.5">
-                          {col.sampleProducts.slice(0, 4).map((p, pIdx) => {
-                            const pImg = p.images?.[0] || p.image;
-                            const fullImgUrl = pImg ? (pImg.startsWith("http") ? pImg : `${backendUrl}/${pImg}`) : null;
-                            return (
-                              <div
-                                key={p._id || pIdx}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  navigate(`/product/${p._id}`);
-                                }}
-                                title={p.name}
-                                className="aspect-square bg-white dark:bg-slate-900 p-1 border border-slate-200/80 dark:border-slate-800 hover:border-[#ff3f6c] cursor-pointer flex flex-col items-center justify-center transition duration-200 rounded-xs relative group/thumb shadow-2xs"
+                        {/* Top Overlays: Category Pill & Bookmark Heart */}
+                        <div className="absolute top-3 inset-x-3 flex items-center justify-between z-10">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider rounded-none bg-white/95 text-slate-950 shadow-md border border-white/60">
+                            <BadgeIconComponent size={11} className="stroke-[2.5]" />
+                            <span>{col.categoryTag || col.badge}</span>
+                          </span>
+
+                          <button
+                            type="button"
+                            onClick={(e) => toggleLike(col.slug, e)}
+                            className={`w-8 h-8 rounded-none flex items-center justify-center transition-colors duration-150 bg-slate-950/80 cursor-pointer shadow-md active:scale-95 touch-manipulation ${
+                              isLiked
+                                ? "bg-rose-500 text-white"
+                                : "hover:bg-slate-900 text-white border border-white/20"
+                            }`}
+                            title={isLiked ? "Remove from Saved" : "Save Capsule"}
+                          >
+                            <Heart size={14} className={isLiked ? "fill-white" : ""} />
+                          </button>
+                        </div>
+
+                        {/* Bottom Overlay Info on Image */}
+                        <div 
+                          onClick={() => navigate(`/collections/${col.slug}`)}
+                          className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white z-10 pointer-events-none"
+                        >
+                          <span className="text-[9px] font-black uppercase tracking-wider bg-slate-950/80 px-2 py-0.5 rounded-none border border-white/20 text-white flex items-center gap-1">
+                            <Sparkles size={10} className="text-amber-300" />
+                            <span>{col.countNum > 0 ? `${col.countNum}+ Pieces` : "12+ Pieces"}</span>
+                          </span>
+
+                          <span className="text-[9.5px] font-black uppercase tracking-wider text-slate-200 flex items-center gap-1">
+                            <span>Explore</span>
+                            <ArrowUpRight size={13} className="text-white" />
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* ── CARD CONTENT BODY ── */}
+                      <div className="p-4 sm:p-5 space-y-3">
+                        
+                        {/* Title & Description */}
+                        <div className="space-y-1">
+                          <h3
+                            onClick={() => navigate(`/collections/${col.slug}`)}
+                            className="text-base sm:text-lg font-black text-slate-950 dark:text-white uppercase tracking-tight hover:text-[#ff3f6c] dark:hover:text-[#ff3f6c] transition-colors cursor-pointer leading-tight"
+                          >
+                            {col.title}
+                          </h3>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed line-clamp-2">
+                            {col.subtitle}
+                          </p>
+                        </div>
+
+                        {/* Curated Tags Strip */}
+                        {col.tags && col.tags.length > 0 && (
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            {col.tags.map((tg, tIdx) => (
+                              <span
+                                key={tIdx}
+                                className="text-[8.5px] font-bold px-2 py-0.5 rounded-none bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200/60 dark:border-slate-800/80"
                               >
-                                {fullImgUrl ? (
-                                  <img
-                                    src={fullImgUrl}
-                                    alt={p.name}
-                                    className="w-full h-full object-contain"
-                                  />
-                                ) : (
-                                  <Package size={14} className="text-slate-400" />
-                                )}
-                                {p.price && (
-                                  <div className="absolute bottom-0 inset-x-0 bg-slate-950/90 text-white text-[7.5px] font-black text-center py-0.5 truncate opacity-0 group-hover/thumb:opacity-100 transition duration-200">
-                                    ₹{p.price}
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                                {tg}
+                              </span>
+                            ))}
+                          </div>
+                        )}
 
-                  {/* Bottom Action Footer */}
-                  <div className="pt-3.5 border-t border-slate-200/70 dark:border-slate-800 flex items-center justify-between">
-                    <div className="flex flex-col text-left">
-                      <span className="text-[8.5px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Available</span>
-                      <span className="text-xs font-black text-slate-800 dark:text-slate-200">
-                        {col.countNum > 0 ? `${col.countNum}+ Items` : "12+ Items"}
-                      </span>
+                        {/* ── INTERACTIVE SAMPLE PRODUCTS DECK ── */}
+                        {col.sampleProducts && col.sampleProducts.length > 0 && (
+                          <div className="pt-1.5">
+                            <div className="flex items-center justify-between mb-1.5">
+                              <span className="text-[8.5px] font-black uppercase tracking-widest text-slate-400">
+                                Featured In Capsule:
+                              </span>
+                              <span className="text-[8.5px] font-bold text-slate-400">
+                                Quick preview
+                              </span>
+                            </div>
+
+                            <div className="grid grid-cols-4 gap-1.5">
+                              {col.sampleProducts.slice(0, 4).map((p, pIdx) => {
+                                const pImg = p.images?.[0] || p.image;
+                                const fullImgUrl = pImg ? (pImg.startsWith("http") ? pImg : `${backendUrl}/${pImg}`) : null;
+                                return (
+                                  <div
+                                    key={p._id || pIdx}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      navigate(`/product/${p._id}`);
+                                    }}
+                                    title={p.name}
+                                    className="aspect-square bg-slate-50 dark:bg-slate-950 p-1 border border-slate-200/80 dark:border-slate-800 hover:border-slate-950 dark:hover:border-white cursor-pointer flex flex-col items-center justify-center transition-transform duration-150 rounded-none relative group/thumb shadow-2xs sm:hover:scale-105 active:scale-95 touch-manipulation transform-gpu"
+                                  >
+                                    {fullImgUrl ? (
+                                      <img
+                                        src={fullImgUrl}
+                                        alt={p.name}
+                                        loading="lazy"
+                                        decoding="async"
+                                        draggable="false"
+                                        className="w-full h-full object-contain pointer-events-none select-none"
+                                      />
+                                    ) : (
+                                      <Package size={15} className="text-slate-400" />
+                                    )}
+                                    {p.price && (
+                                      <div className="absolute bottom-0 inset-x-0 bg-slate-950/90 text-white text-[7.5px] font-black text-center py-0.5 rounded-none truncate opacity-0 group-hover/thumb:opacity-100 transition-opacity duration-150">
+                                        ₹{p.price}
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+
+                      </div>
                     </div>
 
-                    <button
-                      onClick={() => navigate(`/collections/${col.slug}`)}
-                      className={`px-4 py-2 bg-gradient-to-r ${col.btnGradient} text-white font-black text-[10px] uppercase tracking-wider rounded-sm transition-all flex items-center gap-1.5 border-none cursor-pointer shadow-xs hover:shadow-md active:scale-98`}
-                    >
-                      <ShoppingBag size={12} className="stroke-[2.5]" />
-                      <span>Shop Capsule</span>
-                      <ArrowRight size={11} className="stroke-[3]" />
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
+                    {/* ── CARD FOOTER & ACTION ── */}
+                    <div className="p-4 sm:p-5 pt-0 border-t border-slate-100 dark:border-slate-800/80 mt-2 flex items-center justify-between gap-3">
+                      <div className="flex flex-col text-left">
+                        <span className="text-[8.5px] font-black uppercase tracking-widest text-slate-400">Authenticity</span>
+                        <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                          <CheckCircle size={11} /> Verified
+                        </span>
+                      </div>
+
+                      <button
+                        onClick={() => navigate(`/collections/${col.slug}`)}
+                        className="px-4 py-2 bg-slate-950 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100 font-black text-xs uppercase tracking-wider rounded-none transition-all duration-150 flex items-center gap-1.5 border-none cursor-pointer shadow-sm hover:shadow-md active:scale-95 touch-manipulation group/btn"
+                      >
+                        <ShoppingBag size={12} className="stroke-[2.5]" />
+                        <span>Shop Capsule</span>
+                        <ArrowRight size={12} className="stroke-[3] transition-transform group-hover/btn:translate-x-1" />
+                      </button>
+                    </div>
+
+                  </motion.div>
+                );
+              })}
             </div>
 
-            {/* Pagination Controls */}
+            {/* ═══════════════════════════════════════════════════════════════════
+                5. VIP BESPOKE CURATION BANNER
+            ═══════════════════════════════════════════════════════════════════ */}
+            <div className="relative rounded-none overflow-hidden bg-slate-950 text-white border border-slate-800 p-6 sm:p-8 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl w-full">
+              <div className="space-y-2 text-left max-w-xl">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-none bg-amber-400 text-slate-950 text-[9.5px] font-black uppercase tracking-widest">
+                  <Crown size={11} />
+                  Private Client Sourcing
+                </span>
+                <h3 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-white leading-tight">
+                  Looking for a custom archival capsule?
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-300 font-medium leading-relaxed">
+                  Tell our lead curators what you need. From bespoke corporate collections to private runway capsules, we source verified pieces directly from verified houses.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3 shrink-0">
+                <button
+                  onClick={() => navigate("/discover")}
+                  className="px-6 py-3 bg-white text-slate-950 hover:bg-slate-100 text-xs font-black uppercase tracking-widest rounded-none shadow-md transition-all duration-150 cursor-pointer active:scale-95 border-none"
+                >
+                  Browse Global Catalog
+                </button>
+              </div>
+            </div>
+
+            {/* ═══════════════════════════════════════════════════════════════════
+                6. PAGINATION CONTROLS
+            ═══════════════════════════════════════════════════════════════════ */}
             {totalPages > 1 && (
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-slate-200/80 dark:border-slate-800">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-5 border-t border-slate-200/90 dark:border-slate-800 w-full">
                 <div className="text-xs font-bold text-slate-500 dark:text-slate-400">
                   Showing <span className="text-slate-900 dark:text-white font-black">{(currentPage - 1) * itemsPerPage + 1}</span> - <span className="text-slate-900 dark:text-white font-black">{Math.min(currentPage * itemsPerPage, filteredCollections.length)}</span> of <span className="text-slate-900 dark:text-white font-black">{filteredCollections.length}</span> Collections
                 </div>
@@ -896,8 +1308,11 @@ const Collections = () => {
                 <div className="flex items-center gap-2">
                   <button
                     disabled={currentPage === 1}
-                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                    className="px-3.5 py-1.5 text-xs font-black uppercase tracking-wider bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition duration-200 flex items-center gap-1"
+                    onClick={() => {
+                      setCurrentPage((prev) => Math.max(prev - 1, 1));
+                      scrollToGrid();
+                    }}
+                    className="px-3.5 py-1.5 text-xs font-black uppercase tracking-wider bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-none text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition duration-150 flex items-center gap-1 shadow-xs"
                   >
                     <ChevronLeft size={14} className="stroke-[3]" />
                     <span>Prev</span>
@@ -907,10 +1322,13 @@ const Collections = () => {
                     {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((page) => (
                       <button
                         key={page}
-                        onClick={() => setCurrentPage(page)}
-                        className={`w-8 h-8 text-xs font-black rounded-sm transition duration-200 cursor-pointer border ${
+                        onClick={() => {
+                          setCurrentPage(page);
+                          scrollToGrid();
+                        }}
+                        className={`w-8 h-8 text-xs font-black rounded-none transition duration-150 cursor-pointer border ${
                           currentPage === page
-                            ? "bg-[#ff3f6c] text-white border-[#ff3f6c] shadow-xs"
+                            ? "bg-slate-950 text-white border-slate-950 dark:bg-white dark:text-slate-950 shadow-xs"
                             : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800"
                         }`}
                       >
@@ -921,8 +1339,11 @@ const Collections = () => {
 
                   <button
                     disabled={currentPage === totalPages}
-                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                    className="px-3.5 py-1.5 text-xs font-black uppercase tracking-wider bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition duration-200 flex items-center gap-1"
+                    onClick={() => {
+                      setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+                      scrollToGrid();
+                    }}
+                    className="px-3.5 py-1.5 text-xs font-black uppercase tracking-wider bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-none text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition duration-150 flex items-center gap-1 shadow-xs"
                   >
                     <span>Next</span>
                     <ChevronRight size={14} className="stroke-[3]" />
@@ -930,9 +1351,12 @@ const Collections = () => {
                 </div>
               </div>
             )}
+
           </div>
         )}
+
       </div>
+
     </div>
   );
 };

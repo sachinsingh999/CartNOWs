@@ -283,25 +283,25 @@ const ShopTheLook = ({ onQuickView, onAddToCart }) => {
   };
 
   return (
-    <div className="w-full bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-sm p-3.5 sm:p-4.5 lg:p-5 shadow-xs select-none text-left transition-colors duration-200">
+    <div className="w-full bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-none p-3.5 sm:p-4.5 lg:p-5 shadow-xs select-none text-left transition-colors duration-200">
       
       {/* Top Header Row */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3.5">
         <div className="text-left space-y-1">
           <div className="flex items-center gap-2">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-purple-50 dark:bg-purple-950/50 border border-purple-200/80 dark:border-purple-800/60 rounded-sm text-[9px] font-black uppercase tracking-wider text-purple-700 dark:text-purple-300 shadow-2xs">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-purple-50 dark:bg-purple-950/50 border border-purple-200/80 dark:border-purple-800/60 rounded-none text-[9px] font-black uppercase tracking-wider text-purple-700 dark:text-purple-300 shadow-2xs">
               <Sparkles size={11} className="stroke-[2.5]" />
               <span>LOOKBOOK 2026</span>
             </div>
 
-            <span className="px-2 py-0.5 rounded-sm bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold">
+            <span className="px-2 py-0.5 rounded-none bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold">
               Interactive Hotspot Showcase
             </span>
           </div>
 
           <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
             <span>Shop The Look & Aesthetic Bundles</span>
-            <span className="h-1.5 w-1.5 rounded-sm bg-purple-600 dark:bg-purple-400 animate-pulse" />
+            <span className="h-1.5 w-1.5 rounded-none bg-purple-600 dark:bg-purple-400 animate-pulse" />
           </h2>
 
           <p className="text-xs font-bold text-slate-500 dark:text-slate-400">
@@ -313,7 +313,7 @@ const ShopTheLook = ({ onQuickView, onAddToCart }) => {
         <div className="flex items-center gap-2 shrink-0 self-start sm:self-center">
           <button
             onClick={() => navigate("/product")}
-            className="px-3 py-1.5 rounded-sm border border-slate-300 dark:border-slate-700 hover:border-slate-900 dark:hover:border-white text-slate-800 dark:text-slate-200 hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-950 font-black text-[11px] uppercase tracking-wider flex items-center gap-1.5 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 shadow-2xs"
+            className="px-3 py-1.5 rounded-none border border-slate-300 dark:border-slate-700 hover:border-slate-900 dark:hover:border-white text-slate-800 dark:text-slate-200 hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-950 font-black text-[11px] uppercase tracking-wider flex items-center gap-1.5 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 shadow-2xs"
           >
             <span>Explore All Looks</span>
             <ArrowRight size={12} className="stroke-[2.5]" />
@@ -335,7 +335,7 @@ const ShopTheLook = ({ onQuickView, onAddToCart }) => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => handleSceneChange(scene.id)}
-              className={`px-3 py-1.5 rounded-sm text-[10.5px] font-black uppercase tracking-wider border transition-colors duration-150 cursor-pointer shadow-2xs flex items-center gap-1.5 shrink-0 select-none ${
+              className={`px-3 py-1.5 rounded-none text-[10.5px] font-black uppercase tracking-wider border transition-colors duration-150 cursor-pointer shadow-2xs flex items-center gap-1.5 shrink-0 select-none ${
                 isActive
                   ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-slate-900 dark:border-white shadow-xs"
                   : "bg-white dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 border-slate-200/90 dark:border-slate-700 hover:border-slate-400 hover:text-slate-950 dark:hover:text-white"
@@ -343,7 +343,7 @@ const ShopTheLook = ({ onQuickView, onAddToCart }) => {
             >
               <Layers size={12} className={isActive ? "text-purple-400 dark:text-purple-600" : "text-slate-400"} />
               <span>{scene.tabLabel}</span>
-              <span className={`text-[9px] px-1 py-0.2 rounded-sm font-bold ${
+              <span className={`text-[9px] px-1 py-0.2 rounded-none font-bold ${
                 isActive ? "bg-purple-600 text-white dark:bg-purple-200 dark:text-purple-900" : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400"
               }`}>
                 {scene.products.length} Items
@@ -358,7 +358,7 @@ const ShopTheLook = ({ onQuickView, onAddToCart }) => {
         
         {/* Left Column: Interactive Scene Viewport with Hotspots */}
         <div className="lg:col-span-7 xl:col-span-8 flex flex-col">
-          <div className="relative w-full aspect-[4/3] sm:aspect-[16/10] rounded-sm overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-950 group shadow-inner">
+          <div className="relative w-full aspect-[4/3] sm:aspect-[16/10] rounded-none overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-950 group shadow-inner">
             
             {/* Background Lifestyle Image */}
             <AnimatePresence mode="wait">
@@ -379,7 +379,7 @@ const ShopTheLook = ({ onQuickView, onAddToCart }) => {
 
             {/* Top Scene Badge */}
             <div className="absolute top-3 left-3 flex items-center gap-2 pointer-events-none">
-              <span className="px-2.5 py-1 bg-slate-900/85 backdrop-blur-md border border-white/20 rounded-sm text-[10px] font-black uppercase tracking-wider text-white flex items-center gap-1.5 shadow-sm">
+              <span className="px-2.5 py-1 bg-slate-900/85 backdrop-blur-md border border-white/20 rounded-none text-[10px] font-black uppercase tracking-wider text-white flex items-center gap-1.5 shadow-sm">
                 <Flame size={12} className="text-amber-400 animate-pulse" />
                 {activeScene.category}
               </span>
@@ -422,13 +422,13 @@ const ShopTheLook = ({ onQuickView, onAddToCart }) => {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 8 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2.5 w-48 sm:w-56 p-2.5 bg-slate-950/90 dark:bg-slate-900/95 backdrop-blur-md border border-slate-700/80 rounded-sm text-white shadow-2xl z-30 pointer-events-auto text-left"
+                      className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2.5 w-48 sm:w-56 p-2.5 bg-slate-950/90 dark:bg-slate-900/95 backdrop-blur-md border border-slate-700/80 rounded-none text-white shadow-2xl z-30 pointer-events-auto text-left"
                     >
                       <div className="flex items-center gap-2">
                         <img
                           src={p.image}
                           alt={p.name}
-                          className="w-10 h-10 object-cover rounded-sm border border-slate-700 shrink-0 bg-slate-800"
+                          className="w-10 h-10 object-cover rounded-none border border-slate-700 shrink-0 bg-slate-800"
                         />
                         <div className="min-w-0 flex-1">
                           <span className="text-[9px] font-black text-purple-400 uppercase tracking-wide block truncate">
@@ -450,14 +450,14 @@ const ShopTheLook = ({ onQuickView, onAddToCart }) => {
             })}
 
             {/* Bottom Title Bar Inside Scene */}
-            <div className="absolute bottom-3 left-3 right-3 p-3 bg-slate-950/80 backdrop-blur-md border border-white/10 rounded-sm text-white flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="absolute bottom-3 left-3 right-3 p-3 bg-slate-950/80 backdrop-blur-md border border-white/10 rounded-none text-white flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="min-w-0">
                 <h3 className="text-sm sm:text-base font-black text-white truncate">{activeScene.title}</h3>
                 <p className="text-[11px] text-slate-300 font-medium line-clamp-1">{activeScene.subtitle}</p>
               </div>
 
               <div className="flex items-center gap-1.5 shrink-0">
-                <span className="px-2 py-0.5 bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-[10px] font-black rounded-sm uppercase tracking-wider">
+                <span className="px-2 py-0.5 bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-[10px] font-black rounded-none uppercase tracking-wider">
                   Save {activeScene.bundleDiscountPercent}% in Bundle
                 </span>
               </div>
@@ -466,12 +466,12 @@ const ShopTheLook = ({ onQuickView, onAddToCart }) => {
         </div>
 
         {/* Right Column: Product Breakdown & Instant Bundle Purchase */}
-        <div className="lg:col-span-5 xl:col-span-4 flex flex-col justify-between bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 rounded-sm p-3.5 sm:p-4">
+        <div className="lg:col-span-5 xl:col-span-4 flex flex-col justify-between bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 rounded-none p-3.5 sm:p-4">
           
           <div>
             <div className="flex items-center justify-between pb-2.5 border-b border-slate-200 dark:border-slate-700/80 mb-3">
               <div className="flex items-center gap-2">
-                <div className="w-5 h-5 rounded-sm bg-purple-600 text-white flex items-center justify-center font-black text-[10px]">
+                <div className="w-5 h-5 rounded-none bg-purple-600 text-white flex items-center justify-center font-black text-[10px]">
                   <ShoppingBag size={11} className="stroke-[2.5]" />
                 </div>
                 <h4 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">
@@ -496,7 +496,7 @@ const ShopTheLook = ({ onQuickView, onAddToCart }) => {
                     onMouseEnter={() => setHoveredPinId(p.id)}
                     onMouseLeave={() => setHoveredPinId(null)}
                     onClick={() => setActivePinId(p.id)}
-                    className={`p-2 rounded-sm border transition-all duration-150 flex items-center gap-2.5 cursor-pointer ${
+                    className={`p-2 rounded-none border transition-all duration-150 flex items-center gap-2.5 cursor-pointer ${
                       isHighlighted
                         ? "bg-purple-50/70 dark:bg-purple-950/40 border-purple-300 dark:border-purple-700 shadow-2xs"
                         : "bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
@@ -509,7 +509,7 @@ const ShopTheLook = ({ onQuickView, onAddToCart }) => {
                         e.stopPropagation();
                         toggleItemSelection(p.id);
                       }}
-                      className={`w-4 h-4 rounded-sm border flex items-center justify-center transition-colors ${
+                      className={`w-4 h-4 rounded-none border flex items-center justify-center transition-colors ${
                         isChecked
                           ? "bg-purple-600 border-purple-600 text-white"
                           : "bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-transparent"
@@ -519,13 +519,13 @@ const ShopTheLook = ({ onQuickView, onAddToCart }) => {
                     </button>
 
                     {/* Thumbnail */}
-                    <div className="relative w-11 h-11 rounded-sm overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700 shrink-0">
+                    <div className="relative w-11 h-11 rounded-none overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700 shrink-0">
                       <img
                         src={p.image}
                         alt={p.name}
                         className="w-full h-full object-cover"
                       />
-                      <span className="absolute bottom-0 right-0 bg-slate-900/90 text-white font-black text-[8px] px-1 py-0.2 rounded-tl-sm">
+                      <span className="absolute bottom-0 right-0 bg-slate-900/90 text-white font-black text-[8px] px-1 py-0.2 rounded-none">
                         #{idx + 1}
                       </span>
                     </div>
@@ -568,7 +568,7 @@ const ShopTheLook = ({ onQuickView, onAddToCart }) => {
                         }
                       }}
                       title="Quick View"
-                      className="w-6 h-6 rounded-sm bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center shrink-0 transition-colors"
+                      className="w-6 h-6 rounded-none bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center shrink-0 transition-colors"
                     >
                       <Eye size={12} className="stroke-[2.5]" />
                     </button>
@@ -599,7 +599,7 @@ const ShopTheLook = ({ onQuickView, onAddToCart }) => {
                 </span>
               </div>
 
-              <span className="px-2 py-1 bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-[10px] font-black rounded-sm">
+              <span className="px-2 py-1 bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-[10px] font-black rounded-none">
                 SAVE {bundleSummary.discountPercent}%
               </span>
             </div>
@@ -611,7 +611,7 @@ const ShopTheLook = ({ onQuickView, onAddToCart }) => {
               whileTap={{ scale: 0.98 }}
               onClick={handleAddBundleToCart}
               disabled={bundleSummary.count === 0}
-              className={`w-full py-2.5 px-3 rounded-sm font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-150 cursor-pointer shadow-xs ${
+              className={`w-full py-2.5 px-3 rounded-none font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-150 cursor-pointer shadow-xs ${
                 bundleSummary.count > 0
                   ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-purple-700 dark:hover:bg-purple-200 hover:shadow-purple-500/20"
                   : "bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed"

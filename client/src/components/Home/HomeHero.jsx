@@ -641,7 +641,7 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
                               )}
 
                               {/* Ratings */}
-                              <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-2 py-1 rounded-lg text-[10px] font-black text-slate-200">
+                              <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-2 py-1 rounded-none text-[10px] font-black text-slate-200">
                                 <Star size={11} className="fill-amber-400 text-amber-400" />
                                 <span>{banner.productId.averageRating || banner.productId.rating?.average || 4.5}</span>
                                 <span className="opacity-60">({banner.productId.reviewCount || banner.productId.rating?.count || 12})</span>
@@ -652,7 +652,7 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
                           {/* Countdown timer & progress bar */}
                           {timeLeft && (
                             <div className="flex items-center gap-3 pt-1">
-                              <div className="flex items-center gap-1.5 bg-black/35 backdrop-blur-xs border border-white/5 px-3 py-1 rounded-xl text-slate-100 dark:text-white">
+                              <div className="flex items-center gap-1.5 bg-black/35 backdrop-blur-xs border border-white/5 px-3 py-1 rounded-none text-slate-100 dark:text-white">
                                 <Hourglass size={12} className="text-orange-400 animate-pulse" />
                                 <span className="text-[9px] uppercase tracking-widest font-black mr-1 opacity-70">Ends in:</span>
                                 <div className="flex items-center gap-1 text-[11px] font-bold font-mono">
@@ -664,9 +664,9 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
                               </div>
 
                               {/* Progress Bar showing campaign elapsed time */}
-                              <div className="hidden sm:block flex-1 max-w-[120px] h-[3px] bg-white/10 rounded-full overflow-hidden relative">
+                              <div className="hidden sm:block flex-1 max-w-[120px] h-[3px] bg-white/10 rounded-none overflow-hidden relative">
                                 <div
-                                  className="absolute left-0 top-0 h-full bg-gradient-to-r from-orange-400 to-red-500 rounded-full transition-all duration-1000"
+                                  className="absolute left-0 top-0 h-full bg-gradient-to-r from-orange-400 to-red-500 rounded-none transition-all duration-1000"
                                   style={{ width: `${progressPercent}%` }}
                                 />
                               </div>
@@ -680,7 +680,7 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
                                 whileHover={shouldReduceMotion ? {} : { scale: 1.03, y: -1, boxShadow: "0 8px 20px rgba(249, 115, 22, 0.3)" }}
                                 whileTap={{ scale: 0.98 }}
                                 onClick={() => navigate(`/product/${banner.productId._id || banner.productId}`)}
-                                className="inline-flex items-center gap-2 sm:gap-2.5 px-6 sm:px-8 py-3 rounded-xl bg-orange-500 text-slate-100 dark:text-white text-[10px] md:text-xs font-black uppercase tracking-widest shadow-md border-none cursor-pointer transition-colors duration-300"
+                                className="inline-flex items-center gap-2 sm:gap-2.5 px-6 sm:px-8 py-3 rounded-none bg-orange-500 text-slate-100 dark:text-white text-[10px] md:text-xs font-black uppercase tracking-widest shadow-md border-none cursor-pointer transition-colors duration-300"
                               >
                                 <span>{banner.ctaText || "Shop Now"}</span>
                                 <ArrowRight size={13} className="stroke-[3]" />
@@ -909,12 +909,12 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
                   animate={{ opacity: 1, y: 0 }}
                   whileHover={shouldReduceMotion ? {} : { scale: 1.02, y: -1, boxShadow: "0 8px 20px rgba(0,0,0,0.05)" }}
                   whileTap={{ scale: 0.99 }}
-                  className="flex items-center gap-3.5 bg-slate-900/5 dark:bg-slate-900/40 border border-amber-500/20 dark:border-amber-500/10 rounded-2xl px-4 py-3 select-none w-full sm:w-fit text-left hover:border-amber-500/40 transition duration-300 shadow-md cursor-pointer relative group/coupon overflow-hidden"
+                  className="flex items-center gap-3.5 bg-slate-900/5 dark:bg-slate-900/40 border border-amber-500/20 dark:border-amber-500/10 rounded-none px-4 py-3 select-none w-full sm:w-fit text-left hover:border-amber-500/40 transition duration-300 shadow-md cursor-pointer relative group/coupon overflow-hidden"
                 >
                   {/* Active hover reflection sheen */}
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-500/[0.05] to-transparent -translate-x-full group-hover/coupon:translate-x-full transition-transform duration-1000" />
 
-                  <div className="bg-amber-500/10 p-2 rounded-xl border border-amber-500/25 shrink-0 flex items-center justify-center">
+                  <div className="bg-amber-500/10 p-2 rounded-none border border-amber-500/25 shrink-0 flex items-center justify-center">
                     <Award size={18} className="text-amber-500 dark:text-amber-400" />
                   </div>
 
@@ -927,7 +927,7 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
 
                   <button
                     type="button"
-                    className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all duration-300 border ${couponCopied
+                    className={`px-3 py-1.5 rounded-none text-[9px] font-black uppercase tracking-wider transition-all duration-300 border ${couponCopied
                         ? "bg-emerald-500 border-emerald-500 text-white"
                         : "bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400"
                       }`}
@@ -1097,7 +1097,7 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
                     y: shouldReduceMotion ? -20 : mousePosition.y * 1.4 - 20
                   }}
                   transition={{ type: "spring", stiffness: 100, damping: 20 }}
-                  className="absolute top-[22%] left-[-15px] bg-white/20 dark:bg-slate-900/60 backdrop-blur-xl border border-white/30 dark:border-white/[0.08] px-3.5 py-2.5 rounded-2xl shadow-xl max-w-[170px] text-left hidden sm:block z-20 pointer-events-none"
+                  className="absolute top-[22%] left-[-15px] bg-white/20 dark:bg-slate-900/60 backdrop-blur-xl border border-white/30 dark:border-white/[0.08] px-3.5 py-2.5 rounded-none shadow-xl max-w-[170px] text-left hidden sm:block z-20 pointer-events-none"
                 >
                   <div className="flex items-center gap-1.5 mb-1 text-[8.5px] font-black uppercase text-indigo-600 dark:text-indigo-400">
                     <Sparkles size={11} className="fill-indigo-500/20" />
@@ -1115,7 +1115,7 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
                     y: shouldReduceMotion ? 20 : mousePosition.y * 1.3 + 20
                   }}
                   transition={{ type: "spring", stiffness: 100, damping: 20 }}
-                  className="absolute top-[38%] right-[-15px] bg-white/20 dark:bg-slate-900/60 backdrop-blur-xl border border-white/30 dark:border-white/[0.08] p-3.5 rounded-2xl shadow-xl max-w-[175px] text-left hidden lg:block z-20 pointer-events-none"
+                  className="absolute top-[38%] right-[-15px] bg-white/20 dark:bg-slate-900/60 backdrop-blur-xl border border-white/30 dark:border-white/[0.08] p-3.5 rounded-none shadow-xl max-w-[175px] text-left hidden lg:block z-20 pointer-events-none"
                 >
                   <p className="text-[9.5px] text-slate-600 dark:text-slate-300 font-semibold italic leading-relaxed">
                     "Premium build quality. Fits absolutely perfectly."
@@ -1132,7 +1132,7 @@ const HomeHero = ({ onShowDealOfDay, hasActiveDeal }) => {
                     y: shouldReduceMotion ? 10 : mousePosition.y * 1.1 + 10
                   }}
                   transition={{ type: "spring", stiffness: 100, damping: 20 }}
-                  className="absolute bottom-[10%] right-[5%] bg-white/20 dark:bg-slate-900/60 backdrop-blur-xl border border-white/30 dark:border-white/[0.08] p-3 rounded-2xl shadow-xl w-36 text-left hidden sm:block z-20 pointer-events-none"
+                  className="absolute bottom-[10%] right-[5%] bg-white/20 dark:bg-slate-900/60 backdrop-blur-xl border border-white/30 dark:border-white/[0.08] p-3 rounded-none shadow-xl w-36 text-left hidden sm:block z-20 pointer-events-none"
                 >
                   <div className="flex justify-between items-center text-[8px] font-black uppercase text-slate-400 dark:text-slate-500 mb-1">
                     <span>Demand</span>

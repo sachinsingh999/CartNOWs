@@ -155,13 +155,13 @@ const AiRobotChat = () => {
 
   return (
     <div 
-      className="bg-slate-50/60 dark:bg-slate-950/40 border border-slate-200/90 dark:border-slate-800 rounded-sm p-5 sm:p-6 shadow-xs flex flex-col justify-between min-h-[480px] text-left overflow-hidden transition-all duration-300 select-none"
+      className="bg-slate-50/60 dark:bg-slate-950/40 border border-slate-200/90 dark:border-slate-800 rounded-none p-5 sm:p-6 shadow-xs flex flex-col justify-between min-h-[480px] text-left overflow-hidden transition-all duration-300 select-none"
     >
       {/* Header */}
       <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800/50 text-left">
         <div className="flex items-center gap-3">
           <div 
-            className="relative flex items-center justify-center w-10 h-10 rounded-md bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100/50 dark:border-indigo-900/50 shadow-sm"
+            className="relative flex items-center justify-center w-10 h-10 rounded-none bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100/50 dark:border-indigo-900/50 shadow-sm"
           >
             <Sparkles className="w-5 h-5 text-indigo-600 dark:text-indigo-400 animate-pulse" />
             <span className="absolute -bottom-0.5 -right-0.5 flex h-2.5 w-2.5">

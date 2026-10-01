@@ -177,10 +177,10 @@ const PremiumDealBanner = ({
         ease: [0.16, 1, 0.3, 1]
       }}
       id="deal-of-the-day-banner"
-      className="light-sweep-container group relative w-full rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col border border-white/[0.08] text-white bg-gradient-to-br from-[#0c0f1d] via-[#070913] to-[#030409] p-5 sm:p-6 mb-4 text-left select-none animate-fade-in"
+      className="light-sweep-container group relative w-full rounded-none overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col border border-white/[0.08] text-white bg-gradient-to-br from-[#0c0f1d] via-[#070913] to-[#030409] p-5 sm:p-6 mb-4 text-left select-none animate-fade-in"
     >
       {/* Decorative Grid texture */}
-      <div className="absolute inset-0 bg-[radial-gradient(#ffffff04_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none rounded-2xl z-0" />
+      <div className="absolute inset-0 bg-[radial-gradient(#ffffff04_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none rounded-none z-0" />
 
       {/* Editorial Decorative Glows */}
       <div className="absolute left-[-20px] top-[10%] w-48 h-48 bg-[#f97316]/10 rounded-full blur-3xl pointer-events-none z-0" />
@@ -254,7 +254,7 @@ const PremiumDealBanner = ({
                 <BrandLogo
                   brand={product.brand || "GENERIC"}
                   brandDomain={product.brandDomain}
-                  className="w-4 h-4 rounded-xs"
+                  className="w-4 h-4 rounded-none"
                 />
                 <span className="text-[8.5px] uppercase tracking-[0.25em] font-black text-slate-400 block">
                   {product.brand || "GENERIC"}

@@ -3,10 +3,11 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import ProductCard from "../pages/ProductCard";
+import ProductListCard from "../components/ProductListCard";
 import FilterSidebar from "../components/FilterSidebar";
 import { backendUrl } from "../config";
 import { getAverageRating } from "../utils/productRatings";
-import { Star, X, ShoppingCart, Eye, AlertTriangle, ArrowRight, Filter, ChevronLeft, ChevronRight, SlidersHorizontal, Search, Heart, RotateCcw, PackageSearch, Sparkles } from "lucide-react";
+import { Star, X, ShoppingCart, Eye, AlertTriangle, ArrowRight, Filter, ChevronLeft, ChevronRight, SlidersHorizontal, Search, Heart, RotateCcw, PackageSearch, Sparkles, LayoutGrid, List } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ProductCardSkeleton } from "../components/SkeletonLoader";
 import BrandLogo from "../components/BrandLogo";
@@ -52,6 +53,18 @@ const Product = () => {
   const [minDiscount, setMinDiscount] = useState(0);
   const [inStockOnly, setInStockOnly] = useState(false);
   const [selectedCategoryIds, setSelectedCategoryIds] = useState(searchParams.get("categories") ? (searchParams.get("categories") || "").split(",") : []);
+
+  // View mode: 'list' (Flipkart style search results) vs 'grid' (standard multi-column catalog)
+  const isSearchActive = Boolean(searchQuery && searchQuery.trim().length > 0);
+  const [viewMode, setViewMode] = useState(() => (isSearchActive ? "list" : "grid"));
+
+  useEffect(() => {
+    if (searchQuery && searchQuery.trim().length > 0) {
+      setViewMode("list");
+    } else {
+      setViewMode("grid");
+    }
+  }, [searchQuery]);
 
   // Mobile filters sidebar toggle
   const [showMobileFilters, setShowMobileFilters] = useState(false);
@@ -813,13 +826,13 @@ const Product = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans transition-colors duration-300 relative text-left pb-16">
+    <div className="min-h-screen bg-[#eaeded] dark:bg-slate-950 font-sans transition-colors duration-300 relative text-left pb-16">
       
 
 
       {/* ── Sticky Control Bar ── */}
       <div 
-        className="sticky z-30 bg-white dark:bg-slate-950 border-b border-slate-200/40 dark:border-slate-800/40 py-2 sm:py-2.5 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-all duration-300"
+        className="sticky z-30 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 py-2 sm:py-2.5 shadow-[0_2px_4px_rgba(0,0,0,0.05)] dark:shadow-[0_2px_4px_rgba(0,0,0,0.3)] transition-all duration-300"
         style={{ top: "var(--navbar-height, 80px)" }}
       >
         <div className="w-full px-2.5 sm:px-4 lg:px-6 flex flex-col md:flex-row md:items-center justify-between gap-2.5 md:gap-4">
@@ -866,6 +879,36 @@ const Product = () => {
                 <option value="price-high">Price: High → Low</option>
                 <option value="highest-rated">Highest Rated</option>
               </select>
+            </div>
+
+            {/* View Mode Switcher (Grid / List) */}
+            <div className="flex items-center border border-slate-200 dark:border-slate-800 rounded-md overflow-hidden bg-slate-50 dark:bg-slate-900 p-0.5">
+              <button
+                type="button"
+                onClick={() => setViewMode("grid")}
+                className={`p-1 rounded-sm transition-colors cursor-pointer border-none flex items-center justify-center ${
+                  viewMode === "grid"
+                    ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-2xs font-bold"
+                    : "text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 bg-transparent"
+                }`}
+                title="Grid View"
+                aria-label="Grid View"
+              >
+                <LayoutGrid size={13} />
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("list")}
+                className={`p-1 rounded-sm transition-colors cursor-pointer border-none flex items-center justify-center ${
+                  viewMode === "list"
+                    ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-2xs font-bold"
+                    : "text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 bg-transparent"
+                }`}
+                title="List View"
+                aria-label="List View"
+              >
+                <List size={13} />
+              </button>
             </div>
 
             {/* Results Count indicator */}
@@ -915,10 +958,13 @@ const Product = () => {
       </div>
 
       {/* ── Layout Grid Columns ── */}
-      <div className="w-full px-2 sm:px-3 lg:px-4 py-3 grid grid-cols-1 md:grid-cols-[240px_1fr] lg:grid-cols-[250px_1fr] gap-2.5 sm:gap-3 items-start relative">
+      <div className="w-full px-1.5 sm:px-2 lg:px-2.5 py-1.5 sm:py-2 grid grid-cols-1 md:grid-cols-[240px_1fr] lg:grid-cols-[250px_1fr] gap-1.5 sm:gap-2 items-start relative">
         
         {/* Desktop Sidebar filter card */}
-        <div className="hidden md:block sticky top-[135px] max-h-[calc(100vh-140px)] overflow-y-auto select-none scrollbar-hide">
+        <div 
+          className="hidden md:block sticky max-h-[calc(100vh-175px)] overflow-y-auto select-none scrollbar-hide"
+          style={{ top: "calc(var(--navbar-height, 80px) + 54px)" }}
+        >
           <FilterSidebar
             category={category}
             searchQuery={searchQuery}
@@ -1016,11 +1062,35 @@ const Product = () => {
               </button>
             </div>
           ) : loading ? (
-            <div className="grid grid-cols-1 min-[450px]:grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2 sm:gap-2.5">
-              {Array.from({ length: 10 }).map((_, i) => (
-                <ProductCardSkeleton key={i} />
-              ))}
-            </div>
+            viewMode === "list" ? (
+              <div className="flex flex-col bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-none divide-y divide-slate-100 dark:divide-slate-800 w-full overflow-hidden">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="p-4 sm:p-5 flex flex-col md:flex-row gap-4 items-stretch animate-pulse">
+                    <div className="w-full md:w-[220px] h-[200px] bg-slate-200/70 dark:bg-slate-800/60 rounded-none shrink-0" />
+                    <div className="flex-1 space-y-3 py-2">
+                      <div className="h-5 bg-slate-200/80 dark:bg-slate-800/70 rounded-none w-3/4" />
+                      <div className="h-4 bg-slate-200/60 dark:bg-slate-800/50 rounded-none w-1/4" />
+                      <div className="space-y-2 pt-2">
+                        <div className="h-3 bg-slate-200/50 dark:bg-slate-800/40 rounded-none w-5/6" />
+                        <div className="h-3 bg-slate-200/50 dark:bg-slate-800/40 rounded-none w-4/6" />
+                        <div className="h-3 bg-slate-200/50 dark:bg-slate-800/40 rounded-none w-3/6" />
+                      </div>
+                    </div>
+                    <div className="w-full md:w-[220px] space-y-3 pt-2 shrink-0">
+                      <div className="h-7 bg-slate-200/80 dark:bg-slate-800/70 rounded-none w-1/2" />
+                      <div className="h-4 bg-slate-200/50 dark:bg-slate-800/40 rounded-none w-1/3" />
+                      <div className="h-9 bg-slate-200/70 dark:bg-slate-800/60 rounded-none w-full mt-4" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 min-[450px]:grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-1.5 sm:gap-2">
+                {Array.from({ length: 10 }).map((_, i) => (
+                  <ProductCardSkeleton key={i} />
+                ))}
+              </div>
+            )
           ) : productList.length === 0 ? (
             <motion.div
               initial={{ opacity: 0, y: 12 }}
@@ -1071,26 +1141,38 @@ const Product = () => {
             </motion.div>
           ) : (
             <div className="space-y-10">
-              {/* Product Card grid - Animate items stagger entry */}
-              <motion.div 
-                layout
-                className="grid grid-cols-1 min-[450px]:grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2 sm:gap-2.5"
-              >
-                {productList.map((item) => (
-                  <motion.div
-                    layout
-                    key={item._id}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <ProductCard 
+              {/* Product Card grid or Flipkart-style List View */}
+              {viewMode === "list" ? (
+                <div className="flex flex-col bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-none shadow-2xs divide-y divide-slate-100 dark:divide-slate-800 w-full overflow-hidden">
+                  {productList.map((item) => (
+                    <ProductListCard 
+                      key={item._id} 
                       product={item} 
                       onQuickView={openQuickView}
                     />
-                  </motion.div>
-                ))}
-              </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <motion.div 
+                  layout
+                  className="grid grid-cols-1 min-[450px]:grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-1.5 sm:gap-2"
+                >
+                  {productList.map((item) => (
+                    <motion.div
+                      layout
+                      key={item._id}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <ProductCard 
+                        product={item} 
+                        onQuickView={openQuickView}
+                      />
+                    </motion.div>
+                  ))}
+                </motion.div>
+              )}
 
               {/* Premium Pill & Circle Pagination Controls */}
               {totalPages > 1 && (

@@ -34,13 +34,13 @@ export const DeliveryMap = ({ nextOrder, stats, driver, isNavigating, setIsNavig
   // Determine final target coordinates (custom searched location or geocoded address)
   const finalDestLat = useMemo(() => {
     if (destLat !== null) return destLat;
-    return nextOrder?.address?.lat || (driverCoords.lat + 0.008);
-  }, [destLat, nextOrder?.address?.lat, driverCoords.lat]);
+    return nextOrder?.address?.lat ? parseFloat(nextOrder.address.lat) : null;
+  }, [destLat, nextOrder?.address?.lat]);
 
   const finalDestLng = useMemo(() => {
     if (destLng !== null) return destLng;
-    return nextOrder?.address?.lng || (driverCoords.lng + 0.012);
-  }, [destLng, nextOrder?.address?.lng, driverCoords.lng]);
+    return nextOrder?.address?.lng ? parseFloat(nextOrder.address.lng) : null;
+  }, [destLng, nextOrder?.address?.lng]);
 
   // 2. Debounced real street route computation (including steps instructions)
   const { routeCoords, distance, duration, steps, loading, error: routeError } = useRouteDirections(
@@ -219,189 +219,123 @@ export const DeliveryMap = ({ nextOrder, stats, driver, isNavigating, setIsNavig
   }, [nextOrder, formatAddress]);
 
   return (
-    <div className="lg:col-span-5 glass-panel border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-4.5 shadow-xl flex flex-col justify-between relative overflow-hidden min-h-[380px]">
-      
-      {/* Leaflet container canvas */}
-      <div className="w-full flex-1 rounded-2xl overflow-hidden bg-slate-100 dark:bg-[#0c0f1d] border border-slate-200 dark:border-slate-800/60 relative min-h-[320px]">
-        {/* Leaflet map div stays unconditionally mounted in the DOM */}
-        <div 
-          id="live-delivery-leaflet-map" 
-          className={`absolute inset-0 w-full h-full rounded-2xl z-10 transition-all duration-500 ${nextOrder && !isNavigating ? "blur-[6px] opacity-60 pointer-events-none" : "blur-none opacity-100"}`} 
-        />
+    <div className="w-full h-full min-h-[360px] relative overflow-hidden rounded-xs bg-[#E8EEF5] dark:bg-[#090d16] flex flex-col justify-between">
+      {/* Leaflet map container */}
+      <div 
+        id="live-delivery-leaflet-map" 
+        className="absolute inset-0 w-full h-full z-10" 
+      />
 
-        {/* Placeholder overlay when map is blurred (not navigating but we have a job) */}
-        {nextOrder && !isNavigating && (
-          <div className="absolute inset-0 bg-white/70 dark:bg-slate-950/70 flex flex-col items-center justify-center text-xs gap-3.5 z-20 transition-all duration-300">
-            <div className="glass-panel border border-slate-205 dark:border-slate-800 rounded-2xl p-5 text-center shadow-lg max-w-[280px]">
-              <MapPin className="mx-auto text-blue-500 animate-bounce mb-2" size={20} />
-              <p className="font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Route Map Blurred</p>
-              <p className="text-[10px] text-slate-455 dark:text-slate-500 font-bold mt-1.5 leading-normal">
-                Click "Start Navigation" below or the "Navigate" button on the panel to reveal the live road layout.
-              </p>
-            </div>
+      {/* Top Floating Bar: Live Location Button & Search */}
+      <div className="absolute top-3 left-3 right-3 z-[1010] flex items-center justify-between gap-2 pointer-events-none">
+        {/* Search destination popup on hover/focus */}
+        <div className="pointer-events-auto flex-1 max-w-[200px] hidden sm:block">
+          <div className="flex items-center gap-1.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-2.5 py-1.5 rounded-xs border border-slate-200/80 dark:border-slate-800 shadow-sm">
+            <Search size={12} className="text-slate-400" />
+            <input
+              type="text"
+              value={mapSearchQuery}
+              onChange={(e) => setMapSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleMapSearch();
+              }}
+              placeholder="Search area..."
+              className="w-full text-[11px] bg-transparent outline-none text-slate-800 dark:text-slate-200 placeholder-slate-400"
+            />
           </div>
-        )}
+        </div>
 
-        {/* Placeholder overlay when no active job is selected */}
-        {!nextOrder && (
-          <div className="absolute inset-0 rounded-2xl bg-slate-50 dark:bg-slate-900/50 border border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center text-xs text-slate-405 gap-2 z-20">
-            <MapPin size={24} className="text-slate-350 dark:text-slate-700" />
-            <span className="font-extrabold tracking-wide uppercase">No active delivery map to track</span>
-            <span className="text-[10px] text-slate-450 dark:text-slate-550 font-bold">
-              GPS: {gpsStatus === "tracking" ? `${driverCoords.lat.toFixed(4)}°, ${driverCoords.lng.toFixed(4)}°` : "Searching Signal..."}
-            </span>
-          </div>
-        )}
+        {/* Live Location button on the right */}
+        <div className="pointer-events-auto ml-auto flex items-center gap-2">
+          <button
+            onClick={centerOnDriver}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/95 dark:bg-slate-900/95 hover:bg-white dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800 text-blue-600 dark:text-blue-400 rounded-xs text-xs font-semibold shadow-sm backdrop-blur-md transition cursor-pointer active:scale-95"
+          >
+            <Crosshair size={13} className="text-blue-600" />
+            <span>Live Location</span>
+          </button>
+        </div>
+      </div>
 
-        {/* Loading skeleton blur overlay */}
-        {loading && (
-          <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm z-[1015] flex flex-col items-center justify-center text-xs text-blue-400 font-bold gap-3 rounded-2xl">
-            <Loader2 size={32} className="animate-spin text-blue-500" />
-            <span className="tracking-wide animate-pulse">Calculating road route...</span>
-          </div>
-        )}
+      {/* Right Side Zoom & Map Controls */}
+      <div className="absolute right-3 top-16 z-[1010] flex flex-col gap-1.5">
+        <button
+          onClick={() => mapInstance && mapInstance.zoomIn()}
+          className="h-8 w-8 rounded-xs bg-white/95 dark:bg-slate-900/95 border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center justify-center text-slate-700 dark:text-slate-200 font-bold text-sm cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-95"
+          title="Zoom In"
+        >
+          +
+        </button>
+        <button
+          onClick={() => mapInstance && mapInstance.zoomOut()}
+          className="h-8 w-8 rounded-xs bg-white/95 dark:bg-slate-900/95 border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center justify-center text-slate-700 dark:text-slate-200 font-bold text-sm cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-95"
+          title="Zoom Out"
+        >
+          -
+        </button>
+      </div>
 
-        {/* Top Panel: Turn-by-Turn Instruction Banner in Navigation Mode */}
-        {isNavigating && steps.length > 0 && (
-          <div className="absolute top-0 left-0 right-0 z-[1012] bg-emerald-600 dark:bg-emerald-950 text-white p-3.5 shadow-md flex items-center justify-between border-b border-emerald-500/20 backdrop-blur-md">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-emerald-500/20 text-white">
-                <Navigation size={14} className="rotate-45 text-emerald-250" />
-              </div>
-              <div>
-                <p className="text-[8px] font-black text-emerald-300 dark:text-emerald-400 uppercase tracking-widest leading-none">Next Turn Instruction</p>
-                <h5 className="text-[11px] font-black mt-1 leading-tight max-w-[200px] sm:max-w-[280px] truncate">
-                  {steps[0].instruction}
-                </h5>
-                <span className="text-[8px] text-emerald-200/80 font-bold">In {steps[0].distance} meters</span>
-              </div>
-            </div>
-
-            {/* Re-centering control embedded inside the navigation bar */}
-            <button
-              onClick={centerOnDriver}
-              className="p-2.5 rounded-lg bg-emerald-550/30 hover:bg-emerald-500/40 text-white shadow-sm cursor-pointer transition active:scale-95 flex items-center justify-center border border-emerald-400/25"
-              title="Center on Driver"
-            >
-              <Crosshair size={12} />
-            </button>
-          </div>
-        )}
-
-        {/* Top Panel: Row controls in Preview Mode (Search + Center side-by-side) */}
-        {!isNavigating && nextOrder && (
-          <div className="absolute top-3 left-3 right-3 z-[1012] flex gap-2">
-            {/* Search Widget */}
-            <div className="flex-1 flex gap-1.5 p-1 bg-white/95 dark:bg-slate-900/95 border border-slate-200/85 dark:border-slate-800/80 rounded-xl shadow-md backdrop-blur-md">
-              <input
-                type="text"
-                value={mapSearchQuery}
-                onChange={(e) => setMapSearchQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleMapSearch();
-                }}
-                placeholder="Search destination to route..."
-                className="flex-1 px-3 py-1.5 text-xs bg-transparent text-slate-850 dark:text-slate-200 focus:outline-none placeholder-slate-400"
-              />
-              <button
-                onClick={handleMapSearch}
-                className="p-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-extrabold shadow-sm transition cursor-pointer flex items-center justify-center shrink-0 active:scale-95"
-                title="Search location"
-              >
-                <Search size={12} />
-              </button>
-            </div>
-
-            {/* Centering button aligned on the same row */}
-            <button
-              onClick={centerOnDriver}
-              className="p-3 rounded-xl bg-white/95 dark:bg-slate-900/95 hover:bg-white dark:hover:bg-slate-800 border border-slate-200/85 dark:border-slate-800/80 shadow-md cursor-pointer text-slate-600 dark:text-slate-350 backdrop-blur-md active:scale-95 flex items-center justify-center shrink-0 w-[42px]"
-              title="Center on Driver"
-            >
-              <Crosshair size={14} />
-            </button>
-          </div>
-        )}
-
-
-
-        {/* Leaflet dynamic layer rendering */}
-        {mapInstance && nextOrder && (
-          <>
-            <DriverMarker map={mapInstance} position={[driverCoords.lat, driverCoords.lng]} />
+      {/* Leaflet dynamic layer rendering */}
+      {mapInstance && (
+        <>
+          <DriverMarker map={mapInstance} position={[driverCoords.lat, driverCoords.lng]} />
+          {nextOrder && finalDestLat && finalDestLng && (
             <CustomerMarker map={mapInstance} position={[finalDestLat, finalDestLng]} />
-            {routeCoords.length > 0 && (
-              <RoutePolyline
-                map={mapInstance}
-                positions={routeCoords}
-                color={isNavigating ? "#10b981" : "#3b82f6"} // Emerald green in active navigation, blue in preview
-                weight={isNavigating ? 6 : 4} // Thicker path in active navigation
-                dashArray={isNavigating ? null : "8, 8"} // Solid line in navigation, dotted in preview
-              />
-            )}
-          </>
-        )}
+          )}
+          {routeCoords.length > 0 && (
+            <RoutePolyline
+              map={mapInstance}
+              positions={routeCoords}
+              color="#2563eb"
+              weight={4}
+              dashArray={null}
+            />
+          )}
+        </>
+      )}
 
-        {/* Bottom tracking statistics card overlay */}
-        {nextOrder && (
-          <div className="absolute bottom-3 left-3 right-3 z-[1012] glass-panel border border-slate-200/80 dark:border-slate-800/80 rounded-xl p-3 shadow-lg flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2.5 min-w-0 flex-1">
-              <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-500 shrink-0">
-                <Truck size={14} />
+      {/* Bottom floating overlay bar */}
+      <div className="absolute bottom-3 left-3 right-3 z-[1010]">
+        <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-xs p-3 border border-slate-200/80 dark:border-slate-800 shadow-lg flex items-center justify-between gap-3">
+          {nextOrder ? (
+            <div>
+              <div className="text-xs font-bold text-slate-900 dark:text-white leading-tight">
+                {duration ? `Estimated arrival: ${duration}` : "Live Delivery Route"}
               </div>
-              <div className="min-w-0">
-                <h6 className="text-[10px] font-black text-slate-850 dark:text-white leading-none truncate flex items-center gap-2">
-                  {searchedPlaceName
-                    ? `Route to ${searchedPlaceName}`
-                    : `Delivering to ${nextOrder.address?.firstName || "Customer"}`}
-                  
-                  {/* Glowing dynamic GPS tracking indicator badge */}
-                  <span className="inline-flex items-center gap-1 text-[8px] text-emerald-500 font-extrabold uppercase bg-emerald-500/10 px-1.5 py-0.5 rounded-full shrink-0">
-                    <span className="h-1.5 w-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                    GPS Connected
-                  </span>
-                </h6>
-                <p className="text-[8px] text-slate-405 dark:text-slate-400 mt-1.5 uppercase font-bold tracking-wider truncate">
-                  ETA {duration} mins • {distance} km left
-                </p>
+              <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+                {distance ? `${distance} to destination` : "GPS tracking active"} • Order #{nextOrder._id ? nextOrder._id.slice(-6).toUpperCase() : ""}
               </div>
             </div>
-
-            <div className="flex items-center gap-1.5 shrink-0">
-              {isNavigating ? (
-                <>
-                  <a
-                    href={`https://www.google.com/maps/dir/?api=1&origin=${driverCoords.lat},${driverCoords.lng}&destination=${finalDestLat},${finalDestLng}&travelmode=driving`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-2.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-850 text-slate-700 dark:text-slate-200 text-[8px] font-black uppercase tracking-wider transition text-center shrink-0"
-                  >
-                    Google Maps
-                  </a>
-                  <button
-                    onClick={() => {
-                      setIsNavigating(false);
-                      toast.info("Exited navigation mode");
-                    }}
-                    className="px-2.5 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-[8px] font-black uppercase tracking-wider transition cursor-pointer shrink-0 active:scale-95"
-                  >
-                    Exit
-                  </button>
-                </>
-              ) : (
-                <button
-                  onClick={() => {
-                    setIsNavigating(true);
-                    toast.success("Active Navigation Started!");
-                  }}
-                  className="px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-[8px] font-black uppercase tracking-wider transition cursor-pointer shrink-0 active:scale-95"
-                >
-                  Navigate
-                </button>
-              )}
+          ) : (
+            <div>
+              <div className="text-xs font-bold text-slate-900 dark:text-white leading-tight">
+                GPS Radar • Ready for Dispatch
+              </div>
+              <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+                {stats?.isOnline || driver?.isOnline ? "Online in assigned zone • Awaiting new shipments" : "Offline • Toggle duty online to receive orders"}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+
+          {nextOrder && finalDestLat && finalDestLng && (
+            <button
+              onClick={() => {
+                if (mapInstance && finalDestLat && finalDestLng) {
+                  const bounds = window.L?.latLngBounds([
+                    [driverCoords.lat, driverCoords.lng],
+                    [finalDestLat, finalDestLng]
+                  ]);
+                  if (bounds) mapInstance.fitBounds(bounds, { padding: [40, 40] });
+                }
+                toast.success("Route view centered!");
+              }}
+              className="px-3.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 dark:bg-blue-950/40 dark:hover:bg-blue-900/60 dark:text-blue-400 rounded-xs text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer shrink-0 active:scale-95"
+            >
+              <Navigation size={13} className="text-blue-600 dark:text-blue-400" />
+              <span>Center Route</span>
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -496,7 +496,7 @@ const HeroSplitBanner = ({ homepageData }) => {
             ════════════════════════════════════════════════════════ */}
         <div className="lg:col-span-7 xl:col-span-7 relative flex flex-col h-[370px] sm:h-[430px] lg:h-[490px]">
           <div
-            className={`relative w-full h-full rounded-sm border ${activeSlide.borderColor} bg-gradient-to-r ${activeSlide.bgGradient} overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.04)] dark:shadow-none transition-colors duration-500`}
+            className={`relative w-full h-full rounded-none border ${activeSlide.borderColor} bg-gradient-to-r ${activeSlide.bgGradient} overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.04)] dark:shadow-none transition-colors duration-500`}
           >
             {/* Ambient Radial Backlight Glow Behind Cutout Model */}
             <div className="absolute right-[-5%] top-1/2 -translate-y-1/2 w-[360px] sm:w-[440px] h-[360px] sm:h-[440px] rounded-full blur-[80px] pointer-events-none transition-colors duration-700 opacity-80 dark:opacity-40">
@@ -527,7 +527,7 @@ const HeroSplitBanner = ({ homepageData }) => {
                 <div className="w-[62%] sm:w-[54%] md:w-[50%] lg:w-[48%] text-left z-20 flex flex-col justify-center px-3.5 sm:px-8 lg:px-10 py-3 sm:py-6 pointer-events-auto h-full">
                   {/* Category Pill Tag */}
                   <div className="inline-flex items-center gap-1.5 mb-1.5 sm:mb-3">
-                    <span className={`text-[9px] sm:text-xs font-black tracking-wider uppercase px-2 py-0.5 sm:py-1 rounded-sm border shadow-2xs backdrop-blur-md ${activeSlide.tagPillBg || "bg-white/90 text-slate-800 border-slate-200"}`}>
+                    <span className={`text-[9px] sm:text-xs font-black tracking-wider uppercase px-2 py-0.5 sm:py-1 rounded-none border shadow-2xs backdrop-blur-md ${activeSlide.tagPillBg || "bg-white/90 text-slate-800 border-slate-200"}`}>
                       <Sparkles size={10} className="inline-block mr-1 text-amber-500 animate-pulse" />
                       {activeSlide.tag}
                     </span>
@@ -563,7 +563,7 @@ const HeroSplitBanner = ({ homepageData }) => {
                   <div className="mt-3 sm:mt-6">
                     <button
                       onClick={() => navigate(activeSlide.ctaLink)}
-                      className={`inline-flex items-center gap-1.5 sm:gap-2.5 ${activeSlide.ctaBg} active:scale-95 font-black text-[11px] sm:text-sm px-4 sm:px-6 py-2 sm:py-3.5 rounded-sm cursor-pointer border-none transition-all duration-300 group`}
+                      className={`inline-flex items-center gap-1.5 sm:gap-2.5 ${activeSlide.ctaBg} active:scale-95 font-black text-[11px] sm:text-sm px-4 sm:px-6 py-2 sm:py-3.5 rounded-none cursor-pointer border-none transition-all duration-300 group`}
                     >
                       <span>{activeSlide.ctaText}</span>
                       <ArrowRight size={14} className="stroke-[2.5] group-hover:translate-x-1 transition-transform" />
@@ -589,7 +589,7 @@ const HeroSplitBanner = ({ homepageData }) => {
             <button
               onClick={prevSlide}
               aria-label="Previous Slide"
-              className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 z-30 w-7 h-7 sm:w-9 sm:h-9 rounded-sm bg-white/90 dark:bg-slate-900/90 hover:bg-white dark:hover:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-md flex items-center justify-center cursor-pointer transition hover:scale-110 active:scale-95 border border-slate-200/70 dark:border-slate-800 backdrop-blur-md"
+              className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 z-30 w-7 h-7 sm:w-9 sm:h-9 rounded-none bg-white/90 dark:bg-slate-900/90 hover:bg-white dark:hover:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-md flex items-center justify-center cursor-pointer transition hover:scale-110 active:scale-95 border border-slate-200/70 dark:border-slate-800 backdrop-blur-md"
             >
               <ChevronLeft size={16} className="stroke-[2.5]" />
             </button>
@@ -597,7 +597,7 @@ const HeroSplitBanner = ({ homepageData }) => {
             <button
               onClick={nextSlide}
               aria-label="Next Slide"
-              className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 z-30 w-7 h-7 sm:w-9 sm:h-9 rounded-sm bg-white/90 dark:bg-slate-900/90 hover:bg-white dark:hover:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-md flex items-center justify-center cursor-pointer transition hover:scale-110 active:scale-95 border border-slate-200/70 dark:border-slate-800 backdrop-blur-md"
+              className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 z-30 w-7 h-7 sm:w-9 sm:h-9 rounded-none bg-white/90 dark:bg-slate-900/90 hover:bg-white dark:hover:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-md flex items-center justify-center cursor-pointer transition hover:scale-110 active:scale-95 border border-slate-200/70 dark:border-slate-800 backdrop-blur-md"
             >
               <ChevronRight size={16} className="stroke-[2.5]" />
             </button>
@@ -613,13 +613,13 @@ const HeroSplitBanner = ({ homepageData }) => {
           onMouseEnter={() => setIsBazaarPaused(true)}
           onMouseLeave={() => setIsBazaarPaused(false)}
         >
-          <div className="w-full h-full bg-white dark:bg-slate-900 rounded-sm p-3 sm:p-3.5 border border-slate-200/90 dark:border-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.04)] dark:shadow-none flex flex-col justify-between overflow-hidden">
+          <div className="w-full h-full bg-white dark:bg-slate-900 rounded-none p-3 sm:p-3.5 border border-slate-200/90 dark:border-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.04)] dark:shadow-none flex flex-col justify-between overflow-hidden">
             
             {/* Header: Delivery Perks + Extra Cashback Banner */}
             <div className="flex items-center justify-between select-none mb-2 sm:mb-2.5 shrink-0">
               <div className="flex items-center gap-2 sm:gap-2.5">
                 {/* Yellow Amber Delivery Truck Icon */}
-                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-sm bg-gradient-to-br from-amber-400/20 to-orange-400/20 border border-amber-300/50 dark:border-amber-700/50 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0 shadow-2xs">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-none bg-gradient-to-br from-amber-400/20 to-orange-400/20 border border-amber-300/50 dark:border-amber-700/50 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0 shadow-2xs">
                   <Truck size={19} className="stroke-[2.5]" />
                 </div>
 
@@ -651,14 +651,14 @@ const HeroSplitBanner = ({ homepageData }) => {
                   <button
                     onClick={() => paginateBazaar(-1)}
                     aria-label="Previous Deals"
-                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-sm bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center justify-center transition cursor-pointer border border-slate-200/80 dark:border-slate-700 shadow-2xs active:scale-95"
+                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-none bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center justify-center transition cursor-pointer border border-slate-200/80 dark:border-slate-700 shadow-2xs active:scale-95"
                   >
                     <ChevronLeft size={15} className="stroke-[2.5]" />
                   </button>
                   <button
                     onClick={() => paginateBazaar(1)}
                     aria-label="Next Deals"
-                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-sm bg-slate-950 hover:bg-black active:scale-95 text-white flex items-center justify-center transition cursor-pointer shadow-2xs"
+                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-none bg-slate-950 hover:bg-black active:scale-95 text-white flex items-center justify-center transition cursor-pointer shadow-2xs"
                   >
                     <ChevronRight size={15} className="stroke-[2.5]" />
                   </button>
@@ -672,20 +672,20 @@ const HeroSplitBanner = ({ homepageData }) => {
                 {[1, 2, 3, 4].map((n) => (
                   <div
                     key={n}
-                    className="relative w-full h-full rounded-sm border border-slate-200/80 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-850/80 p-2.5 sm:p-3 flex flex-col justify-between overflow-hidden"
+                    className="relative w-full h-full rounded-none border border-slate-200/80 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-850/80 p-2.5 sm:p-3 flex flex-col justify-between overflow-hidden"
                   >
-                    <div className="h-3.5 w-16 bg-slate-200 dark:bg-slate-800 rounded-sm" />
+                    <div className="h-3.5 w-16 bg-slate-200 dark:bg-slate-800 rounded-none" />
                     <div className="space-y-1.5 my-auto">
                       <div className="flex items-center gap-1">
-                        <div className="w-3.5 h-3.5 rounded-sm bg-slate-200 dark:bg-slate-800" />
-                        <div className="h-2.5 w-14 bg-slate-200 dark:bg-slate-800 rounded-sm" />
+                        <div className="w-3.5 h-3.5 rounded-none bg-slate-200 dark:bg-slate-800" />
+                        <div className="h-2.5 w-14 bg-slate-200 dark:bg-slate-800 rounded-none" />
                       </div>
-                      <div className="h-3.5 w-4/5 bg-slate-200 dark:bg-slate-800 rounded-sm" />
-                      <div className="h-2.5 w-3/5 bg-slate-100 dark:bg-slate-800/60 rounded-sm" />
+                      <div className="h-3.5 w-4/5 bg-slate-200 dark:bg-slate-800 rounded-none" />
+                      <div className="h-2.5 w-3/5 bg-slate-100 dark:bg-slate-800/60 rounded-none" />
                     </div>
                     <div className="space-y-1">
-                      <div className="h-4 w-16 bg-slate-300 dark:bg-slate-700 rounded-sm" />
-                      <div className="h-3 w-14 bg-emerald-100 dark:bg-emerald-950/60 rounded-sm" />
+                      <div className="h-4 w-16 bg-slate-300 dark:bg-slate-700 rounded-none" />
+                      <div className="h-3 w-14 bg-emerald-100 dark:bg-emerald-950/60 rounded-none" />
                     </div>
                   </div>
                 ))}
@@ -719,7 +719,7 @@ const HeroSplitBanner = ({ homepageData }) => {
                         <div
                           key={product._id || `bazaar-prod-${idx}`}
                           onClick={() => navigate(`/product/${product._id}`)}
-                          className={`group relative w-full h-full rounded-sm border ${theme.borderColor} shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)] dark:shadow-none hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between select-none overflow-hidden cursor-pointer`}
+                          className={`group relative w-full h-full rounded-none border ${theme.borderColor} shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)] dark:shadow-none hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between select-none overflow-hidden cursor-pointer`}
                           title={product.name}
                         >
                           {/* Full Cover Background Image */}
@@ -743,7 +743,7 @@ const HeroSplitBanner = ({ homepageData }) => {
                             {/* Top: Status Badge */}
                             <div className="flex items-center">
                               <span
-                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-sm text-[9px] sm:text-[10px] font-black tracking-wide shadow-2xs ${theme.badgeLightBg}`}
+                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-none text-[9px] sm:text-[10px] font-black tracking-wide shadow-2xs ${theme.badgeLightBg}`}
                               >
                                 <BadgeIcon size={10} className="stroke-[2.5]" />
                                 <span>{theme.badgeLabel}</span>
@@ -756,7 +756,7 @@ const HeroSplitBanner = ({ homepageData }) => {
                                 <BrandLogo
                                   brand={brandName}
                                   brandDomain={product.brandDomain}
-                                  className="w-3.5 h-3.5 rounded-sm shrink-0"
+                                  className="w-3.5 h-3.5 rounded-none shrink-0"
                                 />
                                 <span className="text-[10px] sm:text-[11px] font-bold text-slate-600 dark:text-slate-300 block truncate">
                                   {brandName}
@@ -785,7 +785,7 @@ const HeroSplitBanner = ({ homepageData }) => {
 
                               {discountPercent > 0 && (
                                 <span
-                                  className={`inline-block text-[9px] sm:text-[10px] font-black uppercase px-2 py-0.5 rounded-sm mt-0.5 shadow-2xs ${theme.discountBg}`}
+                                  className={`inline-block text-[9px] sm:text-[10px] font-black uppercase px-2 py-0.5 rounded-none mt-0.5 shadow-2xs ${theme.discountBg}`}
                                 >
                                   {discountPercent}% OFF
                                 </span>
@@ -800,7 +800,7 @@ const HeroSplitBanner = ({ homepageData }) => {
                               e.stopPropagation();
                               toggleWishlist(product._id);
                             }}
-                            className="absolute top-2 right-2 z-30 w-6 h-6 sm:w-7 sm:h-7 rounded-sm bg-white/95 dark:bg-slate-900/95 shadow-xs flex items-center justify-center cursor-pointer border border-slate-200/80 dark:border-slate-700 hover:scale-110 active:scale-95 transition"
+                            className="absolute top-2 right-2 z-30 w-6 h-6 sm:w-7 sm:h-7 rounded-none bg-white/95 dark:bg-slate-900/95 shadow-xs flex items-center justify-center cursor-pointer border border-slate-200/80 dark:border-slate-700 hover:scale-110 active:scale-95 transition"
                             title="Add to Wishlist"
                           >
                             <Heart

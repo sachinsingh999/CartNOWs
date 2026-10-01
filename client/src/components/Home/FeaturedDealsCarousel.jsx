@@ -44,30 +44,11 @@ const FeaturedDealsCarousel = () => {
   const [loading, setLoading] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
   const [direction, setDirection] = useState(1); // 1 = next, -1 = prev
-  const [timeUntilMidnight, setTimeUntilMidnight] = useState({ hours: 0, minutes: 0, seconds: 0 });
 
   // Reset selected image when carousel slide changes
   useEffect(() => {
     setSelectedImageIdx(0);
   }, [currentIndex]);
-
-  // Live countdown to midnight for daily deal refresh
-  useEffect(() => {
-    const updateCountdown = () => {
-      const now = new Date();
-      const midnight = new Date(now);
-      midnight.setHours(24, 0, 0, 0);
-      const diff = Math.max(0, midnight.getTime() - now.getTime());
-      const hours = Math.floor(diff / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-      setTimeUntilMidnight({ hours, minutes, seconds });
-    };
-
-    updateCountdown();
-    const interval = setInterval(updateCountdown, 1000);
-    return () => clearInterval(interval);
-  }, []);
 
   // Touch swipe support
   const touchStartX = useRef(null);
@@ -208,29 +189,29 @@ const FeaturedDealsCarousel = () => {
   // Loading Skeleton State
   if (loading) {
     return (
-      <section className="w-full px-3 sm:px-6 lg:px-8 py-1.5 select-none">
-        <div className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3.5 sm:p-4.5 lg:p-5 shadow-xs animate-pulse">
+      <section className="w-full px-2 sm:px-4 lg:px-6 py-1.5 select-none">
+        <div className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-none p-3.5 sm:p-4.5 lg:p-5 shadow-xs animate-pulse">
           <div className="flex items-center justify-between mb-3">
             <div className="space-y-1">
-              <div className="h-5 w-32 bg-slate-200 dark:bg-slate-800 rounded-md" />
-              <div className="h-3 w-48 bg-slate-100 dark:bg-slate-800/60 rounded-md" />
+              <div className="h-5 w-32 bg-slate-200 dark:bg-slate-800 rounded-none" />
+              <div className="h-3 w-48 bg-slate-100 dark:bg-slate-800/60 rounded-none" />
             </div>
             <div className="flex gap-1.5">
-              <div className="w-20 h-7 rounded-md bg-slate-200 dark:bg-slate-800" />
-              <div className="w-7 h-7 rounded-md bg-slate-200 dark:bg-slate-800" />
-              <div className="w-7 h-7 rounded-md bg-slate-200 dark:bg-slate-800" />
+              <div className="w-20 h-7 rounded-none bg-slate-200 dark:bg-slate-800" />
+              <div className="w-7 h-7 rounded-none bg-slate-200 dark:bg-slate-800" />
+              <div className="w-7 h-7 rounded-none bg-slate-200 dark:bg-slate-800" />
             </div>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
             <div className="lg:col-span-5 space-y-2.5">
-              <div className="h-4 w-24 bg-slate-200 dark:bg-slate-800 rounded-md" />
-              <div className="h-6 w-4/5 bg-slate-200 dark:bg-slate-800 rounded-md" />
-              <div className="h-3.5 w-1/3 bg-slate-100 dark:bg-slate-800/60 rounded-md" />
-              <div className="h-7 w-36 bg-slate-200 dark:bg-slate-800 rounded-md" />
-              <div className="h-8 w-full max-w-sm bg-slate-100 dark:bg-slate-800/60 rounded-md" />
-              <div className="h-8 w-32 bg-slate-200 dark:bg-slate-800 rounded-md" />
+              <div className="h-4 w-24 bg-slate-200 dark:bg-slate-800 rounded-none" />
+              <div className="h-6 w-4/5 bg-slate-200 dark:bg-slate-800 rounded-none" />
+              <div className="h-3.5 w-1/3 bg-slate-100 dark:bg-slate-800/60 rounded-none" />
+              <div className="h-7 w-36 bg-slate-200 dark:bg-slate-800 rounded-none" />
+              <div className="h-8 w-full max-w-sm bg-slate-100 dark:bg-slate-800/60 rounded-none" />
+              <div className="h-8 w-32 bg-slate-200 dark:bg-slate-800 rounded-none" />
             </div>
-            <div className="lg:col-span-7 h-[285px] sm:h-[300px] lg:h-[315px] bg-slate-100 dark:bg-slate-800/40 rounded-lg" />
+            <div className="lg:col-span-7 h-[285px] sm:h-[300px] lg:h-[315px] bg-slate-100 dark:bg-slate-800/40 rounded-none" />
           </div>
         </div>
       </section>
@@ -283,14 +264,11 @@ const FeaturedDealsCarousel = () => {
               <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
                 Featured Deals
               </h2>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-orange-50 dark:bg-orange-950/40 text-[#FF5500] dark:text-orange-400 border border-orange-200 dark:border-orange-800/60 text-[10px] font-black uppercase tracking-wider">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-none bg-orange-50 dark:bg-orange-950/40 text-[#FF5500] dark:text-orange-400 border border-orange-200 dark:border-orange-800/60 text-[10px] font-black uppercase tracking-wider">
                 <Flame size={11} className="stroke-[2.5]" />
                 Daily Spotlight
               </span>
             </div>
-            <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium">
-              Handpicked products at special prices • Refreshed daily
-            </p>
           </div>
         </div>
 
@@ -315,11 +293,11 @@ const FeaturedDealsCarousel = () => {
                 <div className="lg:col-span-5 space-y-2 flex flex-col justify-center order-2 lg:order-1 text-left">
                   {/* Category & Deal Badges */}
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="px-2 py-0.5 rounded-md bg-orange-50 dark:bg-orange-950/40 text-[#FF5500] dark:text-orange-400 text-[10px] font-black uppercase tracking-wider inline-flex items-center gap-1 border border-orange-200/80 dark:border-orange-800/60">
+                    <span className="px-2 py-0.5 rounded-none bg-orange-50 dark:bg-orange-950/40 text-[#FF5500] dark:text-orange-400 text-[10px] font-black uppercase tracking-wider inline-flex items-center gap-1 border border-orange-200/80 dark:border-orange-800/60">
                       <Sparkles size={11} className="stroke-[2.5]" />
                       TODAY'S DEAL
                     </span>
-                    <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-black uppercase tracking-wider">
+                    <span className="px-2 py-0.5 rounded-none bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-black uppercase tracking-wider">
                       {currentProduct.category || "ELECTRONICS"}
                     </span>
                   </div>
@@ -367,7 +345,7 @@ const FeaturedDealsCarousel = () => {
                       </span>
                     )}
                     {discount > 0 && (
-                      <span className="bg-emerald-500 text-white text-[10px] font-black uppercase px-2 py-0.5 rounded-md tracking-wider shadow-2xs">
+                      <span className="bg-emerald-500 text-white text-[10px] font-black uppercase px-2 py-0.5 rounded-none tracking-wider shadow-2xs">
                         {discount}% OFF
                       </span>
                     )}
@@ -384,7 +362,7 @@ const FeaturedDealsCarousel = () => {
                   <div className="flex items-center gap-2.5 pt-0.5">
                     <button
                       onClick={() => navigate(`/product/${currentProduct._id}`)}
-                      className="inline-flex items-center gap-1.5 bg-[#FF5500] hover:bg-[#E04B00] active:scale-95 text-white font-bold text-xs sm:text-sm px-4.5 py-2 rounded-md shadow-xs hover:shadow transition cursor-pointer border-none"
+                      className="inline-flex items-center gap-1.5 bg-[#FF5500] hover:bg-[#E04B00] active:scale-95 text-white font-bold text-xs sm:text-sm px-4.5 py-2 rounded-none shadow-xs hover:shadow transition cursor-pointer border-none"
                     >
                       <span>Shop Now</span>
                       <ArrowRight size={14} className="stroke-[2.5]" />
@@ -392,7 +370,7 @@ const FeaturedDealsCarousel = () => {
 
                     <button
                       onClick={() => navigate(`/product/${currentProduct._id}`)}
-                      className="inline-flex items-center px-4 py-2 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs sm:text-sm transition cursor-pointer border-none"
+                      className="inline-flex items-center px-4 py-2 rounded-none bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs sm:text-sm transition cursor-pointer border-none"
                     >
                       <span>View Details</span>
                     </button>
@@ -432,11 +410,11 @@ const FeaturedDealsCarousel = () => {
                     {/* Slot 0: Tall Main Image (Left Half) */}
                     <div
                       onClick={() => navigate(`/product/${currentProduct._id}`)}
-                      className="group/s0 relative w-full h-full min-h-0 rounded-lg overflow-hidden bg-slate-950 shadow-xs hover:shadow-md transition-all cursor-pointer border border-slate-200/50 dark:border-slate-800"
+                      className="group/s0 relative w-full h-full min-h-0 rounded-none overflow-hidden bg-slate-950 shadow-xs hover:shadow-md transition-all cursor-pointer border border-slate-200/50 dark:border-slate-800"
                     >
                       {/* Discount Badge */}
                       {discount > 0 && (
-                        <div className="absolute top-2.5 left-2.5 z-20 bg-[#FF5500] text-white text-[10px] sm:text-[11px] font-black uppercase px-2 py-0.5 rounded-md shadow-sm tracking-wider flex items-center gap-1 pointer-events-none">
+                        <div className="absolute top-2.5 left-2.5 z-20 bg-[#FF5500] text-white text-[10px] sm:text-[11px] font-black uppercase px-2 py-0.5 rounded-none shadow-sm tracking-wider flex items-center gap-1 pointer-events-none">
                           <Sparkles size={10} className="stroke-[2.5]" />
                           <span>{discount}% OFF</span>
                         </div>
@@ -450,7 +428,7 @@ const FeaturedDealsCarousel = () => {
                           setSelectedImageIdx(0);
                           setIsLightboxOpen(true);
                         }}
-                        className="absolute top-2.5 right-2.5 z-20 w-7 h-7 rounded-full bg-white/95 hover:bg-white text-slate-800 flex items-center justify-center shadow-sm hover:scale-110 transition-transform cursor-pointer border border-slate-200/60"
+                        className="absolute top-2.5 right-2.5 z-20 w-7 h-7 rounded-none bg-white/95 hover:bg-white text-slate-800 flex items-center justify-center shadow-sm hover:scale-110 transition-transform cursor-pointer border border-slate-200/60"
                         title="View Full Size"
                       >
                         <Maximize2 size={11} className="stroke-[2.5]" />
@@ -474,7 +452,7 @@ const FeaturedDealsCarousel = () => {
                       {/* Slot 1: Top Wide Card */}
                       <div
                         onClick={() => navigate(`/product/${currentProduct._id}`)}
-                        className="group/s1 relative w-full h-full min-h-0 rounded-lg overflow-hidden bg-slate-950 shadow-xs hover:shadow-md transition-all cursor-pointer border border-slate-200/50 dark:border-slate-800"
+                        className="group/s1 relative w-full h-full min-h-0 rounded-none overflow-hidden bg-slate-950 shadow-xs hover:shadow-md transition-all cursor-pointer border border-slate-200/50 dark:border-slate-800"
                       >
                         <button
                           type="button"
@@ -483,7 +461,7 @@ const FeaturedDealsCarousel = () => {
                             setSelectedImageIdx(1);
                             setIsLightboxOpen(true);
                           }}
-                          className="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 z-20 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white/95 hover:bg-white text-slate-800 flex items-center justify-center shadow-sm hover:scale-110 transition-transform cursor-pointer border border-slate-200/60"
+                          className="absolute top-2 right-2 sm:top-2.5 sm:right-2.5 z-20 w-6 h-6 sm:w-7 sm:h-7 rounded-none bg-white/95 hover:bg-white text-slate-800 flex items-center justify-center shadow-sm hover:scale-110 transition-transform cursor-pointer border border-slate-200/60"
                           title="View Full Size"
                         >
                           <Maximize2 size={11} className="stroke-[2.5]" />
@@ -507,7 +485,7 @@ const FeaturedDealsCarousel = () => {
                         {/* Slot 2: Bottom-Left Card */}
                         <div
                           onClick={() => navigate(`/product/${currentProduct._id}`)}
-                          className="group/s2 relative w-full h-full min-h-0 rounded-lg overflow-hidden bg-slate-950 shadow-xs hover:shadow-md transition-all cursor-pointer border border-slate-200/50 dark:border-slate-800"
+                          className="group/s2 relative w-full h-full min-h-0 rounded-none overflow-hidden bg-slate-950 shadow-xs hover:shadow-md transition-all cursor-pointer border border-slate-200/50 dark:border-slate-800"
                         >
                           <button
                             type="button"
@@ -516,7 +494,7 @@ const FeaturedDealsCarousel = () => {
                               setSelectedImageIdx(2);
                               setIsLightboxOpen(true);
                             }}
-                            className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 z-20 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white/95 hover:bg-white text-slate-800 flex items-center justify-center shadow-sm hover:scale-110 transition-transform cursor-pointer border border-slate-200/60"
+                            className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 z-20 w-6 h-6 sm:w-7 sm:h-7 rounded-none bg-white/95 hover:bg-white text-slate-800 flex items-center justify-center shadow-sm hover:scale-110 transition-transform cursor-pointer border border-slate-200/60"
                             title="View Full Size"
                           >
                             <Maximize2 size={10} className="stroke-[2.5]" />
@@ -538,7 +516,7 @@ const FeaturedDealsCarousel = () => {
                         {/* Slot 3: Bottom-Right Card */}
                         <div
                           onClick={() => navigate(`/product/${currentProduct._id}`)}
-                          className="group/s3 relative w-full h-full min-h-0 rounded-lg overflow-hidden bg-slate-950 shadow-xs hover:shadow-md transition-all cursor-pointer border border-slate-200/50 dark:border-slate-800"
+                          className="group/s3 relative w-full h-full min-h-0 rounded-none overflow-hidden bg-slate-950 shadow-xs hover:shadow-md transition-all cursor-pointer border border-slate-200/50 dark:border-slate-800"
                         >
                           <button
                             type="button"
@@ -587,13 +565,13 @@ const FeaturedDealsCarousel = () => {
                 <div
                   key={p._id}
                   onClick={() => navigate(`/product/${p._id}`)}
-                  className="group relative rounded-lg bg-slate-50/80 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 p-3 flex flex-col justify-between hover:shadow-md hover:border-orange-200 dark:hover:border-slate-700 transition-all duration-200 cursor-pointer text-left"
+                  className="group relative rounded-none bg-slate-50/80 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 p-3 flex flex-col justify-between hover:shadow-md hover:border-orange-200 dark:hover:border-slate-700 transition-all duration-200 cursor-pointer text-left"
                 >
                   <div>
                     {/* Product Main Image */}
-                    <div className="relative w-full h-[180px] sm:h-[190px] rounded-md overflow-hidden bg-slate-900 mb-2.5">
+                    <div className="relative w-full h-[180px] sm:h-[190px] rounded-none overflow-hidden bg-slate-900 mb-2.5">
                       {pDisc > 0 && (
-                        <span className="absolute top-2 left-2 z-10 bg-[#FF5500] text-white text-[10px] font-black uppercase px-2 py-0.5 rounded-md shadow-xs">
+                        <span className="absolute top-2 left-2 z-10 bg-[#FF5500] text-white text-[10px] font-black uppercase px-2 py-0.5 rounded-none shadow-xs">
                           {pDisc}% OFF
                         </span>
                       )}
@@ -663,14 +641,14 @@ const FeaturedDealsCarousel = () => {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => navigate(`/product/${currentProduct._id}`)}
-                  className="px-3.5 py-1.5 rounded-md bg-[#FF5500] hover:bg-[#E04B00] text-white text-xs font-bold transition cursor-pointer border-none"
+                  className="px-3.5 py-1.5 rounded-none bg-[#FF5500] hover:bg-[#E04B00] text-white text-xs font-bold transition cursor-pointer border-none"
                 >
                   View Product
                 </button>
                 <button
                   onClick={() => setIsLightboxOpen(false)}
                   aria-label="Close Lightbox"
-                  className="w-8 h-8 rounded-md bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition cursor-pointer border border-white/20"
+                  className="w-8 h-8 rounded-none bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition cursor-pointer border border-white/20"
                 >
                   <X size={18} className="stroke-[2.5]" />
                 </button>
@@ -685,7 +663,7 @@ const FeaturedDealsCarousel = () => {
               <img
                 src={mosaicImages[selectedImageIdx] || mosaicImages[0]}
                 alt={`${currentProduct.name} full size`}
-                className="max-h-full max-w-full w-auto h-auto object-contain rounded-lg shadow-2xl"
+                className="max-h-full max-w-full w-auto h-auto object-contain rounded-none shadow-2xl"
               />
 
               {/* Lightbox Prev / Next Arrows */}
@@ -727,7 +705,7 @@ const FeaturedDealsCarousel = () => {
                   <button
                     key={i}
                     onClick={() => setSelectedImageIdx(i)}
-                    className={`w-14 h-14 rounded-lg overflow-hidden border-2 cursor-pointer transition p-0 shrink-0 ${
+                    className={`w-14 h-14 rounded-none overflow-hidden border-2 cursor-pointer transition p-0 shrink-0 ${
                       i === selectedImageIdx
                         ? "border-[#FF5500] scale-105 shadow-md"
                         : "border-white/30 opacity-60 hover:opacity-100"

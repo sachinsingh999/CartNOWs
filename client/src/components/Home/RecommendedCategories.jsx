@@ -262,36 +262,32 @@ const RecommendedCategories = ({ homepageData }) => {
 
   return (
     <section className="w-full px-2 sm:px-4 lg:px-6 py-0.5 sm:py-1 select-none text-left">
-      <div className="w-full bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-sm p-3.5 sm:p-4.5 lg:p-5 shadow-xs transition-shadow duration-300">
+      <div className="w-full bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-none p-3.5 sm:p-4.5 lg:p-5 shadow-xs transition-shadow duration-300">
         {/* Section Top Header Row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3.5">
           <div className="text-left space-y-1">
             <div className="flex items-center gap-2">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-orange-50 dark:bg-orange-950/50 border border-orange-200/80 dark:border-orange-800/60 rounded-sm text-[9px] font-black uppercase tracking-wider text-[#FF5500] dark:text-orange-300 shadow-2xs">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-orange-50 dark:bg-orange-950/50 border border-orange-200/80 dark:border-orange-800/60 rounded-none text-[9px] font-black uppercase tracking-wider text-[#FF5500] dark:text-orange-300 shadow-2xs">
                 <Sparkles size={11} className="stroke-[2.5]" />
                 <span>POPULAR CATEGORIES</span>
               </div>
 
-              <span className="px-2 py-0.5 rounded-sm bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold">
+              <span className="px-2 py-0.5 rounded-none bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold">
                 Curated Collections
               </span>
             </div>
 
             <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
               <span>Explore Categories</span>
-              <span className="h-1.5 w-1.5 rounded-sm bg-[#FF5500] dark:bg-orange-400 animate-pulse" />
+              <span className="h-1.5 w-1.5 rounded-none bg-[#FF5500] dark:bg-orange-400 animate-pulse" />
             </h2>
-
-            <p className="text-xs font-bold text-slate-500 dark:text-slate-400">
-              Browse top trending collections and curated categories handpicked for you.
-            </p>
           </div>
 
           {/* Top Right Action & Navigation */}
           <div className="flex items-center gap-2 shrink-0 self-start sm:self-center">
             <button
               onClick={() => navigate("/categories")}
-              className="px-3 py-1.5 rounded-sm border border-slate-300 dark:border-slate-700 hover:border-slate-900 dark:hover:border-white text-slate-800 dark:text-slate-200 hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-950 font-black text-[11px] uppercase tracking-wider flex items-center gap-1.5 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 shadow-2xs"
+              className="px-3 py-1.5 rounded-none border border-slate-300 dark:border-slate-700 hover:border-slate-900 dark:hover:border-white text-slate-800 dark:text-slate-200 hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-950 font-black text-[11px] uppercase tracking-wider flex items-center gap-1.5 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 shadow-2xs"
             >
               <span>See All</span>
               <ArrowRight size={12} className="stroke-[2.5]" />
@@ -303,7 +299,7 @@ const RecommendedCategories = ({ homepageData }) => {
                 type="button"
                 onClick={() => handleScroll("left")}
                 aria-label="Previous categories"
-                className="w-8 h-8 rounded-sm bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-slate-400 transition-colors shadow-2xs cursor-pointer"
+                className="w-8 h-8 rounded-none bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-slate-400 transition-colors shadow-2xs cursor-pointer"
               >
                 <ChevronLeft size={15} className="stroke-[2.5]" />
               </button>
@@ -311,7 +307,7 @@ const RecommendedCategories = ({ homepageData }) => {
                 type="button"
                 onClick={() => handleScroll("right")}
                 aria-label="Next categories"
-                className="w-8 h-8 rounded-sm bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-slate-400 transition-colors shadow-2xs cursor-pointer"
+                className="w-8 h-8 rounded-none bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-slate-400 transition-colors shadow-2xs cursor-pointer"
               >
                 <ChevronRight size={15} className="stroke-[2.5]" />
               </button>
@@ -326,7 +322,7 @@ const RecommendedCategories = ({ homepageData }) => {
             onClick={() => handleScroll("left")}
             disabled={!canScrollLeft}
             aria-label="Previous categories"
-            className={`hidden md:flex absolute -left-2.5 sm:-left-3.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-9 sm:h-9 rounded-sm bg-white/95 dark:bg-slate-800/95 backdrop-blur-xs border border-slate-200 dark:border-slate-700 shadow-md items-center justify-center text-slate-800 dark:text-white transition-all cursor-pointer ${
+            className={`hidden md:flex absolute -left-2.5 sm:-left-3.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-9 sm:h-9 rounded-none bg-white/95 dark:bg-slate-800/95 backdrop-blur-xs border border-slate-200 dark:border-slate-700 shadow-md items-center justify-center text-slate-800 dark:text-white transition-all cursor-pointer ${
               canScrollLeft
                 ? "hover:bg-[#FF5500] hover:text-white hover:border-[#FF5500] hover:scale-105 active:scale-95 opacity-100"
                 : "opacity-0 pointer-events-none"
@@ -340,7 +336,7 @@ const RecommendedCategories = ({ homepageData }) => {
             onClick={() => handleScroll("right")}
             disabled={!canScrollRight}
             aria-label="Next categories"
-            className={`hidden md:flex absolute -right-2.5 sm:-right-3.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-9 sm:h-9 rounded-sm bg-white/95 dark:bg-slate-800/95 backdrop-blur-xs border border-slate-200 dark:border-slate-700 shadow-md items-center justify-center text-slate-800 dark:text-white transition-all cursor-pointer ${
+            className={`hidden md:flex absolute -right-2.5 sm:-right-3.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-9 sm:h-9 rounded-none bg-white/95 dark:bg-slate-800/95 backdrop-blur-xs border border-slate-200 dark:border-slate-700 shadow-md items-center justify-center text-slate-800 dark:text-white transition-all cursor-pointer ${
               canScrollRight
                 ? "hover:bg-[#FF5500] hover:text-white hover:border-[#FF5500] hover:scale-105 active:scale-95 opacity-100"
                 : "opacity-0 pointer-events-none"
@@ -358,12 +354,12 @@ const RecommendedCategories = ({ homepageData }) => {
             {categoryGroups.map((group) => (
               <div
                 key={group.id}
-                className="w-full sm:w-[330px] md:w-[360px] lg:w-[calc((100%-32px)/3)] shrink-0 snap-start bg-slate-50/70 dark:bg-slate-800/50 rounded-sm border border-slate-200/80 dark:border-slate-800 p-3.5 sm:p-4 shadow-2xs hover:shadow-xs transition-all duration-200 flex flex-col justify-between select-none"
+                className="w-full sm:w-[330px] md:w-[360px] lg:w-[calc((100%-32px)/3)] shrink-0 snap-start bg-slate-50/70 dark:bg-slate-800/50 rounded-none border border-slate-200/80 dark:border-slate-800 p-3.5 sm:p-4 shadow-2xs hover:shadow-xs transition-all duration-200 flex flex-col justify-between select-none"
               >
                 {/* Parent Box Header */}
                 <div className="mb-2.5 text-left">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[9.5px] sm:text-[10px] font-black uppercase tracking-wider text-[#FF5500] bg-orange-50 dark:bg-orange-950/40 px-2 py-0.5 rounded-sm inline-block border border-orange-200/60 dark:border-orange-900/40">
+                    <span className="text-[9.5px] sm:text-[10px] font-black uppercase tracking-wider text-[#FF5500] bg-orange-50 dark:bg-orange-950/40 px-2 py-0.5 rounded-none inline-block border border-orange-200/60 dark:border-orange-900/40">
                       {group.tag}
                     </span>
                     <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
@@ -384,9 +380,9 @@ const RecommendedCategories = ({ homepageData }) => {
                       className="group/item cursor-pointer flex flex-col items-center select-none"
                     >
                       {/* Inner Box Image as Box */}
-                      <div className="w-full aspect-square rounded-sm overflow-hidden bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-700/80 relative group-hover/item:border-[#FF5500] dark:group-hover/item:border-orange-400 group-hover/item:shadow-xs transition-all duration-200 flex items-center justify-center">
+                      <div className="w-full aspect-square rounded-none overflow-hidden bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-700/80 relative group-hover/item:border-[#FF5500] dark:group-hover/item:border-orange-400 group-hover/item:shadow-xs transition-all duration-200 flex items-center justify-center">
                         {item.badge && (
-                          <span className="absolute top-1.5 right-1.5 z-10 px-1.5 py-0.5 rounded-sm text-[7.5px] sm:text-[8.5px] font-black uppercase tracking-tight bg-[#FF5500] text-white shadow-2xs leading-none pointer-events-none">
+                          <span className="absolute top-1.5 right-1.5 z-10 px-1.5 py-0.5 rounded-none text-[7.5px] sm:text-[8.5px] font-black uppercase tracking-tight bg-[#FF5500] text-white shadow-2xs leading-none pointer-events-none">
                             {item.badge}
                           </span>
                         )}
@@ -417,7 +413,7 @@ const RecommendedCategories = ({ homepageData }) => {
                 {/* Parent Box Footer Link */}
                 <button
                   onClick={() => navigate(group.link)}
-                  className="group/btn w-full py-2 px-3 rounded-sm bg-white dark:bg-slate-900 hover:bg-slate-900 dark:hover:bg-white hover:text-white dark:hover:text-slate-900 border border-slate-200 dark:border-slate-700 flex items-center justify-between text-slate-700 dark:text-slate-200 text-[11px] sm:text-xs font-black uppercase tracking-wider transition-all duration-200 cursor-pointer mt-auto shadow-2xs"
+                  className="group/btn w-full py-2 px-3 rounded-none bg-white dark:bg-slate-900 hover:bg-slate-900 dark:hover:bg-white hover:text-white dark:hover:text-slate-900 border border-slate-200 dark:border-slate-700 flex items-center justify-between text-slate-700 dark:text-slate-200 text-[11px] sm:text-xs font-black uppercase tracking-wider transition-all duration-200 cursor-pointer mt-auto shadow-2xs"
                 >
                   <span>{group.cta}</span>
                   <ArrowRight size={13} className="stroke-[2.5] group-hover/btn:translate-x-1 transition-transform duration-200" />

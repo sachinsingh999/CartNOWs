@@ -1005,7 +1005,8 @@ const addProductReview = async (req, res) => {
 
 const updateStock = async (req, res) => {
   try {
-    const { id, stock } = req.body;
+    const id = req.body.id || req.body.productId;
+    const { stock } = req.body;
 
     if (!id) {
       return res.status(400).json({
@@ -1022,10 +1023,12 @@ const updateStock = async (req, res) => {
       });
     }
 
+    const validStock = Math.max(0, Math.floor(parsedStock));
+
     const updated = await productModel.findByIdAndUpdate(
       id,
-      { stock: Math.max(0, parseInt(stock, 10) || 0) },
-      { new: true }
+      { stock: validStock },
+      { new: true, runValidators: true }
     );
 
     if (!updated) {

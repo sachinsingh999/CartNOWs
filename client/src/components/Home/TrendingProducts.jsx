@@ -41,15 +41,15 @@ const TrendingProducts = ({
       {/* Sidebar column: Trending Hub */}
       <div className="flex flex-col h-full">
         <div 
-          className="relative p-3.5 sm:p-4 text-white flex flex-col justify-between shadow-[0_4px_25px_rgba(0,0,0,0.25)] flex-1 min-h-[360px] h-full text-left border border-slate-800/90 rounded-sm overflow-hidden bg-gradient-to-br from-[#070A14] via-[#0B0F1D] to-[#030610]"
+          className="relative p-3.5 sm:p-4 text-white flex flex-col justify-between shadow-[0_4px_25px_rgba(0,0,0,0.25)] flex-1 min-h-[360px] h-full text-left border border-slate-800/90 rounded-none overflow-hidden bg-gradient-to-br from-[#070A14] via-[#0B0F1D] to-[#030610]"
         >
           {/* Glowing Mesh Animation */}
           <div className="absolute top-[-30%] left-[-30%] w-[100%] h-[100%] bg-gradient-to-tr from-blue-500/15 to-transparent rounded-full blur-[90px] pointer-events-none animate-pulse" style={{ animationDuration: "9s" }} />
           <div className="absolute bottom-[-30%] right-[30%] w-[100%] h-[100%] bg-gradient-to-tr from-indigo-500/15 to-transparent rounded-full blur-[90px] pointer-events-none animate-pulse" style={{ animationDuration: "7s" }} />
 
           <div className="space-y-2 relative z-10">
-            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-blue-500/15 border border-blue-500/40 rounded-sm text-[9px] font-black uppercase tracking-wider text-blue-300 shadow-2xs">
-              <span className="w-1.5 h-1.5 rounded-sm bg-blue-400 animate-pulse" />
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-blue-500/15 border border-blue-500/40 rounded-none text-[9px] font-black uppercase tracking-wider text-blue-300 shadow-2xs">
+              <span className="w-1.5 h-1.5 rounded-none bg-blue-400 animate-pulse" />
               <span>Hot Picks</span>
             </div>
             <h2 className="text-xl lg:text-2xl font-black tracking-tight leading-none text-white">
@@ -72,7 +72,7 @@ const TrendingProducts = ({
                 <button
                   key={tab.id}
                   onClick={() => setActiveTrendingTab(tab.id)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-sm text-[10.5px] font-black uppercase tracking-wider text-left transition-all duration-200 cursor-pointer ${
+                  className={`flex items-center gap-2 px-3 py-2 rounded-none text-[10.5px] font-black uppercase tracking-wider text-left transition-all duration-200 cursor-pointer ${
                     isActive
                       ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-[0_4px_14px_rgba(37,99,235,0.35)] hover:brightness-105 active:scale-[0.98]"
                       : "bg-slate-900/60 hover:bg-slate-800/80 text-slate-300 hover:text-white border border-white/5 hover:border-blue-500/30 shadow-2xs"
@@ -87,7 +87,7 @@ const TrendingProducts = ({
 
           <button
             onClick={() => navigate("/product")}
-            className="group relative w-full py-2 bg-slate-900/90 hover:bg-slate-800 text-white font-black text-[10.5px] uppercase tracking-wider rounded-sm shadow-2xs transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 border border-slate-700/80 hover:border-blue-400 z-10"
+            className="group relative w-full py-2 bg-slate-900/90 hover:bg-slate-800 text-white font-black text-[10.5px] uppercase tracking-wider rounded-none shadow-2xs transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 border border-slate-700/80 hover:border-blue-400 z-10"
           >
             <span>Explore Catalog</span>
             <ArrowRight size={12} className="stroke-[2.5] transition-transform duration-200 group-hover:translate-x-1" />
@@ -104,7 +104,7 @@ const TrendingProducts = ({
               type="button"
               onClick={() => scrollSlider("left")}
               aria-label="Previous trending products"
-              className="h-7.5 w-7.5 sm:h-8 sm:w-8 rounded-sm border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 flex items-center justify-center shadow-2xs hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 transition-all duration-200 cursor-pointer"
+              className="h-7.5 w-7.5 sm:h-8 sm:w-8 rounded-none border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 flex items-center justify-center shadow-2xs hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 transition-all duration-200 cursor-pointer"
             >
               <ChevronLeft size={15} className="stroke-[2.5]" />
             </button>
@@ -112,7 +112,7 @@ const TrendingProducts = ({
               type="button"
               onClick={() => scrollSlider("right")}
               aria-label="Next trending products"
-              className="h-7.5 w-7.5 sm:h-8 sm:w-8 rounded-sm border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 flex items-center justify-center shadow-2xs hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 transition-all duration-200 cursor-pointer"
+              className="h-7.5 w-7.5 sm:h-8 sm:w-8 rounded-none border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 flex items-center justify-center shadow-2xs hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 transition-all duration-200 cursor-pointer"
             >
               <ChevronRight size={15} className="stroke-[2.5]" />
             </button>
@@ -121,7 +121,7 @@ const TrendingProducts = ({
 
         {/* Loader or Slider */}
         {loading ? (
-          <div className="flex-1 flex items-center justify-center bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-slate-200/60 dark:border-slate-800 rounded-sm min-h-[320px]">
+          <div className="flex-1 flex items-center justify-center bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-slate-200/60 dark:border-slate-800 rounded-none min-h-[320px]">
             <Loader message="" size="sm" color="blue" />
           </div>
         ) : (

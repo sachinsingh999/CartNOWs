@@ -175,7 +175,7 @@ const Dashboard = () => {
   // Updates status of a return task
   const updateReturnStatusHandler = async (requestId, status, verificationCode = undefined) => {
     try {
-      const payload = { rmaId: requestId, status, verificationCode };
+      const payload = { rmaId: requestId, requestId, status, verificationCode };
 
       const response = await axios.post(
         `${backendUrl}/api/rms/rma/verify-pickup`,
@@ -184,11 +184,11 @@ const Dashboard = () => {
       );
 
       if (response.data.success) {
-        toast.success(response.data.message);
-        fetchData();
+        toast.success(response.data.message || `Return task updated to ${status}`);
+        await fetchData();
         return { success: true };
       } else {
-        toast.error(response.data.message);
+        toast.error(response.data.message || "Failed to update return task status");
         return { success: false, message: response.data.message };
       }
     } catch (error) {
@@ -487,7 +487,12 @@ const Dashboard = () => {
     reason: o.returnReason || o.reason || "Return pickup task"
   }));
 
-  const combinedReturnTasks = [...returnTasks, ...returnOrdersFromMain];
+  const combinedReturnTasks = [...returnTasks];
+  for (const ro of returnOrdersFromMain) {
+    if (!combinedReturnTasks.some(t => String(t._id) === String(ro._id) || String(t.orderId) === String(ro._id) || String(t.requestId) === String(ro._id))) {
+      combinedReturnTasks.push(ro);
+    }
+  }
 
   const filteredAvailableOrders = filterByDate(availableOrders);
   const filteredReturnTasks = filterByDate(combinedReturnTasks);
@@ -502,15 +507,15 @@ const Dashboard = () => {
       case "Delivered":
       case "Completed":
         return "bg-emerald-50 text-emerald-700 dark:text-emerald-700 border border-emerald-100";
+      case "Cancelled":
+        return "bg-rose-50 text-rose-700 dark:text-rose-700 border border-rose-100";
       case "Out for Delivery":
       case "Out for Pickup":
       case "Shipped":
-        return "bg-indigo-50 text-indigo-700 dark:text-indigo-700 border border-indigo-100";
       case "Packed":
       case "Picked Up":
-        return "bg-indigo-50 text-indigo-700 dark:text-indigo-700 border border-indigo-200";
       default:
-        return "bg-indigo-50 text-indigo-700 dark:text-indigo-700 border border-indigo-200";
+        return "bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800";
     }
   };
 
@@ -563,7 +568,7 @@ const Dashboard = () => {
   const paginatedTableOrders = tableFilteredOrders.slice((tablePage - 1) * tableRowsPerPage, tablePage * tableRowsPerPage);
 
   return (
-    <div className="space-y-4 text-slate-800 dark:text-slate-200">
+    <div className="space-y-3 text-slate-800 dark:text-slate-200">
       
       {/* Dynamic Tab Rendering */}
       {activeTab === "my-deliveries" && (
@@ -645,27 +650,32 @@ const Dashboard = () => {
 
       {/* ⚠️ RESIGN CONFIRMATION MODAL */}
       {showResignModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-100 dark:bg-slate-950/70 backdrop-blur-sm">
-          <div className="relative w-full max-w-sm rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-5">
-            <div className="flex items-center gap-3 text-rose-600">
-              <ShieldAlert size={24} />
-              <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 tracking-tight">Confirm Account Deactivation</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="relative w-full max-w-sm rounded-md glass-panel-elevated p-5 space-y-4 shadow-2xl border border-rose-500/40">
+            <div className="flex items-center gap-2.5 text-rose-500 pb-2 border-b border-rose-500/20">
+              <div className="h-8 w-8 rounded-sm bg-rose-500/10 flex items-center justify-center border border-rose-500/30">
+                <ShieldAlert size={18} />
+              </div>
+              <div>
+                <p className="text-[8px] font-black uppercase tracking-widest text-rose-500 font-mono">Irreversible Action</p>
+                <h3 className="text-sm font-black text-slate-900 dark:text-white tracking-tight">Confirm Resignation</h3>
+              </div>
             </div>
             
-            <p className="text-xs text-slate-500 leading-relaxed text-slate-600">
-              Are you sure you want to deactivate your courier agent account? This action is permanent. Any active assignments must be complete before your resignation is finalized.
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
+              Are you sure you want to deactivate your courier agent account? This action is permanent. Any active assignments must be complete before resignation is finalized.
             </p>
 
-            <div className="flex gap-3 pt-2">
+            <div className="flex gap-2 pt-1">
               <button
                 onClick={() => setShowResignModal(false)}
-                className="flex-1 rounded-2xl border border-slate-200 dark:border-slate-800 py-3 text-xs font-bold text-slate-600 hover:bg-slate-50 transition cursor-pointer text-slate-600"
+                className="flex-1 rounded-sm glass-card py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer border border-slate-200 dark:border-slate-700"
               >
                 Cancel
               </button>
               <button
                 onClick={resignHandler}
-                className="flex-1 rounded-2xl bg-rose-600 hover:bg-rose-700 text-slate-100 dark:text-white py-3 text-xs font-black transition cursor-pointer shadow-md"
+                className="flex-1 rounded-sm bg-rose-600 hover:bg-rose-500 text-white py-2.5 text-xs font-black uppercase tracking-wider transition cursor-pointer shadow-sm active:scale-98"
               >
                 Confirm Resign
               </button>
@@ -676,37 +686,37 @@ const Dashboard = () => {
 
       {/* ✅ DELIVERY VERIFICATION CODE MODAL */}
       {verifyModal.open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-100 dark:bg-slate-950 dark:bg-slate-950/70 backdrop-blur-sm">
-          <div className="relative w-full max-w-sm rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="relative w-full max-w-sm rounded-md glass-panel-elevated shadow-2xl overflow-hidden border border-blue-500/40">
             {/* Header */}
-            <div className="bg-gradient-to-r from-slate-900 to-slate-800 px-6 py-5 text-slate-100 dark:text-white">
+            <div className="bg-slate-900 dark:bg-[#0c101d] px-5 py-3.5 text-white border-b border-white/10">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-2xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center">
-                    <KeyRound size={18} className="text-indigo-400" />
+                <div className="flex items-center gap-2.5">
+                  <div className="h-8 w-8 rounded-sm bg-blue-500/20 text-blue-400 flex items-center justify-center border border-blue-500/30">
+                    <KeyRound size={16} />
                   </div>
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Delivery Confirmation</p>
-                    <h3 className="text-base font-black text-slate-100 dark:text-white leading-tight">Enter Customer Code</h3>
+                    <p className="text-[8px] font-mono font-bold uppercase tracking-widest text-blue-400">Delivery Confirmation</p>
+                    <h3 className="text-sm font-black text-white leading-tight">Enter Customer Code</h3>
                   </div>
                 </div>
                 <button
                   onClick={() => setVerifyModal({ open: false, orderId: null, status: null })}
-                  className="h-8 w-8 rounded-xl bg-white/10 hover:bg-white/20 transition flex items-center justify-center cursor-pointer text-slate-100 dark:text-white"
+                  className="h-7 w-7 rounded-sm bg-white/10 hover:bg-white/20 transition flex items-center justify-center cursor-pointer text-white"
                 >
-                  <X size={16} />
+                  <X size={14} />
                 </button>
               </div>
             </div>
 
             {/* Body */}
-            <form onSubmit={handleVerifySubmit} className="p-6 space-y-5">
-              <p className="text-sm text-slate-600 leading-relaxed">
-                Ask the customer for their <span className="font-black text-slate-900 dark:text-slate-100">6-character Delivery Code</span>. This was sent to them at order confirmation.
+            <form onSubmit={handleVerifySubmit} className="p-5 space-y-4">
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
+                Ask customer for their <span className="font-mono font-bold text-slate-900 dark:text-white">6-character Delivery Code</span> provided at order dispatch.
               </p>
 
               <div>
-                <label className="text-xs font-black uppercase tracking-wider text-slate-500 mb-2 block">
+                <label className="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-1.5 block">
                   Delivery Verification Code
                 </label>
                 <input
@@ -719,12 +729,12 @@ const Dashboard = () => {
                   }}
                   placeholder="e.g. AB3X7Z"
                   autoFocus
-                  className={`w-full rounded-2xl border-2 px-5 py-4 text-center text-2xl font-black tracking-[0.4em] text-slate-900 dark:text-slate-100 outline-none transition ${verifyError ? "border-rose-300 bg-rose-50" : "border-slate-200 bg-slate-50 dark:bg-slate-950"} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900`}
+                  className={`w-full rounded-sm border px-4 py-3 text-center text-xl font-mono font-bold tracking-[0.35em] text-slate-900 dark:text-white outline-none transition ${verifyError ? "border-rose-500 bg-rose-50/50 dark:bg-rose-950/20" : "border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950"} focus:ring-1 focus:ring-blue-500`}
                 />
                 <div className="flex justify-between items-center mt-2.5">
                   <div className="flex-1 min-w-0 pr-2">
                     {verifyError && (
-                      <p className="text-xs font-semibold text-rose-600 flex items-center gap-1">
+                      <p className="text-xs font-bold text-rose-500 flex items-center gap-1">
                         <AlertTriangle size={12} className="shrink-0" />
                         <span className="truncate text-left block">{verifyError}</span>
                       </p>
@@ -734,30 +744,30 @@ const Dashboard = () => {
                     type="button"
                     disabled={resendLoading || resendTimer > 0}
                     onClick={handleResendOtp}
-                    className="text-xs font-black text-indigo-600 hover:text-indigo-700 disabled:text-slate-400 transition cursor-pointer select-none shrink-0"
+                    className="text-xs font-mono font-bold text-blue-600 dark:text-blue-400 hover:underline disabled:text-slate-400 transition cursor-pointer select-none shrink-0"
                   >
                     {resendLoading ? "Resending..." : resendTimer > 0 ? `Resend in ${resendTimer}s` : "Resend OTP"}
                   </button>
                 </div>
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex gap-2 pt-1">
                 <button
                   type="button"
                   onClick={() => setVerifyModal({ open: false, orderId: null, status: null })}
-                  className="flex-1 rounded-2xl border border-slate-200 dark:border-slate-800 py-3 text-xs font-bold text-slate-600 hover:bg-slate-50 transition cursor-pointer"
+                  className="flex-1 rounded-sm glass-card py-2.5 text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer border border-slate-200 dark:border-slate-700"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={verifyLoading}
-                  className="flex-1 rounded-2xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-slate-100 dark:text-white py-3 text-xs font-black transition flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                  className="flex-1 rounded-sm bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 text-white py-2.5 text-xs font-bold uppercase tracking-wider transition flex items-center justify-center gap-1.5 cursor-pointer shadow-sm active:scale-98"
                 >
                   {verifyLoading ? (
-                    <span className="h-4 w-4 border-2 border-white/10 dark:border-slate-800 border-t-transparent rounded-full animate-spin" />
+                    <span className="h-3.5 w-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
                   ) : (
-                    <ShieldCheck size={14} />
+                    <ShieldCheck size={13} />
                   )}
                   {verifyLoading ? "Verifying..." : "Confirm Delivery"}
                 </button>
@@ -769,37 +779,37 @@ const Dashboard = () => {
 
       {/* ✅ RETURN TASK COMPLETION VERIFICATION MODAL */}
       {verifyReturnModal.open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-100 dark:bg-slate-950/70 backdrop-blur-sm">
-          <div className="relative w-full max-w-sm rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="relative w-full max-w-sm rounded-md glass-panel-elevated shadow-2xl overflow-hidden border border-blue-500/40">
             {/* Header */}
-            <div className="bg-gradient-to-r from-slate-900 to-slate-800 px-6 py-5 text-slate-100 dark:text-white">
+            <div className="bg-slate-900 dark:bg-[#0c101d] px-5 py-3.5 text-white border-b border-white/10">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-2xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center">
-                    <KeyRound size={18} className="text-indigo-400" />
+                <div className="flex items-center gap-2.5">
+                  <div className="h-8 w-8 rounded-sm bg-blue-500/20 text-blue-400 flex items-center justify-center border border-blue-500/30">
+                    <KeyRound size={16} />
                   </div>
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Return Confirmation</p>
-                    <h3 className="text-base font-black text-slate-100 dark:text-white leading-tight">Enter Customer Code</h3>
+                    <p className="text-[8px] font-mono font-bold uppercase tracking-widest text-blue-400">Return Confirmation</p>
+                    <h3 className="text-sm font-black text-white leading-tight">Enter Customer Code</h3>
                   </div>
                 </div>
                 <button
                   onClick={() => setVerifyReturnModal({ open: false, requestId: null, status: null })}
-                  className="h-8 w-8 rounded-xl bg-white/10 hover:bg-white/20 transition flex items-center justify-center cursor-pointer text-slate-100 dark:text-white"
+                  className="h-7 w-7 rounded-sm bg-white/10 hover:bg-white/20 transition flex items-center justify-center cursor-pointer text-white"
                 >
-                  <X size={16} />
+                  <X size={14} />
                 </button>
               </div>
             </div>
 
             {/* Body */}
-            <form onSubmit={handleVerifyReturnSubmit} className="p-6 space-y-5">
-              <p className="text-sm text-slate-600 leading-relaxed">
-                Ask the customer for their <span className="font-black text-slate-900 dark:text-slate-100">6-character Return Verification Code</span>. This is available in their Order History detail panel.
+            <form onSubmit={handleVerifyReturnSubmit} className="p-5 space-y-4">
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
+                Ask customer for their <span className="font-mono font-bold text-slate-900 dark:text-white">6-character Return Verification Code</span> displayed on their order history.
               </p>
 
               <div>
-                <label className="text-xs font-black uppercase tracking-wider text-slate-500 mb-2 block">
+                <label className="text-[8px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-1.5 block">
                   Return Verification Code
                 </label>
                 <input
@@ -812,35 +822,35 @@ const Dashboard = () => {
                   }}
                   placeholder="e.g. EF5G8H"
                   autoFocus
-                  className={`w-full rounded-2xl border-2 px-5 py-4 text-center text-2xl font-black tracking-[0.4em] text-slate-900 dark:text-slate-100 outline-none transition ${verifyError ? "border-rose-300 bg-rose-50" : "border-slate-200 bg-slate-50 dark:bg-slate-950"} focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900`}
+                  className={`w-full rounded-sm border px-4 py-3 text-center text-xl font-mono font-bold tracking-[0.35em] text-slate-900 dark:text-white outline-none transition ${verifyError ? "border-rose-500 bg-rose-50/50 dark:bg-rose-950/20" : "border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950"} focus:ring-1 focus:ring-blue-500`}
                 />
                 {verifyError && (
-                  <p className="mt-2 text-xs font-semibold text-rose-600 flex items-center gap-1">
+                  <p className="mt-2 text-xs font-bold text-rose-500 flex items-center gap-1">
                     <AlertTriangle size={12} />
                     {verifyError}
                   </p>
                 )}
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex gap-2 pt-1">
                 <button
                   type="button"
                   onClick={() => setVerifyReturnModal({ open: false, requestId: null, status: null })}
-                  className="flex-1 rounded-2xl border border-slate-200 dark:border-slate-800 py-3 text-xs font-bold text-slate-600 hover:bg-slate-50 transition cursor-pointer"
+                  className="flex-1 rounded-sm glass-card py-2.5 text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer border border-slate-200 dark:border-slate-700"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={verifyLoading}
-                  className="flex-1 rounded-2xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-slate-100 dark:text-white py-3 text-xs font-black transition flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                  className="flex-1 rounded-sm bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 text-white py-2.5 text-xs font-bold uppercase tracking-wider transition flex items-center justify-center gap-1.5 cursor-pointer shadow-sm active:scale-98"
                 >
                   {verifyLoading ? (
-                    <span className="h-4 w-4 border-2 border-white/10 dark:border-slate-800 border-t-transparent rounded-full animate-spin" />
+                    <span className="h-3.5 w-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
                   ) : (
-                    <ShieldCheck size={14} />
+                    <ShieldCheck size={13} />
                   )}
-                  {verifyLoading ? "Verifying..." : "Confirm Return Completion"}
+                  {verifyLoading ? "Verifying..." : "Confirm Return"}
                 </button>
               </div>
             </form>

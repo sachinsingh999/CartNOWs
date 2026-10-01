@@ -1279,11 +1279,11 @@ const Navbar = () => {
       {/* ═══════════ TOP MINIMALIST GLASS NAVBAR ═══════════ */}
       <header id="main-navbar-header" className="sticky top-0 z-50 w-full">
         <nav className="bg-white dark:bg-slate-950 shadow-xs transition-all duration-300">
-          <div className="w-full pl-1.5 sm:pl-3 lg:pl-4 pr-3 sm:pr-6 lg:pr-8">
+          <div className="w-full px-2 sm:px-4 lg:px-6">
             <div className="flex h-16 items-center gap-3 lg:gap-5 w-full">
               {/* ── Logo ── */}
-              <Link to="/" className="-ml-2 sm:-ml-3 group flex shrink-0 items-center select-none">
-                <Logo className="h-10 sm:h-12 w-36 sm:w-48 text-slate-900 dark:text-white group-hover:scale-105 transition-transform duration-300" />
+              <Link to="/" className="-ml-1 group flex shrink-0 items-center select-none">
+                <Logo className="h-11 sm:h-[50px] w-auto text-slate-900 dark:text-white group-hover:scale-105 transition-transform duration-300" />
               </Link>
 
               {/* ── Integrated Search Capsule ── */}
@@ -1552,8 +1552,8 @@ const Navbar = () => {
                 </AnimatePresence>
               </div>
 
-              {/* ── Minimal Right Actions Section ── */}
-              <div className="flex items-center gap-1.5 sm:gap-2 ml-auto lg:ml-0">
+              {/* ── Minimal Right Actions Section (Permanently locked to the right margin) ── */}
+              <div className="flex items-center gap-1.5 sm:gap-2 ml-auto shrink-0 justify-end">
                 {/* Delivery Location Pill */}
                 <div ref={locationRef} className="relative hidden lg:block shrink-0">
                   <button
@@ -1935,9 +1935,9 @@ const Navbar = () => {
                       setOpen((p) => !p);
                       setPincodeOpen(false);
                     }}
-                    className="flex items-center gap-2 px-2.5 py-1 rounded-md hover:bg-slate-100/70 dark:hover:bg-slate-900/60 transition cursor-pointer bg-transparent"
+                    className="flex items-center gap-2 pl-2.5 pr-0 sm:pr-0.5 py-1 rounded-full hover:bg-slate-100/70 dark:hover:bg-slate-900/60 transition cursor-pointer bg-transparent"
                   >
-                    <div className="h-7 w-7 rounded-md bg-amber-500 text-slate-950 font-bold text-xs flex items-center justify-center shadow-xs shrink-0">
+                    <div className="h-7 w-7 rounded-full bg-amber-500 text-slate-950 font-bold text-xs flex items-center justify-center shadow-xs shrink-0">
                       {initials || <User size={13} />}
                     </div>
                     <div className="text-left leading-none">
@@ -1970,7 +1970,7 @@ const Navbar = () => {
                           <>
                             {/* User Header */}
                             <div className="flex items-center gap-3 bg-slate-50/80 dark:bg-slate-900/60 px-4 py-3">
-                              <div className="relative flex h-9 w-9 items-center justify-center rounded-md bg-amber-500 text-xs font-bold text-slate-950 shrink-0 shadow-xs">
+                              <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-amber-500 text-xs font-bold text-slate-950 shrink-0 shadow-xs">
                                 {initials || <User size={15} />}
                               </div>
                               <div className="min-w-0 flex-1">
@@ -2307,8 +2307,8 @@ const Navbar = () => {
           </div>
 
           {/* ═══════════ SECONDARY CATEGORIES BAR (MOCKUP ALIGNMENT) ═══════════ */}
-          <div className="relative z-40 border-t border-slate-200/80 dark:border-slate-800/80 bg-white/95 dark:bg-slate-950/95 shadow-2xs">
-            <div className="w-full px-3 sm:px-6 lg:px-8 py-1.5 flex items-center justify-between gap-1.5 sm:gap-2 text-xs select-none">
+          <div className="relative z-40 bg-white dark:bg-slate-950 shadow-2xs">
+            <div className="w-full px-2 sm:px-4 lg:px-6 py-1.5 flex items-center justify-between gap-1.5 sm:gap-2 text-xs select-none">
               {/* Category Links with Horizontal Scroll */}
               <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-hide py-0.5 min-w-0 flex-1">
                 {/* All Categories Button */}
@@ -2322,10 +2322,10 @@ const Navbar = () => {
                       setCategoriesOpen(true);
                     }
                   }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition shadow-2xs font-bold shrink-0 cursor-pointer ${
+                  className={`flex items-center gap-1.5 pl-0 pr-2 sm:pr-2.5 py-1 rounded-md transition font-bold shrink-0 cursor-pointer ${
                     categoriesOpen && activeMegaDept !== "more"
-                      ? "border-[#FF6A00] bg-orange-50/80 dark:bg-orange-950/30 text-[#FF6A00]"
-                      : "border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800"
+                      ? "text-[#FF6A00] dark:text-orange-400 bg-orange-50/80 dark:bg-orange-950/30"
+                      : "text-slate-800 dark:text-slate-100 hover:text-[#FF6A00] dark:hover:text-orange-400 bg-transparent hover:bg-slate-100/60 dark:hover:bg-slate-900/50"
                   }`}
                 >
                   <Menu size={14} className="stroke-[2.5]" />
@@ -2351,7 +2351,7 @@ const Navbar = () => {
               </div>
 
               {/* More ▾ Button in secondary bar (Opens rich multi-column Mega Menu with 'more' tab) */}
-              <div className="relative shrink-0 pl-1" ref={moreNavRef}>
+              <div className="relative shrink-0" ref={moreNavRef}>
                 <button
                   type="button"
                   onClick={() => {
@@ -2362,7 +2362,7 @@ const Navbar = () => {
                       setCategoriesOpen(true);
                     }
                   }}
-                  className={`flex items-center gap-1 px-2.5 py-1 font-bold cursor-pointer rounded-md transition text-xs border ${
+                  className={`flex items-center gap-1 pl-2 sm:pl-2.5 pr-0 py-1 font-bold cursor-pointer rounded-md transition text-xs border ${
                     categoriesOpen && activeMegaDept === "more"
                       ? "text-[#FF6A00] bg-orange-50/70 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800/50"
                       : "text-slate-700 dark:text-slate-300 hover:text-[#FF6A00] dark:hover:text-orange-400 border-transparent bg-transparent"

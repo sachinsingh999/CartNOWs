@@ -231,7 +231,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
         } catch (e) { }
         navigate(`/product/${product._id}`);
       }}
-      className="group relative flex flex-col bg-white dark:bg-slate-900 rounded-md border border-slate-200/80 dark:border-slate-800 overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 cursor-pointer text-left w-full h-full animate-fadeIn"
+      className="group relative flex flex-col bg-white dark:bg-slate-900 rounded-none border border-slate-200/90 dark:border-slate-800 overflow-hidden shadow-2xs hover:shadow-md transition-all duration-300 cursor-pointer text-left w-full h-full animate-fadeIn"
     >
       
       {/* Category Promo discount header row (Matches top of mockup card) */}
@@ -245,7 +245,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
       <div className="relative w-full h-[240px] bg-white dark:bg-slate-900 flex items-center justify-center gap-1.5 px-1 select-none overflow-hidden group/slider border-b border-slate-100/50 dark:border-slate-800/50">
 
         {!hasImage || imgError ? (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-955 text-slate-400 p-4 rounded-md">
+          <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-955 text-slate-400 p-4 rounded-none">
             <Sparkles size={24} className="text-slate-400 animate-pulse mb-1" />
             <span className="text-[8px] uppercase tracking-widest font-black text-slate-500">No Image</span>
           </div>
@@ -254,7 +254,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
             {/* Left Peek Image Preview with chevron arrow */}
             <div 
               onClick={(e) => { e.stopPropagation(); setImgIdx(prevIdx); }}
-              className="w-[10%] h-[190px] opacity-40 hover:opacity-75 transition-all duration-300 flex items-center justify-center shrink-0 border border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-md p-0.5 overflow-hidden relative cursor-pointer"
+              className="w-[10%] h-[190px] opacity-40 hover:opacity-75 transition-all duration-300 flex items-center justify-center shrink-0 border border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-none p-0.5 overflow-hidden relative cursor-pointer"
             >
               <img src={getSrc(prevIdx)} width="400" height="400" className="max-h-full max-w-full object-contain" alt={product.name || "Product"} loading="lazy" decoding="async" />
               <div className="absolute inset-0 bg-black/5 flex items-center justify-end pr-0.5 text-slate-700 dark:text-white">
@@ -263,7 +263,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
             </div>
 
             {/* Active Center Image Panel */}
-            <div className="w-[76%] h-[218px] z-10 flex items-center justify-center shrink-0 border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-md p-1.5 shadow-xs relative">
+            <div className="w-[76%] h-[218px] z-10 flex items-center justify-center shrink-0 border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-none p-1.5 shadow-xs relative">
               <img
                 src={getSrc(imgIdx)}
                 width="400"
@@ -328,7 +328,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
             {/* Right Peek Image Preview with chevron arrow */}
             <div 
               onClick={(e) => { e.stopPropagation(); setImgIdx(nextIdx); }}
-              className="w-[10%] h-[190px] opacity-40 hover:opacity-75 transition-all duration-300 flex items-center justify-center shrink-0 border border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-md p-0.5 overflow-hidden relative cursor-pointer"
+              className="w-[10%] h-[190px] opacity-40 hover:opacity-75 transition-all duration-300 flex items-center justify-center shrink-0 border border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-none p-0.5 overflow-hidden relative cursor-pointer"
             >
               <img src={getSrc(nextIdx)} width="400" height="400" className="max-h-full max-w-full object-contain" alt={product.name || "Product"} loading="lazy" decoding="async" />
               <div className="absolute inset-0 bg-black/5 flex items-center justify-start pl-0.5 text-slate-700 dark:text-white">
@@ -436,7 +436,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
             type="button"
             disabled={isOOS || isAdding}
             onClick={handleAddToCart}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-sm text-[10px] font-black uppercase tracking-wider transition-all duration-200 active:scale-95 cursor-pointer border-none ${isOOS || isAdding ? "bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 cursor-not-allowed" : "bg-slate-900 dark:bg-indigo-600 text-white hover:bg-slate-800 dark:hover:bg-indigo-500 shadow-3xs"}`}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-none text-[10px] font-black uppercase tracking-wider transition-all duration-200 active:scale-95 cursor-pointer border-none ${isOOS || isAdding ? "bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 cursor-not-allowed" : "bg-slate-900 dark:bg-indigo-600 text-white hover:bg-slate-800 dark:hover:bg-indigo-500 shadow-3xs"}`}
           >
             {isAdding ? (
               <>
@@ -457,7 +457,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
               e.stopPropagation();
               if (onQuickView) onQuickView(product);
             }}
-            className="h-8 w-8 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-sm flex items-center justify-center text-slate-600 dark:text-slate-300 transition duration-150 active:scale-95 border-none cursor-pointer"
+            className="h-8 w-8 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-none flex items-center justify-center text-slate-600 dark:text-slate-300 transition duration-150 active:scale-95 border-none cursor-pointer"
             title="Quick View"
           >
             <Eye size={12} className="stroke-[2.5]" />

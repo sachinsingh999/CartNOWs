@@ -112,7 +112,7 @@ const DealOfTheDay = ({ deals = [], activeDeal = null, onAddToCart }) => {
   };
 
   return (
-    <div className="group relative w-full rounded-sm overflow-hidden border border-slate-300/80 dark:border-slate-800 text-white shadow-xs flex flex-col justify-between min-h-[480px] transition-all duration-300 hover:border-slate-400 dark:hover:border-slate-700 select-none p-5 sm:p-6 bg-slate-950">
+    <div className="group relative w-full rounded-none overflow-hidden border border-slate-300/80 dark:border-slate-800 text-white shadow-xs flex flex-col justify-between min-h-[480px] transition-all duration-300 hover:border-slate-400 dark:hover:border-slate-700 select-none p-5 sm:p-6 bg-slate-950">
 
       {/* FULL CARD BACKGROUND COVER IMAGE */}
       <img
@@ -128,7 +128,7 @@ const DealOfTheDay = ({ deals = [], activeDeal = null, onAddToCart }) => {
 
       {/* FLOATING DISCOUNT BADGE TOP RIGHT */}
       {discountLabel && (
-        <div className="absolute top-4 right-4 z-20 bg-amber-400 text-slate-950 text-[10px] font-black uppercase tracking-widest px-3.5 py-1.5 rounded-sm shadow-xl border border-amber-300 select-none">
+        <div className="absolute top-4 right-4 z-20 bg-amber-400 text-slate-950 text-[10px] font-black uppercase tracking-widest px-3.5 py-1.5 rounded-none shadow-xl border border-amber-300 select-none">
           {discountLabel}
         </div>
       )}
@@ -137,7 +137,7 @@ const DealOfTheDay = ({ deals = [], activeDeal = null, onAddToCart }) => {
       <div className="relative z-10 w-full lg:w-3/5 flex flex-col justify-between h-full space-y-6">
         <div className="space-y-4">
           {/* Animated Badge */}
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-sm bg-amber-500/10 border border-amber-500/25 text-amber-400 text-[10px] font-black uppercase tracking-widest w-fit">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-none bg-amber-500/10 border border-amber-500/25 text-amber-400 text-[10px] font-black uppercase tracking-widest w-fit">
             <Flame size={13} className="fill-amber-500 text-amber-500" />
             DEAL OF THE DAY
           </span>
@@ -193,21 +193,21 @@ const DealOfTheDay = ({ deals = [], activeDeal = null, onAddToCart }) => {
               <span className="text-[9px] uppercase tracking-widest text-slate-400 font-black">Ends In:</span>
               {timeLeft ? (
                 <div className="flex gap-2 items-center">
-                  <div className="flex flex-col items-center bg-white/5 border border-white/10 px-3 py-1.5 rounded-sm min-w-[42px] shadow-xs">
+                  <div className="flex flex-col items-center bg-white/5 border border-white/10 px-3 py-1.5 rounded-none min-w-[42px] shadow-xs">
                     <span className="text-xs font-black text-white font-mono">{formatNumber(timeLeft.hours)}</span>
                     <span className="text-[7px] text-slate-400 font-bold uppercase tracking-wider">Hrs</span>
                   </div>
-                  <div className="flex flex-col items-center bg-white/5 border border-white/10 px-3 py-1.5 rounded-sm min-w-[42px] shadow-xs">
+                  <div className="flex flex-col items-center bg-white/5 border border-white/10 px-3 py-1.5 rounded-none min-w-[42px] shadow-xs">
                     <span className="text-xs font-black text-white font-mono">{formatNumber(timeLeft.minutes)}</span>
                     <span className="text-[7px] text-slate-400 font-bold uppercase tracking-wider">Min</span>
                   </div>
-                  <div className="flex flex-col items-center bg-white/5 border border-white/10 px-3 py-1.5 rounded-sm min-w-[42px] shadow-xs">
+                  <div className="flex flex-col items-center bg-white/5 border border-white/10 px-3 py-1.5 rounded-none min-w-[42px] shadow-xs">
                     <span className="text-xs font-black text-amber-400 font-mono">{formatNumber(timeLeft.seconds)}</span>
                     <span className="text-[7px] text-slate-400 font-bold uppercase tracking-wider">Sec</span>
                   </div>
                 </div>
               ) : (
-                <div className="text-[10px] font-black text-rose-500 bg-rose-500/10 border border-rose-500/20 px-3 py-1.5 rounded-sm w-fit uppercase tracking-wider">
+                <div className="text-[10px] font-black text-rose-500 bg-rose-500/10 border border-rose-500/20 px-3 py-1.5 rounded-none w-fit uppercase tracking-wider">
                   Deal Ended
                 </div>
               )}
@@ -220,7 +220,7 @@ const DealOfTheDay = ({ deals = [], activeDeal = null, onAddToCart }) => {
           <button
             onClick={handleAddToCart}
             disabled={dealProduct.stock === 0}
-            className={`flex-1 py-3 px-5 rounded-sm font-extrabold text-xs uppercase tracking-wider shadow-md transition-all border-none flex items-center justify-center gap-2 select-none cursor-pointer ${
+            className={`flex-1 py-3 px-5 rounded-none font-extrabold text-xs uppercase tracking-wider shadow-md transition-all border-none flex items-center justify-center gap-2 select-none cursor-pointer ${
               dealProduct.stock === 0
                 ? "bg-white/5 text-white/30 cursor-not-allowed"
                 : "bg-white hover:bg-slate-100 text-slate-950 active:scale-95 shadow-sm"
@@ -232,7 +232,7 @@ const DealOfTheDay = ({ deals = [], activeDeal = null, onAddToCart }) => {
 
           <button
             onClick={handleViewProduct}
-            className="py-3 px-5 rounded-sm bg-slate-900/80 hover:bg-slate-900 text-white font-extrabold text-xs uppercase tracking-wider transition-all cursor-pointer active:scale-95 border border-white/20 flex items-center justify-center gap-2 select-none backdrop-blur-md"
+            className="py-3 px-5 rounded-none bg-slate-900/80 hover:bg-slate-900 text-white font-extrabold text-xs uppercase tracking-wider transition-all cursor-pointer active:scale-95 border border-white/20 flex items-center justify-center gap-2 select-none backdrop-blur-md"
           >
             <Eye size={14} />
             <span>View Product</span>
@@ -244,14 +244,14 @@ const DealOfTheDay = ({ deals = [], activeDeal = null, onAddToCart }) => {
       {finalProductImgUrl && (
         <div
           onClick={handleViewProduct}
-          className="absolute bottom-4 right-4 z-20 bg-slate-950/90 backdrop-blur-md border border-slate-700/80 p-2 rounded-sm flex items-center gap-2.5 shadow-xl hover:border-amber-400 cursor-pointer transition select-none active:scale-95"
+          className="absolute bottom-4 right-4 z-20 bg-slate-950/90 backdrop-blur-md border border-slate-700/80 p-2 rounded-none flex items-center gap-2.5 shadow-xl hover:border-amber-400 cursor-pointer transition select-none active:scale-95"
         >
           <img
             src={finalProductImgUrl}
             alt={dealProduct.name}
             loading="lazy"
             decoding="async"
-            className="w-10 h-10 object-cover bg-slate-900 rounded-xs border border-slate-800 shrink-0"
+            className="w-10 h-10 object-cover bg-slate-900 rounded-none border border-slate-800 shrink-0"
           />
           <div className="text-[10px] font-bold text-white leading-tight pr-1 flex flex-col justify-center text-left">
             <span className="text-slate-400 text-[8px] uppercase font-bold tracking-wider">PRODUCT</span>

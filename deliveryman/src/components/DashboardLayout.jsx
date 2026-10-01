@@ -5,6 +5,7 @@ import { useTheme } from "../context/ThemeContext";
 import { ToastContainer, toast } from "react-toastify";
 import axios from "axios";
 import { backendUrl } from "../config";
+import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 import { Truck, RotateCcw, Inbox, AlertTriangle } from "lucide-react";
 
@@ -28,10 +29,14 @@ const DashboardLayout = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
+  // Sidebar Layout States
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+
   const location = useLocation();
   const navigate = useNavigate();
 
-  // If token is missing, redirect to landing/login
+  // If token is missing, redirect to landing
   if (!token) {
     return <Navigate to="/" replace />;
   }
@@ -136,6 +141,26 @@ const DashboardLayout = () => {
     });
   }
 
+  const toggleDutyStatus = async () => {
+    try {
+      const response = await axios.post(
+        `${backendUrl}/api/deliveryman/toggle-duty`,
+        {},
+        { headers: { token } }
+      );
+
+      if (response.data.success) {
+        toast.success(response.data.message);
+        fetchData();
+      } else {
+        toast.error(response.data.message);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response?.data?.message || error.message);
+    }
+  };
+
   const dashboardProps = {
     token,
     driver,
@@ -148,24 +173,26 @@ const DashboardLayout = () => {
     loading,
     setLoading,
     fetchData,
-    activeTab
+    activeTab,
+    toggleDutyStatus
   };
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-50 dark:bg-slate-950">
+      <div className="flex h-screen items-center justify-center bg-slate-50 dark:bg-[#080C16]">
         <div className="flex flex-col items-center gap-3">
-          <div className="h-10 w-10 border-4 border-slate-900 border-t-transparent rounded-full animate-spin" />
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Loading Dashboard...</p>
+          <div className="h-10 w-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+          <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Loading Logistics Console...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="relative z-10 flex-1 flex flex-col min-h-screen">
-      {/* Refactored Header / Navbar component */}
-      <Navbar
+    <div className="min-h-screen bg-slate-50 dark:bg-[#080C16] text-slate-800 dark:text-slate-100 flex transition-colors duration-300">
+      
+      {/* Left Sidebar Navigation */}
+      <Sidebar
         driver={driver}
         activeTab={activeTab}
         handleTabClick={handleTabClick}
@@ -174,48 +201,49 @@ const DashboardLayout = () => {
         orders={orders}
         theme={theme}
         setTheme={setTheme}
-        showNotifications={showNotifications}
-        setShowNotifications={setShowNotifications}
-        showProfileMenu={showProfileMenu}
-        setShowProfileMenu={setShowProfileMenu}
-        notificationsList={notificationsList}
         logout={logout}
+        onToggleDuty={toggleDutyStatus}
+        isCollapsed={isCollapsed}
+        setIsCollapsed={setIsCollapsed}
+        isMobileOpen={isMobileOpen}
+        setIsMobileOpen={setIsMobileOpen}
       />
 
-      {/* Main Content */}
-      <main className="flex-1 p-4 md:p-8">
-        <div className="mx-auto max-w-[1600px]">
-          <Outlet context={dashboardProps} />
-        </div>
-      </main>
+      {/* Main Right Content Panel with dynamic padding matching Sidebar width */}
+      <div
+        className={`main-content-transition flex-1 flex flex-col min-h-screen ${
+          isCollapsed ? "lg:pl-16" : "lg:pl-64"
+        }`}
+      >
+        {/* Top Header Navbar */}
+        <Navbar
+          driver={driver}
+          activeTab={activeTab}
+          handleTabClick={handleTabClick}
+          stats={stats}
+          orders={orders}
+          theme={theme}
+          setTheme={setTheme}
+          showNotifications={showNotifications}
+          setShowNotifications={setShowNotifications}
+          showProfileMenu={showProfileMenu}
+          setShowProfileMenu={setShowProfileMenu}
+          notificationsList={notificationsList}
+          logout={logout}
+          onToggleDuty={toggleDutyStatus}
+          isCollapsed={isCollapsed}
+          setIsCollapsed={setIsCollapsed}
+          setIsMobileOpen={setIsMobileOpen}
+        />
 
-      {/* Sticky Mobile/Tablet Bottom Navigation Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/80 dark:bg-slate-950/80 border-t border-slate-200 dark:border-slate-900 backdrop-blur-lg flex justify-around py-2.5 shadow-2xl lg:hidden transition-colors">
-        {tabs.map((tab) => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => handleTabClick(tab.clickId)}
-              className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition duration-150 relative cursor-pointer ${ isActive ? "text-blue-600 dark:text-indigo-400 font-extrabold" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white" }`}
-            >
-              <div className="relative">
-                <Icon size={15} className="stroke-[2.2]" />
-                {tab.count > 0 && (
-                  <span className="absolute -top-1.5 -right-2 px-1 py-0.2 bg-blue-600 dark:bg-indigo-600 text-slate-100 dark:text-white rounded-full text-[8px] font-extrabold min-w-[12px] text-center border border-white/10 dark:border-slate-800 dark:border-slate-950">
-                    {tab.count}
-                  </span>
-                )}
-              </div>
-              <span className="text-[9px] mt-1 uppercase font-black tracking-wider text-[8px]">{tab.label}</span>
-              {isActive && (
-                <span className="absolute bottom-0 h-0.5 w-6 bg-blue-600 dark:bg-indigo-500 rounded-full" />
-              )}
-            </button>
-          );
-        })}
-      </nav>
+        {/* Dynamic Routed Page Content */}
+        <main className="flex-1 p-2 sm:p-3 lg:p-3">
+          <div className="mx-auto max-w-[1700px]">
+            <Outlet context={dashboardProps} />
+          </div>
+        </main>
+      </div>
+
     </div>
   );
 };

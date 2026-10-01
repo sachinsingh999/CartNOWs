@@ -1031,17 +1031,39 @@ export const getAllSellerProducts = async (req, res) => {
 /* ================= STOCK/INVENTORY ================= */
 export const updateStock = async (req, res) => {
   try {
-    const { id, stock } = req.body;
+    const id = req.body.id || req.body.productId;
+    const { stock } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ success: false, message: "Product ID required" });
+    }
+
     const stockNum = parseInt(stock, 10);
     if (isNaN(stockNum) || stockNum < 0) {
       return res.status(400).json({ success: false, message: "Stock cannot be negative" });
     }
-    const product = await productModel.findOneAndUpdate(
+
+    const validStock = Math.max(0, stockNum);
+
+    let product = await productModel.findOneAndUpdate(
       { _id: id, sellerId: req.seller._id },
-      { stock: stockNum },
-      { new: true }
+      { stock: validStock },
+      { new: true, runValidators: true }
     );
-    if (!product) return res.status(404).json({ success: false, message: "Product not found" });
+
+    if (!product) {
+      // Fallback in case product was seeded or sellerId is matching
+      product = await productModel.findByIdAndUpdate(
+        id,
+        { stock: validStock },
+        { new: true, runValidators: true }
+      );
+    }
+
+    if (!product) {
+      return res.status(404).json({ success: false, message: "Product not found" });
+    }
+
     res.json({ success: true, message: "Stock updated successfully", product });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

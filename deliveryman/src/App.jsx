@@ -20,16 +20,11 @@ const AppContent = () => {
   const { token, setToken, setDriver } = useAuth();
 
   return (
-    <div className="bg-slate-50 dark:bg-[#0B0F19] min-h-screen flex flex-col antialiased text-slate-900 dark:text-slate-100 pb-16 lg:pb-0 transition-colors duration-300 relative overflow-hidden">
+    <div className="bg-[#F8FAFC] dark:bg-[#090D16] min-h-screen flex flex-col antialiased text-slate-800 dark:text-slate-100 transition-colors duration-200">
       <ToastContainer position="top-right" autoClose={3000} theme={theme} />
 
-      {/* Interactive Background Glow Spots */}
-      <div className="absolute top-[-10%] left-[-10%] h-[500px] w-[500px] rounded-full bg-blue-500/5 dark:bg-indigo-500/10 blur-[130px] pointer-events-none z-0 animate-float" />
-      <div className="absolute bottom-[10%] right-[-10%] h-[600px] w-[600px] rounded-full bg-emerald-500/5 dark:bg-teal-500/8 blur-[150px] pointer-events-none z-0 animate-float-delayed" />
-      <div className="absolute top-[40%] right-[10%] h-[350px] w-[350px] rounded-full bg-indigo-500/5 dark:bg-purple-500/10 blur-[120px] pointer-events-none z-0 animate-float" />
-
       {!token ? (
-        <div className="relative z-10 flex-1 flex flex-col justify-center">
+        <div className="relative flex-1 flex flex-col justify-center">
           <Routes>
             <Route path="/" element={<Landing theme={theme} setTheme={toggleTheme} />} />
             <Route path="/login" element={
@@ -37,7 +32,7 @@ const AppContent = () => {
                 <div className="absolute top-4 right-4 z-50">
                   <button
                     onClick={toggleTheme}
-                    className="p-2.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-900 dark:bg-slate-900/60 dark:border-slate-800 dark:text-slate-300 dark:hover:text-white transition shadow-sm cursor-pointer"
+                    className="p-2.5 rounded-sm bg-white border border-slate-200 text-slate-700 hover:text-slate-900 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300 dark:hover:text-white transition shadow-xs cursor-pointer"
                     title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
                   >
                     {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
@@ -51,7 +46,7 @@ const AppContent = () => {
                 <div className="absolute top-4 right-4 z-50">
                   <button
                     onClick={toggleTheme}
-                    className="p-2.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-900 dark:bg-slate-900/60 dark:border-slate-800 dark:text-slate-300 dark:hover:text-white transition shadow-sm cursor-pointer"
+                    className="p-2.5 rounded-sm bg-white border border-slate-200 text-slate-700 hover:text-slate-900 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300 dark:hover:text-white transition shadow-xs cursor-pointer"
                     title={theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"}
                   >
                     {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}

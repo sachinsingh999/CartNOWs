@@ -333,34 +333,30 @@ const ShopByCollections = ({ trendingCollections = [] }) => {
   };
 
   return (
-    <div className="w-full bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-sm p-3.5 sm:p-4.5 lg:p-5 shadow-xs transition-colors duration-200 select-none text-left">
+    <div className="w-full bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-none p-3.5 sm:p-4.5 lg:p-5 shadow-xs transition-colors duration-200 select-none text-left">
       {/* Section Top Header Row */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3.5">
         <div className="text-left space-y-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200/80 dark:border-indigo-800/60 rounded-sm text-[9px] font-black uppercase tracking-wider text-indigo-700 dark:text-indigo-300 shadow-2xs">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200/80 dark:border-indigo-800/60 rounded-none text-[9px] font-black uppercase tracking-wider text-indigo-700 dark:text-indigo-300 shadow-2xs">
               <Sparkles size={11} className="stroke-[2.5]" />
               <span>CURATED COLLECTIONS</span>
             </div>
 
-            <span className="px-2 py-0.5 rounded-sm bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold">
+            <span className="px-2 py-0.5 rounded-none bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold">
               {collections.length} Lifestyle Hubs
             </span>
           </div>
 
           <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
             <span>Shop By Collections</span>
-            <span className="h-1.5 w-1.5 rounded-sm bg-indigo-600 dark:bg-indigo-400 animate-pulse" />
+            <span className="h-1.5 w-1.5 rounded-none bg-indigo-600 dark:bg-indigo-400 animate-pulse" />
           </h2>
-
-          <p className="text-xs font-bold text-slate-500 dark:text-slate-400">
-            Handpicked lifestyle & seasonal curations, tailored for you.
-          </p>
         </div>
 
         {/* Action Button & Navigation Controls */}
         <div className="flex items-center gap-2 shrink-0 self-start sm:self-center">
-          <div className="hidden sm:flex items-center gap-1 bg-slate-50 dark:bg-slate-950 p-0.5 rounded-sm border border-slate-200 dark:border-slate-800">
+          <div className="hidden sm:flex items-center gap-1 bg-slate-50 dark:bg-slate-950 p-0.5 rounded-none border border-slate-200 dark:border-slate-800">
             {[
               { id: "all", label: "All" },
               { id: "trending", label: "Trending" },
@@ -376,7 +372,7 @@ const ShopByCollections = ({ trendingCollections = [] }) => {
                     scrollContainerRef.current.scrollTo({ left: 0, behavior: "smooth" });
                   }
                 }}
-                className={`px-2.5 py-1 rounded-xs text-[10px] font-black uppercase tracking-wider transition-all duration-150 cursor-pointer ${
+                className={`px-2.5 py-1 rounded-none text-[10px] font-black uppercase tracking-wider transition-all duration-150 cursor-pointer ${
                   activeTab === tab.id
                     ? "bg-slate-900 dark:bg-white text-white dark:text-slate-950 shadow-xs"
                     : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
@@ -389,7 +385,7 @@ const ShopByCollections = ({ trendingCollections = [] }) => {
 
           <button
             onClick={() => navigate("/collections")}
-            className="px-3 py-1.5 rounded-sm border border-slate-300 dark:border-slate-700 hover:border-slate-900 dark:hover:border-white text-slate-800 dark:text-slate-200 hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-950 font-black text-[11px] uppercase tracking-wider flex items-center gap-1.5 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 shadow-2xs group"
+            className="px-3 py-1.5 rounded-none border border-slate-300 dark:border-slate-700 hover:border-slate-900 dark:hover:border-white text-slate-800 dark:text-slate-200 hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-950 font-black text-[11px] uppercase tracking-wider flex items-center gap-1.5 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 shadow-2xs group"
           >
             <span>View All</span>
             <ArrowRight size={12} className="stroke-[2.5] transition-transform duration-200 group-hover:translate-x-0.5" />
@@ -404,7 +400,7 @@ const ShopByCollections = ({ trendingCollections = [] }) => {
           onClick={() => handleScroll("left")}
           disabled={!canScrollLeft}
           aria-label="Previous collections"
-          className={`hidden sm:flex absolute -left-2 sm:-left-3.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-9 sm:h-9 rounded-sm bg-white/95 dark:bg-slate-800/95 backdrop-blur-xs border border-slate-200 dark:border-slate-700 shadow-md items-center justify-center text-slate-800 dark:text-white transition-all cursor-pointer ${
+          className={`hidden sm:flex absolute -left-2 sm:-left-3.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-9 sm:h-9 rounded-none bg-white/95 dark:bg-slate-800/95 backdrop-blur-xs border border-slate-200 dark:border-slate-700 shadow-md items-center justify-center text-slate-800 dark:text-white transition-all cursor-pointer ${
             canScrollLeft
               ? "hover:bg-indigo-600 hover:text-white hover:border-indigo-600 hover:scale-105 active:scale-95 opacity-100"
               : "opacity-0 pointer-events-none"
@@ -418,7 +414,7 @@ const ShopByCollections = ({ trendingCollections = [] }) => {
           onClick={() => handleScroll("right")}
           disabled={!canScrollRight}
           aria-label="Next collections"
-          className={`hidden sm:flex absolute -right-2 sm:-right-3.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-9 sm:h-9 rounded-sm bg-white/95 dark:bg-slate-800/95 backdrop-blur-xs border border-slate-200 dark:border-slate-700 shadow-md items-center justify-center text-slate-800 dark:text-white transition-all cursor-pointer ${
+          className={`hidden sm:flex absolute -right-2 sm:-right-3.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-9 sm:h-9 rounded-none bg-white/95 dark:bg-slate-800/95 backdrop-blur-xs border border-slate-200 dark:border-slate-700 shadow-md items-center justify-center text-slate-800 dark:text-white transition-all cursor-pointer ${
             canScrollRight
               ? "hover:bg-indigo-600 hover:text-white hover:border-indigo-600 hover:scale-105 active:scale-95 opacity-100"
               : "opacity-0 pointer-events-none"
@@ -439,7 +435,7 @@ const ShopByCollections = ({ trendingCollections = [] }) => {
               <div
                 key={col.id}
                 onClick={() => navigate(`/collections/${col.id}`)}
-                className="group relative w-[86vw] sm:w-[calc(50%-8px)] lg:w-[calc(25%-10.5px)] min-h-[385px] sm:min-h-[405px] rounded-sm border border-slate-300/80 dark:border-slate-800 overflow-hidden flex flex-col justify-between p-3.5 sm:p-4 transition-all duration-300 hover:shadow-xl hover:border-slate-400 dark:hover:border-slate-600 hover:-translate-y-1 cursor-pointer text-left select-none bg-slate-950 snap-start shrink-0"
+                className="group relative w-[86vw] sm:w-[calc(50%-8px)] lg:w-[calc(25%-10.5px)] min-h-[385px] sm:min-h-[405px] rounded-none border border-slate-300/80 dark:border-slate-800 overflow-hidden flex flex-col justify-between p-3.5 sm:p-4 transition-all duration-300 hover:shadow-xl hover:border-slate-400 dark:hover:border-slate-600 hover:-translate-y-1 cursor-pointer text-left select-none bg-slate-950 snap-start shrink-0"
               >
                 {/* Full Cover Background Image */}
                 <img
@@ -455,7 +451,7 @@ const ShopByCollections = ({ trendingCollections = [] }) => {
 
                 {/* Top Row: Floating Badge + Heart Wishlist Button */}
                 <div className="relative z-10 flex justify-between items-center">
-                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm text-[9.5px] font-black uppercase tracking-wider backdrop-blur-md border shadow-md ${col.badgeClass}`}>
+                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none text-[9.5px] font-black uppercase tracking-wider backdrop-blur-md border shadow-md ${col.badgeClass}`}>
                     {React.createElement(col.badgeIcon, { size: 10, className: "stroke-[2.5]" })}
                     <span>{col.badge}</span>
                   </span>
@@ -463,7 +459,7 @@ const ShopByCollections = ({ trendingCollections = [] }) => {
                     type="button"
                     onClick={(e) => toggleLike(col.id, e)}
                     aria-label="Add to favorites"
-                    className="w-7.5 h-7.5 rounded-sm bg-black/40 hover:bg-black/70 backdrop-blur-md border border-white/20 text-white hover:text-rose-400 hover:border-rose-400/50 shadow-md flex items-center justify-center transition-all duration-200 cursor-pointer active:scale-95"
+                    className="w-7.5 h-7.5 rounded-none bg-black/40 hover:bg-black/70 backdrop-blur-md border border-white/20 text-white hover:text-rose-400 hover:border-rose-400/50 shadow-md flex items-center justify-center transition-all duration-200 cursor-pointer active:scale-95"
                   >
                     <Heart
                       size={13}
@@ -494,7 +490,7 @@ const ShopByCollections = ({ trendingCollections = [] }) => {
                           e.stopPropagation();
                           navigate(`/product?search=${encodeURIComponent(tag.name)}`);
                         }}
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-sm text-[9.5px] font-black uppercase tracking-wider backdrop-blur-md border shadow-sm transition-all duration-150 cursor-pointer ${col.tagClass}`}
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-none text-[9.5px] font-black uppercase tracking-wider backdrop-blur-md border shadow-sm transition-all duration-150 cursor-pointer ${col.tagClass}`}
                       >
                         {React.createElement(tag.icon, { size: 9, className: "shrink-0 stroke-[2.5]" })}
                         <span>{tag.name}</span>
@@ -509,7 +505,7 @@ const ShopByCollections = ({ trendingCollections = [] }) => {
                       e.stopPropagation();
                       navigate(`/collections/${col.id}`);
                     }}
-                    className={`w-full py-2.5 ${col.btnClass} font-black text-[11px] uppercase tracking-widest rounded-sm transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer border-none shadow-lg active:scale-[0.99] mt-0.5`}
+                    className={`w-full py-2.5 ${col.btnClass} font-black text-[11px] uppercase tracking-widest rounded-none transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer border-none shadow-lg active:scale-[0.99] mt-0.5`}
                   >
                     <ShoppingBag size={13} className="stroke-[2.5]" />
                     <span>Shop Collection</span>

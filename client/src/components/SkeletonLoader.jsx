@@ -287,37 +287,37 @@ export const ProductGridSkeleton = ({ count = 8 }) => (
   </div>
 );
 
-export const CollectionsSkeleton = ({ count = 6 }) => (
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 animate-pulse w-full">
+export const CollectionsSkeleton = ({ count = 8 }) => (
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-4 lg:gap-5 animate-pulse w-full">
     {Array.from({ length: count }).map((_, i) => (
       <div
         key={i}
-        className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-5 rounded-sm flex flex-col justify-between space-y-4 shadow-xs"
+        className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-4 rounded-none flex flex-col justify-between space-y-4 shadow-xs"
       >
-        <div className="space-y-3.5">
+        <div className="space-y-3">
           {/* Top Row: Category tag and trending pill */}
           <div className="flex justify-between items-center">
-            <div className="h-5 w-24 bg-slate-200 dark:bg-slate-800 rounded-xs" />
-            <div className="h-5 w-16 bg-slate-200 dark:bg-slate-800 rounded-xs" />
+            <div className="h-5 w-24 bg-slate-200 dark:bg-slate-800 rounded-none" />
+            <div className="h-5 w-16 bg-slate-200 dark:bg-slate-800 rounded-none" />
           </div>
 
           {/* Title & Subtitle */}
           <div className="space-y-1.5">
-            <div className="h-6 w-3/4 bg-slate-200 dark:bg-slate-800 rounded-xs" />
-            <div className="h-3.5 w-full bg-slate-100 dark:bg-slate-800/60 rounded-xs" />
+            <div className="h-6 w-3/4 bg-slate-200 dark:bg-slate-800 rounded-none" />
+            <div className="h-3.5 w-full bg-slate-100 dark:bg-slate-800/60 rounded-none" />
           </div>
 
           {/* Main Composite Image Area */}
-          <div className="aspect-[16/10] bg-slate-100 dark:bg-slate-800/50 rounded-sm border border-slate-200/60 dark:border-slate-800 flex items-center justify-center">
-            <div className="w-24 h-24 bg-slate-200/60 dark:bg-slate-700/50 rounded-xs" />
+          <div className="aspect-[16/10] bg-slate-100 dark:bg-slate-800/50 rounded-none border border-slate-200/60 dark:border-slate-800 flex items-center justify-center">
+            <div className="w-24 h-24 bg-slate-200/60 dark:bg-slate-700/50 rounded-none" />
           </div>
 
           {/* Sample Products Mini Deck */}
-          <div className="bg-slate-50 dark:bg-slate-950 p-2 border border-slate-200/60 dark:border-slate-800 rounded-sm space-y-1.5">
-            <div className="h-2.5 w-20 bg-slate-200 dark:bg-slate-800 rounded-xs" />
+          <div className="bg-slate-50 dark:bg-slate-950 p-2 border border-slate-200/60 dark:border-slate-800 rounded-none space-y-1.5">
+            <div className="h-2.5 w-20 bg-slate-200 dark:bg-slate-800 rounded-none" />
             <div className="grid grid-cols-4 gap-1.5">
               {[1, 2, 3, 4].map((s) => (
-                <div key={s} className="aspect-square bg-slate-200 dark:bg-slate-800 rounded-xs" />
+                <div key={s} className="aspect-square bg-slate-200 dark:bg-slate-800 rounded-none" />
               ))}
             </div>
           </div>
@@ -326,10 +326,10 @@ export const CollectionsSkeleton = ({ count = 6 }) => (
         {/* Bottom Action Footer */}
         <div className="pt-3.5 border-t border-slate-200/70 dark:border-slate-800 flex items-center justify-between">
           <div className="space-y-1">
-            <div className="h-2.5 w-12 bg-slate-200 dark:bg-slate-800 rounded-xs" />
-            <div className="h-4 w-16 bg-slate-200 dark:bg-slate-800 rounded-xs" />
+            <div className="h-2.5 w-12 bg-slate-200 dark:bg-slate-800 rounded-none" />
+            <div className="h-4 w-16 bg-slate-200 dark:bg-slate-800 rounded-none" />
           </div>
-          <div className="h-8 w-28 bg-slate-200 dark:bg-slate-800 rounded-sm" />
+          <div className="h-8 w-28 bg-slate-200 dark:bg-slate-800 rounded-none" />
         </div>
       </div>
     ))}

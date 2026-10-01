@@ -1,129 +1,309 @@
-import React from "react";
-import { ShoppingBag, Package } from "lucide-react";
+import React, { useState, useMemo } from "react";
+import axios from "axios";
+import { backendUrl } from "../config";
+import { toast } from "react-toastify";
+import OrdersControlPanel from "../components/orders/OrdersControlPanel";
+import OrdersTableView from "../components/orders/OrdersTableView";
+import OrdersCardsView from "../components/orders/OrdersCardsView";
+import OrderDetailModal from "../components/orders/OrderDetailModal";
+import PackingSlipModal from "../components/orders/PackingSlipModal";
 
-const Orders = ({ orders = [] }) => {
+const Orders = ({
+  orders = [],
+  fetchOrders,
+  token,
+  seller,
+  products = [],
+  loading = false
+}) => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [paymentFilter, setPaymentFilter] = useState("All");
+  const [sortBy, setSortBy] = useState("newest");
+  const [viewMode, setViewMode] = useState("table"); // "table" | "cards"
+
+  const [selectedOrderForDetail, setSelectedOrderForDetail] = useState(null);
+  const [selectedOrderForPackingSlip, setSelectedOrderForPackingSlip] = useState(null);
+  const [actionLoadingId, setActionLoadingId] = useState(null);
+
+  // ================= 1. FILTERING & SORTING =================
+  const processedOrders = useMemo(() => {
+    let result = [...orders];
+    const q = searchQuery.toLowerCase().trim();
+
+    // 1. Keyword search
+    if (q) {
+      result = result.filter((o) => {
+        const id = (o._id || "").toLowerCase();
+        const orderNum = (o.orderNumber || "").toLowerCase();
+        const customerName = `${o.address?.firstName || ""} ${o.address?.lastName || ""}`.toLowerCase();
+        const phone = (o.address?.phone || o.address?.mobile || "").toLowerCase();
+        const city = (o.address?.city || "").toLowerCase();
+        const state = (o.address?.state || "").toLowerCase();
+        const itemNames = (o.items || []).map((i) => (i.name || i.productName || "").toLowerCase()).join(" ");
+
+        return (
+          id.includes(q) ||
+          orderNum.includes(q) ||
+          customerName.includes(q) ||
+          phone.includes(q) ||
+          city.includes(q) ||
+          state.includes(q) ||
+          itemNames.includes(q)
+        );
+      });
+    }
+
+    // 2. Status Filter
+    if (statusFilter !== "All") {
+      result = result.filter((o) => {
+        const s = (o.orderStatus || o.status || "Processing").toLowerCase();
+        if (statusFilter === "To Pack") {
+          return (
+            s.includes("placed") ||
+            s.includes("process") ||
+            s.includes("pending") ||
+            s === "accepted"
+          );
+        }
+        if (statusFilter === "Ready For Pickup") {
+          return s.includes("pickup");
+        }
+        if (statusFilter === "In Transit") {
+          return s.includes("transit") || s.includes("shipped") || s.includes("out");
+        }
+        if (statusFilter === "Delivered") {
+          return s.includes("deliver") || s.includes("complete");
+        }
+        if (statusFilter === "Cancelled") {
+          return s.includes("cancel") || s.includes("reject");
+        }
+        return true;
+      });
+    }
+
+    // 3. Payment Filter
+    if (paymentFilter !== "All") {
+      result = result.filter((o) => {
+        const pay = (o.paymentStatus || "").toLowerCase();
+        if (paymentFilter === "paid") return pay === "paid";
+        if (paymentFilter === "pending") return pay === "pending" || !pay;
+        if (paymentFilter === "refunded") return pay.includes("refund");
+        return true;
+      });
+    }
+
+    // 4. Sorting
+    result.sort((a, b) => {
+      const dateA = new Date(a.createdAt || a.date || 0).getTime();
+      const dateB = new Date(b.createdAt || b.date || 0).getTime();
+      const amtA = Number(a.amount) || 0;
+      const amtB = Number(b.amount) || 0;
+      const itemsCountA = (a.items || []).length;
+      const itemsCountB = (b.items || []).length;
+
+      if (sortBy === "newest") return dateB - dateA;
+      if (sortBy === "oldest") return dateA - dateB;
+      if (sortBy === "amount_high") return amtB - amtA;
+      if (sortBy === "amount_low") return amtA - amtB;
+      if (sortBy === "items_count") return itemsCountB - itemsCountA;
+      return 0;
+    });
+
+    return result;
+  }, [orders, searchQuery, statusFilter, paymentFilter, sortBy]);
+
+  // ================= 2. FULFILLMENT ACTIONS =================
+  const handleMarkReadyForPickup = async (orderId) => {
+    setActionLoadingId(orderId);
+    try {
+      const res = await axios.post(
+        `${backendUrl}/api/seller/order/pickup`,
+        { orderId },
+        { headers: { token } }
+      );
+      if (res.data.success) {
+        toast.success("Order marked Ready For Pickup! Delivery agent assigned.");
+        if (fetchOrders) fetchOrders();
+      } else {
+        toast.error(res.data.message || "Failed to update pickup status");
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message || "Network error");
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  const handleRejectOrder = async (orderId) => {
+    if (!window.confirm("Are you sure you want to reject/cancel this order?")) {
+      return;
+    }
+    setActionLoadingId(orderId);
+    try {
+      const res = await axios.post(
+        `${backendUrl}/api/seller/order/reject`,
+        { orderId },
+        { headers: { token } }
+      );
+      if (res.data.success) {
+        toast.info("Order marked as cancelled/rejected.");
+        if (fetchOrders) fetchOrders();
+      } else {
+        toast.error(res.data.message || "Failed to reject order");
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message || "Network error");
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  // ================= 3. EXPORT HELPERS =================
+  const handleExportCSV = () => {
+    if (processedOrders.length === 0) {
+      toast.info("No orders to export with current filters");
+      return;
+    }
+
+    const headers = [
+      "Order ID",
+      "Order Number",
+      "Date",
+      "Customer Name",
+      "Customer Phone",
+      "City",
+      "State",
+      "Items Summary",
+      "Total Amount (INR)",
+      "Payment Method",
+      "Payment Status",
+      "Fulfillment Status",
+      "Delivery Agent"
+    ];
+
+    const rows = processedOrders.map((o) => {
+      const customer = `${o.address?.firstName || ""} ${o.address?.lastName || ""}`.trim();
+      const phone = o.address?.phone || o.address?.mobile || "";
+      const city = o.address?.city || "";
+      const state = o.address?.state || "";
+      const itemsText = (o.items || [])
+        .map((i) => `${i.name || i.productName || "Item"} (Qty: ${i.qty || i.quantity || 1})`)
+        .join(" | ");
+
+      return [
+        `"${o._id || ""}"`,
+        `"${o.orderNumber || ""}"`,
+        `"${new Date(o.createdAt || o.date || 0).toLocaleDateString()}"`,
+        `"${customer}"`,
+        `"${phone}"`,
+        `"${city}"`,
+        `"${state}"`,
+        `"${itemsText}"`,
+        Number(o.amount || 0).toFixed(2),
+        `"${o.paymentMethod || "Online"}"`,
+        `"${o.paymentStatus || "pending"}"`,
+        `"${o.orderStatus || o.status || "Processing"}"`,
+        `"${o.deliverymanId?.name || "Unassigned"}"`
+      ];
+    });
+
+    const csvContent = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `cartnow_orders_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Orders exported to CSV!");
+  };
+
+  const handleExportJSON = () => {
+    if (processedOrders.length === 0) {
+      toast.info("No orders to export with current filters");
+      return;
+    }
+
+    const jsonContent = JSON.stringify(processedOrders, null, 2);
+    const blob = new Blob([jsonContent], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `cartnow_orders_${new Date().toISOString().slice(0, 10)}.json`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Orders exported to JSON!");
+  };
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-black text-slate-900 dark:text-slate-100 tracking-tight">Customer Orders</h2>
-        <p className="text-xs text-slate-400 mt-0.5">Track, monitor, and fulfill customer orders placed at your shop.</p>
-      </div>
+    <div className="space-y-4 pb-12 text-slate-800 dark:text-slate-100">
+      {/* Control Panel: Header, KPIs, Search & Filter Tabs */}
+      <OrdersControlPanel
+        orders={orders}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
+        paymentFilter={paymentFilter}
+        setPaymentFilter={setPaymentFilter}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+        viewMode={viewMode}
+        setViewMode={setViewMode}
+        onRefresh={() => {
+          if (fetchOrders) fetchOrders();
+          toast.info("Refreshing customer orders...");
+        }}
+        onExportCSV={handleExportCSV}
+        onExportJSON={handleExportJSON}
+        loading={loading}
+      />
 
-      {orders.length === 0 ? (
-        <div className="rounded-2xl p-10 text-center space-y-3 bg-white dark:bg-slate-900">
-          <div className="mx-auto h-12 w-12 rounded-full bg-slate-50 dark:bg-slate-950 flex items-center justify-center text-slate-400">
-            <ShoppingBag size={20} />
-          </div>
-          <div className="max-w-xs mx-auto">
-            <p className="text-sm font-bold text-slate-800 dark:text-slate-100">No orders received yet</p>
-            <p className="text-xs text-slate-400 mt-1">Customer orders will appear here as soon as they purchase your products.</p>
-          </div>
-        </div>
+      {/* Main Orders Display: Table View or Cards View */}
+      {viewMode === "table" ? (
+        <OrdersTableView
+          orders={processedOrders}
+          onOpenDetails={(order) => setSelectedOrderForDetail(order)}
+          onOpenPackingSlip={(order) => setSelectedOrderForPackingSlip(order)}
+          onRejectOrder={handleRejectOrder}
+          onMarkReadyForPickup={handleMarkReadyForPickup}
+          actionLoadingId={actionLoadingId}
+        />
       ) : (
-        <div className="space-y-4">
-          {orders.map((order) => (
-            <div key={order._id} className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm hover:shadow-md transition space-y-4">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-3">
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Order ID</span>
-                  <h4 className="text-sm font-black text-slate-800 dark:text-slate-100 uppercase">#{order._id.slice(-8)}</h4>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
-                    {new Date(order.createdAt || order.date || Date.now()).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })} at {new Date(order.createdAt || order.date || Date.now()).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true })}
-                  </span>
-                  <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${ order.orderStatus === "Delivered" ? "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400" : order.orderStatus === "Cancelled" ? "bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400" : "bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400" }`}>
-                    {order.orderStatus}
-                  </span>
-                </div>
-              </div>
-
-              {/* Order Items */}
-              <div className="space-y-3">
-                <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Items Ordered</div>
-                <div className="space-y-2.5">
-                  {order.items?.map((item, index) => {
-                    const itemName = item.name || item.productName || item.title || "Product Item";
-                    const itemImg = item.image || item.productImage || item.images?.[0] || "";
-                    const itemQty = Number(item.qty || item.quantity || 1);
-                    const itemPrice = Number(item.price || item.unitPrice || item.finalPrice || 0);
-                    const itemTotal = itemPrice * itemQty;
-
-                    return (
-                      <div key={index} className="flex items-center justify-between gap-4 bg-slate-50 dark:bg-slate-950 p-3.5 rounded-xl">
-                        <div className="flex items-center gap-3 min-w-0">
-                          {/* Product Thumbnail Image */}
-                          <div className="h-12 w-12 rounded-xl bg-white dark:bg-slate-900 flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
-                            {itemImg ? (
-                              <img src={itemImg} alt={itemName} className="h-full w-full object-contain" />
-                            ) : (
-                              <Package size={18} className="text-slate-400" />
-                            )}
-                          </div>
-                          
-                          {/* Product Details */}
-                          <div className="min-w-0 text-left">
-                            <span className="text-xs font-bold text-slate-900 dark:text-slate-100 block truncate max-w-md">
-                              {itemName}
-                            </span>
-                            <div className="flex flex-wrap items-center gap-2 mt-0.5 text-[10px] text-slate-400">
-                              <span>Qty: <strong className="text-slate-700 dark:text-slate-300 font-bold">{itemQty}</strong></span>
-                              <span>•</span>
-                              <span>Unit Price: <strong className="text-slate-700 dark:text-slate-300 font-bold">₹{itemPrice.toFixed(2)}</strong></span>
-                              {item.size && (
-                                <>
-                                  <span>•</span>
-                                  <span className="bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 rounded text-[9px] font-bold text-slate-600 dark:text-slate-300 uppercase">Size: {item.size}</span>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Item Total Price */}
-                        <div className="text-right shrink-0">
-                          <span className="text-xs font-black text-slate-900 dark:text-slate-100 block">₹{itemTotal.toFixed(2)}</span>
-                          <span className="text-[9px] text-slate-400 block mt-0.5">₹{itemPrice.toFixed(2)} × {itemQty}</span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Shipping, Delivery Agent & Payment details */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-3 text-xs">
-                <div className="space-y-1">
-                  <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Shipping Destination</div>
-                  <p className="text-slate-700 dark:text-slate-300 leading-normal">
-                    <strong className="text-slate-900 dark:text-slate-100">{order.address?.firstName} {order.address?.lastName}</strong><br/>
-                    {order.address?.street}, {order.address?.city}<br/>
-                    {order.address?.state}, {order.address?.zipCode || order.address?.zipcode || order.address?.pincode || ""}<br/>
-                    Phone: {order.address?.phone || "N/A"}
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Assigned Delivery Agent</div>
-                  {order.deliverymanId ? (
-                    <div className="text-slate-700 dark:text-slate-300 space-y-0.5">
-                      <p className="font-bold text-slate-900 dark:text-slate-100">{order.deliverymanId.name || "Assigned"}</p>
-                      <p>Phone: {order.deliverymanId.phone || "—"}</p>
-                      <p>Vehicle: {order.deliverymanId.vehicleType || "—"}</p>
-                    </div>
-                  ) : (
-                    <p className="text-slate-400 dark:text-slate-500 italic">No agent assigned yet</p>
-                  )}
-                </div>
-                <div className="space-y-1 sm:text-right">
-                  <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Total Value</div>
-                  <h3 className="text-xl font-black text-slate-900 dark:text-slate-100">₹{order.amount?.toFixed(2)}</h3>
-                  <p className="text-[10px] text-slate-400">Payment status: <span className="font-bold text-slate-600 dark:text-slate-400 uppercase">{(order.paymentStatus === "paid" || order.paymentStatus === "Paid") ? "Paid" : "Pending"}</span></p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+        <OrdersCardsView
+          orders={processedOrders}
+          onOpenDetails={(order) => setSelectedOrderForDetail(order)}
+          onOpenPackingSlip={(order) => setSelectedOrderForPackingSlip(order)}
+          onRejectOrder={handleRejectOrder}
+          onMarkReadyForPickup={handleMarkReadyForPickup}
+          actionLoadingId={actionLoadingId}
+        />
       )}
+
+      {/* Order Detail Modal */}
+      <OrderDetailModal
+        isOpen={!!selectedOrderForDetail}
+        onClose={() => setSelectedOrderForDetail(null)}
+        order={selectedOrderForDetail}
+        onRejectOrder={handleRejectOrder}
+        onMarkReadyForPickup={handleMarkReadyForPickup}
+        onOpenPackingSlip={(order) => {
+          setSelectedOrderForDetail(null);
+          setSelectedOrderForPackingSlip(order);
+        }}
+        actionLoading={!!actionLoadingId}
+      />
+
+      {/* Printable Packing Slip & Manifest Modal */}
+      <PackingSlipModal
+        isOpen={!!selectedOrderForPackingSlip}
+        onClose={() => setSelectedOrderForPackingSlip(null)}
+        order={selectedOrderForPackingSlip}
+        seller={seller}
+      />
     </div>
   );
 };

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Outlet, useLocation } from "react-router-dom";
-import Lenis from "lenis";
 import { ShoppingBag, Truck, ArrowRight, Sparkles, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "./Navbar";
@@ -81,14 +80,22 @@ const MainLayout = () => {
     };
   }, [location.pathname]); // Observe when pathname changes to ensure we bind to the mounted navbar header
 
-  const isPromoOrFooterExcluded = ["/login", "/signup", "/register", "/social"].includes(location.pathname.toLowerCase());
+  const isPromoOrFooterExcluded = [
+    "/login",
+    "/signup",
+    "/register",
+    "/social",
+    "/placeorder",
+    "/orderdetail",
+    "/order-confirmed"
+  ].includes(location.pathname.toLowerCase());
 
   return (
-    <div className={`flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-opacity duration-700 ease-out ${showSplash ? "opacity-0 pointer-events-none select-none overflow-hidden h-screen" : "opacity-100"}`}>
+    <div className={`flex flex-col min-h-screen w-full max-w-full overflow-x-clip bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-opacity duration-700 ease-out ${showSplash ? "opacity-0 pointer-events-none select-none overflow-hidden h-screen" : "opacity-100"}`}>
       <Navbar />
 
       {/* MAIN must grow */}
-      <main className="flex-1">
+      <main className="flex-1 w-full max-w-full overflow-x-clip">
         <Outlet />
       </main>
 
@@ -106,7 +113,7 @@ const MainLayout = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 50, scale: 0.9 }}
             transition={{ type: "spring", stiffness: 260, damping: 25 }}
-            className="fixed bottom-6 right-6 z-50 max-w-[340px] w-full bg-gradient-to-tr from-indigo-500/40 via-purple-500/40 to-emerald-500/40 p-[1.5px] rounded-[24px] shadow-[0_25px_60px_-10px_rgba(0,0,0,0.6)] select-none"
+            className="fixed bottom-6 right-4 sm:right-6 z-50 w-[calc(100vw-32px)] sm:w-full sm:max-w-[340px] bg-gradient-to-tr from-indigo-500/40 via-purple-500/40 to-emerald-500/40 p-[1.5px] rounded-[24px] shadow-[0_25px_60px_-10px_rgba(0,0,0,0.6)] select-none"
           >
             <div className="bg-slate-950/95 backdrop-blur-xl rounded-[23.5px] p-5 flex flex-col gap-3.5 text-white w-full relative">
               {/* Close Button */}

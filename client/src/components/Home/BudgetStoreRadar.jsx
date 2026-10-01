@@ -161,37 +161,33 @@ const BudgetStoreRadar = ({
   };
 
   return (
-    <div className="w-full bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-sm p-3.5 sm:p-4.5 lg:p-5 shadow-xs select-none text-left transition-colors duration-200">
+    <div className="w-full bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-none p-3.5 sm:p-4.5 lg:p-5 shadow-xs select-none text-left transition-colors duration-200">
       
       {/* Top Header Row */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3.5">
         <div className="text-left space-y-1">
           <div className="flex items-center gap-2">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-amber-50 dark:bg-amber-950/60 border border-amber-200/80 dark:border-amber-800/60 rounded-sm text-[9px] font-black uppercase tracking-wider text-amber-700 dark:text-amber-300 shadow-2xs">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-amber-50 dark:bg-amber-950/60 border border-amber-200/80 dark:border-amber-800/60 rounded-none text-[9px] font-black uppercase tracking-wider text-amber-700 dark:text-amber-300 shadow-2xs">
               <TrendingDown size={11} className="stroke-[2.5]" />
               <span>PRICE RADAR</span>
             </div>
 
-            <span className="px-2 py-0.5 rounded-sm bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold">
+            <span className="px-2 py-0.5 rounded-none bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold">
               Live Algorithmic Drops
             </span>
           </div>
 
           <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
             <span>Budget Store & Live Price Drops</span>
-            <span className="h-1.5 w-1.5 rounded-sm bg-amber-500 dark:bg-amber-400 animate-ping" />
+            <span className="h-1.5 w-1.5 rounded-none bg-amber-500 dark:bg-amber-400 animate-ping" />
           </h2>
-
-          <p className="text-xs font-bold text-slate-500 dark:text-slate-400">
-            Real-time price drop detector & certified budget tiers. Snag verified markdowns before stock runs out.
-          </p>
         </div>
 
         {/* Top Right Action & Slider Navigation Chevrons */}
         <div className="flex items-center gap-2 shrink-0 self-start sm:self-center">
           <button
             onClick={() => navigate("/product")}
-            className="px-3 py-1.5 rounded-sm border border-slate-300 dark:border-slate-700 hover:border-slate-900 dark:hover:border-white text-slate-800 dark:text-slate-200 hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-950 font-black text-[11px] uppercase tracking-wider flex items-center gap-1.5 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 shadow-2xs"
+            className="px-3 py-1.5 rounded-none border border-slate-300 dark:border-slate-700 hover:border-slate-900 dark:hover:border-white text-slate-800 dark:text-slate-200 hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-950 font-black text-[11px] uppercase tracking-wider flex items-center gap-1.5 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 shadow-2xs"
           >
             <span>Explore Budget Zone</span>
             <ArrowRight size={12} className="stroke-[2.5]" />
@@ -202,7 +198,7 @@ const BudgetStoreRadar = ({
               type="button"
               onClick={() => scrollSlider("left")}
               aria-label="Previous budget items"
-              className="w-8 h-8 rounded-sm bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shadow-2xs cursor-pointer"
+              className="w-8 h-8 rounded-none bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shadow-2xs cursor-pointer"
             >
               <ChevronLeft size={15} className="stroke-[2.5]" />
             </button>
@@ -210,7 +206,7 @@ const BudgetStoreRadar = ({
               type="button"
               onClick={() => scrollSlider("right")}
               aria-label="Next budget items"
-              className="w-8 h-8 rounded-sm bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shadow-2xs cursor-pointer"
+              className="w-8 h-8 rounded-none bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shadow-2xs cursor-pointer"
             >
               <ChevronRight size={15} className="stroke-[2.5]" />
             </button>
@@ -219,7 +215,7 @@ const BudgetStoreRadar = ({
       </div>
 
       {/* Live Radar Status Pill Strip */}
-      <div className="w-full flex items-center justify-between p-2 px-3 bg-amber-500/10 dark:bg-amber-950/30 border border-amber-500/20 dark:border-amber-800/40 rounded-sm mb-3.5 text-xs">
+      <div className="w-full flex items-center justify-between p-2 px-3 bg-amber-500/10 dark:bg-amber-950/30 border border-amber-500/20 dark:border-amber-800/40 rounded-none mb-3.5 text-xs">
         <div className="flex items-center gap-2">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
@@ -250,7 +246,7 @@ const BudgetStoreRadar = ({
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setActiveTier(tier.id)}
-              className={`px-3 py-1.5 rounded-sm text-[10.5px] font-black uppercase tracking-wider border transition-colors duration-150 cursor-pointer shadow-2xs flex items-center gap-1.5 shrink-0 select-none ${
+              className={`px-3 py-1.5 rounded-none text-[10.5px] font-black uppercase tracking-wider border transition-colors duration-150 cursor-pointer shadow-2xs flex items-center gap-1.5 shrink-0 select-none ${
                 isActive
                   ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-slate-900 dark:border-white shadow-xs"
                   : "bg-white dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 border-slate-200/90 dark:border-slate-700 hover:border-slate-400 hover:text-slate-950 dark:hover:text-white"
@@ -261,7 +257,7 @@ const BudgetStoreRadar = ({
                 className: `${isActive ? "text-amber-400 dark:text-amber-600" : tier.iconColor} shrink-0 stroke-[2.5]`
               })}
               <span>{tier.label}</span>
-              <span className={`text-[8.5px] px-1 py-0.2 rounded-sm font-bold ${
+              <span className={`text-[8.5px] px-1 py-0.2 rounded-none font-bold ${
                 isActive ? "bg-amber-500 text-slate-950 font-black" : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400"
               }`}>
                 {tier.tag}
@@ -283,7 +279,7 @@ const BudgetStoreRadar = ({
           className="flex gap-3 sm:gap-3.5 overflow-x-hidden scroll-smooth snap-x snap-mandatory pb-1"
         >
           {displayProducts.length === 0 ? (
-            <div className="w-full py-8 px-4 text-center bg-slate-50 dark:bg-slate-800/50 rounded-sm border border-dashed border-slate-200 dark:border-slate-700/80 flex flex-col items-center justify-center gap-2">
+            <div className="w-full py-8 px-4 text-center bg-slate-50 dark:bg-slate-800/50 rounded-none border border-dashed border-slate-200 dark:border-slate-700/80 flex flex-col items-center justify-center gap-2">
               <Tag size={22} className="text-slate-400 dark:text-slate-500" />
               <p className="text-xs font-black text-slate-700 dark:text-slate-300">
                 No products currently found in this price bracket.
@@ -316,11 +312,11 @@ const BudgetStoreRadar = ({
                   onClick={() => handleProductCardClick(p)}
                   onMouseEnter={() => setHoveredCardId(p._id)}
                   onMouseLeave={() => setHoveredCardId(null)}
-                  className="group relative bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-700 rounded-sm p-3 flex flex-col justify-between transition-all duration-200 cursor-pointer shadow-2xs hover:shadow-xs h-full"
+                  className="group relative bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-700 rounded-none p-3 flex flex-col justify-between transition-all duration-200 cursor-pointer shadow-2xs hover:shadow-xs h-full"
                 >
                   <div>
                     {/* Top Image Container with Badges */}
-                    <div className="relative w-full aspect-square bg-slate-50 dark:bg-slate-800 rounded-sm overflow-hidden mb-2.5 border border-slate-100 dark:border-slate-800">
+                    <div className="relative w-full aspect-square bg-slate-50 dark:bg-slate-800 rounded-none overflow-hidden mb-2.5 border border-slate-100 dark:border-slate-800">
                       <img
                         src={p.images?.[0] || p.image || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=500&q=80"}
                         alt={p.name}
@@ -333,7 +329,7 @@ const BudgetStoreRadar = ({
 
                       {/* Price Drop Indicator Tag */}
                       <div className="absolute top-2 left-2 z-10">
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-rose-600 text-white font-black text-[9px] uppercase tracking-wider rounded-sm shadow-sm">
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-rose-600 text-white font-black text-[9px] uppercase tracking-wider rounded-none shadow-sm">
                           <TrendingDown size={10} className="stroke-[3]" />
                           <span>{dropBadge}</span>
                         </span>
@@ -341,7 +337,7 @@ const BudgetStoreRadar = ({
 
                       {/* Discount % Pill */}
                       <div className="absolute bottom-2 left-2 z-10">
-                        <span className="inline-flex items-center px-1.5 py-0.5 bg-slate-900/90 dark:bg-slate-950/90 backdrop-blur-md text-emerald-400 font-black text-[9px] rounded-sm">
+                        <span className="inline-flex items-center px-1.5 py-0.5 bg-slate-900/90 dark:bg-slate-950/90 backdrop-blur-md text-emerald-400 font-black text-[9px] rounded-none">
                           {discountPct}% OFF
                         </span>
                       </div>
@@ -353,7 +349,7 @@ const BudgetStoreRadar = ({
                           e.stopPropagation();
                           if (onToggleFavorite) onToggleFavorite(p._id);
                         }}
-                        className="absolute top-2 right-2 w-7 h-7 rounded-sm bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 hover:text-rose-500 dark:hover:text-rose-400 transition-colors shadow-2xs z-10"
+                        className="absolute top-2 right-2 w-7 h-7 rounded-none bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 hover:text-rose-500 dark:hover:text-rose-400 transition-colors shadow-2xs z-10"
                       >
                         <Heart
                           size={13}
@@ -402,7 +398,7 @@ const BudgetStoreRadar = ({
                           if (onAddToCart) onAddToCart(p, 1, "Standard");
                           else toast.success("Added to cart! 🛍️");
                         }}
-                        className="flex-1 py-1.5 px-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-amber-600 dark:hover:bg-amber-400 font-black text-[11px] uppercase tracking-wider rounded-sm flex items-center justify-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
+                        className="flex-1 py-1.5 px-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-amber-600 dark:hover:bg-amber-400 font-black text-[11px] uppercase tracking-wider rounded-none flex items-center justify-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
                       >
                         <ShoppingCart size={12} className="stroke-[2.5]" />
                         <span>Add To Cart</span>
@@ -415,7 +411,7 @@ const BudgetStoreRadar = ({
                           if (onQuickView) onQuickView(p);
                         }}
                         title="Quick View"
-                        className="w-7 h-7 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-sm flex items-center justify-center shrink-0 transition-colors shadow-2xs"
+                        className="w-7 h-7 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-none flex items-center justify-center shrink-0 transition-colors shadow-2xs"
                       >
                         <Eye size={13} className="stroke-[2.5]" />
                       </button>

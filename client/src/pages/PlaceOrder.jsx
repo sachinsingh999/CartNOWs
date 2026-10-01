@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { backendUrl } from "../config";
 import { toast } from "react-toastify";
+import { clearApiCache } from "../utils/apiCache";
 
 // Helper function to dynamically load Razorpay checkout script
 const loadRazorpayScript = () => {
@@ -1034,6 +1035,7 @@ const PlaceOrder = () => {
         );
 
         if (res.data.success) {
+          clearApiCache();
           toast.success("Order placed successfully!");
           navigate(`/order-confirmed/${res.data.order._id}`, {
             state: { order: res.data.order },
@@ -1055,6 +1057,7 @@ const PlaceOrder = () => {
         );
 
         if (res.data.success && res.data.session_url) {
+          clearApiCache();
           window.location.href = res.data.session_url;
         } else {
           setError(res.data.message || "Stripe session creation failed.");
@@ -1092,6 +1095,7 @@ const PlaceOrder = () => {
               );
 
               if (verifyRes.data.success) {
+                clearApiCache();
                 toast.success("Mock payment verified!");
                 navigate(`/order-confirmed/${orderId}`);
               } else {
@@ -1207,35 +1211,35 @@ const PlaceOrder = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] dark:bg-slate-950 px-4 sm:px-6 pt-6 pb-16 text-slate-700 dark:text-slate-200 transition-colors duration-200">
-      <form onSubmit={onSubmitHandler} className="mx-auto max-w-7xl">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-[#f8fafc] dark:bg-slate-950 px-2 sm:px-6 lg:px-8 xl:px-10 pt-4 sm:pt-6 pb-16 text-slate-700 dark:text-slate-200 transition-colors duration-200">
+      <form onSubmit={onSubmitHandler} className="w-full max-w-full min-w-0">
         
         {/* CHECKOUT HEADER AREA */}
-        <div className="mb-8 flex flex-col md:flex-row items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-6 gap-4">
-          <div className="flex items-center gap-3.5 text-left w-full md:w-auto">
+        <div className="mb-4 sm:mb-8 flex flex-col md:flex-row items-start md:items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 sm:pb-6 gap-3 sm:gap-4 w-full min-w-0">
+          <div className="flex items-center gap-2.5 sm:gap-3 text-left w-full md:w-auto min-w-0">
             <button
               type="button"
               onClick={() => navigate(-1)}
-              className="h-9 w-9 flex items-center justify-center rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:scale-102 active:scale-98 transition shadow-xs cursor-pointer"
+              className="h-8 w-8 sm:h-9 sm:w-9 shrink-0 flex items-center justify-center rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:scale-105 active:scale-95 transition shadow-xs cursor-pointer"
             >
-              <ArrowRight className="rotate-180 h-4 w-4 stroke-[2.5]" />
+              <ArrowRight className="rotate-180 h-3.5 w-3.5 sm:h-4 sm:w-4 stroke-[2.5]" />
             </button>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Checkout</h1>
-                <span className="inline-flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider">
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                <h1 className="text-lg sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Checkout</h1>
+                <span className="inline-flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 px-2 sm:px-2.5 py-0.5 rounded-full text-[8.5px] sm:text-[10px] font-black uppercase tracking-wider">
                   <ShieldCheck size={11} className="text-emerald-600 dark:text-emerald-400" />
                   100% Secure Checkout
                 </span>
               </div>
-              <p className="text-xs text-slate-400 dark:text-slate-400 mt-1 font-semibold">
+              <p className="text-[11px] sm:text-xs text-slate-400 dark:text-slate-400 mt-0.5 sm:mt-1 font-medium line-clamp-1 sm:line-clamp-none">
                 Complete your purchase by providing your delivery and payment details.
               </p>
             </div>
           </div>
           
           {/* STEPPER TRACKER */}
-          <div className="flex items-center w-full md:w-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-2.5 rounded-md shadow-xs">
+          <div className="flex items-center justify-between md:justify-start w-full md:w-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1 sm:p-2.5 rounded-md shadow-xs overflow-x-auto scrollbar-none min-w-0">
             {[
               { step: 1, title: "Address", desc: "Select delivery address" },
               { step: 2, title: "Payment", desc: "Choose payment method" },
@@ -1246,14 +1250,14 @@ const PlaceOrder = () => {
               const canNavigate = s.step === 1 || (s.step === 2 && selectedAddressId) || (s.step === 3 && selectedAddressId && method);
 
               return (
-                <div key={s.step} className="flex items-center">
+                <div key={s.step} className="flex items-center shrink-0">
                   <button
                     type="button"
                     disabled={!canNavigate}
                     onClick={() => setActiveStep(s.step)}
-                    className="flex items-center gap-2.5 px-3 py-1 focus:outline-none cursor-pointer disabled:cursor-not-allowed text-left animate-none"
+                    className="flex items-center gap-1 sm:gap-2.5 px-1.5 sm:px-3 py-1 focus:outline-none cursor-pointer disabled:cursor-not-allowed text-left animate-none"
                   >
-                    <div className={`flex h-7 w-7 items-center justify-center rounded-full font-black text-xs transition duration-200 shrink-0 ${
+                    <div className={`flex h-5.5 w-5.5 sm:h-7 sm:w-7 items-center justify-center rounded-full font-black text-[10px] sm:text-xs transition duration-200 shrink-0 ${
                       isActive 
                         ? "bg-orange-500 text-white shadow-sm shadow-orange-500/10" 
                         : isCompleted 
@@ -1262,14 +1266,14 @@ const PlaceOrder = () => {
                     }`}>
                       {s.step}
                     </div>
-                    <div className="hidden sm:block">
-                      <p className={`text-[11px] font-black uppercase tracking-wider leading-none ${isActive ? "text-orange-500 dark:text-orange-400" : "text-slate-500 dark:text-slate-400"}`}>{s.title}</p>
-                      <p className="text-[9px] text-slate-400 dark:text-slate-400 mt-0.5 font-semibold leading-none">{s.desc}</p>
+                    <div>
+                      <p className={`text-[9.5px] sm:text-[11px] font-black uppercase tracking-wider leading-none ${isActive ? "text-orange-500 dark:text-orange-400" : "text-slate-500 dark:text-slate-400"}`}>{s.title}</p>
+                      <p className="text-[9px] text-slate-400 dark:text-slate-400 mt-0.5 font-semibold leading-none hidden sm:block">{s.desc}</p>
                     </div>
                   </button>
                   
                   {idx < 2 && (
-                    <div className="h-[2px] w-8 sm:w-12 mx-1 rounded-full bg-slate-100 dark:bg-slate-800">
+                    <div className="h-[2px] w-3 sm:w-8 md:w-12 mx-0.5 sm:mx-1 rounded-full bg-slate-100 dark:bg-slate-800 shrink-0">
                       <div 
                         className="h-full bg-orange-500 transition-all duration-300 rounded-full"
                         style={{ width: activeStep > s.step ? "100%" : activeStep === s.step ? "100%" : "0%" }}
@@ -1290,10 +1294,10 @@ const PlaceOrder = () => {
         )}
 
         {/* TWO COLUMN GRID */}
-        <div className="grid gap-8 lg:grid-cols-[1fr_380px] items-start">
+        <div className="grid gap-6 lg:gap-8 lg:grid-cols-[1fr_380px] xl:grid-cols-[1fr_420px] 2xl:grid-cols-[1fr_460px] items-start w-full min-w-0">
           
           {/* LEFT CONTENT CONTAINER */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md p-5 sm:p-6 shadow-xs text-left">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md p-3.5 sm:p-6 shadow-xs text-left w-full min-w-0">
             
             {/* STEP 1: SELECT A DELIVERY ADDRESS */}
             {activeStep === 1 && (
@@ -1328,7 +1332,7 @@ const PlaceOrder = () => {
                             <div
                               key={addr._id}
                               onClick={() => handleSelectAddress(addr)}
-                              className={`flex items-start gap-4 p-4.5 rounded-md border transition duration-200 cursor-pointer relative ${
+                              className={`flex items-start gap-3 sm:gap-4 p-3.5 sm:p-4.5 rounded-md border transition duration-200 cursor-pointer relative ${
                                 isSelected 
                                   ? "border-orange-500 bg-orange-500/[0.03] dark:bg-orange-500/[0.08]" 
                                   : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-slate-50 dark:hover:bg-slate-800/70"
@@ -1336,20 +1340,20 @@ const PlaceOrder = () => {
                             >
                               
                               {/* Left Radio Selector & Icon */}
-                              <div className="mt-1 flex items-center gap-3 shrink-0">
+                              <div className="mt-1 flex items-center gap-2.5 sm:gap-3 shrink-0">
                                 <div className="flex items-center justify-center">
                                   <div className={`h-4.5 w-4.5 rounded-full border flex items-center justify-center ${isSelected ? "border-orange-500" : "border-slate-300 dark:border-slate-700"}`}>
                                     {isSelected && <div className="h-2.5 w-2.5 rounded-full bg-orange-500" />}
                                   </div>
                                 </div>
-                                <div className={`h-9 w-9 rounded-full flex items-center justify-center ${isSelected ? "bg-orange-500/10 text-orange-500" : "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-400"}`}>
-                                  {idx === 0 ? <Home size={16} /> : <Briefcase size={16} />}
+                                <div className={`h-8 w-8 sm:h-9 sm:w-9 rounded-full flex items-center justify-center ${isSelected ? "bg-orange-500/10 text-orange-500" : "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-400"}`}>
+                                  {idx === 0 ? <Home size={15} /> : <Briefcase size={15} />}
                                 </div>
                               </div>
 
                               {/* Address Details */}
-                              <div className="flex-1 text-xs min-w-0 pr-6">
-                                <div className="flex items-center gap-2">
+                              <div className="flex-1 text-xs min-w-0 pr-2 sm:pr-6 pb-6 sm:pb-0">
+                                <div className="flex items-center gap-2 flex-wrap">
                                   <span className="font-extrabold text-slate-900 dark:text-white text-[13px]">{addr.firstName} {addr.lastName}</span>
                                   {idx === 0 && (
                                     <span className="bg-orange-50 dark:bg-orange-950/60 text-orange-600 dark:text-orange-300 border border-orange-200 dark:border-orange-800 text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded">
@@ -1370,7 +1374,7 @@ const PlaceOrder = () => {
                               </div>
 
                               {/* Actions bottom right */}
-                              <div className="absolute bottom-4 right-4 flex items-center gap-3 text-[10px]">
+                              <div className="absolute bottom-3 sm:bottom-4 right-3 sm:right-4 flex items-center gap-2.5 sm:gap-3 text-[10px]">
                                 <button
                                   type="button"
                                   onClick={(e) => handleOpenEditModal(addr, e)}
@@ -1627,10 +1631,10 @@ const PlaceOrder = () => {
           </div>
 
           {/* RIGHT SIDEBAR (STICKY SUMMARY CARD) */}
-          <div className="space-y-4">
+          <div className="space-y-4 w-full min-w-0">
             
             {/* Sidebar Card */}
-            <aside className="h-fit rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs text-left">
+            <aside className="w-full min-w-0 h-fit rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-xs text-left lg:sticky lg:top-24">
               
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
                 <h3 className="font-extrabold text-slate-900 dark:text-white text-[13px] uppercase tracking-wider flex items-center gap-1.5">
@@ -1780,7 +1784,7 @@ const PlaceOrder = () => {
         </div>
 
         {/* BOTTOM LEFT FEATURE ICONS ROW */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 border-t border-slate-200 dark:border-slate-850 pt-8 text-left select-none max-w-2xl">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8 border-t border-slate-200 dark:border-slate-800 pt-8 text-left select-none w-full">
           {[
             { title: "SSL Secured", desc: "Your data is protected", icon: ShieldCheck },
             { title: "7-Day Returns", desc: "Easy returns & refunds", icon: RotateCcw },
@@ -1806,12 +1810,12 @@ const PlaceOrder = () => {
 
       {/* ADD / EDIT ADDRESS MODAL */}
       {showAddressModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200 max-h-[90vh]">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-2 sm:p-4">
+          <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg sm:rounded-md shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200 max-h-[94vh] sm:max-h-[90vh]">
             
             {/* Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
-              <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">
+            <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 sm:py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+              <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">
                 {editingAddress ? "Modify Delivery Location" : "Add Delivery Location"}
               </h3>
               <button
@@ -1824,10 +1828,10 @@ const PlaceOrder = () => {
             </div>
 
             {/* Modal Body */}
-            <form onSubmit={handleSaveModalAddress} className="flex-1 overflow-y-auto p-5 space-y-4 text-left custom-scrollbar" data-lenis-prevent>
+            <form onSubmit={handleSaveModalAddress} className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3.5 sm:space-y-4 text-left custom-scrollbar" data-lenis-prevent>
               
               {/* Map Selection Container */}
-              <div className="space-y-3.5 border border-slate-100 dark:border-slate-805 rounded-sm p-4 bg-slate-50/30 dark:bg-slate-950/10 shadow-xs relative">
+              <div className="space-y-3.5 border border-slate-100 dark:border-slate-805 rounded-sm p-3 sm:p-4 bg-slate-50/30 dark:bg-slate-950/10 shadow-xs relative">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-black uppercase text-slate-400 dark:text-slate-550 tracking-wider">
                     Interactive Location Finder
@@ -1871,8 +1875,8 @@ const PlaceOrder = () => {
                 <div className="relative rounded-sm border border-slate-200 dark:border-slate-800 overflow-hidden shadow-inner bg-slate-100 dark:bg-slate-955">
                   <div 
                     id="address-map" 
-                    className="w-full h-[240px] relative z-10"
-                    style={{ minHeight: "240px" }}
+                    className="w-full h-[180px] sm:h-[240px] relative z-10"
+                    style={{ minHeight: "180px" }}
                   />
 
                   {/* Floating Current Location Button on Map */}

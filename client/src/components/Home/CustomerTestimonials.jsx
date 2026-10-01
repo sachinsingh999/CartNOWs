@@ -89,17 +89,17 @@ const TestimonialCard = ({ item, idx, direction }) => {
         borderColor: "#2D3550"
       }}
       transition={{ type: "tween", ease: "easeOut", duration: 0.3 }}
-      className="bg-white/85 dark:bg-[#151823] border border-slate-200/80 dark:border-[#242A3B] rounded-lg p-6 shadow-[0_15px_30px_rgba(0,0,0,0.02)] flex flex-col justify-between text-left h-full min-h-[300px] w-full max-w-none relative group backdrop-blur-xl transition-colors duration-300"
+      className="bg-white/85 dark:bg-[#151823] border border-slate-200/80 dark:border-[#242A3B] rounded-none p-6 shadow-[0_15px_30px_rgba(0,0,0,0.02)] flex flex-col justify-between text-left h-full min-h-[300px] w-full max-w-none relative group backdrop-blur-xl transition-colors duration-300"
     >
       {/* Glass reflection effect inside card */}
-      <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.01] to-white/[0.04] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-lg" />
+      <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.01] to-white/[0.04] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-none" />
 
       <div>
         {/* Header Section */}
         <div className="flex items-start justify-between gap-4 mb-4">
           <div className="flex items-center gap-3.5">
             {/* Customer avatar */}
-            <div className="w-14 h-14 rounded-md overflow-hidden border border-slate-100 dark:border-[#242A3B] bg-slate-50 dark:bg-[#1B2030] shrink-0 flex items-center justify-center font-bold text-slate-700 dark:text-slate-300 shadow-inner">
+            <div className="w-14 h-14 rounded-none overflow-hidden border border-slate-100 dark:border-[#242A3B] bg-slate-50 dark:bg-[#1B2030] shrink-0 flex items-center justify-center font-bold text-slate-700 dark:text-slate-300 shadow-inner">
               {item.avt && (item.avt.startsWith("http") || item.avt.startsWith("/")) ? (
                 <img src={item.avt} alt={item.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
               ) : (
@@ -117,7 +117,7 @@ const TestimonialCard = ({ item, idx, direction }) => {
 
                 {/* Top Reviewer badge */}
                 {item.topReviewer && (
-                  <span className="px-1.5 py-0.5 rounded-sm bg-blue-500/10 dark:bg-[#1B2030] border border-blue-500/25 dark:border-[#2D3550] text-[8px] text-blue-500 dark:text-blue-400 font-bold uppercase tracking-wider scale-95 select-none">
+                  <span className="px-1.5 py-0.5 rounded-none bg-blue-500/10 dark:bg-[#1B2030] border border-blue-500/25 dark:border-[#2D3550] text-[8px] text-blue-500 dark:text-blue-400 font-bold uppercase tracking-wider scale-95 select-none">
                     Top Reviewer
                   </span>
                 )}
@@ -127,7 +127,7 @@ const TestimonialCard = ({ item, idx, direction }) => {
                 {/* Animated Verified User badge with green checkmark */}
                 <motion.span
                   variants={badgeVariants}
-                  className="flex items-center gap-1 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide bg-emerald-500/10 dark:bg-[#1B2030] px-2 py-0.5 rounded-md border border-emerald-500/20 dark:border-[#242A3B]"
+                  className="flex items-center gap-1 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide bg-emerald-500/10 dark:bg-[#1B2030] px-2 py-0.5 rounded-none border border-emerald-500/20 dark:border-[#242A3B]"
                 >
                   <CheckCircle size={9} className="fill-emerald-500 stroke-white dark:stroke-slate-950 scale-110" />
                   <span>Verified User</span>
@@ -181,7 +181,7 @@ const TestimonialCard = ({ item, idx, direction }) => {
             {/* Helpful button with count */}
             <button
               onClick={handleHelpful}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md border transition-all duration-200 select-none cursor-pointer ${hasClickedHelpful
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-none border transition-all duration-200 select-none cursor-pointer ${hasClickedHelpful
                   ? "bg-blue-500/10 dark:bg-[#2D3550] border-blue-500/30 dark:border-[#2D3550] text-blue-500 dark:text-blue-300"
                   : "bg-transparent border-slate-200/80 dark:border-[#242A3B] hover:bg-slate-50 dark:hover:bg-[#242A3B] text-slate-500 dark:text-slate-400"
                 }`}
@@ -347,7 +347,7 @@ const CustomerTestimonials = () => {
             onClick={handlePrevTestimonial}
             disabled={isAnimating}
             aria-label="Previous testimonial"
-            className={`h-9 w-9 rounded-md border border-slate-200 dark:border-[#242A3B] bg-white dark:bg-[#1B2030] flex items-center justify-center text-slate-600 dark:text-slate-300 shadow-sm transition duration-300 ${isAnimating ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50 dark:hover:bg-[#242A3B] cursor-pointer"
+            className={`h-9 w-9 rounded-none border border-slate-200 dark:border-[#242A3B] bg-white dark:bg-[#1B2030] flex items-center justify-center text-slate-600 dark:text-slate-300 shadow-sm transition duration-300 ${isAnimating ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50 dark:hover:bg-[#242A3B] cursor-pointer"
               }`}
           >
             <ChevronLeft size={18} />
@@ -357,7 +357,7 @@ const CustomerTestimonials = () => {
             onClick={handleNextTestimonial}
             disabled={isAnimating}
             aria-label="Next testimonial"
-            className={`h-9 w-9 rounded-md border border-slate-200 dark:border-[#242A3B] bg-white dark:bg-[#1B2030] flex items-center justify-center text-slate-600 dark:text-slate-300 shadow-sm transition duration-300 ${isAnimating ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50 dark:hover:bg-[#242A3B] cursor-pointer"
+            className={`h-9 w-9 rounded-none border border-slate-200 dark:border-[#242A3B] bg-white dark:bg-[#1B2030] flex items-center justify-center text-slate-600 dark:text-slate-300 shadow-sm transition duration-300 ${isAnimating ? "opacity-50 cursor-not-allowed" : "hover:bg-slate-50 dark:hover:bg-[#242A3B] cursor-pointer"
               }`}
           >
             <ChevronRight size={18} />
@@ -407,7 +407,7 @@ const CustomerTestimonials = () => {
             className="p-2 cursor-pointer border-none bg-transparent flex items-center justify-center outline-none"
           >
             <span
-              className={`h-2 rounded-sm block transition-all duration-300 ${isAnimating ? "opacity-50" : ""
+              className={`h-2 rounded-none block transition-all duration-300 ${isAnimating ? "opacity-50" : ""
                 } ${testimonialIdx === i ? "w-6 bg-blue-600 dark:bg-[#2D3550]" : "w-3 bg-slate-300 dark:bg-[#1B2030]"}`}
             />
           </button>

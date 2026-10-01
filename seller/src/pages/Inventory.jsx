@@ -1,223 +1,213 @@
 import React, { useState } from "react";
-import { Search, AlertTriangle, ArrowUpDown, Edit2, Check, X, RefreshCw } from "lucide-react";
-import { toast } from "react-toastify";
 import axios from "axios";
+import { toast } from "react-toastify";
+import { AnimatePresence } from "framer-motion";
 import { backendUrl } from "../config";
 
-const Inventory = ({ token, products = [], fetchProducts }) => {
-  const [search, setSearch] = useState("");
-  const [filterCategory, setFilterCategory] = useState("All");
-  const [editingId, setEditingId] = useState(null);
-  const [editStock, setEditStock] = useState(0);
-  const [updating, setUpdating] = useState(false);
+// Modular Inventory Sub-components
+import InventoryHeaderKPIs from "../components/inventory/InventoryHeaderKPIs";
+import UrgentRestockQueue from "../components/inventory/UrgentRestockQueue";
+import WarehouseStockTable from "../components/inventory/WarehouseStockTable";
+import RestockPurchaseOrderModal from "../components/inventory/RestockPurchaseOrderModal";
 
-  const categories = ["All", ...new Set(products.map((p) => p.category).filter(Boolean))];
+const Inventory = ({ 
+  token, 
+  seller = {}, 
+  products = [], 
+  orders = [], 
+  loading = false, 
+  fetchProducts 
+}) => {
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [restockUpdatingId, setRestockUpdatingId] = useState(null);
+  const [isProcessingPO, setIsProcessingPO] = useState(false);
 
-  const handleUpdateStock = async (productId) => {
-    if (editStock < 0) {
-      toast.error("Stock cannot be negative");
-      return;
-    }
-    setUpdating(true);
+  // PO Modal state
+  const [poProducts, setPoProducts] = useState(null); // array of products for PO
+
+  // Quick Restock Handler
+  const handleQuickRestock = async (productId, newStock) => {
+    if (newStock < 0) return;
+    setRestockUpdatingId(productId);
+
     try {
-      const res = await axios.post(
+      const response = await axios.post(
         `${backendUrl}/api/seller/inventory/update-stock`,
-        { id: productId, stock: editStock },
+        { id: productId, stock: newStock },
         { headers: { token } }
       );
-      if (res.data.success) {
-        toast.success("Stock level updated successfully!");
-        setEditingId(null);
+
+      if (response.data.success) {
+        toast.success(`Warehouse inventory replenished to ${newStock} units!`);
         if (fetchProducts) fetchProducts();
       } else {
-        toast.error(res.data.message || "Failed to update stock");
+        toast.error(response.data.message || "Failed to replenish stock");
       }
-    } catch (error) {
-      toast.error(error.response?.data?.message || error.message);
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message);
     } finally {
-      setUpdating(false);
+      setRestockUpdatingId(null);
     }
   };
 
-  const filteredProducts = products.filter((p) => {
-    const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase());
-    const matchesCategory = filterCategory === "All" || p.category === filterCategory;
-    return matchesSearch && matchesCategory;
-  });
+  // Open PO for single product
+  const handleOpenSinglePO = (product) => {
+    setPoProducts([product]);
+  };
+
+  // Open Batch PO for all critical/low-stock items
+  const handleOpenBatchPO = () => {
+    const lowStock = products.filter(p => (parseInt(p.stock, 10) || 0) < 10);
+    if (lowStock.length === 0) {
+      toast.info("All warehouse products currently have healthy stock!");
+      setPoProducts(products.slice(0, 5)); // fallback to top items
+    } else {
+      setPoProducts(lowStock);
+    }
+  };
+
+  // Confirm and fulfill PO quantities
+  const handleConfirmRestockOrder = async (quantitiesMap) => {
+    setIsProcessingPO(true);
+    try {
+      const updates = Object.entries(quantitiesMap).map(([id, addQty]) => {
+        const prod = products.find(p => p._id === id);
+        const current = parseInt(prod?.stock, 10) || 0;
+        return { id, stock: current + addQty };
+      });
+
+      const response = await axios.post(
+        `${backendUrl}/api/seller/inventory/bulk-stock`,
+        { updates },
+        { headers: { token } }
+      );
+
+      if (response.data.success) {
+        toast.success(`Purchase Order received! Replenished ${updates.length} SKUs.`);
+        setPoProducts(null);
+        if (fetchProducts) fetchProducts();
+      } else {
+        toast.error(response.data.message || "Failed to process stock replenishment");
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || err.message);
+    } finally {
+      setIsProcessingPO(false);
+    }
+  };
+
+  // Multi-select toggle
+  const handleToggleSelect = (id) => {
+    setSelectedIds(prev => 
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
+  const handleSelectAll = () => {
+    if (selectedIds.length === products.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(products.map(p => p._id));
+    }
+  };
+
+  // Export Stock CSV
+  const handleExportCSV = () => {
+    if (products.length === 0) {
+      toast.info("No warehouse items to export.");
+      return;
+    }
+
+    const headers = ["SKU", "Product Name", "Category", "Current Stock", "Unit Price", "Locked Capital", "Stock Health Status"];
+    const rows = products.map(p => {
+      const s = parseInt(p.stock, 10) || 0;
+      const price = parseFloat(p.price) || 0;
+      const val = s * price;
+      const status = s === 0 ? "Out of Stock" : s < 10 ? "Low Stock" : "Healthy Buffer";
+      return [
+        `"${p.sku || p._id}"`,
+        `"${(p.name || "").replace(/"/g, '""')}"`,
+        `"${p.category || ""}"`,
+        s,
+        price,
+        val,
+        `"${status}"`
+      ];
+    });
+
+    const csv = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+    const link = document.createElement("a");
+    link.href = encodeURI(csv);
+    link.download = `warehouse_inventory_audit_${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Warehouse Inventory CSV audit downloaded!");
+  };
+
+  // Export Stock JSON
+  const handleExportJSON = () => {
+    if (products.length === 0) {
+      toast.info("No warehouse items to export.");
+      return;
+    }
+
+    const json = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(products, null, 2))}`;
+    const link = document.createElement("a");
+    link.href = json;
+    link.download = `warehouse_inventory_audit_${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    toast.success("Warehouse Inventory JSON audit downloaded!");
+  };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">Stock & Inventory</h2>
-          <p className="text-xs text-slate-500 font-semibold mt-1">
-            Monitor product availability, adjust stock counts, and check replenishment logs.
-          </p>
-        </div>
-        {fetchProducts && (
-          <button
-            onClick={fetchProducts}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-slate-100 dark:text-white rounded-xl text-xs font-bold transition active:scale-95 cursor-pointer shadow-sm"
-          >
-            <RefreshCw size={14} />
-            <span>Sync Catalog</span>
-          </button>
-        )}
-      </div>
+    <div className="space-y-2.5 pb-20 text-slate-800 dark:text-slate-100 animate-fadeIn">
+      {/* 1. Header & Live Warehouse Analytics */}
+      <InventoryHeaderKPIs
+        products={products}
+        orders={orders}
+        loading={loading}
+        onRefresh={fetchProducts}
+        onExportCSV={handleExportCSV}
+        onExportJSON={handleExportJSON}
+        onOpenBatchPO={handleOpenBatchPO}
+      />
 
-      {/* Filters & Search Bar */}
-      <div className="flex flex-col md:flex-row gap-4 bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-          <input
-            type="text"
-            placeholder="Search items by name..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-slate-50 dark:bg-slate-950 rounded-xl pl-10 pr-4 py-2.5 text-xs font-semibold outline-none transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+      {/* 2. Urgent Restock Action Queue */}
+      <UrgentRestockQueue
+        products={products}
+        onQuickRestock={handleQuickRestock}
+        restockUpdatingId={restockUpdatingId}
+        onOpenSinglePO={handleOpenSinglePO}
+      />
+
+      {/* 3. Detailed Warehouse Stock Ledger Table */}
+      <WarehouseStockTable
+        products={products}
+        orders={orders}
+        selectedIds={selectedIds}
+        onToggleSelect={handleToggleSelect}
+        onSelectAll={handleSelectAll}
+        onQuickRestock={handleQuickRestock}
+        restockUpdatingId={restockUpdatingId}
+        onOpenSinglePO={handleOpenSinglePO}
+        loading={loading}
+      />
+
+      {/* 4. Supplier Purchase Order Generator Modal */}
+      <AnimatePresence>
+        {poProducts && (
+          <RestockPurchaseOrderModal
+            poProducts={poProducts}
+            seller={seller}
+            onClose={() => setPoProducts(null)}
+            onConfirmRestockOrder={handleConfirmRestockOrder}
+            isProcessing={isProcessingPO}
           />
-        </div>
-        <div className="flex gap-2 items-center">
-          <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Category:</span>
-          <select
-            value={filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value)}
-            className="rounded-xl px-3 py-2.5 text-xs font-bold bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 outline-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-          >
-            {categories.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* Grid view of inventory status */}
-      <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/50 dark:bg-slate-950/40">
-                <th className="py-3 px-4">Product Details</th>
-                <th className="py-3 px-4">Category</th>
-                <th className="py-3 px-4 text-center">Unit Price</th>
-                <th className="py-3 px-4 text-center">Current Stock</th>
-                <th className="py-3 px-4 text-center">Status</th>
-                <th className="py-3 px-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredProducts.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="py-12 text-center text-xs text-slate-400 font-semibold">
-                    No products found matching your inventory filter criteria.
-                  </td>
-                </tr>
-              ) : (
-                filteredProducts.map((p) => {
-                  const isLow = (p.stock ?? 15) < 10;
-                  const isEditing = editingId === p._id;
-
-                  return (
-                    <tr
-                      key={p._id}
-                      className="text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50/30 dark:hover:bg-slate-950/20 transition duration-150"
-                    >
-                      {/* Product Detail */}
-                      <td className="py-4 px-4 font-bold flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-lg bg-slate-50 dark:bg-slate-950 flex items-center justify-center overflow-hidden shrink-0">
-                          {p.images?.[0] ? (
-                            <img src={p.images[0]} alt="" className="h-full w-full object-contain" />
-                          ) : (
-                            <span className="text-[10px] text-slate-400 font-bold uppercase">Item</span>
-                          )}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-slate-900 dark:text-slate-100 font-black truncate max-w-[200px]">{p.name}</p>
-                          <p className="text-[9px] text-slate-400 font-mono mt-0.5">#{p._id.slice(-8).toUpperCase()}</p>
-                        </div>
-                      </td>
-
-                      {/* Category */}
-                      <td className="py-4 px-4">
-                        <span className="bg-slate-100 dark:bg-slate-950 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded-md font-bold text-[10px] uppercase">
-                          {p.category || "Beverages"}
-                        </span>
-                      </td>
-
-                      {/* Unit Price */}
-                      <td className="py-4 px-4 text-center font-black text-slate-900 dark:text-slate-100">
-                        ₹{p.price?.toFixed(2) || "0.00"}
-                      </td>
-
-                      {/* Current Stock */}
-                      <td className="py-4 px-4 text-center">
-                        {isEditing ? (
-                          <div className="flex items-center justify-center gap-1.5">
-                            <input
-                              type="number"
-                              min="0"
-                              value={editStock}
-                              onChange={(e) => setEditStock(Math.max(0, parseInt(e.target.value, 10) || 0))}
-                              onKeyDown={(e) => {
-                                if (e.key === "-" || e.key === "e" || e.key === "E" || e.key === ".") e.preventDefault();
-                              }}
-                              className="w-16 rounded px-1.5 py-0.5 text-center text-xs font-bold bg-slate-100 dark:bg-slate-800"
-                            />
-                            <button
-                              onClick={() => handleUpdateStock(p._id)}
-                              disabled={updating}
-                              className="p-1 rounded bg-emerald-500 text-slate-100 dark:text-white hover:bg-emerald-600 transition"
-                            >
-                              <Check size={12} />
-                            </button>
-                            <button
-                              onClick={() => setEditingId(null)}
-                              className="p-1 rounded bg-slate-200 text-slate-600 hover:bg-slate-300 transition"
-                            >
-                              <X size={12} />
-                            </button>
-                          </div>
-                        ) : (
-                          <span className={`font-black text-sm ${(p.stock ?? 15) < 10 ? "text-red-600" : "text-slate-900"}`}>
-                            {p.stock ?? 15} units
-                          </span>
-                        )}
-                      </td>
-
-                      {/* Status */}
-                      <td className="py-4 px-4 text-center">
-                        <span
-                          className={`inline-flex px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${ isLow ? "bg-red-50 dark:bg-red-950/20 text-red-650 dark:text-red-400" : "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-450" }`}
-                        >
-                          {isLow ? "Low Stock" : "Healthy"}
-                        </span>
-                      </td>
-
-                      {/* Actions */}
-                      <td className="py-4 px-4 text-right">
-                        {!isEditing && (
-                          <button
-                            onClick={() => {
-                              setEditingId(p._id);
-                              setEditStock(p.stock ?? 15);
-                            }}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-800 text-[10px] font-bold text-slate-700 dark:text-slate-300 transition cursor-pointer"
-                          >
-                            <Edit2 size={10} />
-                            <span>Quick Edit</span>
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

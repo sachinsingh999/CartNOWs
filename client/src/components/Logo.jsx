@@ -24,13 +24,13 @@ const Logo = ({ variant = "horizontal", className = "", forceWhite = false, ...p
   if (forceWhite) {
     return (
       <div 
-        className={`relative flex items-center justify-center shrink-0 ${className}`} 
+        className={`relative flex items-center justify-start shrink-0 ${className}`} 
         {...props}
       >
         <img
           src={logoDark}
           alt="CartNow Logo"
-          className="h-full w-auto max-h-full object-contain drop-shadow-xs"
+          className="h-full w-auto max-h-full object-contain object-left drop-shadow-xs"
         />
       </div>
     );
@@ -38,18 +38,18 @@ const Logo = ({ variant = "horizontal", className = "", forceWhite = false, ...p
 
   return (
     <div 
-      className={`relative flex items-center justify-center shrink-0 ${className}`} 
+      className={`relative flex items-center justify-start shrink-0 ${className}`} 
       {...props}
     >
       <img
         src={logoLight}
         alt="CartNow Logo"
-        className="h-full w-auto max-h-full object-contain drop-shadow-xs dark:hidden block"
+        className="h-full w-auto max-h-full object-contain object-left drop-shadow-xs dark:hidden block"
       />
       <img
         src={logoDark}
         alt="CartNow Logo"
-        className="h-full w-auto max-h-full object-contain drop-shadow-xs dark:block hidden"
+        className="h-full w-auto max-h-full object-contain object-left drop-shadow-xs dark:block hidden"
       />
     </div>
   );

@@ -608,23 +608,23 @@ const ProductDuel = ({ homepageData, onQuickView, onAddToCart }) => {
   };
 
   return (
-    <div className="w-full bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-sm p-3.5 sm:p-4.5 lg:p-5 shadow-xs select-none text-left transition-colors duration-200">
+    <div className="w-full bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-none p-3.5 sm:p-4.5 lg:p-5 shadow-xs select-none text-left transition-colors duration-200">
       
       {/* Top Header Row */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3.5">
         <div className="text-left space-y-1">
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-rose-50 dark:bg-rose-950/60 border border-rose-200/80 dark:border-rose-800/60 rounded-sm text-[9px] font-black uppercase tracking-wider text-rose-700 dark:text-rose-300 shadow-2xs">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-rose-50 dark:bg-rose-950/60 border border-rose-200/80 dark:border-rose-800/60 rounded-none text-[9px] font-black uppercase tracking-wider text-rose-700 dark:text-rose-300 shadow-2xs">
               <Swords size={11} className="stroke-[2.5]" />
               <span>COMMUNITY DUEL</span>
             </div>
 
-            <span className="px-2 py-0.5 rounded-sm bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold">
+            <span className="px-2 py-0.5 rounded-none bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold">
               1v1 Head-to-Head
             </span>
 
             {/* Weekly Auto-Rotation Indicator Badge */}
-            <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-sm bg-amber-50 dark:bg-amber-950/50 border border-amber-200/80 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 text-[9.5px] font-extrabold shadow-2xs">
+            <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-none bg-amber-50 dark:bg-amber-950/50 border border-amber-200/80 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 text-[9.5px] font-extrabold shadow-2xs">
               <Clock size={10} className="stroke-[2.5] text-amber-600 dark:text-amber-400 animate-pulse" />
               <span>Weekly Refresh: {weekInfo.daysLeft > 0 ? `${weekInfo.daysLeft}d ` : ""}{weekInfo.hoursLeft}h left</span>
             </div>
@@ -632,19 +632,15 @@ const ProductDuel = ({ homepageData, onQuickView, onAddToCart }) => {
 
           <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
             <span>This or That? The Ultimate Showdown</span>
-            <span className="h-1.5 w-1.5 rounded-sm bg-rose-600 dark:bg-rose-400 animate-pulse" />
+            <span className="h-1.5 w-1.5 rounded-none bg-rose-600 dark:bg-rose-400 animate-pulse" />
           </h2>
-
-          <p className="text-xs font-bold text-slate-500 dark:text-slate-400">
-            Vote for your favorite gear, see what {voteStats.total.toLocaleString("en-IN")} shoppers prefer, and unlock verified duel pricing. <span className="text-slate-700 dark:text-slate-300 font-extrabold">Auto-selected from our live catalog!</span>
-          </p>
         </div>
 
         {/* Top Right Action */}
         <div className="flex items-center gap-2 shrink-0 self-start sm:self-center">
           <button
             onClick={() => navigate("/product")}
-            className="px-3 py-1.5 rounded-sm border border-slate-300 dark:border-slate-700 hover:border-slate-900 dark:hover:border-white text-slate-800 dark:text-slate-200 hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-950 font-black text-[11px] uppercase tracking-wider flex items-center gap-1.5 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 shadow-2xs"
+            className="px-3 py-1.5 rounded-none border border-slate-300 dark:border-slate-700 hover:border-slate-900 dark:hover:border-white text-slate-800 dark:text-slate-200 hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-950 font-black text-[11px] uppercase tracking-wider flex items-center gap-1.5 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 shadow-2xs"
           >
             <span>All Showdowns</span>
             <ArrowRight size={12} className="stroke-[2.5]" />
@@ -669,7 +665,7 @@ const ProductDuel = ({ homepageData, onQuickView, onAddToCart }) => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setActiveDuelId(duel.id)}
-              className={`px-3 py-1.5 rounded-sm text-[10.5px] font-black uppercase tracking-wider border transition-colors duration-150 cursor-pointer shadow-2xs flex items-center gap-1.5 shrink-0 select-none ${
+              className={`px-3 py-1.5 rounded-none text-[10.5px] font-black uppercase tracking-wider border transition-colors duration-150 cursor-pointer shadow-2xs flex items-center gap-1.5 shrink-0 select-none ${
                 isActive
                   ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-slate-900 dark:border-white shadow-xs"
                   : isThisWeek
@@ -682,13 +678,13 @@ const ProductDuel = ({ homepageData, onQuickView, onAddToCart }) => {
 
               {/* This Week's Active Showdown Badge */}
               {isThisWeek && (
-                <span className="text-[8px] px-1 py-0.2 rounded-sm font-black bg-amber-500 text-slate-950 tracking-tight">
+                <span className="text-[8px] px-1 py-0.2 rounded-none font-black bg-amber-500 text-slate-950 tracking-tight">
                   THIS WEEK
                 </span>
               )}
 
               {userChoice && (
-                <span className="text-[8.5px] px-1 py-0.2 rounded-sm font-bold bg-emerald-500 text-white">
+                <span className="text-[8.5px] px-1 py-0.2 rounded-none font-bold bg-emerald-500 text-white">
                   VOTED
                 </span>
               )}
@@ -698,7 +694,7 @@ const ProductDuel = ({ homepageData, onQuickView, onAddToCart }) => {
       </div>
 
       {/* Live Animated Vote Ratio Progress Bar */}
-      <div className="w-full bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 rounded-sm p-3 mb-4 space-y-2">
+      <div className="w-full bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 rounded-none p-3 mb-4 space-y-2">
         <div className="flex items-center justify-between text-xs font-black">
           <div className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400">
             {voteStats.percentA >= voteStats.percentB && (
@@ -723,7 +719,7 @@ const ProductDuel = ({ homepageData, onQuickView, onAddToCart }) => {
         </div>
 
         {/* Single Color Progress Meter */}
-        <div className="relative w-full h-2.5 bg-slate-200 dark:bg-slate-700 rounded-sm overflow-hidden flex shadow-inner">
+        <div className="relative w-full h-2.5 bg-slate-200 dark:bg-slate-700 rounded-none overflow-hidden flex shadow-inner">
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${voteStats.percentA}%` }}
@@ -752,7 +748,7 @@ const ProductDuel = ({ homepageData, onQuickView, onAddToCart }) => {
         {/* Contender A Card */}
         <motion.div
           whileHover={{ y: -2 }}
-          className={`relative bg-white dark:bg-slate-900 border rounded-sm p-4 flex flex-col justify-between transition-all duration-200 ${
+          className={`relative bg-white dark:bg-slate-900 border rounded-none p-4 flex flex-col justify-between transition-all duration-200 ${
             votedContender === "A"
               ? "border-blue-500 dark:border-blue-400 shadow-md ring-2 ring-blue-500/20"
               : "border-slate-200/90 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
@@ -761,12 +757,12 @@ const ProductDuel = ({ homepageData, onQuickView, onAddToCart }) => {
           <div>
             {/* Top Badge & Status */}
             <div className="flex items-center justify-between mb-3">
-              <span className="px-2.5 py-0.5 bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 font-black text-[9px] uppercase tracking-wider rounded-sm">
+              <span className="px-2.5 py-0.5 bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 font-black text-[9px] uppercase tracking-wider rounded-none">
                 {currentDuel.contenderA.badge}
               </span>
 
               {votedContender === "A" && (
-                <span className="flex items-center gap-1 text-[10px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded-sm">
+                <span className="flex items-center gap-1 text-[10px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded-none">
                   <CheckCircle2 size={11} className="stroke-[3]" />
                   Your Pick
                 </span>
@@ -777,7 +773,7 @@ const ProductDuel = ({ homepageData, onQuickView, onAddToCart }) => {
             <div className="flex flex-col sm:flex-row items-center gap-3.5 mb-3.5">
               <div 
                 onClick={() => handleOpenProductDetail(currentDuel.contenderA)}
-                className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-sm overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700 shrink-0 cursor-pointer group"
+                className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-none overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700 shrink-0 cursor-pointer group"
               >
                 <img
                   src={currentDuel.contenderA.image}
@@ -837,7 +833,7 @@ const ProductDuel = ({ homepageData, onQuickView, onAddToCart }) => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => handleCastVote("A")}
-              className={`flex-1 py-2 px-3 rounded-sm font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs ${
+              className={`flex-1 py-2 px-3 rounded-none font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs ${
                 votedContender === "A"
                   ? "bg-blue-600 text-white shadow-blue-500/20"
                   : "bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-blue-600 hover:text-white"
@@ -851,7 +847,7 @@ const ProductDuel = ({ homepageData, onQuickView, onAddToCart }) => {
               type="button"
               onClick={() => handleAddToCartContender(currentDuel.contenderA)}
               title="Add to Cart"
-              className="py-2 px-3 rounded-sm bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 font-black text-xs uppercase tracking-wider flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
+              className="py-2 px-3 rounded-none bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 font-black text-xs uppercase tracking-wider flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
             >
               <ShoppingCart size={13} className="stroke-[2.5]" />
               <span>Buy</span>
@@ -861,7 +857,7 @@ const ProductDuel = ({ homepageData, onQuickView, onAddToCart }) => {
               type="button"
               onClick={() => handleQuickViewContender(currentDuel.contenderA)}
               title="Quick View"
-              className="p-2 rounded-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer shadow-2xs"
+              className="p-2 rounded-none border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer shadow-2xs"
             >
               <Eye size={14} />
             </button>
@@ -871,7 +867,7 @@ const ProductDuel = ({ homepageData, onQuickView, onAddToCart }) => {
         {/* Contender B Card */}
         <motion.div
           whileHover={{ y: -2 }}
-          className={`relative bg-white dark:bg-slate-900 border rounded-sm p-4 flex flex-col justify-between transition-all duration-200 ${
+          className={`relative bg-white dark:bg-slate-900 border rounded-none p-4 flex flex-col justify-between transition-all duration-200 ${
             votedContender === "B"
               ? "border-blue-500 dark:border-blue-400 shadow-md ring-2 ring-blue-500/20"
               : "border-slate-200/90 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
@@ -880,12 +876,12 @@ const ProductDuel = ({ homepageData, onQuickView, onAddToCart }) => {
           <div>
             {/* Top Badge & Status */}
             <div className="flex items-center justify-between mb-3">
-              <span className="px-2.5 py-0.5 bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 font-black text-[9px] uppercase tracking-wider rounded-sm">
+              <span className="px-2.5 py-0.5 bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 font-black text-[9px] uppercase tracking-wider rounded-none">
                 {currentDuel.contenderB.badge}
               </span>
 
               {votedContender === "B" && (
-                <span className="flex items-center gap-1 text-[10px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded-sm">
+                <span className="flex items-center gap-1 text-[10px] font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded-none">
                   <CheckCircle2 size={11} className="stroke-[3]" />
                   Your Pick
                 </span>
@@ -896,7 +892,7 @@ const ProductDuel = ({ homepageData, onQuickView, onAddToCart }) => {
             <div className="flex flex-col sm:flex-row items-center gap-3.5 mb-3.5">
               <div 
                 onClick={() => handleOpenProductDetail(currentDuel.contenderB)}
-                className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-sm overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700 shrink-0 cursor-pointer group"
+                className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-none overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700 shrink-0 cursor-pointer group"
               >
                 <img
                   src={currentDuel.contenderB.image}
@@ -956,7 +952,7 @@ const ProductDuel = ({ homepageData, onQuickView, onAddToCart }) => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => handleCastVote("B")}
-              className={`flex-1 py-2 px-3 rounded-sm font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs ${
+              className={`flex-1 py-2 px-3 rounded-none font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs ${
                 votedContender === "B"
                   ? "bg-blue-600 text-white shadow-blue-500/20"
                   : "bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-blue-600 hover:text-white"
@@ -970,7 +966,7 @@ const ProductDuel = ({ homepageData, onQuickView, onAddToCart }) => {
               type="button"
               onClick={() => handleAddToCartContender(currentDuel.contenderB)}
               title="Add to Cart"
-              className="py-2 px-3 rounded-sm bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 font-black text-xs uppercase tracking-wider flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
+              className="py-2 px-3 rounded-none bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 font-black text-xs uppercase tracking-wider flex items-center gap-1 cursor-pointer transition-colors shadow-2xs"
             >
               <ShoppingCart size={13} className="stroke-[2.5]" />
               <span>Buy</span>
@@ -980,7 +976,7 @@ const ProductDuel = ({ homepageData, onQuickView, onAddToCart }) => {
               type="button"
               onClick={() => handleQuickViewContender(currentDuel.contenderB)}
               title="Quick View"
-              className="p-2 rounded-sm border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer shadow-2xs"
+              className="p-2 rounded-none border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors cursor-pointer shadow-2xs"
             >
               <Eye size={14} />
             </button>

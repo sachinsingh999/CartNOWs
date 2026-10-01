@@ -8,18 +8,32 @@
 
 html {
   scrollbar-gutter: stable;
-  scroll-behavior: smooth;
   scroll-padding-top: var(--navbar-height, 80px);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 
+/* Enable smooth scrolling on desktop devices with hover support, keeping native inertia on mobile touch */
+@media (prefers-reduced-motion: no-preference) {
+  @media (hover: hover) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+}
+
 /* ── Hardware Accelerated Smooth Scrolling & Transitions ── */
 .scroll-smooth {
-  scroll-behavior: smooth !important;
-  -webkit-overflow-scrolling: touch !important;
+  -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
+  touch-action: pan-x pan-y;
+}
+
+@media (hover: hover) {
+  .scroll-smooth {
+    scroll-behavior: smooth;
+  }
 }
 
 /* GPU composite layers for interactive cards & carousels */
@@ -27,10 +41,6 @@ html {
 .group,
 button {
   -webkit-tap-highlight-color: transparent;
-}
-
-img {
-  content-visibility: auto;
 }
 
 @keyframes marquee-left-to-right {

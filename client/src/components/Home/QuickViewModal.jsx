@@ -85,7 +85,7 @@ const QuickViewModal = ({ product, onClose, onAddToCart }) => {
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="bg-[#F8F9FC] dark:bg-[#0B0F19] rounded-md overflow-hidden max-w-4xl w-full shadow-2xl relative border border-[#DFE4EE] dark:border-slate-800 z-10 text-left text-slate-800 dark:text-slate-200"
+          className="bg-[#F8F9FC] dark:bg-[#0B0F19] rounded-none overflow-hidden max-w-4xl w-full shadow-2xl relative border border-[#DFE4EE] dark:border-slate-800 z-10 text-left text-slate-800 dark:text-slate-200"
         >
           {/* Close Button */}
           <button
@@ -102,10 +102,10 @@ const QuickViewModal = ({ product, onClose, onAddToCart }) => {
             {/* Left Column - Product Gallery */}
             <div className="w-full md:w-1/2 flex flex-col gap-4">
               {/* Active Image Box */}
-              <div className="relative w-full h-[360px] bg-slate-100 dark:bg-[#1a202c]/30 rounded border border-slate-200 dark:border-slate-800/80 flex items-center justify-center p-6 overflow-hidden">
+              <div className="relative w-full h-[360px] bg-slate-100 dark:bg-[#1a202c]/30 rounded-none border border-slate-200 dark:border-slate-800/80 flex items-center justify-center p-6 overflow-hidden">
                 {/* Discount Tag */}
                 {discountPercent > 0 && (
-                  <div className="absolute top-3 left-3 bg-emerald-600 text-white text-[10px] font-black px-2.5 py-1 rounded shadow-xs uppercase z-20">
+                  <div className="absolute top-3 left-3 bg-emerald-600 text-white text-[10px] font-black px-2.5 py-1 rounded-none shadow-xs uppercase z-20">
                     {discountPercent}% OFF
                   </div>
                 )}
@@ -115,7 +115,7 @@ const QuickViewModal = ({ product, onClose, onAddToCart }) => {
                   <img
                     src={getSrc(activeImgIdx)}
                     alt={product.name}
-                    className="max-h-full max-w-full object-contain p-2 rounded transition-all duration-300"
+                    className="max-h-full max-w-full object-contain p-2 rounded-none transition-all duration-300"
                   />
                 ) : (
                   <div className="text-xs text-slate-400">No Image Available</div>
@@ -151,13 +151,13 @@ const QuickViewModal = ({ product, onClose, onAddToCart }) => {
                       <div
                         key={idx}
                         onClick={() => setActiveImgIdx(idx)}
-                        className={`h-14 w-14 rounded bg-white dark:bg-[#0C0F16] border flex items-center justify-center p-1 cursor-pointer transition-all duration-150 relative overflow-hidden ${
+                        className={`h-14 w-14 rounded-none bg-white dark:bg-[#0C0F16] border flex items-center justify-center p-1 cursor-pointer transition-all duration-150 relative overflow-hidden ${
                           isActive 
                             ? "border-2 border-emerald-500 ring-1 ring-emerald-500/25" 
-                            : "border-slate-200 dark:border-slate-800 hover:border-slate-450 dark:hover:border-slate-650"
+                            : "border-slate-200 dark:border-slate-800 hover:border-slate-450 dark:hover:border-slate-655"
                         }`}
                       >
-                        <img src={getSrc(idx)} className="max-h-full max-w-full object-contain rounded-xs" alt="" />
+                        <img src={getSrc(idx)} className="max-h-full max-w-full object-contain rounded-none" alt="" />
                         {idx === 3 && images.length > 4 && (
                           <div className="absolute inset-0 bg-slate-950/70 flex items-center justify-center text-white text-[11px] font-black">
                             +{images.length - 3}
@@ -177,7 +177,7 @@ const QuickViewModal = ({ product, onClose, onAddToCart }) => {
                   <BrandLogo
                     brand={product.brand || "SONY"}
                     brandDomain={product.brandDomain}
-                    className="w-5 h-5 rounded-xs"
+                    className="w-5 h-5 rounded-none"
                   />
                   <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-500">
                     {product.brand || "SONY"}
@@ -245,7 +245,7 @@ const QuickViewModal = ({ product, onClose, onAddToCart }) => {
                           key={i}
                           type="button"
                           onClick={() => setQvSize(sz)}
-                          className={`px-2.5 py-1 text-[10px] font-extrabold border rounded cursor-pointer transition-all duration-150 ${ qvSize === sz ? "bg-[#10B981] border-[#10B981] text-white shadow-xs" : "bg-white dark:bg-[#111827] border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800" }`}
+                          className={`px-2.5 py-1 text-[10px] font-extrabold border rounded-none cursor-pointer transition-all duration-150 ${ qvSize === sz ? "bg-[#10B981] border-[#10B981] text-white shadow-xs" : "bg-white dark:bg-[#111827] border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800" }`}
                         >
                           {sz}
                         </button>
@@ -257,11 +257,11 @@ const QuickViewModal = ({ product, onClose, onAddToCart }) => {
                 {/* Quantity selector row */}
                 <div className="flex flex-col gap-1.5">
                   <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">Quantity</span>
-                  <div className="flex items-center border border-slate-200 dark:border-slate-800 rounded bg-slate-50 dark:bg-[#0C0F16] overflow-hidden h-9 w-32 justify-between p-0.5">
+                  <div className="flex items-center border border-slate-200 dark:border-slate-800 rounded-none bg-slate-50 dark:bg-[#0C0F16] overflow-hidden h-9 w-32 justify-between p-0.5">
                     <button
                       type="button"
                       onClick={() => setQvQty(Math.max(1, qvQty - 1))}
-                      className="w-8 h-full bg-slate-200 hover:bg-slate-300 dark:bg-[#1e293b]/40 dark:hover:bg-[#1e293b]/85 flex items-center justify-center text-slate-700 dark:text-slate-350 cursor-pointer active:scale-95 border-none rounded-xs"
+                      className="w-8 h-full bg-slate-200 hover:bg-slate-300 dark:bg-[#1e293b]/40 dark:hover:bg-[#1e293b]/85 flex items-center justify-center text-slate-700 dark:text-slate-350 cursor-pointer active:scale-95 border-none rounded-none"
                     >
                       <Minus size={10} className="stroke-[2.5]" />
                     </button>
@@ -269,7 +269,7 @@ const QuickViewModal = ({ product, onClose, onAddToCart }) => {
                     <button
                       type="button"
                       onClick={() => setQvQty(qvQty + 1)}
-                      className="w-8 h-full bg-slate-200 hover:bg-slate-300 dark:bg-[#1e293b]/40 dark:hover:bg-[#1e293b]/85 flex items-center justify-center text-slate-700 dark:text-slate-350 cursor-pointer active:scale-95 border-none rounded-xs"
+                      className="w-8 h-full bg-slate-200 hover:bg-slate-300 dark:bg-[#1e293b]/40 dark:hover:bg-[#1e293b]/85 flex items-center justify-center text-slate-700 dark:text-slate-350 cursor-pointer active:scale-95 border-none rounded-none"
                     >
                       <Plus size={10} className="stroke-[2.5]" />
                     </button>
@@ -285,7 +285,7 @@ const QuickViewModal = ({ product, onClose, onAddToCart }) => {
                     onAddToCart(product, qvQty, qvSize);
                     onClose();
                   }}
-                  className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs uppercase tracking-wider rounded transition cursor-pointer active:scale-95 shadow-md flex items-center justify-center gap-1.5 border-none"
+                  className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs uppercase tracking-wider rounded-none transition cursor-pointer active:scale-95 shadow-md flex items-center justify-center gap-1.5 border-none"
                 >
                   <ShoppingCart size={12} className="stroke-[2.5]" />
                   <span>Add to Cart</span>
@@ -304,7 +304,7 @@ const QuickViewModal = ({ product, onClose, onAddToCart }) => {
                     setIsFavorite(!isFavorite);
                     toast.success(!isFavorite ? "Added to Wishlist!" : "Removed from Wishlist!");
                   }}
-                  className={`flex-1 py-2 px-3 border rounded text-[11px] font-black cursor-pointer transition flex items-center justify-center gap-1.5 ${
+                  className={`flex-1 py-2 px-3 border rounded-none text-[11px] font-black cursor-pointer transition flex items-center justify-center gap-1.5 ${
                     isFavorite 
                       ? "bg-rose-500/10 border-rose-500/25 text-rose-500" 
                       : "bg-white dark:bg-transparent border-slate-200 dark:border-slate-800 text-slate-650 dark:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white"
@@ -318,7 +318,7 @@ const QuickViewModal = ({ product, onClose, onAddToCart }) => {
                   onClick={() => {
                     toast.info("Comparison list updated! 📊");
                   }}
-                  className="flex-1 py-2 px-3 bg-white dark:bg-transparent border border-slate-200 dark:border-slate-800 text-slate-650 dark:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white rounded text-[11px] font-black cursor-pointer transition flex items-center justify-center gap-1.5"
+                  className="flex-1 py-2 px-3 bg-white dark:bg-transparent border border-slate-200 dark:border-slate-800 text-slate-650 dark:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white rounded-none text-[11px] font-black cursor-pointer transition flex items-center justify-center gap-1.5"
                 >
                   <BarChart2 size={11} />
                   <span>Compare</span>
@@ -329,7 +329,7 @@ const QuickViewModal = ({ product, onClose, onAddToCart }) => {
                     navigator.clipboard.writeText(window.location.origin + `/product/${product._id}`);
                     toast.success("Product link copied to clipboard! 🔗");
                   }}
-                  className="flex-1 py-2 px-3 bg-white dark:bg-transparent border border-slate-200 dark:border-slate-800 text-slate-650 dark:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white rounded text-[11px] font-black cursor-pointer transition flex items-center justify-center gap-1.5"
+                  className="flex-1 py-2 px-3 bg-white dark:bg-transparent border border-slate-200 dark:border-slate-800 text-slate-650 dark:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white rounded-none text-[11px] font-black cursor-pointer transition flex items-center justify-center gap-1.5"
                 >
                   <Share2 size={11} />
                   <span>Share</span>
@@ -340,7 +340,7 @@ const QuickViewModal = ({ product, onClose, onAddToCart }) => {
           </div>
 
           {/* Bottom Ribbon / Trust Highlights */}
-          <div className="border-t border-[#DFE4EE] dark:border-slate-800/60 bg-slate-100/50 dark:bg-[#070b13] py-4 px-6 flex flex-wrap justify-between gap-4 select-none rounded-b-md">
+          <div className="border-t border-[#DFE4EE] dark:border-slate-800/60 bg-slate-100/50 dark:bg-[#070b13] py-4 px-6 flex flex-wrap justify-between gap-4 select-none rounded-none">
             <div className="flex items-center gap-2.5">
               <ShieldCheck size={16} className="text-emerald-500 shrink-0" />
               <div>

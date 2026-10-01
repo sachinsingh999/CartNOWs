@@ -24,7 +24,7 @@ const NewsletterCTA = () => {
           🎉
         </div>
 
-        <span className="text-[9px] font-black tracking-widest text-cyan-300 uppercase bg-white/10 px-3 py-1 rounded-md border border-white/20">
+        <span className="text-[9px] font-black tracking-widest text-cyan-300 uppercase bg-white/10 px-3 py-1 rounded-none border border-white/20">
           Newsletter
         </span>
         <h2 className="text-3xl sm:text-4xl font-black tracking-tight mt-1">

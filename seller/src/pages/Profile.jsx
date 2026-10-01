@@ -176,7 +176,7 @@ const Profile = ({ token, seller, setSeller, products = [], orders = [] }) => {
   );
 
   return (
-    <div className="space-y-4 animate-fadeIn text-slate-800 dark:text-slate-100 max-w-7xl mx-auto pb-8">
+    <div className="space-y-4 animate-fadeIn text-slate-800 dark:text-slate-100 w-full pb-8">
       
       {/* ── Consolidated Merchant Overview & Navigation Card ── */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5 md:p-6 shadow-xs border border-slate-200/80 dark:border-slate-800 space-y-4">

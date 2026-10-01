@@ -669,65 +669,148 @@ export const schedulePickup = async (req, res) => {
 /* ================= 7. VERIFY PICKUP (DELIVERY AGENT) ================= */
 export const verifyPickup = async (req, res) => {
   try {
-    const { rmaId, status, verificationCode } = req.body;
+    const { rmaId, requestId, status, verificationCode } = req.body;
+    const targetId = rmaId || requestId;
     const driverId = req.deliveryman?.id;
 
-    let rma = await returnOrderModel.findById(rmaId);
-    if (!rma) {
-      rma = await returnOrderModel.findOne({ requestId: rmaId });
-    }
-    if (!rma) {
-      rma = await returnOrderModel.findOne({ orderId: rmaId });
+    if (!targetId) {
+      return res.status(400).json({ success: false, message: "Target return task ID is required." });
     }
 
+    let rma = null;
     let requestDoc = null;
     let orderDoc = null;
 
+    try {
+      rma = await returnOrderModel.findById(targetId);
+    } catch (e) {}
+
     if (!rma) {
-      requestDoc = await returnRequestModel.findById(rmaId);
+      rma = await returnOrderModel.findOne({
+        $or: [{ requestId: targetId }, { orderId: targetId }, { rmaNumber: targetId }]
+      });
     }
+
+    if (!rma) {
+      try {
+        requestDoc = await returnRequestModel.findById(targetId);
+      } catch (e) {}
+      if (!requestDoc) {
+        requestDoc = await returnRequestModel.findOne({ orderId: targetId });
+      }
+    }
+
     if (!rma && !requestDoc) {
-      orderDoc = await orderModel.findById(rmaId);
+      try {
+        orderDoc = await orderModel.findById(targetId);
+      } catch (e) {}
     }
 
     if (!rma && !requestDoc && !orderDoc) {
       return res.status(404).json({ success: false, message: "Return task / order not found" });
     }
 
+    const targetStatus = status || "Out for Pickup";
+
     // Handle returnRequestModel status update
     if (requestDoc) {
-      const targetStatus = status || "Out for Pickup";
-      if (targetStatus === "Completed" && verificationCode) {
+      if (targetStatus === "Completed") {
+        if (!verificationCode) {
+          return res.status(400).json({ success: false, message: "Verification OTP code required" });
+        }
+        const expectedCode = requestDoc.verificationCode || requestDoc.pickupVerificationCode;
+        if (expectedCode && verificationCode.toUpperCase() !== String(expectedCode).toUpperCase()) {
+          return res.status(400).json({ success: false, message: "Invalid verification code" });
+        }
         requestDoc.status = "Completed";
       } else {
         requestDoc.status = targetStatus;
       }
+      if (driverId && !requestDoc.deliverymanId) {
+        requestDoc.deliverymanId = driverId;
+      }
       await requestDoc.save();
+
+      // Sync associated order & RMA
+      if (requestDoc.orderId) {
+        await orderModel.findByIdAndUpdate(requestDoc.orderId, {
+          orderStatus: targetStatus === "Completed" ? "Returned" : targetStatus,
+          ...(driverId ? { deliverymanId: driverId } : {})
+        });
+      }
+      await returnOrderModel.findOneAndUpdate(
+        { $or: [{ requestId: requestDoc._id }, { orderId: requestDoc.orderId }] },
+        { status: requestDoc.status, ...(driverId ? { deliverymanId: driverId } : {}) }
+      );
+
       return res.json({ success: true, message: `Return task status updated to ${requestDoc.status}`, request: requestDoc });
     }
 
-    // Handle orderModel status update
+    // Handle orderDoc status update
     if (orderDoc) {
-      const targetStatus = status || "Out for Pickup";
-      orderDoc.orderStatus = targetStatus;
+      if (targetStatus === "Completed") {
+        orderDoc.orderStatus = "Returned";
+      } else {
+        orderDoc.orderStatus = targetStatus;
+      }
+      if (driverId && !orderDoc.deliverymanId) {
+        orderDoc.deliverymanId = driverId;
+      }
       await orderDoc.save();
+
+      await returnOrderModel.findOneAndUpdate(
+        { orderId: orderDoc._id },
+        { status: targetStatus, ...(driverId ? { deliverymanId: driverId } : {}) }
+      );
+      await returnRequestModel.findOneAndUpdate(
+        { orderId: orderDoc._id },
+        { status: targetStatus, ...(driverId ? { deliverymanId: driverId } : {}) }
+      );
+
       return res.json({ success: true, message: `Order status updated to ${orderDoc.orderStatus}`, order: orderDoc });
     }
 
     // Handle returnOrderModel (RMA) status update
-    if (status && status !== "Completed") {
-      rma.status = status;
+    if (targetStatus !== "Completed") {
+      rma.status = targetStatus;
+      if (driverId && !rma.deliverymanId) {
+        rma.deliverymanId = driverId;
+      }
+      if (targetStatus === "Picked Up") {
+        rma.pickupCompletedDate = new Date();
+      }
       rma.timeline.push({
-        status,
-        description: `Status updated to ${status} by delivery agent.`,
+        status: targetStatus,
+        description: `Status updated to ${targetStatus} by delivery agent.`,
         actorRole: "deliveryman",
         actorId: driverId || null,
         timestamp: new Date(),
       });
       await rma.save();
-      return res.json({ success: true, message: `RMA status updated to ${status}`, rma });
+
+      if (rma.orderId) {
+        await orderModel.findByIdAndUpdate(rma.orderId, {
+          orderStatus: targetStatus,
+          ...(driverId ? { deliverymanId: driverId } : {})
+        });
+      }
+      if (rma.requestId) {
+        await returnRequestModel.findByIdAndUpdate(rma.requestId, {
+          status: targetStatus,
+          ...(driverId ? { deliverymanId: driverId } : {})
+        });
+      }
+
+      emitRmaSocketEvent(req, rma._id, "rma:status_updated", {
+        rmaId: rma._id,
+        status: rma.status,
+        timestamp: new Date()
+      });
+
+      return res.json({ success: true, message: `RMA status updated to ${targetStatus}`, rma });
     }
 
+    // Completed flow with OTP
     if (!verificationCode) {
       return res.status(400).json({ success: false, message: "Verification OTP code required" });
     }
@@ -736,16 +819,22 @@ export const verifyPickup = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid verification code" });
     }
 
-    rma.status = status || "Picked Up";
+    rma.status = "Completed";
     rma.pickupCompletedDate = new Date();
+    if (driverId && !rma.deliverymanId) {
+      rma.deliverymanId = driverId;
+    }
 
     if (rma.requestId) {
-      await returnRequestModel.findByIdAndUpdate(rma.requestId, { status: rma.status });
+      await returnRequestModel.findByIdAndUpdate(rma.requestId, { status: "Completed" });
+    }
+    if (rma.orderId) {
+      await orderModel.findByIdAndUpdate(rma.orderId, { orderStatus: "Returned" });
     }
 
     rma.timeline.push({
-      status: rma.status,
-      description: `Item pickup completed & verified via customer OTP (${rma.status}).`,
+      status: "Completed",
+      description: `Item pickup completed & verified via customer OTP (Completed).`,
       actorRole: "deliveryman",
       actorId: driverId || null,
       timestamp: new Date(),
@@ -768,6 +857,7 @@ export const verifyPickup = async (req, res) => {
 
     res.json({ success: true, message: "Pickup verified and completed successfully", rma });
   } catch (error) {
+    console.error("verifyPickup error:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };

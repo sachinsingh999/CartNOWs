@@ -1,14 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
-import { User, ShieldAlert, MapPin, Settings, Mail, Phone, Truck, ShieldCheck, HelpCircle, Crosshair, Lock, Bell } from "lucide-react";
+import { 
+  User, ShieldAlert, MapPin, Mail, Phone, Truck, ShieldCheck, 
+  Crosshair, Lock, Star
+} from "lucide-react";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { backendUrl } from "../config";
 
-/**
- * Enhanced ProfileSettingsTab component.
- * Preserves the interactive Leaflet dispatch sector map and adds security configurations
- * (Change Password, Forgot/Reset Password) and delivery preferences.
- */
 const ProfileSettingsTab = ({
   driver,
   stats,
@@ -28,19 +26,10 @@ const ProfileSettingsTab = ({
   const mapRef = useRef(null);
   const [gpsStatus, setGpsStatus] = useState("idle");
 
-  // Change Password state variables
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [passwordLoading, setPasswordLoading] = useState(false);
 
-  // Forgot / Reset Password state variables
-  const [showResetFlow, setShowResetFlow] = useState(false);
-  const [forgotLoading, setForgotLoading] = useState(false);
-  const [resetTokenInput, setResetTokenInput] = useState("");
-  const [resetNewPassword, setResetNewPassword] = useState("");
-  const [resetLoading, setResetLoading] = useState(false);
-
-  // Other delivery man options
   const [audioAlerts, setAudioAlerts] = useState(() => {
     return localStorage.getItem("driver_audio_alerts") !== "false";
   });
@@ -48,7 +37,6 @@ const ProfileSettingsTab = ({
     return localStorage.getItem("driver_auto_accept") === "true";
   });
 
-  // Handle toggling audio settings
   useEffect(() => {
     localStorage.setItem("driver_audio_alerts", audioAlerts);
   }, [audioAlerts]);
@@ -57,11 +45,10 @@ const ProfileSettingsTab = ({
     localStorage.setItem("driver_auto_accept", autoAccept);
   }, [autoAccept]);
 
-  // Submit Password Change
   const handleChangePassword = async (e) => {
     e.preventDefault();
     if (!oldPassword || !newPassword) {
-      toast.error("Please fill in all password fields");
+      toast.error("Please fill in both current and new password");
       return;
     }
     setPasswordLoading(true);
@@ -86,63 +73,6 @@ const ProfileSettingsTab = ({
     }
   };
 
-  // Submit Forgot Password request to generate token
-  const handleForgotPasswordRequest = async () => {
-    if (!driver?.email) {
-      toast.error("Driver email not loaded");
-      return;
-    }
-    setForgotLoading(true);
-    try {
-      const response = await axios.post(`${backendUrl}/api/deliveryman/forgot-password`, {
-        email: driver.email
-      });
-      if (response.data.success) {
-        toast.info(`Reset code generated! Check popup / console.`);
-        // For testing/local debug convenience, print and display the mock token
-        alert(`MOCK EMAIL DELIVERY:\nYour password reset code is: ${response.data.resetToken}`);
-        setResetTokenInput(response.data.resetToken); // Pre-fill for ease of use
-        setShowResetFlow(true);
-      } else {
-        toast.error(response.data.message || "Failed to request reset token");
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error(error.response?.data?.message || error.message || "Network error");
-    } finally {
-      setForgotLoading(false);
-    }
-  };
-
-  // Submit token and new password to complete reset
-  const handleResetPasswordSubmit = async (e) => {
-    e.preventDefault();
-    if (!resetTokenInput || !resetNewPassword) {
-      toast.error("Please enter the reset token and choose a new password");
-      return;
-    }
-    setResetLoading(true);
-    try {
-      const response = await axios.post(`${backendUrl}/api/deliveryman/reset-password`, {
-        token: resetTokenInput,
-        newPassword: resetNewPassword
-      });
-      if (response.data.success) {
-        toast.success("Password reset successfully! You can now use your new credentials.");
-        setShowResetFlow(false);
-        setResetTokenInput("");
-        setResetNewPassword("");
-      } else {
-        toast.error(response.data.message || "Failed to reset password");
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error(error.response?.data?.message || error.message || "Network error");
-    } finally {
-      setResetLoading(false);
-    }
-  };
-
   const handleLocateMe = () => {
     if (!navigator.geolocation) {
       toast.error("Geolocation is not supported by your browser");
@@ -157,23 +87,16 @@ const ProfileSettingsTab = ({
         setDeliveryLat(lat);
         setDeliveryLng(lng);
         setGpsStatus("success");
-        toast.success("Synchronized coordinates with device GPS!");
+        toast.success("GPS synchronized!");
         
-        // Dynamic Leaflet map updates
-        if (mapRef.current) {
-          mapRef.current.setView([lat, lng], 13);
-        }
-        if (markerRef.current) {
-          markerRef.current.setLatLng([lat, lng]);
-        }
-        if (circleRef.current) {
-          circleRef.current.setLatLng([lat, lng]);
-        }
+        if (mapRef.current) mapRef.current.setView([lat, lng], 13);
+        if (markerRef.current) markerRef.current.setLatLng([lat, lng]);
+        if (circleRef.current) circleRef.current.setLatLng([lat, lng]);
       },
       (error) => {
         console.error("GPS error:", error);
         setGpsStatus("error");
-        toast.error(`GPS Sync Error: ${error.message || "Access denied"}`);
+        toast.error(`GPS Error: ${error.message || "Access denied"}`);
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
@@ -220,7 +143,7 @@ const ProfileSettingsTab = ({
         radius: deliveryRadius * 1000,
         color: '#3b82f6',
         fillColor: '#3b82f6',
-        fillOpacity: 0.1
+        fillOpacity: 0.12
       }).addTo(mapInstance);
 
       mapRef.current = mapInstance;
@@ -273,306 +196,240 @@ const ProfileSettingsTab = ({
   }, [deliveryRadius]);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6 items-start">
+    <div className="space-y-3.5 text-slate-800 dark:text-slate-200">
       
-      {/* Left Column: Driver Agent Profile Summary & Credentials */}
-      <div className="space-y-6">
-        {/* Profile Card */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-xs relative overflow-hidden group transition-all duration-300">
-          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-600 to-indigo-600" />
-          
-          <div className="flex flex-col items-center text-center space-y-4 pt-3 pb-5 border-b border-slate-100 dark:border-slate-800/85">
-            <div className="relative group cursor-pointer">
-              {driver?.profilePhoto ? (
-                <img
-                  src={driver.profilePhoto}
-                  alt={driver.name}
-                  className="h-24 w-24 rounded-full object-cover border-4 border-blue-500/20 shadow-md group-hover:scale-105 transition duration-300"
-                />
-              ) : (
-                <div className="h-24 w-24 rounded-full bg-slate-50 dark:bg-slate-900 border-4 border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-400 dark:text-slate-500 shadow-inner group-hover:scale-105 transition duration-300">
-                  <User size={40} className="stroke-[1.5]" />
-                </div>
-              )}
-              <span className="absolute bottom-1 right-1 h-4 w-4 rounded-full bg-emerald-500 border-2 border-white/10 dark:border-slate-800 dark:border-gray-900 shadow" title="Active Account" />
-            </div>
-            <div>
-              <h4 className="text-base font-black text-slate-900 dark:text-white tracking-tight">{driver?.name}</h4>
-              <p className="text-[9px] text-blue-600 dark:text-blue-400 font-extrabold uppercase tracking-widest mt-1">Courier Hub Partner</p>
-            </div>
-          </div>
-          
-          {/* Informational list */}
-          <div className="space-y-3 pt-5">
-            <div className="flex items-center justify-between p-3.5 bg-slate-50/50 dark:bg-slate-900/40 rounded-xl border border-slate-100 dark:border-slate-800/60 text-xs">
-              <span className="text-slate-500 dark:text-slate-400 font-bold flex items-center gap-2">
-                <Truck size={13} className="text-slate-400" />
-                <span>Vehicle Type</span>
-              </span>
-              <span className="font-black text-slate-900 dark:text-slate-200 capitalize">{driver?.vehicleType || "Bike"}</span>
-            </div>
-            <div className="flex items-center justify-between p-3.5 bg-slate-50/50 dark:bg-slate-900/40 rounded-xl border border-slate-100 dark:border-slate-800/60 text-xs">
-              <span className="text-slate-500 dark:text-slate-400 font-bold flex items-center gap-2">
-                <Mail size={13} className="text-slate-400" />
-                <span>Email Address</span>
-              </span>
-              <span className="font-black text-slate-900 dark:text-slate-200 truncate pl-4 max-w-[200px]">{driver?.email}</span>
-            </div>
-            <div className="flex items-center justify-between p-3.5 bg-slate-50/50 dark:bg-slate-900/40 rounded-xl border border-slate-100 dark:border-slate-800/60 text-xs">
-              <span className="text-slate-500 dark:text-slate-400 font-bold flex items-center gap-2">
-                <Phone size={13} className="text-slate-400" />
-                <span>Phone Contact</span>
-              </span>
-              <span className="font-black text-slate-900 dark:text-slate-200">{driver?.phone}</span>
-            </div>
-            <div className="flex items-center justify-between p-3.5 bg-slate-50/50 dark:bg-slate-900/40 rounded-xl border border-slate-100 dark:border-slate-800/60 text-xs">
-              <span className="text-slate-500 dark:text-slate-400 font-bold flex items-center gap-2">
-                <ShieldCheck size={13} className="text-slate-400" />
-                <span>Contract Status</span>
-              </span>
-              <span className="font-black text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 border border-emerald-500/20 rounded-lg capitalize">
-                {stats?.status || driver?.status || "Active"}
-              </span>
-            </div>
-          </div>
+      {/* Top Header Card */}
+      <div className="glass-panel-elevated rounded-md p-4 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-3 border border-slate-200 dark:border-slate-800 border-t-2 border-t-blue-500">
+        <div className="space-y-0.5">
+          <h2 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight font-mono">
+            Courier Profile & Sector Range
+          </h2>
+          <p className="text-[11px] text-slate-400 font-medium">
+            Manage your credentials, adjust your delivery radius, and sync GPS location.
+          </p>
         </div>
 
-        {/* Change / Reset Password Security Options */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl p-5.5 shadow-xs space-y-4">
-          <div className="flex items-start gap-3">
-            <Lock size={16} className="text-slate-500 shrink-0 mt-0.5" />
-            <div>
-              <h4 className="font-black text-xs uppercase tracking-wider">Security Settings</h4>
-              <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 leading-normal">Configure authentication preferences and change passwords.</p>
+        <div className="glass-card px-2.5 py-1 rounded-sm text-left shrink-0 border border-slate-200 dark:border-slate-800">
+          <span className="text-[8px] font-mono font-bold text-slate-400 uppercase tracking-widest block">Status</span>
+          <span className="text-[11px] font-mono font-bold text-emerald-600 dark:text-emerald-400">
+            Active Verified Partner
+          </span>
+        </div>
+      </div>
+
+      {/* Main 2-Column Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-3.5 items-start">
+        
+        {/* Left: Driver Card & Security */}
+        <div className="space-y-3.5">
+          <div className="glass-panel-elevated rounded-md p-4 shadow-sm space-y-3.5 border border-slate-200 dark:border-slate-800 border-t-2 border-t-blue-500">
+            <div className="flex items-center gap-3 pb-3 border-b border-slate-100 dark:border-slate-800/80">
+              <div className="h-10 w-10 rounded-sm bg-slate-900 dark:bg-slate-800 border border-blue-500/30 flex items-center justify-center text-blue-400 font-mono font-bold text-sm shrink-0">
+                {driver?.name ? driver.name.split(" ").map(n=>n[0]).join("").toUpperCase() : <User size={18} />}
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <h3 className="text-xs font-bold text-slate-900 dark:text-white truncate font-mono">{driver?.name}</h3>
+                  <ShieldCheck size={13} className="text-emerald-500 shrink-0" />
+                </div>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className="text-[10px] font-mono font-bold text-amber-500 flex items-center gap-0.5 bg-amber-500/10 px-1.5 py-0.5 rounded-sm border border-amber-500/20">
+                    <Star size={9} className="fill-amber-400 text-amber-400" />
+                    <span>{driver?.rating ? Number(driver.rating).toFixed(2) : "5.00"}</span>
+                  </span>
+                  <span className="text-[10px] font-mono text-slate-400 truncate">{driver?.deliveryZone || "Designated Sector"}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-1.5 text-xs">
+              <div className="flex items-center justify-between p-2.5 glass-card rounded-sm border border-slate-200 dark:border-slate-800">
+                <span className="text-slate-400 font-mono font-bold uppercase text-[8px] tracking-wider">Agent Email</span>
+                <span className="font-mono font-bold text-slate-800 dark:text-slate-200 truncate max-w-[170px] text-[11px]">{driver?.email || "—"}</span>
+              </div>
+
+              <div className="flex items-center justify-between p-2.5 glass-card rounded-sm border border-slate-200 dark:border-slate-800">
+                <span className="text-slate-400 font-mono font-bold uppercase text-[8px] tracking-wider">Phone</span>
+                <span className="font-mono font-bold text-slate-800 dark:text-slate-200 text-[11px]">{driver?.phone || "—"}</span>
+              </div>
+
+              <div className="flex items-center justify-between p-2.5 glass-card rounded-sm border border-slate-200 dark:border-slate-800">
+                <span className="text-slate-400 font-mono font-bold uppercase text-[8px] tracking-wider">Vehicle Class</span>
+                <span className="font-mono font-bold text-blue-600 dark:text-blue-400 capitalize text-[11px]">{driver?.vehicleType || "Standard Courier"}</span>
+              </div>
+            </div>
+
+            {/* App Preferences Toggles */}
+            <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80 space-y-2">
+              <span className="text-[8px] font-mono font-bold uppercase text-slate-400 tracking-widest block">Dispatch Preferences</span>
+              <div className="flex items-center justify-between p-2 glass-card rounded-sm border border-slate-200 dark:border-slate-800">
+                <div>
+                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200">Audio Broadcast Alerts</p>
+                  <p className="text-[9px] text-slate-400">Play chime on new job assignment</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={audioAlerts}
+                  onChange={(e) => {
+                    setAudioAlerts(e.target.checked);
+                    toast.info(`Audio alerts ${e.target.checked ? "enabled" : "muted"}`);
+                  }}
+                  className="h-3.5 w-3.5 accent-blue-600 rounded-none cursor-pointer"
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-2 glass-card rounded-sm border border-slate-200 dark:border-slate-800">
+                <div>
+                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200">Auto-Accept Direct Tasks</p>
+                  <p className="text-[9px] text-slate-400">Instantly accept assigned orders</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={autoAccept}
+                  onChange={(e) => {
+                    setAutoAccept(e.target.checked);
+                    toast.info(`Auto-accept ${e.target.checked ? "enabled" : "disabled"}`);
+                  }}
+                  className="h-3.5 w-3.5 accent-blue-600 rounded-none cursor-pointer"
+                />
+              </div>
             </div>
           </div>
 
-          {!showResetFlow ? (
-            <form onSubmit={handleChangePassword} className="space-y-3.5 pt-1">
+          {/* Change Password Card */}
+          <div className="glass-panel-elevated rounded-md p-4 shadow-sm space-y-3 border border-slate-200 dark:border-slate-800">
+            <div className="pb-2 border-b border-slate-100 dark:border-slate-800/80 flex items-center gap-1.5">
+              <Lock size={13} className="text-blue-500" />
+              <h4 className="font-bold text-xs uppercase tracking-wider text-slate-900 dark:text-white font-mono">Security & Password</h4>
+            </div>
+
+            <form onSubmit={handleChangePassword} className="space-y-2.5">
               <div>
-                <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest block leading-none mb-1">Current Password</label>
+                <label className="text-[8px] font-mono font-bold uppercase text-slate-400 tracking-widest block mb-1">
+                  Current Password
+                </label>
                 <input
                   type="password"
                   required
                   value={oldPassword}
                   onChange={(e) => setOldPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full text-xs p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                  className="w-full text-xs p-2 rounded-sm border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-blue-500"
                 />
               </div>
+
               <div>
-                <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest block leading-none mb-1">New Password</label>
+                <label className="text-[8px] font-mono font-bold uppercase text-slate-400 tracking-widest block mb-1">
+                  New Password
+                </label>
                 <input
                   type="password"
                   required
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full text-xs p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
+                  className="w-full text-xs p-2 rounded-sm border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-blue-500"
                 />
               </div>
+
               <button
                 type="submit"
                 disabled={passwordLoading}
-                className="w-full bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-100 dark:text-white py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition active:scale-95 cursor-pointer disabled:opacity-50"
+                className="w-full bg-blue-600 hover:bg-blue-500 text-white py-2 rounded-sm text-xs font-mono font-bold uppercase tracking-wider transition active:scale-98 cursor-pointer disabled:opacity-50 shadow-xs border border-blue-400/30"
               >
                 {passwordLoading ? "Updating..." : "Update Password"}
               </button>
-
-              <div className="border-t border-slate-100 dark:border-slate-800/80 pt-3 flex justify-center">
-                <button
-                  type="button"
-                  onClick={handleForgotPasswordRequest}
-                  disabled={forgotLoading}
-                  className="text-[9px] font-black text-blue-500 hover:underline uppercase tracking-wider cursor-pointer"
-                >
-                  {forgotLoading ? "Requesting..." : "Forgot Password? Get Reset Token"}
-                </button>
-              </div>
             </form>
-          ) : (
-            <form onSubmit={handleResetPasswordSubmit} className="space-y-3.5 pt-1">
-              <div className="bg-blue-500/5 border border-blue-500/10 p-2.5 rounded-lg">
-                <p className="text-[9px] text-blue-600 dark:text-blue-400 leading-normal font-bold">
-                  Enter the recovery reset token code shown in your alert/toast notification below to choose a new password.
-                </p>
-              </div>
-              <div>
-                <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest block leading-none mb-1">Reset Token</label>
-                <input
-                  type="text"
-                  required
-                  value={resetTokenInput}
-                  onChange={(e) => setResetTokenInput(e.target.value)}
-                  placeholder="ENTER TOKEN"
-                  className="w-full text-xs p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 font-mono"
-                />
-              </div>
-              <div>
-                <label className="text-[8px] font-black text-slate-400 uppercase tracking-widest block leading-none mb-1">Choose New Password</label>
-                <input
-                  type="password"
-                  required
-                  value={resetNewPassword}
-                  onChange={(e) => setResetNewPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full text-xs p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:border-blue-500"
-                />
-              </div>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowResetFlow(false)}
-                  className="flex-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-wider transition cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={resetLoading}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl text-[9px] font-black uppercase tracking-wider transition active:scale-95 cursor-pointer disabled:opacity-50"
-                >
-                  {resetLoading ? "Resetting..." : "Submit Reset"}
-                </button>
-              </div>
-            </form>
-          )}
+          </div>
+
+          {/* Resign Account */}
+          <div className="glass-panel rounded-md p-4 shadow-sm space-y-2 border border-rose-500/20 bg-rose-500/5">
+            <h4 className="font-bold text-xs text-rose-600 dark:text-rose-400 uppercase tracking-wider flex items-center gap-1.5 font-mono">
+              <ShieldAlert size={13} />
+              <span>Deactivate Courier Contract</span>
+            </h4>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+              Resign partner status and permanently terminate active courier access.
+            </p>
+            <button
+              onClick={() => setShowResignModal(true)}
+              className="w-full bg-rose-600/10 hover:bg-rose-600/20 text-rose-600 dark:text-rose-400 border border-rose-500/30 py-2 rounded-sm text-xs font-mono font-bold uppercase tracking-wider transition cursor-pointer active:scale-98"
+            >
+              Resign Contract
+            </button>
+          </div>
         </div>
 
-        {/* Driver Preferences Card */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl p-5 shadow-xs space-y-4">
-          <div className="flex items-start gap-3">
-            <Settings size={16} className="text-slate-500 shrink-0 mt-0.5" />
+        {/* Right: Map & Radius Slider */}
+        <div className="glass-panel-elevated rounded-md p-4 shadow-sm space-y-3.5 border border-slate-200 dark:border-slate-800 border-t-2 border-t-blue-500">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-slate-100 dark:border-slate-800/80">
             <div>
-              <h4 className="font-black text-xs uppercase tracking-wider">Driver Options</h4>
-              <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 leading-normal">Configure alert notifications and dispatch preferences.</p>
+              <h3 className="font-bold text-xs text-slate-900 dark:text-white flex items-center gap-1.5 uppercase font-mono">
+                <MapPin size={14} className="text-blue-500" />
+                <span>Dispatch Sector & Operational Radius</span>
+              </h3>
+              <p className="text-[10px] text-slate-400 font-medium mt-0.5">Drag map pin or sync live GPS to set coverage boundary</p>
             </div>
+
+            <button
+              onClick={handleLocateMe}
+              disabled={gpsStatus === "fetching"}
+              type="button"
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-sm bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-mono font-bold uppercase tracking-wider transition cursor-pointer shadow-xs active:scale-98 border border-blue-400/30"
+            >
+              <Crosshair size={11} className={gpsStatus === "fetching" ? "animate-spin" : ""} />
+              <span>{gpsStatus === "fetching" ? "Locating..." : "Sync GPS"}</span>
+            </button>
           </div>
 
-          <div className="space-y-2.5">
-            {/* Audio Alerts */}
-            <label className="flex items-center justify-between p-3 bg-slate-50/50 dark:bg-slate-900/40 rounded-xl border border-slate-100 dark:border-slate-800/60 cursor-pointer select-none">
-              <span className="text-[11px] text-slate-650 dark:text-slate-350 font-bold flex items-center gap-2">
-                <Bell size={13} className="text-slate-400" />
-                <span>Audio alerts on new job</span>
-              </span>
-              <input
-                type="checkbox"
-                checked={audioAlerts}
-                onChange={() => setAudioAlerts(!audioAlerts)}
-                className="w-4 h-4 accent-blue-600 cursor-pointer rounded"
-              />
-            </label>
+          {/* Leaflet Map */}
+          <div id="delivery-leaflet-map" className="h-[340px] w-full rounded-sm border border-slate-200 dark:border-slate-800 shadow-inner z-10 overflow-hidden" />
 
-            {/* Auto Accept short jobs */}
-            <label className="flex items-center justify-between p-3 bg-slate-50/50 dark:bg-slate-900/40 rounded-xl border border-slate-100 dark:border-slate-800/60 cursor-pointer select-none">
-              <span className="text-[11px] text-slate-650 dark:text-slate-350 font-bold flex items-center gap-2">
-                <ShieldCheck size={13} className="text-slate-400" />
-                <span>Auto-accept short routes</span>
-              </span>
-              <input
-                type="checkbox"
-                checked={autoAccept}
-                onChange={() => setAutoAccept(!autoAccept)}
-                className="w-4 h-4 accent-blue-600 cursor-pointer rounded"
-              />
-            </label>
-          </div>
-        </div>
-
-        {/* Deactivation Card */}
-        <div className="bg-rose-500/5 dark:bg-rose-950/30 border border-rose-500/10 dark:border-rose-950 rounded-2xl p-5 shadow-sm space-y-4">
-          <div className="flex items-start gap-3 text-rose-600 dark:text-rose-400">
-            <ShieldAlert size={18} className="shrink-0 mt-0.5" />
-            <div>
-              <h4 className="font-black text-xs uppercase tracking-wider">Deactivate Hub Account</h4>
-              <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 leading-normal">Resign your partnership contract. This action will permanently remove your login access and unassign pending jobs.</p>
-            </div>
-          </div>
-          <button
-            onClick={() => setShowResignModal(true)}
-            className="w-full bg-rose-500 dark:bg-rose-500/10 hover:bg-rose-600 dark:hover:bg-rose-500/20 border border-rose-500/20 text-slate-100 dark:text-white dark:text-rose-400 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition duration-150 active:scale-98 cursor-pointer text-center"
-          >
-            Resign Partner Account
-          </button>
-        </div>
-      </div>
- 
-      {/* Right Column: Interactive Sector Map Settings */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-xs space-y-5 hover:shadow-sm transition-all duration-300">
-        <div className="border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-xl bg-blue-500/10 dark:bg-blue-500/20 text-blue-500 dark:text-blue-400 flex items-center justify-center shrink-0">
-              <MapPin size={15} />
-            </div>
-            <div>
-              <h3 className="font-extrabold text-sm text-slate-900 dark:text-white">Configure Dispatch Sector</h3>
-              <p className="text-[10px] text-slate-500 mt-0.5">Click/drag marker to pin your center hub coordinates</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-1 text-slate-400 dark:text-slate-600 cursor-help" title="Radius settings determine which orders appear in your Available Pool.">
-            <HelpCircle size={14} />
-          </div>
-        </div>
- 
-        {/* Map Container */}
-        <div id="delivery-leaflet-map" className="h-[320px] w-full rounded-2xl border border-slate-200 dark:border-slate-800/80 relative z-10 shadow-inner" />
- 
-        <div className="grid grid-cols-1 md:grid-cols-[1fr_240px] gap-6 items-end pt-2">
-          {/* Left sub-column: Radius Slider */}
-          <div className="space-y-3.5">
-            <div className="flex justify-between items-center text-xs">
-              <span className="font-black text-[9px] text-slate-500 uppercase tracking-widest">Delivery Range Limit</span>
-              <span className="font-black text-blue-600 dark:text-blue-400 bg-blue-500/10 px-2.5 py-0.5 rounded-lg border border-blue-500/20 shadow-sm">
-                {deliveryRadius} km sector
-              </span>
-            </div>
-            <div className="relative flex items-center">
+          {/* Controls */}
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_240px] gap-4 items-end pt-1">
+            <div className="space-y-2">
+              <div className="flex justify-between items-center text-xs">
+                <span className="font-mono font-bold text-[8px] uppercase tracking-widest text-slate-400">
+                  Coverage Radius
+                </span>
+                <span className="font-mono font-bold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-sm border border-blue-500/20 text-xs">
+                  {deliveryRadius} km
+                </span>
+              </div>
               <input
                 type="range"
                 min="1"
                 max="50"
                 value={deliveryRadius}
                 onChange={(e) => setDeliveryRadius(parseInt(e.target.value))}
-                className="w-full accent-blue-600 h-1 bg-slate-100 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer"
+                className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-none appearance-none cursor-pointer accent-blue-600"
               />
             </div>
-          </div>
- 
-          {/* Right sub-column: Coordinate metrics & Save */}
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-2 text-[10px] bg-slate-50 dark:bg-slate-900/40 p-3 rounded-xl border border-slate-200/60 dark:border-slate-800/80">
-              <div>
-                <span className="text-[8px] font-black uppercase text-slate-400 dark:text-slate-550 block tracking-widest">Lat</span>
-                <span className="font-mono font-black text-slate-800 dark:text-slate-200">{deliveryLat}</span>
+
+            <div className="space-y-2">
+              <div className="grid grid-cols-2 gap-1.5 text-xs glass-card p-2 rounded-sm border border-slate-200 dark:border-slate-800">
+                <div>
+                  <span className="text-[8px] font-mono font-bold uppercase text-slate-400 block">Lat</span>
+                  <span className="font-mono font-bold text-slate-800 dark:text-slate-200 text-[10px]">{deliveryLat}</span>
+                </div>
+                <div>
+                  <span className="text-[8px] font-mono font-bold uppercase text-slate-400 block">Lng</span>
+                  <span className="font-mono font-bold text-slate-800 dark:text-slate-200 text-[10px]">{deliveryLng}</span>
+                </div>
               </div>
-              <div>
-                <span className="text-[8px] font-black uppercase text-slate-400 dark:text-slate-550 block tracking-widest">Lng</span>
-                <span className="font-mono font-black text-slate-800 dark:text-slate-200">{deliveryLng}</span>
-              </div>
+
+              <button
+                onClick={handleSaveMapArea}
+                disabled={mapSaving}
+                className="w-full bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 py-2 rounded-sm text-xs font-mono font-bold uppercase tracking-wider transition cursor-pointer disabled:opacity-50 active:scale-98 shadow-xs"
+              >
+                {mapSaving ? "Saving..." : "Save Coverage Range"}
+              </button>
             </div>
- 
-            <button
-              onClick={handleLocateMe}
-              disabled={gpsStatus === "fetching"}
-              type="button"
-              className="w-full flex items-center justify-center gap-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700/80 text-slate-800 dark:text-slate-200 py-2.5 text-xs font-bold transition duration-200 cursor-pointer border border-slate-200 dark:border-slate-700 disabled:opacity-60"
-            >
-              <Crosshair size={14} className={gpsStatus === "fetching" ? "animate-spin text-blue-500" : "text-slate-500"} />
-              <span>{gpsStatus === "fetching" ? "Acquiring GPS..." : "Sync Device GPS"}</span>
-            </button>
- 
-            <button
-              onClick={handleSaveMapArea}
-              disabled={mapSaving}
-              className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-slate-100 dark:text-white py-3 text-xs font-black uppercase tracking-wider transition-all duration-200 shadow-md shadow-blue-500/10 active:scale-98 cursor-pointer disabled:opacity-50"
-            >
-              {mapSaving ? "Saving..." : "Save Sector limits"}
-            </button>
           </div>
         </div>
+
       </div>
- 
     </div>
   );
 };

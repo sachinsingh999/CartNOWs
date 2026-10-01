@@ -1,17 +1,15 @@
 import React, { useState } from "react";
-import { Inbox, Sparkles, Navigation, DollarSign, Clock, MapPin, Package, ArrowRight, Activity, Loader2, CheckCircle2 } from "lucide-react";
+import { 
+  Inbox, DollarSign, Clock, MapPin, Package, ArrowRight, Activity, Loader2, CheckCircle2, Zap, Sparkles
+} from "lucide-react";
 
-/**
- * Redesigned Available Pool Tab.
- * Standardizes currency formatting (comma-grouped raw values), preserves responsive vertical details stack,
- * and applies a clean, minimalist card aesthetic with dynamic click animations.
- */
 const AvailablePoolTab = ({
   filteredAvailableOrders,
   claimOrderHandler,
   driver
 }) => {
   const [claimingId, setClaimingId] = useState(null);
+  const [filterType, setFilterType] = useState("all");
 
   const handleClaim = async (orderId) => {
     setClaimingId(orderId);
@@ -24,173 +22,186 @@ const AvailablePoolTab = ({
 
   const totalPoolAmount = filteredAvailableOrders.reduce((sum, order) => sum + (order.amount || 0), 0);
 
-  // Format currency with standard commas (preserves raw database values for testing/debugging)
   const formatCommission = (amount) => {
     if (!amount && amount !== 0) return "₹0.00";
     return `₹${parseFloat(amount.toFixed(2)).toLocaleString("en-IN")}`;
   };
 
-  // Estimate transit dynamically based on driver range (approx. 2.5 mins per km)
-  const averageTransit = driver?.deliveryRadius 
-    ? `~${Math.round(driver.deliveryRadius * 2.5)} minutes`
-    : "~20 minutes";
+  const displayedOrders = filteredAvailableOrders.filter((order) => {
+    if (filterType === "high_payout") return (order.amount || 0) >= 150;
+    if (filterType === "cod") return (order.paymentMethod || "").toLowerCase() === "cod";
+    if (filterType === "prepaid") return (order.paymentMethod || "").toLowerCase() !== "cod";
+    return true;
+  });
 
   return (
-    <div className="space-y-6">
-      {/* Header Info */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
-        <div>
-          <h3 className="font-extrabold text-base text-slate-900 dark:text-white tracking-tight uppercase flex items-center gap-2">
-            <Activity className="text-slate-500" size={16} />
-            Unassigned Orders Dispatch Pool
-          </h3>
-          <p className="text-[10px] text-slate-450 dark:text-slate-400 mt-1 font-bold uppercase tracking-wider">
-            Review and claim unassigned packages inside your dispatch zone
-          </p>
-        </div>
-        
-        <div className="flex items-center gap-2 shrink-0">
-          <span className="bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-350 text-[9px] font-black px-3 py-1.5 rounded-xl shadow-xs uppercase tracking-wider">
-            {filteredAvailableOrders.length} Shipments Available
-          </span>
-          {filteredAvailableOrders.length > 0 && (
-            <span className="bg-slate-100 dark:bg-slate-900 text-slate-750 dark:text-slate-300 text-[9px] font-black px-3 py-1.5 rounded-xl shadow-xs uppercase tracking-wider">
-              Commission Pool: {formatCommission(totalPoolAmount)}
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* Available Pool Stats Grid */}
-      {filteredAvailableOrders.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4.5">
-          {/* Card: Average Payout */}
-          <div className="bg-white dark:bg-[#090b11] border border-slate-200/60 dark:border-slate-800/60 rounded-2xl p-4.5 shadow-xs flex items-center gap-3.5 hover:border-slate-300 dark:hover:border-slate-700 transition duration-200">
-            <div className="h-10 w-10 rounded-xl bg-slate-100 dark:bg-slate-900 text-slate-500 flex items-center justify-center shrink-0">
-              <DollarSign size={16} />
+    <div className="space-y-3.5 text-slate-800 dark:text-slate-200">
+      
+      {/* Top Header Card */}
+      <div className="glass-panel-elevated rounded-md p-4 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-3 border border-slate-200 dark:border-slate-800 border-t-2 border-t-amber-500">
+        <div className="space-y-0.5">
+          <div className="flex items-center gap-2">
+            <div className="h-7 w-7 rounded-sm bg-amber-500/10 text-amber-500 flex items-center justify-center border border-amber-500/20">
+              <Zap size={15} />
             </div>
             <div>
-              <p className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none">Average Payout</p>
-              <p className="text-xs font-black text-slate-800 dark:text-white mt-1.5 leading-none">
-                {formatCommission(totalPoolAmount / filteredAvailableOrders.length)} <span className="text-[9px] font-bold text-slate-450 dark:text-slate-500">/ job</span>
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight">
+                  Available Shipment Pool
+                </h2>
+                <span className="px-2 py-0.5 rounded-sm text-[8px] font-mono font-bold uppercase tracking-wider bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                  {driver?.deliveryZone || "Sector Pool"}
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                Review unassigned packages and instant-claim orders in your registered zone.
               </p>
             </div>
           </div>
-          
-          {/* Card: Average Transit */}
-          <div className="bg-white dark:bg-[#090b11] border border-slate-200/60 dark:border-slate-800/60 rounded-2xl p-4.5 shadow-xs flex items-center gap-3.5 hover:border-slate-300 dark:hover:border-slate-700 transition duration-200">
-            <div className="h-10 w-10 rounded-xl bg-slate-100 dark:bg-slate-900 text-slate-500 flex items-center justify-center shrink-0">
-              <Clock size={16} />
-            </div>
-            <div>
-              <p className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none">Average Transit</p>
-              <p className="text-xs font-black text-slate-800 dark:text-white mt-1.5 leading-none">{averageTransit}</p>
-            </div>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="glass-card px-3 py-1.5 rounded-sm text-left border border-slate-200 dark:border-slate-800">
+            <span className="text-[8px] font-mono font-bold text-slate-400 uppercase tracking-widest block">Available</span>
+            <span className="text-xs font-mono font-bold text-slate-900 dark:text-white">
+              {filteredAvailableOrders.length} Shipments
+            </span>
           </div>
 
-          {/* Card: Sector Mode */}
-          <div className="bg-white dark:bg-[#090b11] border border-slate-200/60 dark:border-slate-800/60 rounded-2xl p-4.5 shadow-xs flex items-center gap-3.5 hover:border-slate-300 dark:hover:border-slate-700 transition duration-200">
-            <div className="h-10 w-10 rounded-xl bg-slate-100 dark:bg-slate-900 text-slate-500 flex items-center justify-center shrink-0">
-              <Package size={16} />
-            </div>
-            <div>
-              <p className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none">Sector Dispatch</p>
-              <p className="text-xs font-black text-slate-800 dark:text-white mt-1.5 leading-none">Manual Claim Mode</p>
-            </div>
+          <div className="glass-card px-3 py-1.5 rounded-sm text-left border border-emerald-500/25 bg-emerald-500/5">
+            <span className="text-[8px] font-mono font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest block">Total Payout</span>
+            <span className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400">
+              {formatCommission(totalPoolAmount)}
+            </span>
           </div>
         </div>
-      )}
-      
-      {/* Available Pool Cards List Grid */}
-      {filteredAvailableOrders.length === 0 ? (
-        <div className="rounded-2xl bg-white dark:bg-[#090b11] py-20 text-center text-slate-500 flex flex-col items-center justify-center gap-3.5 shadow-xs">
-          <div className="h-12 w-12 rounded-full bg-slate-50 dark:bg-slate-900 flex items-center justify-center text-slate-400">
-            <Inbox size={22} className="animate-bounce" />
+      </div>
+
+      {/* Filter Tabs */}
+      <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-slate-200 dark:border-slate-800 pb-2.5">
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+          {[
+            { id: "all", label: "All Packages" },
+            { id: "high_payout", label: "High Bounty (₹150+)" },
+            { id: "prepaid", label: "Prepaid Online" },
+            { id: "cod", label: "Cash on Delivery" }
+          ].map((f) => (
+            <button
+              key={f.id}
+              onClick={() => setFilterType(f.id)}
+              className={`px-3 py-1 rounded-sm text-[10px] font-mono font-bold tracking-wide transition cursor-pointer whitespace-nowrap active:scale-98 ${
+                filterType === f.id
+                  ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900 border border-transparent shadow-xs"
+                  : "glass-card text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-800"
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+
+        <span className="text-[10px] font-mono text-slate-400 font-bold uppercase tracking-wider">
+          {displayedOrders.length} packages ready
+        </span>
+      </div>
+
+      {/* Orders Grid */}
+      {displayedOrders.length === 0 ? (
+        <div className="rounded-md glass-panel-elevated py-12 px-4 text-center flex flex-col items-center justify-center gap-2 border border-slate-200 dark:border-slate-800">
+          <div className="h-10 w-10 rounded-sm bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-400">
+            <Inbox size={20} />
           </div>
-          <div>
-            <p className="font-extrabold text-slate-800 dark:text-slate-200 text-sm uppercase tracking-wide">Pool is fully claimed</p>
-            <p className="text-slate-405 mt-1.5 font-semibold max-w-[340px] mx-auto leading-relaxed">
-              All unassigned packages in your dispatch sector are currently claimed by active courier partners.
-            </p>
-          </div>
+          <p className="font-bold text-xs text-slate-800 dark:text-slate-200 uppercase tracking-wide font-mono">Shipment Pool Idle</p>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 max-w-sm leading-relaxed">
+            All orders in your zone are currently assigned. Stay on duty; new assignments broadcast instantly.
+          </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {filteredAvailableOrders.map((order) => {
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+          {displayedOrders.map((order) => {
             const isClaimingThis = claimingId === order._id;
+            const itemsList = order.items || order.orderItems || [];
+            const isHighBounty = (order.amount || 0) >= 150;
 
             return (
-              <div 
+              <div
                 key={order._id}
-                className="bg-white dark:bg-[#090b11] rounded-2xl p-5 shadow-sm flex flex-col justify-between gap-5 hover:shadow-md transition duration-300 relative group"
+                className="glass-panel-elevated rounded-md p-3.5 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all flex flex-col justify-between gap-3 relative overflow-hidden border border-slate-200 dark:border-slate-800 border-t-2 border-t-blue-500"
               >
-                <div className="space-y-4">
-                  {/* ID & Payment tags */}
-                  <div className="flex justify-between items-center">
-                    <span className="font-mono text-[9px] font-black text-slate-500 dark:text-slate-450 bg-slate-50 dark:bg-slate-900 px-2.5 py-1 rounded-lg">
-                      #{order._id.slice(-6).toUpperCase()}
-                    </span>
-                    <span className={`text-[9px] font-black px-2.5 py-1 rounded-lg uppercase tracking-wider bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-400`}>
+                {/* High bounty accent ribbon */}
+                {isHighBounty && (
+                  <div className="absolute top-0 right-0 bg-amber-500/15 border-b border-l border-amber-500/30 px-2 py-0.5 text-[8px] font-mono font-bold uppercase text-amber-500 tracking-wider flex items-center gap-1 rounded-bl-sm">
+                    <Sparkles size={9} />
+                    High Bounty
+                  </div>
+                )}
+
+                <div className="space-y-2.5">
+                  {/* Top: ID & Payment Method */}
+                  <div className="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-800/80">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">
+                        #{order._id.slice(-6).toUpperCase()}
+                      </span>
+                    </div>
+                    <span className="text-[8px] font-mono font-bold px-2 py-0.5 rounded-sm uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                       {order.paymentMethod}
                     </span>
                   </div>
-                  
-                  {/* Responsive details list */}
-                  <div className="text-xs space-y-3.5">
-                    {/* Destination */}
-                    <div className="flex items-start gap-3">
-                      <div className="h-7 w-7 rounded-lg bg-slate-50 dark:bg-slate-900 flex items-center justify-center shrink-0 text-slate-400">
-                        <MapPin size={13} />
-                      </div>
-                      <div>
-                        <span className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block leading-none">Sector Destination</span>
-                        <p className="font-extrabold text-slate-850 dark:text-white mt-1.5 leading-tight">
-                          {order.address?.city || "Unknown Sector"}, {order.address?.state || "Gujarat"}
-                        </p>
-                      </div>
-                    </div>
 
-                    {/* Cargo Items */}
-                    <div className="flex items-start gap-3">
-                      <div className="h-7 w-7 rounded-lg bg-slate-50 dark:bg-slate-900 flex items-center justify-center shrink-0 text-slate-400">
-                        <Package size={13} />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <span className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block leading-none">Cargo Items</span>
-                        <p className="text-slate-600 dark:text-slate-400 font-bold mt-1.5 leading-normal">
-                          {order.items.map(i => `${i.name} (x${i.qty})`).join(", ")}
-                        </p>
-                      </div>
+                  {/* Destination */}
+                  <div className="flex items-start gap-2 text-xs">
+                    <div className="h-6 w-6 rounded-sm bg-blue-500/10 text-blue-500 flex items-center justify-center shrink-0 mt-0.5">
+                      <MapPin size={11} />
+                    </div>
+                    <div>
+                      <span className="text-[8px] font-mono font-bold text-slate-400 uppercase tracking-wider block">Destination</span>
+                      <p className="text-slate-800 dark:text-slate-200 font-bold leading-snug text-[11px]">
+                        {order.address?.street ? `${order.address.street}, ` : ""}
+                        {order.address?.city || "Sector Area"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Cargo */}
+                  <div className="flex items-start gap-2 text-xs">
+                    <div className="h-6 w-6 rounded-sm bg-purple-500/10 text-purple-500 flex items-center justify-center shrink-0 mt-0.5">
+                      <Package size={11} />
+                    </div>
+                    <div>
+                      <span className="text-[8px] font-mono font-bold text-slate-400 uppercase tracking-wider block">Cargo Contents</span>
+                      <p className="text-slate-600 dark:text-slate-400 leading-snug font-medium text-[11px] line-clamp-1">
+                        {itemsList.length > 0
+                          ? itemsList.map((i) => `${i.name || i.productName || "Item"} (x${i.quantity || i.qty || 1})`).join(", ")
+                          : "Standard Express Parcel"}
+                      </p>
                     </div>
                   </div>
                 </div>
 
-                {/* Payout & Claim Action */}
-                <div className="flex items-center justify-between pt-2">
-                  <div className="flex flex-col">
-                    <span className="text-[8px] font-black text-slate-450 dark:text-slate-550 uppercase tracking-widest leading-none">Payout Commission</span>
-                    <span className="font-black text-slate-900 dark:text-white text-sm mt-1.5 tracking-tight">
+                {/* Bottom Action Footer */}
+                <div className="pt-2.5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
+                  <div>
+                    <span className="text-[8px] font-mono font-bold text-slate-400 uppercase tracking-widest block">Payout</span>
+                    <span className="text-sm font-bold text-slate-900 dark:text-white font-mono">
                       {formatCommission(order.amount)}
                     </span>
                   </div>
-                  
+
                   <button
                     disabled={claimingId !== null}
                     onClick={() => handleClaim(order._id)}
-                    className={`bg-slate-900 hover:bg-slate-800 dark:bg-slate-850 dark:hover:bg-slate-700 text-white rounded-xl px-4.5 py-2.5 text-[10px] font-black uppercase tracking-wider transition-all duration-200 ease-out transform hover:scale-103 active:scale-90 active:translate-y-0.5 cursor-pointer flex items-center gap-2 shadow-sm ${
-                      isClaimingThis ? "opacity-80 cursor-wait bg-orange-600 dark:bg-orange-600 scale-95" : ""
-                    }`}
+                    className="bg-blue-600 hover:bg-blue-500 text-white rounded-sm px-3.5 py-1.5 text-[10px] font-mono font-bold uppercase tracking-wider transition active:scale-98 cursor-pointer disabled:opacity-60 flex items-center gap-1.5 shadow-xs border border-blue-400/30"
                   >
                     {isClaimingThis ? (
                       <>
-                        <Loader2 size={13} className="animate-spin text-white" />
+                        <Loader2 size={11} className="animate-spin" />
                         <span>Claiming...</span>
                       </>
                     ) : (
                       <>
-                        <Sparkles size={11} className="text-orange-400 animate-pulse" />
-                        <span>Claim Shipment</span>
-                        <ArrowRight size={11} className="opacity-60 group-hover:translate-x-1 transition-transform duration-200" />
+                        <span>Claim Job</span>
+                        <ArrowRight size={11} />
                       </>
                     )}
                   </button>

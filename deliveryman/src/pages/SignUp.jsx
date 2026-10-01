@@ -44,23 +44,23 @@ const SignUp = () => {
 
   if (submitted) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans transition-colors duration-200">
-        <div className="w-full max-w-md bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/80 rounded-3xl p-8 shadow-2xl text-center space-y-6 animate-fadeIn">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30 shadow-inner">
-            <CheckCircle size={28} className="animate-bounce" />
+      <div className="h-screen w-screen flex items-center justify-center p-4 bg-[#07090e] text-slate-100 font-sans">
+        <div className="w-full max-w-md bg-[#0b0f19] border border-white/15 rounded-md p-6 shadow-2xl text-center space-y-4 border-t-2 border-t-emerald-500">
+          <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-sm bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+            <CheckCircle size={20} />
           </div>
           <div>
-            <h2 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">Application Submitted</h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed font-light">
-              Thank you for applying to be a CartNOW delivery partner. Your application is currently under review by our onboarding team.
+            <h2 className="text-base font-black text-white uppercase font-mono tracking-tight">Application Submitted</h2>
+            <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+              Thank you for applying to be a CartNOW delivery partner. Your application is under review by our onboarding team.
             </p>
-            <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200/50 dark:border-slate-800 text-[11px] font-semibold text-blue-600 dark:text-indigo-400">
-              Please check your email for approval status updates before attempting to sign in.
+            <div className="mt-3 p-2.5 bg-slate-900 rounded-sm border border-white/10 text-[11px] font-mono font-medium text-blue-400">
+              Please check your registered email for status updates before signing in.
             </div>
           </div>
           <Link
             to="/login"
-            className="block w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-slate-100 dark:text-white rounded-xl text-xs font-black uppercase tracking-wider transition shadow-md cursor-pointer"
+            className="block w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-sm text-xs font-mono font-bold uppercase tracking-wider transition cursor-pointer border border-blue-400/30"
           >
             Return to Sign In
           </Link>
@@ -70,160 +70,143 @@ const SignUp = () => {
   }
 
   return (
-    <div className="h-screen w-screen grid lg:grid-cols-[1.1fr_1fr] bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans transition-colors duration-200 selection:bg-blue-600 selection:text-white overflow-hidden">
+    <div className="h-screen w-screen grid lg:grid-cols-[1.1fr_1fr] bg-[#07090e] text-slate-100 font-sans selection:bg-blue-600 selection:text-white overflow-hidden">
       
       {/* Left Panel: Visual/Logistics split */}
-      <div className="relative hidden lg:flex flex-col justify-between p-8 overflow-hidden h-full">
+      <div className="relative hidden lg:flex flex-col justify-between p-8 overflow-hidden h-full border-r border-white/10">
         {/* Background Image with overlay */}
         <img
           src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d"
           alt="Logistics warehouse"
-          className="absolute inset-0 h-full w-full object-cover select-none scale-105"
+          className="absolute inset-0 h-full w-full object-cover select-none scale-105 opacity-25"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/75 to-slate-950/40 z-10" />
-        
-        {/* Floating gradient glow */}
-        <div className="absolute top-[-20%] left-[-20%] h-[500px] w-[500px] rounded-full bg-blue-600/10 blur-[130px] z-0 pointer-events-none" />
+        <div className="absolute inset-0 bg-[#07090e]/90 z-10" />
 
         {/* Back Link */}
         <button
           onClick={() => navigate("/")}
-          className="relative z-20 self-start flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-700/80 bg-slate-900/60 backdrop-blur-md text-xs font-bold text-slate-300 hover:text-white hover:border-slate-500 transition cursor-pointer"
+          className="relative z-20 self-start flex items-center gap-1.5 px-3 py-1.5 rounded-sm border border-white/15 bg-slate-900/80 text-xs font-mono font-bold text-slate-300 hover:text-white hover:border-white/30 transition cursor-pointer"
         >
-          <ArrowLeft size={14} />
+          <ArrowLeft size={13} />
           <span>Back</span>
         </button>
 
         {/* Hero Message at bottom */}
-        <div className="relative z-20 mt-auto text-left max-w-xl text-slate-100 dark:text-white">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-blue-500/35 bg-blue-500/15 text-blue-400 text-[10px] font-black uppercase tracking-wider mb-4">
+        <div className="relative z-20 mt-auto text-left max-w-lg text-white">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm border border-blue-500/30 bg-blue-500/10 text-blue-400 text-[9px] font-mono font-bold uppercase tracking-wider mb-3">
             <Truck size={10} />
             <span>Apply as Partner</span>
           </div>
-          <h2 className="text-3xl font-black leading-tight">
-            Register to join the courier network.
+          <h2 className="text-2xl font-black uppercase font-mono tracking-tight leading-tight">
+            Join the Courier Fleet Network.
           </h2>
-          <p className="mt-3 text-xs leading-relaxed text-slate-300 font-light">
-            Submit your profile details below. Vetting checks are typically completed within 24 hours, after which you can begin claiming packages.
+          <p className="mt-2 text-xs leading-relaxed text-slate-400 font-normal">
+            Submit your profile details below. Onboarding verifications are processed within 24 hours, after which you can access the live delivery pool.
           </p>
 
-          <div className="mt-6 pt-5 border-t border-slate-800/80 flex items-center gap-6">
-            <div className="flex -space-x-2">
-              {[
-                "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100",
-                "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100",
-                "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100"
-              ].map((src, i) => (
-                <img key={i} src={src} alt="Driver avatar" className="h-7 w-7 rounded-full border border-slate-950 object-cover" />
-              ))}
-            </div>
-            <div className="text-[11px] text-slate-400 font-medium">
-              Join <span className="text-slate-100 dark:text-white font-extrabold">5,000+ active couriers</span> driving today.
-            </div>
+          <div className="mt-5 pt-4 border-t border-white/10 text-xs font-mono text-slate-400">
+            Active Fleet: <span className="text-emerald-400 font-bold">5,000+ Verified Couriers</span>
           </div>
         </div>
       </div>
 
       {/* Right Panel: SignUp Form */}
-      <div className="flex flex-col justify-center items-center px-6 py-6 md:px-12 relative h-full overflow-y-auto">
+      <div className="flex flex-col justify-center items-center px-6 py-6 md:px-12 relative h-full overflow-y-auto bg-[#0b0f19]">
         {/* Mobile Home Nav Link */}
         <button
           onClick={() => navigate("/")}
-          className="lg:hidden absolute top-5 left-5 flex items-center gap-1.5 text-xs font-bold text-slate-500 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition cursor-pointer"
+          className="lg:hidden absolute top-4 left-4 flex items-center gap-1 text-xs font-mono text-slate-400 hover:text-white transition cursor-pointer"
         >
-          <ArrowLeft size={14} />
+          <ArrowLeft size={13} />
           <span>Back</span>
         </button>
 
-        <div className="w-full max-w-sm space-y-5 my-auto">
+        <div className="w-full max-w-sm space-y-4 my-auto">
           {/* Logo / Heading */}
-          <div className="flex flex-col items-center text-center space-y-1.5">
-            <div className="h-9 w-9 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 flex items-center justify-center shadow-sm">
-              <Logo variant="icon" className="h-5.5 w-5.5 text-slate-800 dark:text-white" />
-            </div>
+          <div className="flex flex-col items-center text-center space-y-1">
+            <Logo variant="icon" className="h-10 w-10 mx-auto" />
             <div>
-              <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tight flex items-center justify-center gap-1.5">
-                <span>CartNOW</span>
-                <span className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-indigo-400 dark:to-indigo-500 bg-clip-text text-transparent">Courier</span>
-              </h1>
-              <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
-                Fill in the dispatch registration form below.
+              <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-sm bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[9px] font-mono font-bold uppercase tracking-wider mt-1">
+                Courier Registration
+              </div>
+              <p className="text-[11px] text-slate-400 mt-1">
+                Fill in the dispatch partner application form.
               </p>
             </div>
           </div>
 
           {/* Form */}
-          <form onSubmit={onSubmitHandler} className="space-y-2.5">
+          <form onSubmit={onSubmitHandler} className="space-y-2.5 text-left">
             <div>
-              <label className="mb-0.5 block text-[9px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-500">Full Name</label>
+              <label className="mb-1 block text-[9px] font-mono font-bold uppercase tracking-wider text-slate-400">Full Name</label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 dark:text-slate-500 pointer-events-none">
-                  <User size={14} />
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 pointer-events-none">
+                  <User size={13} />
                 </span>
                 <input
                   type="text"
                   value={form.name}
                   onChange={(e) => updateField("name", e.target.value)}
                   placeholder="e.g. John Doe"
-                  className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950/40 text-xs text-slate-800 dark:text-white outline-none transition duration-200 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:bg-white dark:focus:bg-slate-950/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                  className="w-full pl-9 pr-3 py-2 rounded-sm border border-slate-700 bg-slate-950 text-xs text-white outline-none focus:border-blue-500 font-mono"
                   required
                 />
               </div>
             </div>
 
             <div>
-              <label className="mb-0.5 block text-[9px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-500">Email Address</label>
+              <label className="mb-1 block text-[9px] font-mono font-bold uppercase tracking-wider text-slate-400">Email Address</label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 dark:text-slate-500 pointer-events-none">
-                  <Mail size={14} />
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 pointer-events-none">
+                  <Mail size={13} />
                 </span>
                 <input
                   type="email"
                   value={form.email}
                   onChange={(e) => updateField("email", e.target.value)}
                   placeholder="e.g. john@example.com"
-                  className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950/40 text-xs text-slate-800 dark:text-white outline-none transition duration-200 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:bg-white dark:focus:bg-slate-950/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                  className="w-full pl-9 pr-3 py-2 rounded-sm border border-slate-700 bg-slate-950 text-xs text-white outline-none focus:border-blue-500 font-mono"
                   required
                 />
               </div>
             </div>
 
             <div>
-              <label className="mb-0.5 block text-[9px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-500">Password</label>
+              <label className="mb-1 block text-[9px] font-mono font-bold uppercase tracking-wider text-slate-400">Password</label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 dark:text-slate-500 pointer-events-none">
-                  <Lock size={14} />
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 pointer-events-none">
+                  <Lock size={13} />
                 </span>
                 <input
                   type={showPassword ? "text" : "password"}
                   value={form.password}
                   onChange={(e) => updateField("password", e.target.value)}
                   placeholder="Minimum 6 characters"
-                  className="w-full pl-10 pr-10 py-2 rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950/40 text-xs text-slate-800 dark:text-white outline-none transition duration-200 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:bg-white dark:focus:bg-slate-950/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                  className="w-full pl-9 pr-9 py-2 rounded-sm border border-slate-700 bg-slate-950 text-xs text-white outline-none focus:border-blue-500 font-mono"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-700 dark:text-slate-600 dark:hover:text-white cursor-pointer"
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-white cursor-pointer"
                 >
-                  {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                  {showPassword ? <EyeOff size={13} /> : <Eye size={13} />}
                 </button>
               </div>
             </div>
 
             <div>
-              <label className="mb-0.5 block text-[9px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-500">Phone Number</label>
+              <label className="mb-1 block text-[9px] font-mono font-bold uppercase tracking-wider text-slate-400">Phone Number</label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 dark:text-slate-500 pointer-events-none">
-                  <Phone size={14} />
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 pointer-events-none">
+                  <Phone size={13} />
                 </span>
                 <input
                   type="tel"
                   value={form.phone}
                   onChange={(e) => updateField("phone", e.target.value)}
                   placeholder="e.g. +91 9988776655"
-                  className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:bg-slate-950/40 text-xs text-slate-800 dark:text-white outline-none transition duration-200 placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:bg-white dark:focus:bg-slate-950/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                  className="w-full pl-9 pr-3 py-2 rounded-sm border border-slate-700 bg-slate-950 text-xs text-white outline-none focus:border-blue-500 font-mono"
                   required
                 />
               </div>
@@ -232,24 +215,24 @@ const SignUp = () => {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full flex items-center justify-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-slate-100 dark:text-white py-3 text-xs font-black uppercase tracking-wider transition duration-300 shadow-md hover:shadow-lg hover:shadow-blue-500/20 active:scale-[0.98] cursor-pointer mt-3 disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-1.5 rounded-sm bg-blue-600 hover:bg-blue-500 text-white py-2.5 text-xs font-mono font-bold uppercase tracking-wider transition active:scale-98 cursor-pointer mt-3 disabled:opacity-50 border border-blue-400/30"
             >
               {submitting ? "Submitting application..." : "Submit Registration"}
             </button>
           </form>
 
           {/* Footer Link */}
-          <div className="space-y-3 pt-5 border-t border-slate-200 dark:border-slate-900">
-            <p className="text-center text-xs text-slate-500 dark:text-slate-400">
+          <div className="space-y-2.5 pt-3 border-t border-white/10 text-center font-mono text-xs">
+            <p className="text-slate-400 text-[11px]">
               Already registered?{" "}
-              <Link to="/login" className="font-bold text-blue-600 dark:text-indigo-400 hover:underline transition">
+              <Link to="/login" className="font-bold text-blue-400 hover:underline">
                 Sign In here
               </Link>
             </p>
             
-            <div className="flex items-center justify-center gap-2 text-[10px] text-slate-500 dark:text-slate-500 pt-3 border-t border-slate-200 dark:border-slate-800">
-              <ShieldCheck size={12} className="text-emerald-600 dark:text-emerald-500" />
-              <span>Standard SSL Secure 256-Bit Protection</span>
+            <div className="flex items-center justify-center gap-1 text-[9px] text-slate-500 pt-1">
+              <ShieldCheck size={11} className="text-emerald-500" />
+              <span>256-Bit SSL Encrypted Verification</span>
             </div>
           </div>
         </div>

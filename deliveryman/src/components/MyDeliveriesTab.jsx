@@ -7,7 +7,7 @@ import {
   MessageSquare, AlertOctagon, ShieldAlert, ShieldCheck, LifeBuoy, QrCode, Key,
   RefreshCw, TrendingUp, BarChart2, Check, X, AlertTriangle, Eye, EyeOff,
   User, CheckCircle2, Navigation2, Crosshair, ArrowRight, CornerDownRight,
-  ChevronDown, ChevronUp, Bell, Zap, PhoneCall, PhoneOff, Video, VideoOff, Mic, MicOff, Lock, Paperclip, Send
+  ChevronDown, ChevronUp, Bell, Zap, PhoneCall, PhoneOff, Video, VideoOff, Mic, MicOff, Lock, Paperclip, Send, Package, Minus
 } from "lucide-react";
 import io from "socket.io-client";
 import axios from "axios";
@@ -85,10 +85,19 @@ const MyDeliveriesTab = ({
   totalTablePages
 }) => {
   const [isNavigating, setIsNavigating] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [selectedOrderIdx, setSelectedOrderIdx] = useState(0);
+  const [earningsTab, setEarningsTab] = useState("Today");
+  const [performanceTimeframe, setPerformanceTimeframe] = useState("This Week");
 
   useEffect(() => {
     setIsNavigating(false);
-  }, [nextOrder]);
+    if (nextOrder) {
+      setSelectedOrder(nextOrder);
+    } else if (orders && orders.length > 0) {
+      setSelectedOrder(orders[0]);
+    }
+  }, [nextOrder, orders]);
 
   // WebRTC Symmetrical Call States & Refs & FSM
   const [callState, setCallState] = useState("idle");
@@ -178,9 +187,10 @@ const MyDeliveriesTab = ({
     }
   };
 
-  // Modal states for simulation
+  // Modal and view states
   const [activeActionsOpen, setActiveActionsOpen] = useState(false);
   const [chatModalOpen, setChatModalOpen] = useState(false);
+  const [isChatMinimized, setIsChatMinimized] = useState(false);
   const [chatMessages, setChatMessages] = useState([]);
   const [newChatMessage, setNewChatMessage] = useState("");
   const [partnerOnline, setPartnerOnline] = useState(false);
@@ -312,11 +322,14 @@ const MyDeliveriesTab = ({
         if (chatModalOpenRef.current) {
           socket.emit("mark_seen", { orderId });
         } else {
-          // Toast notification if chat modal is not open
+          // Toast notification if chat is not currently open
           toast.info(`Message from Customer: ${msg.message}`, {
             position: "bottom-right",
             autoClose: 5000,
-            onClick: () => setChatModalOpen(true)
+            onClick: () => {
+              setChatModalOpen(true);
+              setIsChatMinimized(false);
+            }
           });
         }
       }
@@ -1155,176 +1168,218 @@ const MyDeliveriesTab = ({
     }
   };
 
+  const currentActiveOrder = selectedOrder 
+    || nextOrder 
+    || (orders && orders.find(o => {
+        const s = (o.orderStatus || "").toLowerCase();
+        return s !== "delivered" && s !== "cancelled";
+      }))
+    || (orders && orders[0]) 
+    || null;
+
+  const currentHour = new Date().getHours();
+  const greeting = currentHour < 12 ? "Good morning" : currentHour < 18 ? "Good afternoon" : "Good evening";
+  const driverFirstName = driver?.name ? driver.name.split(" ")[0] : "Partner";
+  const formattedDate = new Date().toLocaleDateString("en-US", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    year: "numeric"
+  });
+
+  const totalAssignedCount = orders ? orders.length : (stats?.activeCount ? (stats.activeCount + (stats.totalDelivered || 0)) : 0);
+  const deliveredCount = orders 
+    ? orders.filter(o => (o.orderStatus || "").toLowerCase() === "delivered").length 
+    : (stats?.totalDelivered || 0);
+  const pendingCount = orders 
+    ? orders.filter(o => {
+        const s = (o.orderStatus || "").toLowerCase();
+        return s !== "delivered" && s !== "cancelled";
+      }).length 
+    : (stats?.activeCount || 0);
+  const earningsVal = typeof todayEarningsVal === "number" && todayEarningsVal > 0 
+    ? todayEarningsVal 
+    : (stats?.totalEarnings || (deliveredCount * 75));
+  const progressPercent = totalAssignedCount > 0 ? Math.round((deliveredCount / totalAssignedCount) * 100) : 0;
+
+  const totalAllTimeEarnings = stats?.totalEarnings || (deliveredCount * 75);
+  const displayedEarnings = earningsTab === "Today" 
+    ? earningsVal 
+    : earningsTab === "This Week" 
+    ? (orders ? orders.filter(o => {
+        if ((o.orderStatus || "").toLowerCase() !== "delivered") return false;
+        const d = new Date(o.updatedAt || o.createdAt);
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+        return d >= oneWeekAgo;
+      }).length * 75 : totalAllTimeEarnings)
+    : totalAllTimeEarnings;
+
+  const displayOrders = (tableFilteredOrders && tableFilteredOrders.length > 0)
+    ? tableFilteredOrders
+    : (orders || []);
+
+  const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const weeklyPerformanceData = [0, 1, 2, 3, 4, 5, 6].map(offset => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - offset));
+    const dayStr = daysOfWeek[d.getDay()];
+    const dateStr = d.toDateString();
+    const count = (orders || []).filter(o => {
+      const oDate = o.updatedAt || o.createdAt;
+      return oDate && new Date(oDate).toDateString() === dateStr && (o.orderStatus || "").toLowerCase() === "delivered";
+    }).length;
+    return { day: dayStr, val: count, isToday: offset === 6 };
+  });
+  const maxWeeklyVal = Math.max(...weeklyPerformanceData.map(w => w.val), 1);
+
   return (
-    <div className="space-y-6 text-slate-800 dark:text-slate-200">
+    <div className="space-y-2 text-slate-800 dark:text-slate-200">
       
-      {/* CSS Injection for custom offset path truck animation */}
-      <style>{`
-        @keyframes moveAlongPath {
-          0% { offset-distance: 0%; }
-          50% { offset-distance: 60%; }
-          100% { offset-distance: 100%; }
-        }
-        .driver-vehicle-marker {
-          offset-path: path("M 30 150 C 90 90, 160 40, 220 120 T 360 80");
-          animation: moveAlongPath 15s infinite ease-in-out;
-        }
-        .animate-dash {
-          stroke-dasharray: 1000;
-          stroke-dashoffset: 1000;
-          animation: drawPath 3s ease-out forwards;
-        }
-        @keyframes drawPath {
-          to { stroke-dashoffset: 0; }
-        }
-        .glass-panel {
-          background: rgba(255, 255, 255, 0.85);
-          backdrop-filter: blur(8px);
-          border: none;
-        }
-        .dark .glass-panel {
-          background: rgba(17, 24, 39, 0.85);
-          backdrop-filter: blur(8px);
-          border: none;
-        }
-      `}</style>
-
-      {/* SECTION 1: SMART HEADER */}
-      <div className="glass-panel rounded-3xl p-5 shadow-xs transition-all duration-300 relative overflow-hidden">
-        {/* Decorative backdrop glow */}
-        <div className="absolute top-0 right-0 h-40 w-40 bg-indigo-500/5 dark:bg-indigo-500/10 rounded-full blur-2xl pointer-events-none" />
-        
-        <div className="flex flex-col md:flex-row items-center justify-between gap-5 relative z-10">
-          {/* Agent info & Avatar */}
-          <div className="flex items-center gap-4.5 w-full md:w-auto">
-            <div className="relative">
-              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center text-slate-100 dark:text-white font-extrabold text-lg shadow-md border-2 border-white/10 dark:border-slate-800 dark:border-slate-900">
-                {driver?.name ? driver.name.split(" ").map(n=>n[0]).join("").toUpperCase() : <User size={24} />}
-              </div>
-              <span className={`absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-white/10 dark:border-slate-800 dark:border-slate-900 flex items-center justify-center ${stats.isOnline ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`} />
-            </div>
-            
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg font-black text-slate-900 dark:text-white leading-tight tracking-tight">{driver?.name || "Agent Courier"}</h2>
-                <div className="flex items-center gap-0.5 px-2 py-0.5 bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 rounded-lg text-[10px] font-black">
-                  <Star size={10} className="fill-amber-500 text-amber-500" />
-                  <span>{driver?.rating?.toFixed(2) || "4.85"}</span>
-                </div>
-              </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 font-semibold uppercase tracking-wider flex items-center gap-1">
-                <span>Sector: {driver?.deliveryZone || "Zone A-2"}</span>
-                <span className="text-slate-300 dark:text-slate-700">•</span>
-                <span>Radius: {driver?.deliveryRadius || 10}km</span>
-              </p>
-            </div>
-          </div>
-
-          {/* Metrics summary */}
-          <div className="flex flex-wrap items-center justify-around gap-6 bg-slate-50/50 dark:bg-slate-900/40 rounded-2xl px-5 py-3 w-full md:w-auto">
-            <div className="text-center">
-              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Earnings Today</p>
-              <p className="text-lg font-black text-emerald-600 dark:text-emerald-400 mt-1.5">₹{todayEarningsVal}</p>
-            </div>
-            <div className="h-8 w-[1px] bg-slate-200 dark:bg-slate-800" />
-            <div className="text-center">
-              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Delivered</p>
-              <p className="text-lg font-black text-slate-900 dark:text-white mt-1.5">{completedTodayCount} jobs</p>
-            </div>
-            <div className="h-8 w-[1px] bg-slate-200 dark:bg-slate-800" />
-            <div className="text-center">
-              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Active orders</p>
-              <p className="text-lg font-black text-indigo-600 dark:text-indigo-400 mt-1.5">
-                {orders.filter(o => o.orderStatus !== "Delivered" && o.orderStatus !== "Cancelled").length}
-              </p>
-            </div>
-          </div>
-
-          {/* Quick controls */}
-          <div className="flex items-center gap-3 w-full md:w-auto justify-end">
-            <button
-              onClick={toggleDutyStatusHandler}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs font-black tracking-wider uppercase transition-all duration-200 active:scale-95 cursor-pointer ${ stats.isOnline ? "bg-emerald-500/10 border-emerald-500/25 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20" : "bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500" }`}
-            >
-              <span>On Duty</span>
-              {stats.isOnline ? <ToggleRight size={18} className="text-emerald-500" /> : <ToggleLeft size={18} />}
-            </button>
-            
-            <button
-              onClick={logout}
-              className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/20 hover:bg-rose-100 dark:hover:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-rose-950/45 transition active:scale-95 cursor-pointer"
-              title="Logout"
-            >
-              <LogOut size={15} />
-            </button>
+      {/* 1. TOP GREETING & WEATHER ROW (matching reference image) */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 mb-0.5">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <span>{greeting}, {driverFirstName}</span>
+            <span className="inline-block animate-wave">👋</span>
+          </h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium">
+            You're doing great! {pendingCount} deliveries remaining today.
+          </p>
+        </div>
+        <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 font-medium">
+          <span>{formattedDate}</span>
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xs bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs text-slate-700 dark:text-slate-300">
+            <MapPin size={12} className="text-blue-500" />
+            <span className="font-semibold text-slate-900 dark:text-white">{driver?.deliveryZone || "Registered Sector"}</span>
           </div>
         </div>
       </div>
 
-      {/* PENDING ASSIGNMENTS REQUEST SECTION */}
-      {pendingAcceptance && pendingAcceptance.length > 0 && (
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 px-1">
-            <span className="h-2.5 w-2.5 rounded-full bg-rose-500 animate-ping" />
-            <h3 className="font-extrabold text-xs text-slate-900 dark:text-white uppercase tracking-wider">
-              Pending Delivery Requests ({pendingAcceptance.length})
-            </h3>
+      {/* 2. TOP METRIC CARDS ROW (4 Metric Cards + 1 Progress Card) */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 mb-0.5">
+        {/* Card 1: Assigned Orders */}
+        <div className="dashboard-card p-2.5 relative overflow-hidden flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="h-9 w-9 rounded-sm bg-blue-600 text-white flex items-center justify-center shadow-sm shrink-0">
+              <Package size={16} />
+            </div>
+            <div>
+              <div className="text-lg font-bold text-slate-900 dark:text-white leading-tight">
+                {totalAssignedCount}
+              </div>
+              <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                Assigned Orders
+              </div>
+            </div>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {pendingAcceptance.map((order) => (
+          <Package size={36} className="absolute -right-2 -bottom-2 text-blue-500/10 pointer-events-none" />
+        </div>
+
+        {/* Card 2: Delivered */}
+        <div className="dashboard-card p-2.5 relative overflow-hidden flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="h-9 w-9 rounded-sm bg-emerald-500 text-white flex items-center justify-center shadow-sm shrink-0">
+              <Check size={16} />
+            </div>
+            <div>
+              <div className="text-lg font-bold text-slate-900 dark:text-white leading-tight">
+                {deliveredCount}
+              </div>
+              <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                Delivered
+              </div>
+            </div>
+          </div>
+          <CheckCircle2 size={36} className="absolute -right-2 -bottom-2 text-emerald-500/10 pointer-events-none" />
+        </div>
+
+        {/* Card 3: Pending */}
+        <div className="dashboard-card p-2.5 relative overflow-hidden flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="h-9 w-9 rounded-sm bg-amber-500 text-white flex items-center justify-center shadow-sm shrink-0">
+              <Clock size={16} />
+            </div>
+            <div>
+              <div className="text-lg font-bold text-slate-900 dark:text-white leading-tight">
+                {pendingCount}
+              </div>
+              <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                Pending
+              </div>
+            </div>
+          </div>
+          <Clock size={36} className="absolute -right-2 -bottom-2 text-amber-500/10 pointer-events-none" />
+        </div>
+
+        {/* Card 4: Today's Earnings */}
+        <div className="dashboard-card p-2.5 relative overflow-hidden flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="h-9 w-9 rounded-sm bg-purple-600 text-white flex items-center justify-center shadow-sm shrink-0">
+              <Wallet size={16} />
+            </div>
+            <div>
+              <div className="text-lg font-bold text-slate-900 dark:text-white leading-tight">
+                ₹{earningsVal.toLocaleString()}
+              </div>
+              <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                Today's Earnings
+              </div>
+            </div>
+          </div>
+          <BarChart2 size={36} className="absolute -right-2 -bottom-2 text-purple-500/10 pointer-events-none" />
+        </div>
+
+        {/* Card 5: Today's Progress */}
+        <div className="dashboard-card p-2.5 flex flex-col justify-between col-span-2 sm:col-span-1">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-900 dark:text-white">Today's Progress</span>
+            <span className="text-xs font-bold text-slate-600 dark:text-slate-400 font-mono">
+              {deliveredCount} / {totalAssignedCount}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 mt-1.5">
+            <div className="flex-1 bg-slate-100 dark:bg-slate-800 rounded-xs h-2 overflow-hidden">
               <div 
-                key={order._id} 
-                className="bg-gradient-to-br from-rose-50/50 to-white dark:from-rose-950 dark:to-gray-900 border-2 border-rose-100 dark:border-rose-950/40 rounded-2xl p-5 shadow-sm relative overflow-hidden transition-all duration-300 hover:shadow-md hover:border-rose-200 dark:hover:border-rose-900/60 animate-pulse"
-              >
-                <div className="absolute top-0 right-0 h-24 w-24 bg-rose-500/5 dark:bg-rose-500/10 rounded-full blur-xl pointer-events-none" />
-                
-                <div className="flex justify-between items-start gap-4 mb-3">
-                  <div>
-                    <span className="text-[9px] font-black uppercase tracking-widest text-rose-600 dark:text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-md">
-                      Action Required
-                    </span>
-                    <h4 className="font-extrabold text-slate-900 dark:text-white text-sm mt-1.5">
-                      Order #{order._id.slice(-6).toUpperCase()}
-                    </h4>
+                className="bg-emerald-500 h-full rounded-xs transition-all duration-500" 
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-300 font-mono shrink-0">
+              {progressPercent}%
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* PENDING ASSIGNMENTS BANNER (if any) */}
+      {pendingAcceptance && pendingAcceptance.length > 0 && (
+        <div className="dashboard-card p-2.5 border-rose-200 dark:border-rose-900/60 bg-rose-50/30 dark:bg-rose-950/20 mb-0.5">
+          <div className="flex items-center justify-between mb-1.5">
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-xs bg-rose-500 animate-pulse" />
+              <h4 className="font-bold text-xs text-rose-700 dark:text-rose-400">
+                New Order Assignment ({pendingAcceptance.length})
+              </h4>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {pendingAcceptance.map((order) => (
+              <div key={order._id} className="bg-white dark:bg-slate-900 p-2 rounded-sm border border-rose-100 dark:border-rose-900/40 flex items-center justify-between">
+                <div>
+                  <div className="text-xs font-bold font-mono text-slate-900 dark:text-white">
+                    #{order._id.slice(-6).toUpperCase()} • ₹{order.amount}
                   </div>
-                  <div className="text-right">
-                    <span className="text-xs font-mono font-black text-rose-600 dark:text-rose-400">
-                      ₹{order.amount}
-                    </span>
-                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">
-                      {order.paymentMethod}
-                    </p>
+                  <div className="text-[11px] text-slate-500 truncate max-w-[200px]">
+                    {order.address?.firstName} • {order.address?.city}
                   </div>
                 </div>
-
-                <div className="space-y-2.5 text-xs">
-                  <div>
-                    <span className="text-[8px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 block">Customer</span>
-                    <span className="font-bold text-slate-800 dark:text-slate-200">
-                      {order.address?.firstName} {order.address?.lastName}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-[8px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 block">Address</span>
-                    <span className="font-semibold text-slate-700 dark:text-slate-300 line-clamp-2">
-                      {formatAddress(order.address)}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex gap-2.5 mt-5">
-                  <button
-                    onClick={() => handleRejectAssignment(order._id)}
-                    className="flex-1 flex items-center justify-center gap-1.5 bg-slate-50 dark:bg-slate-900/60 hover:bg-rose-50 dark:hover:bg-rose-950/20 border border-slate-200 dark:border-slate-800/80 hover:border-rose-200 dark:hover:border-rose-900/60 text-slate-800 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-200 cursor-pointer shadow-xs active:scale-98"
-                  >
-                    <span>Reject</span>
+                <div className="flex gap-1.5">
+                  <button onClick={() => handleRejectAssignment(order._id)} className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-semibold rounded-xs hover:bg-rose-50 hover:text-rose-600 transition">
+                    Reject
                   </button>
-                  <button
-                    onClick={() => handleAcceptAssignment(order._id)}
-                    className="flex-1 flex items-center justify-center gap-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-slate-100 dark:text-white py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-200 cursor-pointer shadow-md shadow-emerald-500/10 active:scale-98"
-                  >
-                    <span>Accept</span>
+                  <button onClick={() => handleAcceptAssignment(order._id)} className="px-2 py-0.5 bg-emerald-600 text-white text-[10px] font-semibold rounded-xs hover:bg-emerald-700 transition">
+                    Accept
                   </button>
                 </div>
               </div>
@@ -1333,798 +1388,508 @@ const MyDeliveriesTab = ({
         </div>
       )}
 
-      {/* CORE GRID: COMMAND CENTER & LIVE MAP */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-        
-        {/* SECTION 2: PRIMARY DELIVERY COMMAND CENTER */}
-        <div className="lg:col-span-7 flex flex-col justify-between glass-panel rounded-3xl p-6 shadow-xs relative overflow-hidden">
-          <div className="absolute top-0 left-0 h-40 w-40 bg-blue-500/5 dark:bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
+      {/* 3. MIDDLE SECTION (Left 8-cols: Current Delivery + Map | Right 4-cols: Earnings + Performance + Motivation) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 items-stretch mb-0.5">
+        {/* Left 8 Cols (Current Delivery + Live Tracking Route Map) */}
+        <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-2 items-stretch">
           
-          <div className="relative z-10 flex-1 flex flex-col justify-between gap-6">
-            <div>
-              {/* Header Info */}
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800/60 pb-4 mb-4">
-                <div className="flex items-center gap-2.5">
-                  <span className="bg-gradient-to-r from-blue-600 to-indigo-600 text-slate-100 dark:text-white font-extrabold text-[9px] uppercase tracking-widest px-2.5 py-1 rounded-lg shadow-md shadow-blue-500/15">
-                    Primary Dispatch
-                  </span>
-                  <span className="text-xs font-mono font-bold text-slate-500 dark:text-slate-400">
-                    ID: <span className="text-slate-900 dark:text-white font-black">#{nextOrder?._id?.slice(-6).toUpperCase() || "N/A"}</span>
-                  </span>
-                </div>
-                {nextOrder && (
-                  <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border bg-blue-50/50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 border-blue-100/50 dark:border-blue-950/50">
-                    <Clock size={10} className="animate-spin" />
-                    <span>ETA: 18 mins</span>
-                  </span>
-                )}
-              </div>
-
-              {nextOrder ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Left Column: Details */}
-                  <div className="space-y-4">
-                    <div>
-                      <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">Customer</p>
-                      <p className="font-extrabold text-slate-900 dark:text-white text-base mt-1">
-                        {nextOrder.address.firstName} {nextOrder.address.lastName}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">Delivery Address</p>
-                      <p className="leading-relaxed text-slate-600 dark:text-slate-300 text-xs font-semibold mt-1">
-                        {formatAddress(nextOrder.address)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-400">Customer Notes</p>
-                      <p className="text-xs italic font-medium text-slate-500 dark:text-amber-400/90 mt-1 bg-amber-500/5 dark:bg-amber-500/10 border-l-2 border-amber-500 px-3 py-1.5 rounded-r-xl">
-                        "Please call when outside the main gate."
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Right Column: Values & Specs */}
-                  <div className="space-y-4">
-                    <div>
-                      <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">Distance & Area</p>
-                      <p className="font-extrabold text-slate-900 dark:text-white text-xs mt-1 flex items-center gap-1.5">
-                        <Navigation2 size={12} className="text-blue-500 fill-blue-500" />
-                        <span>3.5 km</span>
-                        <span className="text-slate-300 dark:text-slate-700">|</span>
-                        <span className="text-slate-400 dark:text-slate-500 font-medium">Zone A-2 Sector</span>
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">Payment & Collection</p>
-                      <div className="flex items-center gap-2 mt-1.5">
-                        <span className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-wider border ${ nextOrder.paymentMethod.toLowerCase() === "cod" ? "bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400" : "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400" }`}>
-                          {nextOrder.paymentMethod}
-                        </span>
-                        <span className="text-sm font-black text-slate-900 dark:text-white">
-                          {nextOrder.paymentMethod.toLowerCase() === "cod" ? `Collect ₹${nextOrder.amount}` : "Paid Online"}
-                        </span>
+          {/* Current Delivery Card */}
+          <div className="dashboard-card p-3 flex flex-col justify-between">
+            {currentActiveOrder ? (
+              <>
+                <div>
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800 mb-2">
+                    <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">Current Delivery</span>
+                    {displayOrders.length > 0 && (
+                      <div className="flex items-center gap-1 text-xs text-slate-400 font-medium">
+                        <span>#{selectedOrderIdx + 1} of {displayOrders.length}</span>
+                        <button 
+                          onClick={() => {
+                            const nextIdx = (selectedOrderIdx + 1) % displayOrders.length;
+                            setSelectedOrderIdx(nextIdx);
+                            setSelectedOrder(displayOrders[nextIdx]);
+                          }} 
+                          className="p-1 hover:text-slate-900 dark:hover:text-white cursor-pointer"
+                          title="Next Delivery"
+                        >
+                          <ArrowRight size={13} />
+                        </button>
                       </div>
+                    )}
+                  </div>
+
+                  {/* Order ID & Status Badge */}
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white font-mono">
+                      #{currentActiveOrder._id ? currentActiveOrder._id.slice(-7).toUpperCase() : ""}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-xs text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800">
+                      {currentActiveOrder.orderStatus || "Assigned"}
+                    </span>
+                  </div>
+
+                  {/* Customer Name & Phone icon */}
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate">
+                      {currentActiveOrder.address?.firstName || "Customer"} {currentActiveOrder.address?.lastName || ""}
+                    </h3>
+                    {currentActiveOrder.address?.phone && (
+                      <button 
+                        onClick={() => {
+                          window.open(`tel:${currentActiveOrder.address.phone}`);
+                        }}
+                        className="h-7 w-7 rounded-xs bg-blue-50 hover:bg-blue-100 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400 flex items-center justify-center transition cursor-pointer"
+                        title="Call Customer"
+                      >
+                        <Phone size={12} />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Address with Pin */}
+                  <div className="flex items-start gap-1.5 text-xs text-slate-600 dark:text-slate-300 mb-2.5">
+                    <MapPin size={13} className="text-blue-500 shrink-0 mt-0.5" />
+                    <span className="leading-snug line-clamp-2">
+                      {formatAddress 
+                        ? formatAddress(currentActiveOrder.address) 
+                        : (currentActiveOrder.address?.street 
+                            ? `${currentActiveOrder.address.street}, ${currentActiveOrder.address.city || ""}` 
+                            : "Delivery destination assigned")}
+                    </span>
+                  </div>
+
+                  {/* Telemetry Metrics */}
+                  <div className="grid grid-cols-3 gap-1.5 py-1.5 px-1.5 bg-slate-50 dark:bg-slate-900/60 rounded-sm mb-2.5 text-center">
+                    <div>
+                      <div className="flex items-center justify-center gap-1 text-slate-700 dark:text-slate-300 text-xs mb-0.5">
+                        <Navigation size={11} className="text-slate-400" />
+                        <span className="font-bold">{currentActiveOrder.distance || "In Zone"}</span>
+                      </div>
+                      <span className="text-[9px] text-slate-400">Zone / Route</span>
+                    </div>
+                    <div className="border-x border-slate-200 dark:border-slate-800">
+                      <div className="flex items-center justify-center gap-1 text-slate-700 dark:text-slate-300 text-xs mb-0.5">
+                        <Clock size={11} className="text-slate-400" />
+                        <span className="font-bold">{currentActiveOrder.orderStatus || "Active"}</span>
+                      </div>
+                      <span className="text-[9px] text-slate-400">Status</span>
                     </div>
                     <div>
-                      <p className="text-[9px] font-black uppercase tracking-wider text-slate-400">Verification</p>
-                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1.5">
-                        <Key size={12} className="text-indigo-500" />
-                        <span>Requires Secure OTP delivery confirmation</span>
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="h-44 flex flex-col items-center justify-center text-center">
-                  <div className="h-12 w-12 rounded-full bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 flex items-center justify-center text-slate-400 mb-3">
-                    <CheckCircle2 size={24} />
-                  </div>
-                  <h4 className="font-extrabold text-slate-800 dark:text-slate-300">Logistics Queue Idle</h4>
-                  <p className="text-[11px] text-slate-500 mt-1">Currently no active dispatches. Select a job from the pool or wait for auto-assignment.</p>
-                </div>
-              )}
-            </div>
-
-            {/* SECTION 4: DELIVERY PROGRESS TRACKER (timeline embedded inside Command Center) */}
-            {nextOrder && (
-              <div className="pt-2 border-t border-slate-100 dark:border-slate-800/60 mt-2">
-                <p className="text-[9px] font-black uppercase tracking-wider text-slate-400 mb-3.5">Delivery Pipeline Timeline</p>
-                <div className="relative flex items-center justify-between">
-                  {/* Background line */}
-                  <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-1 bg-slate-100 dark:bg-slate-900 rounded-full z-0" />
-                  
-                  {/* Dynamic progress fill line */}
-                  <div 
-                    className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-gradient-to-r from-indigo-500 to-blue-500 rounded-full z-0 transition-all duration-500" 
-                    style={{ width: `${(getProgressStepIndex(nextOrder.orderStatus) / 4) * 100}%` }}
-                  />
-
-                  {["Assigned", "Accepted", "Picked Up", "Out for Delivery", "Delivered"].map((step, idx) => {
-                    const currentIdx = getProgressStepIndex(nextOrder.orderStatus);
-                    const isCompleted = idx < currentIdx || nextOrder.orderStatus === "Delivered";
-                    const isCurrent = idx === currentIdx && nextOrder.orderStatus !== "Delivered";
-                    
-                    return (
-                      <div key={step} className="flex flex-col items-center relative z-10">
-                        <div className={`h-6 w-6 rounded-full border-2 flex items-center justify-center text-[9px] font-black transition-all duration-300 ${ isCompleted ? "bg-emerald-500 border-emerald-600 text-slate-100 dark:text-white shadow-md shadow-emerald-500/15" : isCurrent ? "bg-blue-600 border-blue-700 text-slate-100 dark:text-white shadow-md shadow-blue-500/20 animate-pulse scale-110" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400" }`}>
-                          {isCompleted ? "✓" : idx + 1}
-                        </div>
-                        <span className={`text-[8px] font-bold uppercase tracking-widest mt-1.5 hidden md:inline ${ isCompleted ? "text-emerald-600 dark:text-emerald-400 font-black" : isCurrent ? "text-blue-600 dark:text-blue-400 font-black" : "text-slate-400" }`}>
-                          {step}
+                      <div className="flex items-center justify-center gap-1 text-slate-700 dark:text-slate-300 text-xs mb-0.5">
+                        <Wallet size={11} className="text-slate-400" />
+                        <span className="font-bold">
+                          {currentActiveOrder.paymentMethod ? currentActiveOrder.paymentMethod.toUpperCase() : "COD"} ₹{currentActiveOrder.amount || 0}
                         </span>
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Actions & Primary CTA Button */}
-            {nextOrder && (
-              <div className="flex flex-col sm:flex-row gap-3 mt-2">
-                <div className="flex gap-2.5 flex-1">
-                  <button
-                    onClick={() => {
-                      setIsNavigating((prev) => !prev);
-                      if (!isNavigating) {
-                        toast.success("Active Navigation Started!");
-                      } else {
-                        toast.info("Exited navigation mode");
-                      }
-                    }}
-                    className={`flex-1 flex items-center justify-center gap-1.5 border py-3 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-150 cursor-pointer shadow-sm ${
-                      isNavigating
-                        ? "bg-rose-600 hover:bg-rose-700 border-rose-600 text-white font-black animate-pulse"
-                        : "bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white"
-                    }`}
-                  >
-                    <Navigation size={12} className={isNavigating ? "text-white" : "text-blue-500 dark:text-blue-400"} />
-                    <span>{isNavigating ? "Exit Nav" : "Navigate"}</span>
-                  </button>
-                  
-                  <button
-                    onClick={() => handleInitiateCall("audio")}
-                    disabled={nextOrder.orderStatus !== "Out For Delivery"}
-                    className={`flex-1 flex items-center justify-center gap-1.5 bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-150 cursor-pointer shadow-sm ${nextOrder.orderStatus !== "Out For Delivery" ? "opacity-50 cursor-not-allowed" : ""}`}
-                  >
-                    <Phone size={12} className="text-emerald-500" />
-                    <span>Voice</span>
-                  </button>
-
-                  <button
-                    onClick={() => handleInitiateCall("video")}
-                    disabled={nextOrder.orderStatus !== "Out For Delivery"}
-                    className={`flex-1 flex items-center justify-center gap-1.5 bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-150 cursor-pointer shadow-sm ${nextOrder.orderStatus !== "Out For Delivery" ? "opacity-50 cursor-not-allowed" : ""}`}
-                  >
-                    <Video size={12} className="text-indigo-500" />
-                    <span>Video</span>
-                  </button>
-
-                  <button
-                    onClick={() => setChatModalOpen(true)}
-                    className="flex-1 flex items-center justify-center gap-1.5 bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white py-3 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-150 cursor-pointer shadow-sm"
-                  >
-                    <MessageSquare size={12} className="text-indigo-500" />
-                    <span>Chat</span>
-                  </button>
-                </div>
-
-                <button
-                  onClick={handleCommandCenterCTA}
-                  className="sm:w-56 w-full flex items-center justify-center gap-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-slate-100 dark:text-white py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all duration-150 shadow-md shadow-blue-500/10 active:scale-98 cursor-pointer text-center"
-                >
-                  <CheckCircle size={12} />
-                  <span>{getCommandCenterCTAText(nextOrder.orderStatus)}</span>
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* SECTION 3: LIVE MAP PANEL */}
-        <DeliveryMap 
-          nextOrder={nextOrder} 
-          stats={stats} 
-          driver={driver} 
-          isNavigating={isNavigating}
-          setIsNavigating={setIsNavigating}
-          formatAddress={formatAddress}
-        />
-
-      </div>
-
-      {/* SECTION 5: TODAY'S PERFORMANCE (Grid of premium metrics cards with inline SVGs) */}
-      <div className="space-y-4">
-        <h3 className="font-extrabold text-xs text-slate-900 dark:text-white uppercase tracking-wider px-1">Today's Logistics Scoreboard</h3>
-        
-        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
-          
-          {/* Card: Completed */}
-          <div className="glass-panel rounded-2xl p-4.5 shadow-xs relative overflow-hidden transition duration-200">
-            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Jobs Done</p>
-            <div className="flex items-baseline gap-1 mt-2.5">
-              <span className="text-xl font-black text-slate-900 dark:text-white">{completedTodayCount}</span>
-              <span className="text-[8px] font-black text-emerald-500 uppercase tracking-wider font-semibold">+100%</span>
-            </div>
-            {/* SVG Sparkline */}
-            <div className="h-6 w-full mt-3">
-              <svg viewBox="0 0 100 30" className="w-full h-full stroke-emerald-500 stroke-[2] fill-none">
-                <path d="M 0 25 Q 20 20 40 22 T 80 10 T 100 5" />
-                <path d="M 0 25 Q 20 20 40 22 T 80 10 T 100 5 L 100 30 L 0 30 Z" fill="rgba(16, 185, 129, 0.05)" stroke="none" />
-              </svg>
-            </div>
-          </div>
-
-          {/* Card: Active */}
-          <div className="glass-panel rounded-2xl p-4.5 shadow-xs relative overflow-hidden transition duration-200">
-            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Ongoing</p>
-            <div className="flex items-baseline gap-1 mt-2.5">
-              <span className="text-xl font-black text-slate-900 dark:text-white">
-                {orders.filter(o => o.orderStatus !== "Delivered" && o.orderStatus !== "Cancelled").length}
-              </span>
-              <span className="text-[8px] font-black text-blue-500 uppercase tracking-wider font-semibold">In queue</span>
-            </div>
-            {/* SVG Sparkline */}
-            <div className="h-6 w-full mt-3">
-              <svg viewBox="0 0 100 30" className="w-full h-full stroke-blue-500 stroke-[2] fill-none">
-                <path d="M 0 15 Q 30 15 50 25 T 100 5" />
-                <path d="M 0 15 Q 30 15 50 25 T 100 5 L 100 30 L 0 30 Z" fill="rgba(59, 130, 246, 0.05)" stroke="none" />
-              </svg>
-            </div>
-          </div>
-
-          {/* Card: Today Earnings */}
-          <div className="glass-panel rounded-2xl p-4.5 shadow-xs relative overflow-hidden transition duration-200">
-            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Earnings</p>
-            <div className="flex items-baseline gap-1 mt-2.5">
-              <span className="text-xl font-black text-emerald-600 dark:text-emerald-400">₹{todayEarningsVal}</span>
-              <span className="text-[8px] font-black text-emerald-500 uppercase tracking-wider font-semibold">Daily</span>
-            </div>
-            {/* SVG Sparkline */}
-            <div className="h-6 w-full mt-3">
-              <svg viewBox="0 0 100 30" className="w-full h-full stroke-emerald-500 stroke-[2] fill-none">
-                <path d="M 0 28 Q 20 15 45 20 T 90 5 T 100 2" />
-                <path d="M 0 28 Q 20 15 45 20 T 90 5 T 100 2 L 100 30 L 0 30 Z" fill="rgba(16, 185, 129, 0.05)" stroke="none" />
-              </svg>
-            </div>
-          </div>
-
-          {/* Card: COD cash collected */}
-          <div className="glass-panel rounded-2xl p-4.5 shadow-xs relative overflow-hidden transition duration-200">
-            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">COD Collected</p>
-            <div className="flex items-baseline gap-1 mt-2.5">
-              <span className="text-xl font-black text-amber-600 dark:text-amber-400">₹{stats.cashCollected?.toFixed(0) || "0"}</span>
-              <span className="text-[8px] font-black text-slate-400 uppercase tracking-wider font-semibold">On hand</span>
-            </div>
-            {/* SVG Sparkline */}
-            <div className="h-6 w-full mt-3">
-              <svg viewBox="0 0 100 30" className="w-full h-full stroke-amber-500 stroke-[2] fill-none">
-                <path d="M 0 25 Q 30 10 60 18 T 100 8" />
-                <path d="M 0 25 Q 30 10 60 18 T 100 8 L 100 30 L 0 30 Z" fill="rgba(245, 158, 11, 0.05)" stroke="none" />
-              </svg>
-            </div>
-          </div>
-
-          {/* Card: Success Rate */}
-          <div className="glass-panel rounded-2xl p-4.5 shadow-xs relative overflow-hidden transition duration-200">
-            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Success Rate</p>
-            <div className="flex items-baseline gap-1 mt-2.5">
-              <span className="text-xl font-black text-slate-900 dark:text-white">98.6%</span>
-              <span className="text-[8px] font-black text-emerald-500 uppercase tracking-wider font-semibold">Top Tier</span>
-            </div>
-            {/* SVG Sparkline */}
-            <div className="h-6 w-full mt-3">
-              <svg viewBox="0 0 100 30" className="w-full h-full stroke-indigo-500 stroke-[2] fill-none">
-                <path d="M 0 5 Q 40 8 70 4 T 100 6" />
-                <path d="M 0 5 Q 40 8 70 4 T 100 6 L 100 30 L 0 30 Z" fill="rgba(99, 102, 241, 0.05)" stroke="none" />
-              </svg>
-            </div>
-          </div>
-
-          {/* Card: Avg Delivery Time */}
-          <div className="glass-panel rounded-2xl p-4.5 shadow-xs relative overflow-hidden transition duration-200">
-            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Avg Speed</p>
-            <div className="flex items-baseline gap-1 mt-2.5">
-              <span className="text-xl font-black text-slate-900 dark:text-white">22 mins</span>
-              <span className="text-[8px] font-black text-emerald-500 uppercase tracking-wider font-semibold">-4% time</span>
-            </div>
-            {/* SVG Sparkline */}
-            <div className="h-6 w-full mt-3">
-              <svg viewBox="0 0 100 30" className="w-full h-full stroke-teal-500 stroke-[2] fill-none">
-                <path d="M 0 10 Q 30 25 60 12 T 100 8" />
-                <path d="M 0 10 Q 30 25 60 12 T 100 8 L 100 30 L 0 30 Z" fill="rgba(20, 184, 166, 0.05)" stroke="none" />
-              </svg>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      {/* MID SECTION: ROUTE OPTIMIZATION & PERFORMANCE GRAPHS */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
-        {/* SECTION 6: ROUTE OPTIMIZATION PANEL */}
-        <div className="lg:col-span-4 glass-panel rounded-3xl p-5 shadow-xs flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60 pb-3 mb-4">
-              <h4 className="font-extrabold text-xs text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
-                <Zap size={14} className="text-blue-500" />
-                <span>Today's Optimal Route</span>
-              </h4>
-              <span className="text-[8px] font-black uppercase tracking-widest bg-blue-500/10 px-2 py-0.5 rounded text-blue-500 dark:text-blue-400">AI Sequenced</span>
-            </div>
-
-            <div className="space-y-3.5">
-              {/* Route stop 1 */}
-              <div className="flex items-start gap-3 relative">
-                <div className="absolute left-3.5 top-7 bottom-[-14px] w-[2px] bg-slate-200 dark:bg-slate-800" />
-                <div className="h-7 w-7 rounded-full bg-blue-500 text-slate-100 dark:text-white font-extrabold text-[10px] flex items-center justify-center shrink-0 shadow-sm shadow-blue-500/20">1</div>
-                <div className="text-xs">
-                  <p className="font-extrabold text-slate-900 dark:text-white">Main Distribution Hub</p>
-                  <p className="text-[10px] text-slate-500 mt-0.5">Pick up packages • Out for dispatch</p>
-                </div>
-              </div>
-
-              {/* Route stop 2 */}
-              <div className="flex items-start gap-3 relative">
-                <div className="absolute left-3.5 top-7 bottom-[-14px] w-[2px] bg-slate-200 dark:bg-slate-800" />
-                <div className="h-7 w-7 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-extrabold text-[10px] flex items-center justify-center shrink-0">2</div>
-                <div className="text-xs">
-                  <p className="font-extrabold text-slate-800 dark:text-slate-200">
-                    {nextOrder ? `${nextOrder.address?.firstName} ${nextOrder.address?.lastName}` : "Customer A"}
-                  </p>
-                  <p className="text-[10px] text-slate-500 mt-0.5">3.5 km • Next Priority</p>
-                </div>
-              </div>
-
-              {/* Route stop 3 */}
-              <div className="flex items-start gap-3 relative">
-                <div className="absolute left-3.5 top-7 bottom-[-14px] w-[2px] bg-slate-200 dark:bg-slate-800" />
-                <div className="h-7 w-7 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-extrabold text-[10px] flex items-center justify-center shrink-0">3</div>
-                <div className="text-xs">
-                  <p className="font-extrabold text-slate-800 dark:text-slate-200">Customer B</p>
-                  <p className="text-[10px] text-slate-500 mt-0.5">5.2 km • 2nd dispatch</p>
-                </div>
-              </div>
-
-              {/* Route stop 4 */}
-              <div className="flex items-start gap-3">
-                <div className="h-7 w-7 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-extrabold text-[10px] flex items-center justify-center shrink-0">4</div>
-                <div className="text-xs">
-                  <p className="font-extrabold text-slate-800 dark:text-slate-200">Customer C</p>
-                  <p className="text-[10px] text-slate-500 mt-0.5">7.1 km • 3rd dispatch</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-5 pt-3.5 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between text-[10px]">
-            <div>
-              <p className="text-slate-400 font-bold uppercase tracking-wider">Total distance</p>
-              <h5 className="text-xs font-black text-slate-900 dark:text-white mt-0.5">9.6 kilometers</h5>
-            </div>
-            <div className="text-right">
-              <p className="text-slate-400 font-bold uppercase tracking-wider">Est. Completion</p>
-              <h5 className="text-xs font-black text-blue-600 dark:text-blue-400 mt-0.5">~48 minutes</h5>
-            </div>
-          </div>
-        </div>
-
-        {/* SECTION 9: PERFORMANCE DASHBOARD */}
-        <div className="lg:col-span-8 glass-panel rounded-3xl p-5 shadow-xs flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60 pb-3 mb-4">
-              <h4 className="font-extrabold text-xs text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
-                <BarChart2 size={14} className="text-indigo-500" />
-                <span>Earnings & Volume Analytics</span>
-              </h4>
-              <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-900/65 px-2.5 py-1 rounded-lg border border-slate-100 dark:border-slate-800">
-                <TrendingUp size={10} className="text-emerald-500" />
-                <span className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">+18.4% Weekly</span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Chart 1: Weekly Earnings */}
-              <div>
-                <p className="text-[9px] font-black uppercase text-slate-400 tracking-wider mb-2.5">Weekly Earnings History (INR)</p>
-                <div className="h-32 w-full bg-slate-50/50 dark:bg-slate-900/40 rounded-xl border border-slate-100 dark:border-slate-800/80 p-2 relative flex flex-col justify-between">
-                  {/* Grid background lines */}
-                  <div className="absolute inset-0 flex flex-col justify-around p-3 pointer-events-none opacity-20">
-                    <div className="w-full h-[1px] bg-slate-400" />
-                    <div className="w-full h-[1px] bg-slate-400" />
-                    <div className="w-full h-[1px] bg-slate-400" />
-                  </div>
-                  
-                  {/* SVG Wave chart */}
-                  <svg viewBox="0 0 200 80" className="w-full h-24 relative z-10">
-                    <defs>
-                      <linearGradient id="chartGlow" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#6366f1" stopOpacity="0.3" />
-                        <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
-                      </linearGradient>
-                    </defs>
-                    <path 
-                      d="M 0 70 Q 30 50 60 55 T 120 20 T 180 30 T 200 10 L 200 80 L 0 80 Z" 
-                      fill="url(#chartGlow)" 
-                    />
-                    <path 
-                      d="M 0 70 Q 30 50 60 55 T 120 20 T 180 30 T 200 10" 
-                      fill="none" 
-                      stroke="#6366f1" 
-                      strokeWidth="2.5" 
-                      strokeLinecap="round" 
-                    />
-                  </svg>
-                  
-                  <div className="flex justify-between text-[8px] font-bold text-slate-400 px-1 mt-1 z-10">
-                    <span>Mon</span>
-                    <span>Wed</span>
-                    <span>Fri</span>
-                    <span>Sun</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Chart 2: Delivery Trend Graph */}
-              <div>
-                <p className="text-[9px] font-black uppercase text-slate-400 tracking-wider mb-2.5">Daily Delivery Count (Jobs)</p>
-                <div className="h-32 w-full bg-slate-50/50 dark:bg-slate-900/40 rounded-xl border border-slate-100 dark:border-slate-800/80 p-2.5 relative flex flex-col justify-between">
-                  <div className="absolute inset-0 flex flex-col justify-around p-3 pointer-events-none opacity-20">
-                    <div className="w-full h-[1px] bg-slate-400" />
-                    <div className="w-full h-[1px] bg-slate-400" />
-                  </div>
-                  
-                  {/* Bar Chart Representation */}
-                  <div className="flex items-end justify-around h-20 w-full px-2 relative z-10">
-                    {[12, 18, 14, 25, 20].map((val, idx) => (
-                      <div key={idx} className="flex flex-col items-center gap-1 w-6">
-                        <div 
-                          className="w-full rounded-t-md bg-gradient-to-t from-blue-600 to-indigo-500 shadow-md shadow-blue-500/10 transition-all duration-500" 
-                          style={{ height: `${(val / 30) * 100}%` }}
-                        />
-                        <span className="text-[8px] font-extrabold text-slate-900 dark:text-white mt-1">{val}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="flex justify-between text-[8px] font-bold text-slate-400 px-2.5 z-10">
-                    <span>11/06</span>
-                    <span>12/06</span>
-                    <span>13/06</span>
-                    <span>14/06</span>
-                    <span>15/06</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-between gap-4 mt-5 pt-3.5 border-t border-slate-100 dark:border-slate-800/60 text-[10px]">
-            <div className="flex gap-4">
-              <div>
-                <span className="text-slate-400 font-bold uppercase tracking-wider">Weekly Revenue</span>
-                <p className="text-xs font-black text-slate-900 dark:text-white mt-0.5">₹4,225.00</p>
-              </div>
-              <div>
-                <span className="text-slate-400 font-bold uppercase tracking-wider">Total distance</span>
-                <p className="text-xs font-black text-slate-900 dark:text-white mt-0.5">62.8 km</p>
-              </div>
-            </div>
-            <span className="text-emerald-600 dark:text-emerald-400 font-black flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded text-[9px] uppercase tracking-wider">
-              Level 4 Courier Badge
-            </span>
-          </div>
-        </div>
-
-      </div>
-
-      {/* SECTION 7: ACTIVE DELIVERIES (Redesigned delivery cards replacing standard table) */}
-      <div className="space-y-4">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-200/80 dark:border-slate-800 pb-3">
-          <div>
-            <h3 className="font-extrabold text-xs text-slate-900 dark:text-white uppercase tracking-wider">Logistics Dispatch Center</h3>
-            <p className="text-[9px] text-slate-400 mt-0.5">Browse active or completed courier schedules</p>
-          </div>
-          
-          <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
-            {/* Search Bar */}
-            <div className="relative flex-1 min-w-[140px] md:w-56 md:flex-none">
-              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 dark:text-slate-500 pointer-events-none">
-                <Search size={12} />
-              </span>
-              <input
-                type="text"
-                placeholder="Search ID, Customer..."
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setTablePage(1);
-                }}
-                className="w-full pl-8 pr-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs outline-none text-slate-900 dark:text-white placeholder:text-slate-400 transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-              />
-            </div>
-
-            {/* Status Filter */}
-            <select
-              value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
-                setTablePage(1);
-              }}
-              className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 outline-none cursor-pointer transition shrink-0 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
-            >
-              <option value="All">All Jobs</option>
-              <option value="Pending">Pending</option>
-              <option value="Delivered">Delivered</option>
-              <option value="Cancelled">Cancelled</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Deliveries cards stack */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 items-start">
-          {paginatedTableOrders.length === 0 ? (
-            <div className="col-span-full glass-panel rounded-2xl p-10 text-center text-slate-500">
-              No orders found matching the filter criteria.
-            </div>
-          ) : (
-            paginatedTableOrders.map((order) => {
-              const isNext = nextOrder && nextOrder._id === order._id;
-              const isExpanded = !!expandedCardIds[order._id];
-              
-              return (
-                <div 
-                  key={order._id}
-                  className={`glass-panel border rounded-2xl p-3 shadow-sm transition-all duration-300 relative ${ isNext ? "border-blue-400 dark:border-blue-700 bg-blue-500/5 dark:bg-blue-500/10" : "border-slate-200 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700" }`}
-                >
-                  <div className="flex justify-between items-start gap-2.5">
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-mono font-black text-xs text-slate-900 dark:text-white">
-                          #{order._id.slice(-6).toUpperCase()}
-                        </span>
-                        {isNext && (
-                          <span className="bg-blue-600 text-slate-100 dark:text-white text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider">Next</span>
-                        )}
-                        {order.assignmentStatus === "Assigned" && (
-                          <span className="bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[8px] font-black px-1.5 py-0.5 rounded border border-amber-500/25 uppercase tracking-wider">Pending Action</span>
-                        )}
-                      </div>
-                      <h4 className="font-bold text-xs text-slate-800 dark:text-slate-200 mt-0.5">
-                        {order.address?.firstName} {order.address?.lastName}
-                      </h4>
-                    </div>
-
-                    <div className="text-right">
-                      <p className="text-xs font-black text-slate-900 dark:text-white">₹{order.amount}</p>
-                      <span className={`inline-block px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border mt-0.5 ${ order.orderStatus === "Delivered" ? "bg-emerald-50 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-950/40" : "bg-indigo-50 text-indigo-700 dark:text-indigo-400 border-indigo-100 dark:border-indigo-950/40" }`}>
-                        {order.orderStatus}
-                      </span>
+                      <span className="text-[9px] text-slate-400">Payment</span>
                     </div>
                   </div>
+                </div>
 
-                  {/* Summary row */}
-                  <div className="flex items-center justify-between mt-2.5 text-[9px] text-slate-400 border-t border-slate-100 dark:border-slate-800/60 pt-2">
-                    <span className="font-semibold">{order.paymentMethod}</span>
-                    <span>{new Date(order.createdAt).toLocaleDateString()}</span>
-                    
-                    <button 
-                      onClick={() => setExpandedCardIds((prev) => ({ ...prev, [order._id]: !prev[order._id] }))}
-                      className="text-blue-500 dark:text-blue-400 hover:underline flex items-center gap-0.5 font-bold cursor-pointer"
+                {/* Action Buttons: Navigate, Call, Chat + Primary CTA */}
+                <div className="space-y-2">
+                  <div className="grid grid-cols-3 gap-1.5">
+                    <button
+                      onClick={() => {
+                        setIsNavigating(true);
+                        toast.success("Navigation mode active!");
+                      }}
+                      className="py-1.5 px-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-sm text-xs font-semibold flex items-center justify-center gap-1 transition cursor-pointer shadow-xs active:scale-95"
                     >
-                      <span>{isExpanded ? "Collapse" : "Expand"}</span>
-                      {isExpanded ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
+                      <Navigation size={12} className="fill-current" />
+                      <span>Navigate</span>
+                    </button>
+                    <button
+                      onClick={() => handleInitiateCall("audio")}
+                      className="py-1.5 px-2.5 bg-blue-50 hover:bg-blue-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-blue-600 dark:text-blue-400 rounded-sm text-xs font-semibold flex items-center justify-center gap-1 transition cursor-pointer active:scale-95"
+                    >
+                      <Phone size={12} />
+                      <span>Call</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setChatModalOpen((prev) => !prev);
+                        setIsChatMinimized(false);
+                      }}
+                      className={`py-1.5 px-2.5 rounded-sm text-xs font-semibold flex items-center justify-center gap-1 transition cursor-pointer active:scale-95 ${
+                        chatModalOpen && !isChatMinimized
+                          ? "bg-blue-600 text-white shadow-xs"
+                          : "bg-blue-50 hover:bg-blue-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-blue-600 dark:text-blue-400"
+                      }`}
+                    >
+                      <MessageSquare size={12} />
+                      <span>Chat</span>
                     </button>
                   </div>
 
-                  {/* Expandable details content */}
-                  {isExpanded && (
-                    <div className="mt-4 space-y-4 pt-3 border-t border-dashed border-slate-200 dark:border-slate-800/80 text-xs">
-                      <div>
-                        <span className="text-[8px] font-black uppercase tracking-wider text-slate-400 block mb-1">Shipping address</span>
-                        <p className="font-semibold text-slate-700 dark:text-slate-300 leading-normal">{formatAddress(order.address)}</p>
-                      </div>
-
-                      <div className="flex gap-2">
-                        {order.orderStatus === "Out For Delivery" ? (
-                          <button
-                            onClick={() => handleInitiateCall("audio")}
-                            className="flex-1 text-center bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 py-2 rounded-xl text-[9px] font-black uppercase tracking-wider cursor-pointer border-none"
-                          >
-                            Call Customer
-                          </button>
-                        ) : (
-                          <a
-                            href={`tel:${order.address?.phone}`}
-                            className="flex-1 text-center bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 py-2 rounded-xl text-[9px] font-black uppercase tracking-wider cursor-pointer"
-                          >
-                            Call (Native)
-                          </a>
-                        )}
-                        <a
-                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(formatAddress(order.address))}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="flex-1 text-center bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 py-2 rounded-xl text-[9px] font-black uppercase tracking-wider cursor-pointer"
-                        >
-                          Navigate Map
-                        </a>
-                      </div>
-
-                      {/* Dropdown status update */}
-                      <div>
-                        <span className="text-[8px] font-black uppercase tracking-wider text-slate-400 block mb-1.5">Change dispatch stage</span>
-                        {order.orderStatus === "Delivered" ? (
-                          <span className="text-emerald-500 font-extrabold text-[10px]">✓ Delivered & Confirmed</span>
-                        ) : order.assignmentStatus === "Assigned" ? (
-                          <div className="flex gap-2 mt-1">
-                            <button
-                              onClick={() => handleRejectAssignment(order._id)}
-                              className="flex-1 bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-rose-950/45 py-2 rounded-xl text-[9px] font-black uppercase tracking-wider cursor-pointer"
-                            >
-                              Reject
-                            </button>
-                            <button
-                              onClick={() => handleAcceptAssignment(order._id)}
-                              className="flex-1 bg-emerald-600 text-slate-100 dark:text-white py-2 rounded-xl text-[9px] font-black uppercase tracking-wider cursor-pointer animate-pulse"
-                            >
-                              Accept
-                            </button>
-                          </div>
-                        ) : (
-                          <select
-                            value={order.orderStatus}
-                            onChange={(e) => handleStatusChange(order._id, e.target.value)}
-                            className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 cursor-pointer"
-                          >
-                            <option value="Order Placed">Order Placed</option>
-                            <option value="Packed">Packed</option>
-                            <option value="Shipped">Shipped</option>
-                            <option value="Out for Delivery">Out for Delivery</option>
-                            <option value="Delivered">Delivered</option>
-                          </select>
-                        )}
-                      </div>
-                    </div>
-                  )}
+                  {/* Mark as Picked Up / Out for Delivery / Delivered Button */}
+                  <button
+                    onClick={() => {
+                      if (!currentActiveOrder) return;
+                      const st = (currentActiveOrder.orderStatus || "").toLowerCase();
+                      if (st === "assigned" || st === "order placed" || st === "accepted") {
+                        handleStatusChange(currentActiveOrder._id, "Picked Up");
+                        toast.success("Shipment marked as Picked Up!");
+                      } else if (st === "picked up") {
+                        handleStatusChange(currentActiveOrder._id, "Out for Delivery");
+                        toast.success("Shipment is out for delivery!");
+                      } else {
+                        setOtpModalOpen(true);
+                      }
+                    }}
+                    className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-sm text-xs flex items-center justify-center gap-1.5 transition cursor-pointer shadow-sm active:scale-98"
+                  >
+                    <Package size={14} />
+                    <span>
+                      {(currentActiveOrder.orderStatus || "").toLowerCase() === "picked up"
+                        ? "Mark as Out for Delivery"
+                        : (currentActiveOrder.orderStatus || "").toLowerCase() === "out for delivery"
+                        ? "Mark as Delivered (Verify OTP)"
+                        : "Mark as Picked Up"}
+                    </span>
+                  </button>
                 </div>
-              );
-            })
-          )}
+              </>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full min-h-[300px] text-center p-4 space-y-3">
+                <div className="h-11 w-11 rounded-sm bg-blue-50 dark:bg-slate-800 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                  <Package size={22} />
+                </div>
+                <div>
+                  <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">No Active Shipments</h4>
+                  <p className="text-[11px] text-slate-400 max-w-[210px] mt-1">
+                    Stay Online to receive direct dispatch assignments, or browse available orders.
+                  </p>
+                </div>
+                <div className="pt-1">
+                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xs text-[10px] font-mono font-medium ${
+                    driver?.isOnline || stats?.isOnline
+                      ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
+                      : "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400 border border-amber-200 dark:border-amber-800"
+                  }`}>
+                    <span className={`h-1.5 w-1.5 rounded-full ${driver?.isOnline || stats?.isOnline ? "bg-emerald-500 animate-pulse" : "bg-amber-500"}`} />
+                    <span>{driver?.isOnline || stats?.isOnline ? "Duty: ONLINE" : "Duty: OFFLINE"}</span>
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Middle 4 Cols (Live Delivery Route Map - Always Visible) */}
+          <div className="dashboard-card overflow-hidden relative flex flex-col min-h-[350px] justify-between p-0">
+            <DeliveryMap 
+              nextOrder={currentActiveOrder}
+              stats={stats}
+              driver={driver}
+              isNavigating={isNavigating}
+              setIsNavigating={setIsNavigating}
+              formatAddress={formatAddress}
+            />
+          </div>
         </div>
 
-        {/* Table pagination controls */}
-        {totalTablePages > 1 && (
-          <div className="p-3.5 glass-panel border border-slate-200/80 dark:border-slate-800/80 rounded-2xl flex items-center justify-between text-xs mt-4">
-            <span className="text-slate-500 dark:text-slate-400 font-medium">
-              Showing Page {tablePage} of {totalTablePages} ({tableFilteredOrders.length} entries)
-            </span>
-            
-            <div className="flex items-center gap-1.5">
-              <button
-                disabled={tablePage === 1}
-                onClick={() => setTablePage(p => Math.max(1, p - 1))}
-                className="p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:text-white transition disabled:opacity-40 cursor-pointer"
-              >
-                <ChevronLeft size={13} />
-              </button>
-              <button
-                disabled={tablePage === totalTablePages}
-                onClick={() => setTablePage(p => Math.min(totalTablePages, p + 1))}
-                className="p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:text-white transition disabled:opacity-40 cursor-pointer"
-              >
+        {/* Right 4 Cols (Earnings + Performance + Motivation) */}
+        <div className="lg:col-span-4 space-y-2 flex flex-col justify-between">
+          {/* 1. Earnings Card */}
+          <div className="dashboard-card p-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">Earnings</span>
+              <button onClick={() => setStatusFilter("All")} className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-0.5 cursor-pointer">
+                <span>View Details</span>
                 <ChevronRight size={13} />
               </button>
             </div>
-          </div>
-        )}
-      </div>
 
-      {/* Date Filter Panel */}
-      <div className="glass-panel border border-slate-200/85 dark:border-slate-800/80 rounded-2xl p-4 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition duration-200">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-900 text-slate-400 border border-slate-100 dark:border-slate-800">
-            <Calendar size={14} />
+            {/* Tabs pill */}
+            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-0.5 rounded-xs mb-2 text-xs">
+              {["Today", "This Week", "This Month"].map(tab => (
+                <button
+                  key={tab}
+                  onClick={() => setEarningsTab(tab)}
+                  className={`flex-1 py-1 rounded-xs text-xs font-medium transition cursor-pointer ${
+                    earningsTab === tab 
+                      ? "bg-blue-600 text-white shadow-xs" 
+                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+
+            {/* Big value + percentage */}
+            <div className="flex items-baseline justify-between mb-2 pb-2 border-b border-slate-100 dark:border-slate-800">
+              <div>
+                <span className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
+                  ₹{displayedEarnings.toLocaleString()}
+                </span>
+                <p className="text-[10px] text-slate-400 font-medium">
+                  {earningsTab === "Today" ? "Today's Earnings" : `${earningsTab} Total`}
+                </p>
+              </div>
+              <span className="px-1.5 py-0.5 rounded-xs text-[10px] font-bold bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400 font-mono flex items-center gap-0.5">
+                <span>{deliveredCount}</span>
+                <span className="font-normal text-slate-400 ml-0.5">completed</span>
+              </span>
+            </div>
+
+            {/* Breakdown items */}
+            <div className="space-y-1.5 text-xs">
+              <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
+                <span>Base Payout</span>
+                <span className="font-bold text-slate-900 dark:text-white">₹{displayedEarnings.toLocaleString()}</span>
+              </div>
+              <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
+                <span>COD Cash Collected</span>
+                <span className="font-bold text-slate-900 dark:text-white">₹{(stats?.cashCollected || 0).toLocaleString()}</span>
+              </div>
+              <div className="flex items-center justify-between text-slate-600 dark:text-slate-300">
+                <span>Completed Orders</span>
+                <span className="font-bold text-slate-900 dark:text-white">{deliveredCount} packages</span>
+              </div>
+            </div>
           </div>
-          <div>
-            <h4 className="font-extrabold text-xs text-slate-900 dark:text-white uppercase tracking-wider leading-none">Logistics Calendar Filters</h4>
-            <p className="text-[9px] text-slate-400 mt-1">Review historical entries and performance stats</p>
+
+          {/* 2. Performance Card */}
+          <div className="dashboard-card p-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">Performance</span>
+              <select 
+                value={performanceTimeframe}
+                onChange={(e) => setPerformanceTimeframe(e.target.value)}
+                className="text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xs px-2 py-0.5 text-slate-600 dark:text-slate-300 outline-none cursor-pointer"
+              >
+                <option value="This Week">This Week</option>
+                <option value="Last Week">Last Week</option>
+                <option value="This Month">This Month</option>
+              </select>
+            </div>
+
+            {/* 2x2 stats */}
+            <div className="grid grid-cols-2 gap-2 mb-2">
+              <div>
+                <span className="text-sm sm:text-base font-bold text-emerald-600 dark:text-emerald-400 font-mono">
+                  {totalAssignedCount > 0 ? `${((deliveredCount / totalAssignedCount) * 100).toFixed(0)}%` : (deliveredCount > 0 ? "100%" : "—")}
+                </span>
+                <p className="text-[10px] text-slate-400">Delivery Success</p>
+              </div>
+              <div>
+                <span className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-1 font-mono">
+                  <span>{driver?.rating ? Number(driver.rating).toFixed(1) : "5.0"}</span>
+                  <Star size={11} className="fill-amber-400 text-amber-400" />
+                </span>
+                <p className="text-[10px] text-slate-400">Customer Rating</p>
+              </div>
+              <div>
+                <span className="text-sm sm:text-base font-bold text-slate-900 dark:text-white font-mono">
+                  {pendingCount}
+                </span>
+                <p className="text-[10px] text-slate-400">Pending Tasks</p>
+              </div>
+              <div>
+                <span className={`text-sm sm:text-base font-bold font-mono ${driver?.isOnline || stats?.isOnline ? "text-emerald-600 dark:text-emerald-400" : "text-slate-500"}`}>
+                  {driver?.isOnline || stats?.isOnline ? "Online" : "Offline"}
+                </span>
+                <p className="text-[10px] text-slate-400">Duty Status</p>
+              </div>
+            </div>
+
+            {/* Bar chart */}
+            <div className="pt-1.5 border-t border-slate-100 dark:border-slate-800">
+              <div className="flex items-end justify-between gap-1.5 h-14 px-1 pt-1">
+                {weeklyPerformanceData.map((bar) => (
+                  <div key={bar.day} className="flex-1 flex flex-col items-center gap-1 h-full justify-end">
+                    <div 
+                      className={`w-full rounded-t-xs transition-all duration-300 ${
+                        bar.isToday ? "bg-blue-600" : "bg-blue-200 dark:bg-blue-900/60 hover:bg-blue-400"
+                      }`}
+                      style={{ height: `${bar.val > 0 ? Math.max((bar.val / maxWeeklyVal) * 100, 16) : 8}%` }}
+                      title={`${bar.day}: ${bar.val} completed`}
+                    />
+                    <span className={`text-[9px] font-medium ${bar.isToday ? "text-blue-600 dark:text-blue-400 font-bold" : "text-slate-400"}`}>
+                      {bar.day}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* 3. Motivation Card */}
+          <div className="dashboard-card p-2.5 bg-gradient-to-r from-amber-500/10 to-orange-500/5 dark:from-amber-950/20 dark:to-orange-950/10 border-amber-200/60 dark:border-amber-900/40 flex items-center justify-between cursor-pointer hover:opacity-90 transition">
+            <div className="flex items-center gap-2.5">
+              <div className="h-7 w-7 rounded-xs bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs text-xs">
+                🏆
+              </div>
+              <div>
+                <h5 className="text-xs font-bold text-slate-900 dark:text-white leading-none">Keep going!</h5>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">You're making a difference</p>
+              </div>
+            </div>
+            <ArrowRight size={13} className="text-slate-400" />
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
-          <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-1.5 flex-1 md:flex-none">
-            <span className="text-[9px] font-black uppercase text-slate-400">From:</span>
-            <input
-              type="date"
-              value={filterStartDate}
-              onChange={(e) => setFilterStartDate(e.target.value)}
-              className="bg-transparent text-xs font-bold text-slate-700 dark:text-slate-300 outline-none w-full cursor-pointer"
-            />
-          </div>
-          <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-1.5 flex-1 md:flex-none">
-            <span className="text-[9px] font-black uppercase text-slate-400">To:</span>
-            <input
-              type="date"
-              value={filterEndDate}
-              onChange={(e) => setFilterEndDate(e.target.value)}
-              className="bg-transparent text-xs font-bold text-slate-700 dark:text-slate-300 outline-none w-full cursor-pointer"
-            />
-          </div>
-          {(filterStartDate || filterEndDate) && (
-            <button
-              onClick={() => {
-                setFilterStartDate("");
-                setFilterEndDate("");
-              }}
-              className="text-[10px] font-black text-rose-500 hover:text-rose-600 transition uppercase tracking-wider px-3.5 py-1.5 rounded-xl border border-rose-200 dark:border-rose-950 bg-rose-50 dark:bg-rose-950/20 cursor-pointer w-full md:w-auto text-center"
-            >
-              Clear
-            </button>
-          )}
+      </div>
+
+      {/* 4. TODAY'S DELIVERIES TABLE (matching reference image) */}
+      <div className="dashboard-card p-3">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">Today's Deliveries</h3>
+          <button 
+            onClick={() => setStatusFilter("All")}
+            className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer"
+          >
+            <span>View All</span>
+            <ArrowRight size={12} />
+          </button>
+        </div>
+
+        {/* Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead>
+              <tr className="border-b border-slate-100 dark:border-slate-800 text-slate-400 font-medium">
+                <th className="pb-1.5 font-medium">#</th>
+                <th className="pb-1.5 font-medium">Customer</th>
+                <th className="pb-1.5 font-medium">Area</th>
+                <th className="pb-1.5 font-medium">Distance</th>
+                <th className="pb-1.5 font-medium">Payment</th>
+                <th className="pb-1.5 font-medium">Status</th>
+                <th className="pb-1.5 font-medium text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+              {displayOrders.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-8 text-center text-slate-400">
+                    <Package size={22} className="mx-auto mb-1.5 opacity-40 text-slate-400" />
+                    <p className="font-semibold text-xs text-slate-700 dark:text-slate-300">No deliveries found</p>
+                    <p className="text-[10px] text-slate-400 mt-0.5">Assigned and completed packages for today will be listed here.</p>
+                  </td>
+                </tr>
+              ) : (
+                displayOrders.map((order, idx) => {
+                  const st = (order.orderStatus || "").toLowerCase();
+                  const isSelected = currentActiveOrder && currentActiveOrder._id === order._id;
+
+                  return (
+                    <tr 
+                      key={order._id || idx} 
+                      onClick={() => {
+                        setSelectedOrder(order);
+                        setSelectedOrderIdx(idx);
+                      }}
+                      className={`hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition cursor-pointer ${isSelected ? "bg-blue-50/40 dark:bg-blue-950/20" : ""}`}
+                    >
+                      <td className="py-2 font-bold text-slate-900 dark:text-white font-mono">
+                        #{order._id ? order._id.slice(-7).toUpperCase() : ""}
+                      </td>
+                      <td className="py-2 font-medium text-slate-800 dark:text-slate-200">
+                        {order.address?.firstName || "Customer"} {order.address?.lastName || ""}
+                      </td>
+                      <td className="py-2 text-slate-600 dark:text-slate-400">
+                        {order.address?.city || order.address?.street || "Assigned Sector"}
+                      </td>
+                      <td className="py-2 text-slate-600 dark:text-slate-400 font-medium">
+                        {order.distance || "In Zone"}
+                      </td>
+                      <td className="py-2 font-medium text-slate-800 dark:text-slate-200">
+                        {order.paymentMethod?.toLowerCase() === "cod" ? `COD ₹${order.amount || 0}` : `Paid ₹${order.amount || 0}`}
+                      </td>
+                      <td className="py-2">
+                        <span className={`px-2 py-0.5 rounded-xs text-[10px] font-medium inline-block ${
+                          st === "delivered" 
+                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800"
+                            : st === "picked up"
+                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800"
+                            : st === "out for delivery" || st === "on the way"
+                            ? "bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800"
+                            : "bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800"
+                        }`}>
+                          {order.orderStatus || "Assigned"}
+                        </span>
+                      </td>
+                      <td className="py-2 text-right">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedOrder(order);
+                            setSelectedOrderIdx(idx);
+                          }}
+                          className="text-blue-600 dark:text-blue-400 hover:text-blue-800 font-medium inline-flex items-center gap-1 cursor-pointer"
+                        >
+                          <span>View</span>
+                          <ArrowRight size={12} />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 
-      {/* SECTION 8: QUICK ACTION CENTER (Floating lightning bolt drawer in bottom-right corner) */}
+      {/* SECTION 8: QUICK ACTION CENTER (Sharp industrial floating trigger in bottom-right corner) */}
       <div className="fixed bottom-6 right-6 z-40">
         <button
           onClick={() => setActiveActionsOpen(!activeActionsOpen)}
-          className="h-14 w-14 rounded-full bg-gradient-to-br from-indigo-500 to-blue-600 text-slate-100 dark:text-white flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer relative"
+          className="h-11 w-11 rounded-sm bg-slate-900 hover:bg-slate-800 dark:bg-blue-600 dark:hover:bg-blue-500 text-white flex items-center justify-center shadow-xl border border-slate-700 dark:border-blue-400 transition-all duration-150 cursor-pointer relative"
         >
-          {activeActionsOpen ? <X size={20} /> : <Zap size={20} className="fill-white" />}
+          {activeActionsOpen ? <X size={18} /> : <Zap size={18} />}
           {pendingAcceptance.length > 0 && (
-            <span className="absolute -top-1.5 -right-1.5 h-5 w-5 bg-rose-500 rounded-full text-slate-100 dark:text-white text-[10px] font-black flex items-center justify-center border-2 border-white/10 dark:border-slate-800 dark:border-slate-950 animate-bounce">
+            <span className="absolute -top-1 -right-1 h-4 min-w-4 px-1 bg-rose-500 rounded-xs text-white text-[9px] font-mono font-bold flex items-center justify-center border border-white dark:border-[#0C101B]">
               {pendingAcceptance.length}
             </span>
           )}
         </button>
 
         {activeActionsOpen && (
-          <div className="absolute bottom-16 right-0 w-72 glass-panel border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-2xl space-y-4 animate-in slide-in-from-bottom-5 fade-in duration-200">
-            <h4 className="font-extrabold text-xs text-slate-900 dark:text-white uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-2 flex items-center gap-1.5">
-              <Zap size={14} className="text-amber-500" />
-              <span>Quick Action Center</span>
+          <div className="absolute bottom-14 right-0 w-72 glass-panel-elevated rounded-md border-t-2 border-t-blue-500 p-3.5 shadow-2xl space-y-3 animate-in slide-in-from-bottom-2 fade-in duration-150">
+            <h4 className="font-bold text-xs text-slate-900 dark:text-white uppercase tracking-wider border-b border-slate-100 dark:border-slate-800/80 pb-2 flex items-center gap-1.5 font-mono">
+              <Zap size={13} className="text-blue-500" />
+              <span>Quick Actions</span>
             </h4>
 
-            <div className="grid grid-cols-2 gap-3.5">
+            <div className="grid grid-cols-2 gap-2">
               <button 
                 onClick={() => { setScanModalOpen(true); setActiveActionsOpen(false); }}
-                className="flex flex-col items-center justify-center gap-2 p-3 bg-slate-50 dark:bg-slate-900/60 hover:bg-indigo-500/10 border border-slate-200 dark:border-slate-800/80 rounded-2xl text-slate-700 dark:text-slate-300 transition duration-150 cursor-pointer text-center"
+                className="flex flex-col items-center justify-center gap-1.5 p-2.5 bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800 rounded-sm text-slate-700 dark:text-slate-300 transition duration-150 cursor-pointer text-center"
               >
-                <QrCode size={20} className="text-indigo-500" />
-                <span className="text-[9px] font-extrabold uppercase tracking-wider">Scan QR</span>
+                <QrCode size={16} className="text-blue-500" />
+                <span className="text-[9px] font-bold uppercase tracking-wider font-mono">Scan QR</span>
               </button>
 
               <button 
                 onClick={() => { setOtpModalOpen(true); setActiveActionsOpen(false); }}
-                className="flex flex-col items-center justify-center gap-2 p-3 bg-slate-50 dark:bg-slate-900/60 hover:bg-blue-500/10 border border-slate-200 dark:border-slate-800/80 rounded-2xl text-slate-700 dark:text-slate-300 transition duration-150 cursor-pointer text-center"
+                className="flex flex-col items-center justify-center gap-1.5 p-2.5 bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800 rounded-sm text-slate-700 dark:text-slate-300 transition duration-150 cursor-pointer text-center"
               >
-                <Key size={20} className="text-blue-500" />
-                <span className="text-[9px] font-extrabold uppercase tracking-wider">Verify OTP</span>
+                <Key size={16} className="text-blue-500" />
+                <span className="text-[9px] font-bold uppercase tracking-wider font-mono">Verify OTP</span>
               </button>
 
               <button 
                 onClick={() => { setReportModalOpen(true); setActiveActionsOpen(false); }}
-                className="flex flex-col items-center justify-center gap-2 p-3 bg-slate-50 dark:bg-slate-900/60 hover:bg-amber-500/10 border border-slate-200 dark:border-slate-800/80 rounded-2xl text-slate-700 dark:text-slate-300 transition duration-150 cursor-pointer text-center"
+                className="flex flex-col items-center justify-center gap-1.5 p-2.5 bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800 rounded-sm text-slate-700 dark:text-slate-300 transition duration-150 cursor-pointer text-center"
               >
-                <AlertOctagon size={20} className="text-amber-500" />
-                <span className="text-[9px] font-extrabold uppercase tracking-wider font-semibold">Report Issue</span>
+                <AlertOctagon size={16} className="text-slate-600 dark:text-slate-400" />
+                <span className="text-[9px] font-bold uppercase tracking-wider font-mono">Report Issue</span>
               </button>
 
               <button 
                 onClick={() => { alert("Navigating to complaints / returns module..."); setActiveActionsOpen(false); }}
-                className="flex flex-col items-center justify-center gap-2 p-3 bg-slate-50 dark:bg-slate-900/60 hover:bg-purple-500/10 border border-slate-200 dark:border-slate-800/80 rounded-2xl text-slate-700 dark:text-slate-300 transition duration-150 cursor-pointer text-center"
+                className="flex flex-col items-center justify-center gap-1.5 p-2.5 bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800 rounded-sm text-slate-700 dark:text-slate-300 transition duration-150 cursor-pointer text-center"
               >
-                <RefreshCw size={20} className="text-purple-500" />
-                <span className="text-[9px] font-extrabold uppercase tracking-wider">Returns</span>
+                <RefreshCw size={16} className="text-slate-500" />
+                <span className="text-[9px] font-bold uppercase tracking-wider font-mono">Returns</span>
               </button>
             </div>
 
-            <div className="flex gap-2 border-t border-slate-100 dark:border-slate-800 pt-3">
+            <div className="flex gap-2 border-t border-slate-100 dark:border-slate-800/80 pt-2">
               <button 
                 onClick={() => { alert("Opening courier support channel..."); setActiveActionsOpen(false); }}
-                className="flex-1 flex items-center justify-center gap-1.5 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 text-slate-700 dark:text-slate-300 py-2 rounded-xl text-[9px] font-black uppercase tracking-wider transition active:scale-95 cursor-pointer"
+                className="flex-1 flex items-center justify-center gap-1.5 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 py-1.5 rounded-sm text-[9px] font-bold uppercase tracking-wider transition cursor-pointer font-mono"
               >
                 <LifeBuoy size={11} />
                 <span>Support</span>
@@ -2132,9 +1897,9 @@ const MyDeliveriesTab = ({
               
               <button 
                 onClick={() => { setEmergencyModalOpen(true); setActiveActionsOpen(false); }}
-                className="flex-1 flex items-center justify-center gap-1.5 bg-rose-600 hover:bg-rose-700 text-slate-100 dark:text-white py-2 rounded-xl text-[9px] font-black uppercase tracking-wider transition active:scale-95 cursor-pointer"
+                className="flex-1 flex items-center justify-center gap-1.5 bg-rose-600 hover:bg-rose-700 text-white py-1.5 rounded-sm text-[9px] font-bold uppercase tracking-wider transition cursor-pointer shadow-sm font-mono"
               >
-                <ShieldAlert size={11} className="animate-pulse" />
+                <ShieldAlert size={11} />
                 <span>Emergency</span>
               </button>
             </div>
@@ -2146,273 +1911,27 @@ const MyDeliveriesTab = ({
       {/* OVERLAY MODALS & SIMULATION CONTROLS */}
       {/* ========================================================================= */}
 
-      {/* ✅ CHAT CUSTOMER MODAL */}
-      {chatModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-100/50 dark:bg-slate-950/70 backdrop-blur-xs">
-          <div className="relative w-full max-w-sm rounded-3xl bg-white border border-slate-200 dark:bg-slate-950 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col h-[480px]">
-            {/* Header */}
-            <div className="bg-slate-900 px-5 py-4 text-slate-100 dark:text-white flex justify-between items-center shrink-0">
-              <div className="flex items-center gap-2">
-                <ShieldCheck size={18} className="text-emerald-400 animate-pulse" />
-                <div className="text-left">
-                  <h4 className="text-[11px] font-extrabold uppercase tracking-wider leading-none">
-                    Secure Chat Channel
-                  </h4>
-                  <p className="text-[9px] text-slate-400 font-medium mt-0.5">
-                    Encrypted & secure
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                {nextOrder && (nextOrder.orderStatus || "").toLowerCase() === "out for delivery" && (
-                  <div className="relative">
-                    <button
-                      onClick={() => setCallDropdownOpen(!callDropdownOpen)}
-                      className="px-3.5 py-1.5 bg-[#4f46e5] hover:bg-[#4338ca] text-white text-[11px] font-bold rounded-lg flex items-center gap-1 cursor-pointer border-none shadow-sm transition active:scale-95 shrink-0"
-                    >
-                      <Phone size={11} />
-                      <span>CALL</span>
-                    </button>
-                    
-                    {callDropdownOpen && (
-                      <div className="absolute right-0 mt-1.5 w-32 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 overflow-hidden py-1">
-                        <button
-                          onClick={() => {
-                            setCallDropdownOpen(false);
-                            handleInitiateCall("audio");
-                          }}
-                          className="w-full px-3 py-2 text-left text-[11px] font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 cursor-pointer border-none bg-transparent"
-                        >
-                          <Phone size={11} className="text-indigo-600 dark:text-indigo-400" />
-                          <span>Voice Call</span>
-                        </button>
-                        <button
-                          onClick={() => {
-                            setCallDropdownOpen(false);
-                            handleInitiateCall("video");
-                          }}
-                          className="w-full px-3 py-2 text-left text-[11px] font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 cursor-pointer border-none bg-transparent"
-                        >
-                          <Video size={11} className="text-indigo-600 dark:text-indigo-400" />
-                          <span>Video Call</span>
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-                <button 
-                  onClick={() => setChatModalOpen(false)} 
-                  className="text-slate-400 hover:text-white cursor-pointer border-none bg-transparent flex items-center justify-center p-1"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-            </div>
 
-            {/* Profile Status card */}
-            <div className="flex items-center gap-3 px-4 py-3 bg-white dark:bg-slate-950 border-b border-slate-100 dark:border-slate-900 shrink-0">
-              {/* Circular Avatar */}
-              <div className="relative">
-                <div className="h-10 w-10 rounded-full bg-indigo-50 dark:bg-indigo-950/30 flex items-center justify-center text-[#4f46e5] dark:text-indigo-400 font-black text-sm uppercase border border-indigo-100 dark:border-indigo-900/50">
-                  {nextOrder ? nextOrder.address?.firstName?.charAt(0) : "C"}
-                </div>
-                {/* Online indicator dot */}
-                <span className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white dark:border-slate-950 ${partnerOnline ? "bg-emerald-500 animate-pulse" : "bg-slate-300 dark:bg-slate-700"}`} />
-              </div>
-
-              {/* Partner Details */}
-              <div className="flex-1 text-left min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <span className={`h-1.5 w-1.5 rounded-full ${partnerOnline ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`} />
-                  <span className={`text-[10px] font-bold ${partnerOnline ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400"} uppercase tracking-wide`}>
-                    Customer is {partnerOnline ? "online" : "offline"}
-                  </span>
-                </div>
-                <h5 className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5 truncate uppercase tracking-wide">
-                  {nextOrder ? `${nextOrder.address?.firstName} ${nextOrder.address?.lastName || ""}`.trim() : "Customer"}
-                  <span className="text-[10px] text-slate-400 font-bold ml-1.5 tracking-normal uppercase">
-                    • Customer
-                  </span>
-                </h5>
-              </div>
-
-              {/* Typing status */}
-              {partnerTyping && (
-                <span className="text-[#4f46e5] dark:text-indigo-400 text-[10px] font-extrabold animate-pulse lowercase select-none">typing...</span>
-              )}
-            </div>
-            
-            {/* Message Pane */}
-            <div
-              ref={messagesContainerRef}
-              className="flex-1 min-h-0 overflow-y-auto p-4 space-y-3 bg-slate-50 dark:bg-slate-900/40 custom-scrollbar touch-pan-y"
-              data-lenis-prevent
-            >
-              {chatMessages.map((msg, i) => {
-                const myId = getUserIdFromToken(token);
-                const isMe = myId && String(msg.senderId) === String(myId);
-                const timeStr = msg.createdAt 
-                  ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
-                  : (msg.time || "");
-                const msgText = msg.message || msg.text || "";
-                const isLocationMsg = msgText.startsWith("[Location]");
-
-                if (isLocationMsg) {
-                  const url = msgText.replace("[Location] ", "");
-                  const coordMatch = url.match(/q=(-?\d+\.\d+),(-?\d+\.\d+)/);
-                  const coordsLabel = coordMatch ? `${parseFloat(coordMatch[1]).toFixed(4)}°, ${parseFloat(coordMatch[2]).toFixed(4)}°` : "View on Map";
-
-                  return (
-                    <div key={msg._id || i} className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}>
-                      {/* Premium Location Card */}
-                      <div
-                        className={`p-3 rounded-2xl max-w-[80%] text-xs font-semibold shadow-xs border transition ${
-                          isMe 
-                            ? "bg-slate-900 border-slate-800 text-white rounded-tr-none" 
-                            : "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-tl-none"
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 mb-2 pb-2 border-b border-slate-250 dark:border-slate-800/60 select-none">
-                          <div className="h-7 w-7 rounded-lg bg-orange-500/10 text-orange-400 flex items-center justify-center shrink-0">
-                            <MapPin size={14} className="animate-bounce" />
-                          </div>
-                          <div className="text-left">
-                            <div className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none">Shared Location</div>
-                            <div className="text-[10px] font-extrabold mt-0.5 tracking-tight text-slate-300 dark:text-slate-450">{coordsLabel}</div>
-                          </div>
-                        </div>
-                        
-                        <a
-                          href={url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#4f46e5] hover:bg-[#4338ca] text-white rounded-lg text-[9px] font-black uppercase tracking-wider transition-colors duration-200"
-                        >
-                          <MapPin size={10} className="stroke-[2.5]" />
-                          <span>Open Google Maps</span>
-                        </a>
-                      </div>
-                      <div className="flex items-center gap-1 mt-1">
-                        <span className="text-[8px] text-slate-400 font-bold">{timeStr}</span>
-                        {isMe && (
-                          <span className="text-[9px] leading-none">
-                            {msg.status === "seen" ? (
-                              <span className="text-blue-500 font-black">✓✓</span>
-                            ) : msg.status === "delivered" ? (
-                              <span className="text-slate-400 font-black">✓✓</span>
-                            ) : (
-                              <span className="text-slate-400">✓</span>
-                            )}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                }
-
-                return (
-                  <div key={msg._id || i} className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}>
-                    <div className={`p-2.5 rounded-2xl max-w-[80%] text-xs font-semibold leading-normal ${ isMe ? "bg-[#4f46e5] text-slate-100 dark:text-white rounded-tr-none shadow-xs" : "bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-tl-none shadow-xs" }`}>
-                      {msgText}
-                    </div>
-                    <div className="flex items-center gap-1 mt-1">
-                      <span className="text-[8px] text-slate-400 font-bold">{timeStr}</span>
-                      {isMe && (
-                        <span className="text-[9px] leading-none">
-                          {msg.status === "seen" ? (
-                            <span className="text-blue-500 font-black">✓✓</span>
-                          ) : msg.status === "delivered" ? (
-                            <span className="text-slate-400 font-black">✓✓</span>
-                          ) : (
-                            <span className="text-slate-400">✓</span>
-                          )}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-              <div ref={messagesEndRef} />
-            </div>
-
-            {/* Input Form & Lock Footer */}
-            {nextOrder && ["delivered", "cancelled", "returned", "refunded"].includes((nextOrder.orderStatus || "").toLowerCase()) ? (
-              <div className="p-4 bg-slate-100 dark:bg-slate-900/60 text-center text-[10px] font-extrabold uppercase text-slate-400 dark:text-slate-500 border-t border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center gap-1.5 shrink-0">
-                <Lock size={12} />
-                <span>This communication channel is archived.</span>
-              </div>
-            ) : (
-              <div className="px-4 py-3 bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-900 shrink-0">
-                <form onSubmit={handleSendMessage} className="flex items-center gap-2">
-                  {/* Attachment Button */}
-                  <button
-                    type="button"
-                    className="h-8 w-8 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800 flex items-center justify-center text-slate-400 cursor-pointer border-none shrink-0"
-                  >
-                    <Paperclip size={14} />
-                  </button>
-
-                  {/* Share Location Button */}
-                  <button
-                    type="button"
-                    onClick={handleShareLocation}
-                    title="Share Location"
-                    className="h-8 w-8 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-orange-500 transition cursor-pointer border-none shrink-0"
-                  >
-                    <MapPin size={14} />
-                  </button>
-
-                  {/* Text Input */}
-                  <input
-                    type="text"
-                    placeholder="Type your message securely..."
-                    value={newChatMessage}
-                    onChange={handleInputChange}
-                    className="flex-1 px-3 py-2 text-xs border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 rounded-xl outline-none text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:border-[#4f46e5] focus:ring-1 focus:ring-[#4f46e5] transition"
-                  />
-
-                  {/* Send Button */}
-                  <button
-                    type="submit"
-                    disabled={!newChatMessage.trim()}
-                    className="h-8 w-8 rounded-xl bg-[#4f46e5] text-white flex items-center justify-center hover:bg-[#4338ca] active:scale-95 disabled:bg-slate-100 disabled:dark:bg-slate-900 disabled:text-slate-400 transition cursor-pointer border-none shrink-0 shadow-sm"
-                  >
-                    <Send size={12} className="fill-current text-white" />
-                  </button>
-                </form>
-
-                {/* Centered Lock Footer */}
-                <div className="mt-2 flex items-center justify-center gap-1.5 text-[9px] text-slate-400 font-bold uppercase tracking-wider">
-                  <Lock size={10} className="text-slate-400" />
-                  <span>
-                    Only you and the customer can see these messages.
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* ✅ REPORT ISSUE MODAL */}
       {reportModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-100/50 dark:bg-slate-950/70 backdrop-blur-xs">
-          <div className="relative w-full max-w-sm rounded-3xl bg-white border border-slate-200 dark:bg-slate-950 dark:border-slate-800 shadow-2xl p-6">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
-              <h3 className="font-extrabold text-sm text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
-                <AlertOctagon size={16} className="text-amber-500" />
+          <div className="relative w-full max-w-sm rounded-md border-t-2 border-t-rose-500 bg-white border border-slate-200 dark:bg-slate-950 dark:border-slate-800 shadow-2xl p-5">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5 mb-3.5">
+              <h3 className="font-bold text-xs text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5 font-mono">
+                <AlertOctagon size={14} className="text-rose-500" />
                 <span>Report Delivery Issue</span>
               </h3>
-              <button onClick={() => setReportModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"><X size={16} /></button>
+              <button onClick={() => setReportModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"><X size={15} /></button>
             </div>
 
-            <form onSubmit={handleReportSubmit} className="space-y-4">
+            <form onSubmit={handleReportSubmit} className="space-y-3.5">
               <div>
-                <label className="text-[10px] font-black uppercase text-slate-400 block mb-1">Issue Category</label>
+                <label className="text-[9px] font-mono uppercase text-slate-400 block mb-1">Issue Category</label>
                 <select 
                   value={reportIssueType}
                   onChange={(e) => setReportIssueType(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-xs font-bold cursor-pointer"
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm px-2.5 py-1.5 text-xs font-mono cursor-pointer"
                 >
                   <option value="Traffic Delay">Traffic / Route Delay</option>
                   <option value="Customer Unreachable">Customer Unreachable</option>
@@ -2423,27 +1942,27 @@ const MyDeliveriesTab = ({
               </div>
 
               <div>
-                <label className="text-[10px] font-black uppercase text-slate-400 block mb-1">Additional description</label>
+                <label className="text-[9px] font-mono uppercase text-slate-400 block mb-1">Additional description</label>
                 <textarea
                   rows="3"
                   value={reportNotes}
                   onChange={(e) => setReportNotes(e.target.value)}
                   placeholder="e.g. Stuck in heavy rain/flooding on main highway..."
-                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2 text-xs outline-none resize-none"
+                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm px-2.5 py-1.5 text-xs outline-none resize-none font-mono"
                 />
               </div>
 
-              <div className="flex gap-3 pt-2">
+              <div className="flex gap-2 pt-1">
                 <button
                   type="button"
                   onClick={() => setReportModalOpen(false)}
-                  className="flex-1 border border-slate-200 dark:border-slate-800 py-3 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 cursor-pointer"
+                  className="flex-1 border border-slate-200 dark:border-slate-800 py-2 rounded-sm text-xs font-mono font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 cursor-pointer uppercase"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-amber-600 hover:bg-amber-700 text-slate-100 dark:text-white font-bold py-3 rounded-xl text-xs cursor-pointer"
+                  className="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-mono font-bold py-2 rounded-sm text-xs cursor-pointer uppercase"
                 >
                   Submit Report
                 </button>
@@ -2456,16 +1975,16 @@ const MyDeliveriesTab = ({
       {/* ✅ SECURE OTP MODAL */}
       {otpModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-100/50 dark:bg-slate-950/70 backdrop-blur-xs">
-          <div className="relative w-full max-w-sm rounded-3xl bg-white border border-slate-200 dark:bg-slate-950 dark:border-slate-800 shadow-2xl p-6">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
-              <h3 className="font-extrabold text-sm text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
-                <Key size={16} className="text-indigo-500" />
+          <div className="relative w-full max-w-sm rounded-md border-t-2 border-t-indigo-500 bg-white border border-slate-200 dark:bg-slate-950 dark:border-slate-800 shadow-2xl p-5">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5 mb-3.5">
+              <h3 className="font-bold text-xs text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5 font-mono">
+                <Key size={14} className="text-indigo-500" />
                 <span>OTP Secure verification</span>
               </h3>
-              <button onClick={() => setOtpModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"><X size={16} /></button>
+              <button onClick={() => setOtpModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"><X size={15} /></button>
             </div>
 
-            <form onSubmit={handleOtpSubmit} className="space-y-4">
+            <form onSubmit={handleOtpSubmit} className="space-y-3.5">
               <p className="text-xs text-slate-500 leading-normal">Ask the customer for the 6-character unique verification code sent to their app or SMS to complete the dispatch.</p>
               
               <div>
@@ -2478,23 +1997,23 @@ const MyDeliveriesTab = ({
                     setOtpError("");
                   }}
                   placeholder="e.g. EX89K2"
-                  className="w-full text-center text-2xl font-black tracking-[0.3em] uppercase bg-slate-50 dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-2xl py-3.5 outline-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+                  className="w-full text-center text-2xl font-mono font-bold tracking-[0.35em] uppercase bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm py-2.5 outline-none focus:border-indigo-500"
                   autoFocus
                 />
-                {otpError && <p className="text-[10px] text-rose-500 font-bold mt-1.5">{otpError}</p>}
+                {otpError && <p className="text-[10px] text-rose-500 font-mono mt-1">{otpError}</p>}
               </div>
 
-              <div className="flex gap-3 pt-2">
+              <div className="flex gap-2 pt-1">
                 <button
                   type="button"
                   onClick={() => setOtpModalOpen(false)}
-                  className="flex-1 border border-slate-200 dark:border-slate-800 py-3 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 cursor-pointer"
+                  className="flex-1 border border-slate-200 dark:border-slate-800 py-2 rounded-sm text-xs font-mono font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 cursor-pointer uppercase"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-slate-100 dark:text-white font-bold py-3 rounded-xl text-xs cursor-pointer"
+                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-mono font-bold py-2 rounded-sm text-xs cursor-pointer uppercase"
                 >
                   Confirm Delivery
                 </button>
@@ -2507,38 +2026,38 @@ const MyDeliveriesTab = ({
       {/* ✅ BARCODE / QR SCAN MODAL */}
       {scanModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-100/50 dark:bg-slate-950/70 backdrop-blur-xs">
-          <div className="relative w-full max-w-sm rounded-3xl bg-white border border-slate-200 dark:bg-slate-950 dark:border-slate-800 shadow-2xl p-6 overflow-hidden">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
-              <h3 className="font-extrabold text-sm text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
-                <QrCode size={16} className="text-indigo-500" />
+          <div className="relative w-full max-w-sm rounded-md border-t-2 border-t-indigo-500 bg-white border border-slate-200 dark:bg-slate-950 dark:border-slate-800 shadow-2xl p-5 overflow-hidden">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5 mb-3.5">
+              <h3 className="font-bold text-xs text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5 font-mono">
+                <QrCode size={14} className="text-indigo-500" />
                 <span>Package QR scanner</span>
               </h3>
-              <button onClick={() => setScanModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"><X size={16} /></button>
+              <button onClick={() => setScanModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer"><X size={15} /></button>
             </div>
 
-            <div className="space-y-5 text-center">
+            <div className="space-y-4 text-center">
               <p className="text-xs text-slate-500">Scan order barcode / QR code to confirm checkout pick-up or delivery stage.</p>
               
               {/* Simulated camera scanning box */}
-              <div className="h-44 w-full border-2 border-indigo-500 rounded-2xl relative overflow-hidden bg-slate-950 flex items-center justify-center">
+              <div className="h-44 w-full border border-indigo-500/40 rounded-sm relative overflow-hidden bg-slate-950 flex items-center justify-center">
                 {scanSuccess ? (
                   <div className="text-emerald-500 flex flex-col items-center gap-2">
-                    <CheckCircle2 size={40} className="animate-bounce" />
-                    <span className="text-xs font-black uppercase tracking-wider">Scan Confirmed</span>
+                    <CheckCircle2 size={36} className="animate-bounce" />
+                    <span className="text-xs font-mono font-bold uppercase tracking-wider">Scan Confirmed</span>
                   </div>
                 ) : (
                   <>
                     {/* Scanning red horizontal line */}
                     <div className="absolute left-0 right-0 h-[2px] bg-rose-500 top-1/4 animate-bounce" style={{ animationDuration: '2.5s' }} />
-                    <div className="border border-white/40 h-28 w-28 rounded flex flex-col justify-between p-1">
+                    <div className="border border-white/20 h-28 w-28 rounded-xs flex flex-col justify-between p-1">
                       <div className="flex justify-between">
-                        <span className="border-t-2 border-l-2 border-indigo-500 w-3.5 h-3.5" />
-                        <span className="border-t-2 border-r-2 border-indigo-500 w-3.5 h-3.5" />
+                        <span className="border-t-2 border-l-2 border-indigo-500 w-3 h-3" />
+                        <span className="border-t-2 border-r-2 border-indigo-500 w-3 h-3" />
                       </div>
-                      <QrCode size={40} className="text-white/45 mx-auto" />
+                      <QrCode size={36} className="text-white/30 mx-auto" />
                       <div className="flex justify-between">
-                        <span className="border-b-2 border-l-2 border-indigo-500 w-3.5 h-3.5" />
-                        <span className="border-b-2 border-r-2 border-indigo-500 w-3.5 h-3.5" />
+                        <span className="border-b-2 border-l-2 border-indigo-500 w-3 h-3" />
+                        <span className="border-b-2 border-r-2 border-indigo-500 w-3 h-3" />
                       </div>
                     </div>
                   </>
@@ -2548,9 +2067,9 @@ const MyDeliveriesTab = ({
               {!scanSuccess && (
                 <button
                   onClick={handleScanSimulation}
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-slate-100 dark:text-white font-bold py-3.5 rounded-xl text-xs cursor-pointer flex items-center justify-center gap-2"
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-mono font-bold py-2.5 rounded-sm text-xs cursor-pointer flex items-center justify-center gap-2 uppercase"
                 >
-                  <Activity size={14} className="animate-pulse" />
+                  <Activity size={13} className="animate-pulse" />
                   <span>Simulate Camera Scan</span>
                 </button>
               )}
@@ -2562,21 +2081,21 @@ const MyDeliveriesTab = ({
       {/* ✅ EMERGENCY SIGNAL MODAL */}
       {emergencyModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-100/50 dark:bg-rose-950/40 backdrop-blur-xs">
-          <div className="relative w-full max-w-sm rounded-3xl bg-white border border-slate-200 dark:bg-slate-950 dark:border-rose-950/80 shadow-2xl p-6 text-center space-y-4">
-            <div className="mx-auto h-16 w-16 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-600 border border-rose-500/30">
-              <ShieldAlert size={36} className="animate-ping" />
+          <div className="relative w-full max-w-sm rounded-md border-t-2 border-t-rose-500 bg-white border border-slate-200 dark:bg-slate-950 dark:border-rose-950/80 shadow-2xl p-5 text-center space-y-3.5">
+            <div className="mx-auto h-12 w-12 rounded-sm bg-rose-500/10 flex items-center justify-center text-rose-600 border border-rose-500/30">
+              <ShieldAlert size={28} className="animate-ping" />
             </div>
 
-            <h3 className="font-extrabold text-sm text-rose-600 dark:text-rose-400 uppercase tracking-wider">Trigger Emergency SOS Assistance</h3>
+            <h3 className="font-bold text-xs text-rose-600 dark:text-rose-400 uppercase tracking-wider font-mono">Trigger Emergency SOS</h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 leading-normal">
-              Clicking trigger will alert nearby courier depots, customer support representatives, and dispatch dispatchers of your live coordinates for immediate vehicle, road, or security help.
+              Clicking trigger will alert nearby courier depots, customer support representatives, and dispatch dispatchers of your live coordinates for immediate assistance.
             </p>
 
-            <div className="flex gap-3 pt-2">
+            <div className="flex gap-2 pt-1">
               <button
                 type="button"
                 onClick={() => setEmergencyModalOpen(false)}
-                className="flex-1 border border-slate-200 dark:border-slate-800 py-3 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 cursor-pointer"
+                className="flex-1 border border-slate-200 dark:border-slate-800 py-2 rounded-sm text-xs font-mono font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-50 cursor-pointer uppercase"
               >
                 Cancel
               </button>
@@ -2585,13 +2104,187 @@ const MyDeliveriesTab = ({
                   alert("SOS Emergency Alert Dispatched! Depot and Police authorities notified with GPS coordinates.");
                   setEmergencyModalOpen(false);
                 }}
-                className="flex-1 bg-rose-600 hover:bg-rose-700 text-slate-100 dark:text-white font-bold py-3 rounded-xl text-xs cursor-pointer shadow-md"
+                className="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-mono font-bold py-2 rounded-sm text-xs cursor-pointer shadow-sm uppercase"
               >
-                Trigger SOS Alert
+                Trigger SOS
               </button>
             </div>
           </div>
         </div>
+      )}
+
+      {/* 5. Non-Modal Floating Docked Customer Chat Widget (Corner Docked, Never a Blocking Popup) */}
+      {chatModalOpen && currentActiveOrder && !isChatMinimized && (
+        <div className="fixed bottom-4 right-4 z-50 w-80 sm:w-88 md:w-92 max-w-[calc(100vw-2rem)] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-3 duration-150">
+          {/* Header */}
+          <div className="bg-slate-900 px-3 py-2 text-slate-100 dark:text-white flex justify-between items-center shrink-0 border-b border-slate-800">
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <div className="h-7 w-7 rounded-xs bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-xs uppercase font-mono">
+                  {currentActiveOrder.address?.firstName?.charAt(0) || "C"}
+                </div>
+                <span className={`absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-xs border border-slate-900 ${partnerOnline ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`} />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-white flex items-center gap-1.5 leading-none">
+                  <span>{currentActiveOrder.address?.firstName} {currentActiveOrder.address?.lastName || ""}</span>
+                  <span className={`text-[9px] font-mono ${partnerOnline ? "text-emerald-400" : "text-slate-400"}`}>
+                    {partnerOnline ? "• ONLINE" : "• OFFLINE"}
+                  </span>
+                </h4>
+                <p className="text-[9px] text-slate-400 font-mono mt-0.5">
+                  Order #{currentActiveOrder._id ? currentActiveOrder._id.slice(-7).toUpperCase() : ""} • Direct Chat
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => handleInitiateCall("audio")}
+                className="p-1.5 hover:bg-slate-800 text-slate-300 rounded-xs text-xs transition cursor-pointer"
+                title="Voice Call"
+              >
+                <Phone size={13} />
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsChatMinimized(true)}
+                className="p-1.5 hover:bg-slate-800 text-slate-300 rounded-xs text-xs transition cursor-pointer"
+                title="Minimize Chat"
+              >
+                <Minus size={13} />
+              </button>
+              <button
+                type="button"
+                onClick={() => setChatModalOpen(false)}
+                className="p-1.5 hover:bg-slate-800 text-slate-300 rounded-xs text-xs transition cursor-pointer"
+                title="Close Chat"
+              >
+                <X size={13} />
+              </button>
+            </div>
+          </div>
+
+          {/* Quick Courier Response Chips */}
+          <div className="px-2 py-1.5 bg-slate-50 dark:bg-slate-950/60 border-b border-slate-200/80 dark:border-slate-800/80 flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0">
+            {[
+              "🛵 I've arrived",
+              "📍 At the gate",
+              "⏳ 2 mins away",
+              "📦 Left at door",
+              "📞 Please call back"
+            ].map((chip, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => setNewChatMessage(chip)}
+                className="px-2 py-0.5 whitespace-nowrap bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400 border border-slate-200 dark:border-slate-700 text-[10px] text-slate-700 dark:text-slate-300 rounded-xs font-medium transition cursor-pointer shrink-0"
+              >
+                {chip}
+              </button>
+            ))}
+          </div>
+
+          {/* Message History Scroll Area */}
+          <div 
+            ref={messagesContainerRef}
+            className="h-64 sm:h-72 overflow-y-auto p-3 space-y-2 bg-slate-50/60 dark:bg-slate-950/40 custom-scrollbar text-xs"
+          >
+            {chatMessages.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full py-6 text-center text-slate-400">
+                <MessageSquare size={22} className="text-slate-300 dark:text-slate-600 mb-1" />
+                <p className="text-xs font-semibold text-slate-700 dark:text-slate-200">Customer Delivery Chat</p>
+                <p className="text-[10px] text-slate-400 max-w-[200px] mt-0.5">Send a quick message or share your live coordinates with the customer.</p>
+              </div>
+            ) : (
+              chatMessages.map((msg, i) => {
+                const myId = getUserIdFromToken(token);
+                const isMe = myId && String(msg.senderId) === String(myId);
+                const timeStr = msg.createdAt 
+                  ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+                  : (msg.time || "");
+                const msgText = msg.message || msg.text || "";
+                const isLocationMsg = msgText.startsWith("[Location]");
+
+                if (isLocationMsg) {
+                  const url = msgText.replace("[Location] ", "");
+                  return (
+                    <div key={msg._id || i} className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}>
+                      <div className={`p-2 rounded-xs max-w-[85%] text-xs font-medium border ${isMe ? "bg-slate-900 text-white border-slate-800" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200"}`}>
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                          <MapPin size={12} className="text-blue-500" />
+                          <span className="text-[10px] font-bold">Shared Location</span>
+                        </div>
+                        <a href={url} target="_blank" rel="noopener noreferrer" className="block text-center py-1 px-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xs text-[10px] font-bold">
+                          Open in Maps
+                        </a>
+                      </div>
+                      <span className="text-[9px] text-slate-400 mt-0.5 font-mono">{timeStr}</span>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div key={msg._id || i} className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}>
+                    <div className={`p-2 rounded-xs max-w-[85%] text-xs leading-relaxed ${isMe ? "bg-blue-600 text-white shadow-xs" : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200"}`}>
+                      {msgText}
+                    </div>
+                    <span className="text-[9px] text-slate-400 mt-0.5 font-mono">{timeStr}</span>
+                  </div>
+                );
+              })
+            )}
+            {partnerTyping && (
+              <div className="flex items-center gap-1 text-[10px] text-blue-500 italic">
+                <span className="animate-pulse">Customer is typing...</span>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Input Bar */}
+          <div className="p-2 bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 shrink-0">
+            <form onSubmit={handleSendMessage} className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={handleShareLocation}
+                title="Share GPS Location"
+                className="h-7 w-7 rounded-xs bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-500 hover:text-blue-600 cursor-pointer shrink-0 transition"
+              >
+                <MapPin size={12} />
+              </button>
+              <input
+                type="text"
+                placeholder="Type your message..."
+                value={newChatMessage}
+                onChange={handleInputChange}
+                className="flex-1 px-2.5 py-1 text-xs border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 rounded-xs outline-none text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:border-blue-500 transition"
+              />
+              <button
+                type="submit"
+                disabled={!newChatMessage.trim()}
+                className="h-7 px-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white rounded-xs text-xs font-semibold flex items-center justify-center gap-1 cursor-pointer shrink-0 transition shadow-xs active:scale-95"
+              >
+                <Send size={11} />
+                <span>Send</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Minimized Floating Chat Badge */}
+      {chatModalOpen && isChatMinimized && currentActiveOrder && (
+        <button
+          type="button"
+          onClick={() => setIsChatMinimized(false)}
+          className="fixed bottom-4 right-4 z-50 flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-sm shadow-xl font-medium text-xs cursor-pointer active:scale-95 transition"
+        >
+          <MessageSquare size={13} />
+          <span>Chat ({currentActiveOrder.address?.firstName || "Customer"})</span>
+          <span className={`h-2 w-2 rounded-xs ${partnerOnline ? "bg-emerald-400 animate-pulse" : "bg-slate-300"}`} />
+        </button>
       )}
 
       {/* 6. WebRTC Portaled Calling Overlays */}
@@ -2600,32 +2293,32 @@ const MyDeliveriesTab = ({
           {/* Incoming Call Screen */}
           {incomingCall && incomingCallData && (
             <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[9999] flex items-center justify-center p-4">
-              <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 w-full max-w-[320px] text-center space-y-6 animate-fade-in shadow-2xl">
-                <div className="flex flex-col items-center space-y-3 pt-4">
-                  <div className="h-16 w-16 rounded-full bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 animate-pulse">
-                    {incomingCallData.type === "video" ? <Video size={30} /> : <PhoneCall size={30} />}
+              <div className="bg-slate-900 border border-slate-800 border-t-2 border-t-indigo-500 rounded-md p-5 w-full max-w-[300px] text-center space-y-5 animate-fade-in shadow-2xl">
+                <div className="flex flex-col items-center space-y-2.5 pt-2">
+                  <div className="h-12 w-12 rounded-sm bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 animate-pulse">
+                    {incomingCallData.type === "video" ? <Video size={24} /> : <PhoneCall size={24} />}
                   </div>
-                  <h3 className="text-sm font-black text-white uppercase tracking-wider">
+                  <h3 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
                     {incomingCallData.callerName}
                   </h3>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                  <p className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-widest">
                     Incoming {incomingCallData.type} call...
                   </p>
                 </div>
 
-                <div className="flex items-center justify-center gap-6 pb-2">
+                <div className="flex items-center justify-center gap-4 pb-1">
                   <button
                     onClick={handleRejectCall}
-                    className="h-12 w-12 rounded-full bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center transition border-none cursor-pointer shadow-lg shadow-rose-600/30 hover:scale-105 active:scale-95"
+                    className="h-10 w-10 rounded-sm bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center transition border-none cursor-pointer shadow-sm"
                   >
-                    <PhoneOff size={18} />
+                    <PhoneOff size={16} />
                   </button>
 
                   <button
                     onClick={handleAcceptCall}
-                    className="h-12 w-12 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center transition border-none cursor-pointer shadow-lg shadow-emerald-600/30 hover:scale-105 active:scale-95 animate-bounce"
+                    className="h-10 w-10 rounded-sm bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center transition border-none cursor-pointer shadow-sm animate-bounce"
                   >
-                    <Phone size={18} />
+                    <Phone size={16} />
                   </button>
                 </div>
               </div>
@@ -2635,7 +2328,7 @@ const MyDeliveriesTab = ({
           {/* Active Call screen */}
           {callActive && (
             <div className="fixed inset-0 bg-slate-950/95 z-[9999] flex flex-col items-center justify-center p-4 select-none">
-              <div className="relative w-full max-w-lg aspect-video sm:aspect-square bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col">
+              <div className="relative w-full max-w-lg aspect-video sm:aspect-square bg-slate-900 border border-slate-800 border-t-2 border-t-indigo-500 rounded-md overflow-hidden shadow-2xl flex flex-col">
                 
                 {/* Stream render elements */}
                 {callType === "video" ? (
@@ -2649,9 +2342,9 @@ const MyDeliveriesTab = ({
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full bg-slate-950 flex flex-col items-center justify-center text-slate-500 gap-3">
-                        <div className="w-6 h-6 border-2 border-slate-700 border-t-slate-300 rounded-full animate-spin" />
-                        <span className="text-[10px] font-bold uppercase tracking-widest animate-pulse">Waiting for remote stream...</span>
+                      <div className="w-full h-full bg-slate-950 flex flex-col items-center justify-center text-slate-500 gap-2">
+                        <div className="w-5 h-5 border-2 border-slate-700 border-t-slate-300 rounded-full animate-spin" />
+                        <span className="text-[9px] font-mono font-bold uppercase tracking-widest animate-pulse">Waiting for remote stream...</span>
                       </div>
                     )}
 
@@ -2662,19 +2355,19 @@ const MyDeliveriesTab = ({
                         autoPlay
                         playsInline
                         muted
-                        className="w-24 h-32 rounded-xl bg-slate-950 border border-slate-750/85 shadow-md object-cover absolute bottom-4 right-4 z-10 hover:scale-105 transition"
+                        className="w-24 h-32 rounded-sm bg-slate-950 border border-slate-700 shadow-md object-cover absolute bottom-3 right-3 z-10 hover:scale-105 transition"
                       />
                     )}
                   </div>
                 ) : (
-                  <div className="flex-1 flex flex-col items-center justify-center space-y-4">
-                    <div className="h-20 w-20 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 animate-pulse">
-                      <PhoneCall size={36} />
+                  <div className="flex-1 flex flex-col items-center justify-center space-y-3">
+                    <div className="h-16 w-16 rounded-sm bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 animate-pulse">
+                      <PhoneCall size={28} />
                     </div>
-                    <h3 className="text-md font-black text-white uppercase tracking-wider">
+                    <h3 className="text-sm font-bold text-white uppercase tracking-wider font-mono">
                       Customer
                     </h3>
-                    <p className="text-[10px] font-bold text-indigo-400 tracking-wider">
+                    <p className="text-[9px] font-mono font-bold text-indigo-400 tracking-wider">
                       {callStatus === "connecting" ? "CONNECTING SECURE SESSION..." : "CONNECTED SECURELY"}
                     </p>
                     {remoteStream && (
@@ -2684,38 +2377,38 @@ const MyDeliveriesTab = ({
                 )}
 
                 {/* Header calling stats overlay */}
-                <div className="absolute top-4 left-4 z-10 flex items-center gap-2 bg-slate-900/80 backdrop-blur-sm border border-slate-800 px-3 py-1.5 rounded-full text-white text-[10px] font-black tracking-wider uppercase">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 bg-slate-900/90 backdrop-blur-sm border border-slate-800 px-2.5 py-1 rounded-sm text-white text-[9px] font-mono font-bold tracking-wider uppercase">
+                  <span className="h-1.5 w-1.5 rounded-xs bg-emerald-500 animate-pulse" />
                   <span>{callStatus === "connected" ? formatTime(callTime) : "Ringing..."}</span>
                 </div>
 
                 {/* Calling control panel */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-4 bg-slate-900/90 backdrop-blur-sm border border-slate-800 px-4 py-2.5 rounded-full shadow-2xl">
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-3 bg-slate-900/90 backdrop-blur-sm border border-slate-800 px-3 py-1.5 rounded-sm shadow-2xl">
                   <button
                     onClick={toggleMic}
-                    className={`h-10 w-10 rounded-full flex items-center justify-center transition border-none cursor-pointer ${
+                    className={`h-8 w-8 rounded-sm flex items-center justify-center transition border-none cursor-pointer ${
                       isMicMuted ? "bg-rose-600 text-white" : "bg-slate-800 text-slate-300 hover:text-white"
                     }`}
                   >
-                    {isMicMuted ? <MicOff size={16} /> : <Mic size={16} />}
+                    {isMicMuted ? <MicOff size={14} /> : <Mic size={14} />}
                   </button>
 
                   {callType === "video" && (
                     <button
                       onClick={toggleVideo}
-                      className={`h-10 w-10 rounded-full flex items-center justify-center transition border-none cursor-pointer ${
+                      className={`h-8 w-8 rounded-sm flex items-center justify-center transition border-none cursor-pointer ${
                         isVideoMuted ? "bg-rose-600 text-white" : "bg-slate-800 text-slate-300 hover:text-white"
                       }`}
                     >
-                      {isVideoMuted ? <VideoOff size={16} /> : <Video size={16} />}
+                      {isVideoMuted ? <VideoOff size={14} /> : <Video size={14} />}
                     </button>
                   )}
 
                   <button
                     onClick={handleEndCall}
-                    className="h-10 w-10 rounded-full bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center transition border-none cursor-pointer shadow-lg shadow-rose-600/30 hover:scale-105 active:scale-95"
+                    className="h-8 w-8 rounded-sm bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center transition border-none cursor-pointer shadow-sm"
                   >
-                    <X size={16} />
+                    <X size={14} />
                   </button>
                 </div>
 

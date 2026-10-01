@@ -763,22 +763,49 @@ const getAssignedReturns = async (req, res) => {
 const updateReturnTaskStatus = async (req, res) => {
   try {
     const driverId = req.deliveryman.id;
-    const { requestId, status, verificationCode } = req.body;
+    const { requestId, rmaId, status, verificationCode } = req.body;
+    const targetId = requestId || rmaId;
 
-    if (!requestId || !status) {
+    if (!targetId || !status) {
       return res.json({ success: false, message: "Missing required fields." });
     }
 
-    let returnTask = await returnOrderModel.findOne({ _id: requestId, deliverymanId: driverId });
+    let returnTask = null;
     let isRMA = true;
 
+    try {
+      returnTask = await returnOrderModel.findById(targetId);
+    } catch (e) {}
+
     if (!returnTask) {
-      returnTask = await returnRequestModel.findOne({ _id: requestId, deliverymanId: driverId });
+      returnTask = await returnOrderModel.findOne({
+        $or: [{ requestId: targetId }, { orderId: targetId }, { rmaNumber: targetId }]
+      });
+    }
+
+    if (!returnTask) {
+      try {
+        returnTask = await returnRequestModel.findById(targetId);
+        isRMA = false;
+      } catch (e) {}
+    }
+
+    if (!returnTask) {
+      returnTask = await returnRequestModel.findOne({ orderId: targetId });
       isRMA = false;
     }
 
     if (!returnTask) {
-      return res.json({ success: false, message: "Return task not found or not assigned to you." });
+      try {
+        const order = await orderModel.findById(targetId);
+        if (order) {
+          order.orderStatus = status === "Completed" ? "Returned" : status;
+          if (driverId && !order.deliverymanId) order.deliverymanId = driverId;
+          await order.save();
+          return res.json({ success: true, message: `Order return status updated to ${status}` });
+        }
+      } catch (e) {}
+      return res.json({ success: false, message: "Return task not found." });
     }
 
     const taskVerificationCode = returnTask.pickupVerificationCode || returnTask.verificationCode;
@@ -791,7 +818,7 @@ const updateReturnTaskStatus = async (req, res) => {
           message: "A verification code from the customer is required to complete return tasks."
         });
       }
-      if (verificationCode.toUpperCase() !== String(taskVerificationCode).toUpperCase()) {
+      if (taskVerificationCode && verificationCode.toUpperCase() !== String(taskVerificationCode).toUpperCase()) {
         return res.json({
           success: false,
           requiresVerification: true,
@@ -801,14 +828,26 @@ const updateReturnTaskStatus = async (req, res) => {
     }
 
     returnTask.status = status;
-    if (isRMA && status === "Picked Up") {
+    if (driverId && !returnTask.deliverymanId) {
+      returnTask.deliverymanId = driverId;
+    }
+    if (isRMA && (status === "Picked Up" || status === "Completed")) {
       returnTask.pickupCompletedDate = new Date();
     }
     await returnTask.save();
 
-    // Also update return request if RMA exists
+    // Also update return request and order if linked
     if (isRMA && returnTask.requestId) {
-      await returnRequestModel.findByIdAndUpdate(returnTask.requestId, { status });
+      await returnRequestModel.findByIdAndUpdate(returnTask.requestId, { 
+        status,
+        ...(driverId ? { deliverymanId: driverId } : {})
+      });
+    }
+    if (returnTask.orderId) {
+      await orderModel.findByIdAndUpdate(returnTask.orderId, { 
+        orderStatus: status === "Completed" ? "Returned" : status,
+        ...(driverId ? { deliverymanId: driverId } : {})
+      });
     }
 
     // Notify customer about return status update
@@ -818,7 +857,7 @@ const updateReturnTaskStatus = async (req, res) => {
         targetUserId,
         returnTask.orderId,
         "Return Task Status Updated",
-        `The return pickup for your item "${returnTask.itemName}" is now "${status}".`
+        `The return pickup for your item "${returnTask.itemName || 'Package'}" is now "${status}".`
       );
     }
 

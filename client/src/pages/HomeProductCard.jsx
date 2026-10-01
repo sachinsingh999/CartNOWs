@@ -201,7 +201,7 @@ const HomeProductCard = ({ product, onQuickView }) => {
         } catch (e) { }
         navigate(`/product/${product._id}`);
       }}
-      className="group relative flex flex-col bg-white dark:bg-slate-900 rounded-md border border-slate-200/80 dark:border-slate-800 overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 cursor-pointer text-left w-full h-full"
+      className="group relative flex flex-col bg-white dark:bg-slate-900 rounded-none border border-slate-200/90 dark:border-slate-800 overflow-hidden shadow-2xs hover:shadow-md transition-all duration-300 cursor-pointer text-left w-full h-full"
     >
       
       {/* Category Promo discount header row (Matches top of mockup card) */}
@@ -215,7 +215,7 @@ const HomeProductCard = ({ product, onQuickView }) => {
       <div className="relative w-full h-[250px] bg-white dark:bg-slate-900 flex items-center justify-between px-3 select-none overflow-hidden group/slider border-b border-slate-100/50 dark:border-slate-800/50">
 
         {!hasImage || imgError ? (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-955 text-slate-400 p-4 rounded-md">
+          <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-955 text-slate-400 p-4 rounded-none">
             <Sparkles size={24} className="text-slate-400 animate-pulse mb-1" />
             <span className="text-[8px] uppercase tracking-widest font-black text-slate-500">No Image</span>
           </div>
@@ -224,7 +224,7 @@ const HomeProductCard = ({ product, onQuickView }) => {
             {/* Left Peek Image Preview with chevron arrow */}
             <div 
               onClick={(e) => { e.stopPropagation(); setImgIdx(prevIdx); }}
-              className="w-[14%] h-[180px] opacity-35 hover:opacity-50 transition-all duration-300 flex items-center justify-center shrink-0 border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-md p-1 scale-95 overflow-hidden relative cursor-pointer"
+              className="w-[14%] h-[180px] opacity-35 hover:opacity-50 transition-all duration-300 flex items-center justify-center shrink-0 border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-none p-1 scale-95 overflow-hidden relative cursor-pointer"
             >
               <img src={getSrc(prevIdx)} width="400" height="400" className="max-h-full max-w-full object-contain" alt={product.name || "Product"} loading="lazy" decoding="async" />
               <div className="absolute inset-0 bg-black/5 flex items-center justify-end pr-0.5 text-slate-700 dark:text-white">
@@ -233,7 +233,7 @@ const HomeProductCard = ({ product, onQuickView }) => {
             </div>
 
             {/* Active Center Image Panel */}
-            <div className="w-[66%] h-[210px] z-10 flex items-center justify-center shrink-0 border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-md p-2.5 shadow-sm relative">
+            <div className="w-[66%] h-[210px] z-10 flex items-center justify-center shrink-0 border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-none p-2.5 shadow-sm relative">
               <img src={getSrc(imgIdx)} width="400" height="400" className="max-h-full max-w-full object-contain" alt={product.name || "Product"} onError={() => setImgError(true)} loading="lazy" decoding="async" />
               
               {/* Wishlist Button Overlay */}
@@ -281,7 +281,7 @@ const HomeProductCard = ({ product, onQuickView }) => {
             {/* Right Peek Image Preview with chevron arrow */}
             <div 
               onClick={(e) => { e.stopPropagation(); setImgIdx(nextIdx); }}
-              className="w-[14%] h-[180px] opacity-35 hover:opacity-50 transition-all duration-300 flex items-center justify-center shrink-0 border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-md p-1 scale-95 overflow-hidden relative cursor-pointer"
+              className="w-[14%] h-[180px] opacity-35 hover:opacity-50 transition-all duration-300 flex items-center justify-center shrink-0 border border-slate-200/50 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-none p-1 scale-95 overflow-hidden relative cursor-pointer"
             >
               <img src={getSrc(nextIdx)} width="400" height="400" className="max-h-full max-w-full object-contain" alt={product.name || "Product"} loading="lazy" decoding="async" />
               <div className="absolute inset-0 bg-black/5 flex items-center justify-start pl-0.5 text-slate-700 dark:text-white">

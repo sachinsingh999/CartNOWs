@@ -17,6 +17,7 @@ import SellerLayout from "./components/SellerLayout";
 // Page Components
 import Dashboard from "./pages/Dashboard";
 import Products from "./pages/Products";
+import Categories from "./pages/Categories";
 import AddProduct from "./pages/AddProduct";
 import Orders from "./pages/Orders";
 import Inventory from "./pages/Inventory";
@@ -104,6 +105,7 @@ const AppContent = () => {
           <Route element={<SellerLayout />}>
             <Route path="/" element={<RouteWrapper Component={Dashboard} />} />
             <Route path="/products" element={<RouteWrapper Component={Products} />} />
+            <Route path="/categories" element={<RouteWrapper Component={Categories} />} />
             <Route path="/add-product" element={<RouteWrapper Component={AddProduct} />} />
             <Route path="/orders" element={<RouteWrapper Component={Orders} />} />
             <Route path="/inventory" element={<RouteWrapper Component={Inventory} />} />

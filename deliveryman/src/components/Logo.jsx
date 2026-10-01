@@ -15,7 +15,7 @@ const Logo = ({ variant = "horizontal", className = "", forceWhite = false, ...p
         <img
           src={logoIcon}
           alt="CartNow Icon"
-          className="h-full w-auto max-h-full object-contain"
+          className="h-full w-full object-contain"
         />
       </div>
     );

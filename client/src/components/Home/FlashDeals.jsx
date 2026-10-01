@@ -41,14 +41,14 @@ const FlashDeals = ({ deals = [], onQuickView, onAddToCart, onToggleFavorite, wi
       {/* Sidebar column: Flash Deals / Countdown */}
       <div className="flex flex-col h-full">
         <div 
-          className="relative p-3.5 sm:p-4 text-white flex-col justify-between shadow-[0_4px_25px_rgba(0,0,0,0.25)] flex-1 flex min-h-[360px] text-left border border-slate-800/90 rounded-sm overflow-hidden bg-gradient-to-br from-[#070A14] via-[#0B0F1D] to-[#030610]"
+          className="relative p-3.5 sm:p-4 text-white flex-col justify-between shadow-[0_4px_25px_rgba(0,0,0,0.25)] flex-1 flex min-h-[360px] text-left border border-slate-800/90 rounded-none overflow-hidden bg-gradient-to-br from-[#070A14] via-[#0B0F1D] to-[#030610]"
         >
           {/* Glowing Mesh Animation */}
           <div className="absolute top-[-30%] left-[-30%] w-[100%] h-[100%] bg-gradient-to-tr from-orange-500/15 to-transparent rounded-full blur-[90px] pointer-events-none animate-pulse" style={{ animationDuration: "8s" }} />
           <div className="absolute bottom-[-30%] right-[30%] w-[100%] h-[100%] bg-gradient-to-tr from-amber-500/15 to-transparent rounded-full blur-[90px] pointer-events-none animate-pulse" style={{ animationDuration: "6s" }} />
 
           <div className="space-y-2 relative z-10">
-            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-orange-500/15 border border-orange-500/40 rounded-sm text-[9px] font-black uppercase tracking-wider text-orange-300 shadow-2xs">
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-orange-500/15 border border-orange-500/40 rounded-none text-[9px] font-black uppercase tracking-wider text-orange-300 shadow-2xs">
               <Clock size={10} className="animate-spin text-orange-400" style={{ animationDuration: "6s" }} />
               <span>Limited Offers</span>
             </div>
@@ -69,7 +69,7 @@ const FlashDeals = ({ deals = [], onQuickView, onAddToCart, onToggleFavorite, wi
               { label: "mins", val: timeLeft.minutes },
               { label: "secs", val: timeLeft.seconds }
             ].map((item, idx) => (
-              <div key={idx} className="flex flex-col items-center justify-center bg-slate-900/80 backdrop-blur-xs border border-white/10 py-2 rounded-sm shadow-2xs relative">
+              <div key={idx} className="flex flex-col items-center justify-center bg-slate-900/80 backdrop-blur-xs border border-white/10 py-2 rounded-none shadow-2xs relative">
                 <span className="text-sm sm:text-base font-black text-white">{String(item.val).padStart(2, "0")}</span>
                 <span className="text-[7px] font-black uppercase text-amber-400/90 tracking-wider mt-0.5">{item.label}</span>
               </div>
@@ -82,19 +82,19 @@ const FlashDeals = ({ deals = [], onQuickView, onAddToCart, onToggleFavorite, wi
               <span>Deals Claimed</span>
               <span className="text-amber-400 font-black">84%</span>
             </div>
-            <div className="h-1.5 w-full bg-slate-900/90 rounded-sm overflow-hidden border border-white/10 shadow-inner">
+            <div className="h-1.5 w-full bg-slate-900/90 rounded-none overflow-hidden border border-white/10 shadow-inner">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: "84%" }}
                 transition={{ duration: 1.5, ease: "easeOut", delay: 0.5 }}
-                className="h-full bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-400 rounded-sm"
+                className="h-full bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-400 rounded-none"
               />
             </div>
           </div>
 
           <button
             onClick={() => navigate("/product")}
-            className="group relative w-full py-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-[10.5px] uppercase tracking-wider rounded-sm shadow-md shadow-orange-500/20 hover:brightness-105 active:scale-[0.99] transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 border-none z-10"
+            className="group relative w-full py-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-[10.5px] uppercase tracking-wider rounded-none shadow-md shadow-orange-500/20 hover:brightness-105 active:scale-[0.99] transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 border-none z-10"
           >
             <span>View All Deals</span>
             <ArrowRight size={12} className="stroke-[2.5] transition-transform duration-200 group-hover:translate-x-1" />
@@ -111,7 +111,7 @@ const FlashDeals = ({ deals = [], onQuickView, onAddToCart, onToggleFavorite, wi
               type="button"
               onClick={() => scrollSlider("left")}
               aria-label="Previous flash deals"
-              className="h-7.5 w-7.5 sm:h-8 sm:w-8 rounded-sm border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 flex items-center justify-center shadow-2xs hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 transition-all duration-200 cursor-pointer"
+              className="h-7.5 w-7.5 sm:h-8 sm:w-8 rounded-none border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 flex items-center justify-center shadow-2xs hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 transition-all duration-200 cursor-pointer"
             >
               <ChevronLeft size={15} className="stroke-[2.5]" />
             </button>
@@ -119,7 +119,7 @@ const FlashDeals = ({ deals = [], onQuickView, onAddToCart, onToggleFavorite, wi
               type="button"
               onClick={() => scrollSlider("right")}
               aria-label="Next flash deals"
-              className="h-7.5 w-7.5 sm:h-8 sm:w-8 rounded-sm border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 flex items-center justify-center shadow-2xs hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 transition-all duration-200 cursor-pointer"
+              className="h-7.5 w-7.5 sm:h-8 sm:w-8 rounded-none border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 flex items-center justify-center shadow-2xs hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 transition-all duration-200 cursor-pointer"
             >
               <ChevronRight size={15} className="stroke-[2.5]" />
             </button>
@@ -128,7 +128,7 @@ const FlashDeals = ({ deals = [], onQuickView, onAddToCart, onToggleFavorite, wi
 
         {/* Slider list of products */}
         {flashProducts.length === 0 ? (
-          <div className="flex-1 flex items-center justify-center bg-white/50 dark:bg-slate-900/30 border border-slate-200/60 dark:border-slate-800 rounded-sm min-h-[320px]">
+          <div className="flex-1 flex items-center justify-center bg-white/50 dark:bg-slate-900/30 border border-slate-200/60 dark:border-slate-800 rounded-none min-h-[320px]">
             <span className="text-xs font-bold text-slate-400 dark:text-slate-500">Checking flash promotions...</span>
           </div>
         ) : (
