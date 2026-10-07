@@ -174,11 +174,10 @@ const ShopByBrands = ({ popularBrands = [] }) => {
           onClick={() => handleScroll("left")}
           disabled={!canScrollLeft}
           aria-label="Previous brands"
-          className={`hidden sm:flex absolute -left-2 sm:-left-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-none bg-white/95 dark:bg-slate-800/95 backdrop-blur-xs border border-slate-200 dark:border-slate-700 shadow-md items-center justify-center text-slate-800 dark:text-white transition-all cursor-pointer ${
-            canScrollLeft
+          className={`hidden sm:flex absolute -left-2 sm:-left-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-none bg-white/95 dark:bg-slate-800/95 backdrop-blur-xs border border-slate-200 dark:border-slate-700 shadow-md items-center justify-center text-slate-800 dark:text-white transition-all cursor-pointer ${canScrollLeft
               ? "hover:bg-blue-600 hover:text-white hover:border-blue-600 hover:scale-105 active:scale-95 opacity-100"
               : "opacity-0 pointer-events-none"
-          }`}
+            }`}
         >
           <ChevronLeft size={17} className="stroke-[2.5]" />
         </button>
@@ -188,11 +187,10 @@ const ShopByBrands = ({ popularBrands = [] }) => {
           onClick={() => handleScroll("right")}
           disabled={!canScrollRight}
           aria-label="Next brands"
-          className={`hidden sm:flex absolute -right-2 sm:-right-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-none bg-white/95 dark:bg-slate-800/95 backdrop-blur-xs border border-slate-200 dark:border-slate-700 shadow-md items-center justify-center text-slate-800 dark:text-white transition-all cursor-pointer ${
-            canScrollRight
+          className={`hidden sm:flex absolute -right-2 sm:-right-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-none bg-white/95 dark:bg-slate-800/95 backdrop-blur-xs border border-slate-200 dark:border-slate-700 shadow-md items-center justify-center text-slate-800 dark:text-white transition-all cursor-pointer ${canScrollRight
               ? "hover:bg-blue-600 hover:text-white hover:border-blue-600 hover:scale-105 active:scale-95 opacity-100"
               : "opacity-0 pointer-events-none"
-          }`}
+            }`}
         >
           <ChevronRight size={17} className="stroke-[2.5]" />
         </button>

@@ -17,7 +17,7 @@ const VariantSelector = ({
     if (typeof attrs === "string") {
       try {
         attrs = JSON.parse(attrs);
-      } catch (e) {}
+      } catch (e) { }
     }
 
     const legacyVariantKeys = ["color", "size", "ram", "storage", "length", "capacity", "lens type"];
@@ -131,7 +131,7 @@ const VariantSelector = ({
 
   if (hasVariants) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-2.5">
         {variantAttributes.map((attr) => {
           const attrName = attr.name;
           const values = attr.values || [];
@@ -141,14 +141,14 @@ const VariantSelector = ({
           const isSizeAttr = attrName.toLowerCase().includes("size");
 
           return (
-            <div key={attrName} className="space-y-1.5 text-left">
+            <div key={attrName} className="space-y-1 text-left">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
                   Select {attrName}
                 </span>
                 {isSizeAttr && setShowSizeGuide && (
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={() => setShowSizeGuide(true)}
                     className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 hover:underline cursor-pointer"
                   >
@@ -156,10 +156,10 @@ const VariantSelector = ({
                   </button>
                 )}
               </div>
-              
-              <div className="flex flex-wrap gap-2">
+
+              <div className="flex flex-wrap gap-1.5">
                 {values.map((val) => {
-                  const isSelected = selectedAttributes[attrName] === val || 
+                  const isSelected = selectedAttributes[attrName] === val ||
                     (selectedAttributes && Object.entries(selectedAttributes).some(([k, v]) => k.toLowerCase() === attrName.toLowerCase() && v === val));
                   const isAvailable = isOptionAvailable ? isOptionAvailable(attrName, val) : true;
                   const hex = getColorHex(val);
@@ -176,12 +176,12 @@ const VariantSelector = ({
                       whileHover={isAvailable ? { y: -1, boxShadow: "0 2px 6px rgba(0, 0, 0, 0.05)" } : {}}
                       whileTap={isAvailable ? { scale: 0.98 } : {}}
                       transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-semibold transition-all duration-150 border ${ isSelected ? "bg-indigo-50/70 dark:bg-indigo-950/30 border-indigo-600 dark:border-indigo-500 text-indigo-700 dark:text-indigo-300" : !isAvailable ? "bg-slate-50/30 dark:bg-slate-900/20 border-slate-200/60 dark:border-slate-800/60 text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-35 line-through" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50/50 dark:hover:bg-slate-800/50 cursor-pointer" }`}
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none text-xs font-semibold transition-all duration-150 ${isSelected ? "bg-emerald-100 text-emerald-950 dark:bg-emerald-900/50 dark:text-emerald-100 font-bold" : !isAvailable ? "bg-slate-100/40 dark:bg-slate-900/40 text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-40 line-through" : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer"}`}
                     >
                       {isColorPicker && (
-                        <span 
-                          className="w-3.5 h-3.5 rounded-full border border-slate-200 dark:border-slate-700 shrink-0 shadow-2xs" 
-                          style={{ backgroundColor: hex }} 
+                        <span
+                          className="w-3.5 h-3.5 rounded-full shrink-0"
+                          style={{ backgroundColor: hex }}
                         />
                       )}
                       <span>
@@ -193,7 +193,7 @@ const VariantSelector = ({
                           animate={{ scale: 1 }}
                           transition={{ type: "spring", stiffness: 500, damping: 20 }}
                         >
-                          <Check size={12} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
+                          <Check size={12} className="text-emerald-800 dark:text-emerald-300 shrink-0" />
                         </motion.span>
                       )}
                     </motion.button>
@@ -209,14 +209,14 @@ const VariantSelector = ({
 
   if (hasSizesFallback) {
     return (
-      <div className="space-y-1.5 text-left">
+      <div className="space-y-1 text-left">
         <div className="flex items-center justify-between">
           <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
             Select Size
           </span>
           {setShowSizeGuide && (
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={() => setShowSizeGuide(true)}
               className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 hover:underline cursor-pointer"
             >
@@ -224,7 +224,7 @@ const VariantSelector = ({
             </button>
           )}
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1.5">
           {product.sizes.map((item) => {
             const isSelected = size === item || selectedAttributes?.Size === item;
             return (
@@ -235,10 +235,10 @@ const VariantSelector = ({
                   if (setSize) setSize(item);
                   if (setSelectedAttributes) setSelectedAttributes(prev => ({ ...prev, Size: item }));
                 }}
-                whileHover={{ y: -1, boxShadow: "0 2px 6px rgba(0, 0, 0, 0.05)" }}
+                whileHover={{ y: -1 }}
                 whileTap={{ scale: 0.98 }}
                 transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-xs font-semibold transition-all duration-150 border cursor-pointer ${ isSelected ? "bg-indigo-50/70 dark:bg-indigo-950/30 border-indigo-600 dark:border-indigo-500 text-indigo-700 dark:text-indigo-300" : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50/50 dark:hover:bg-slate-800/50" }`}
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none text-xs font-semibold transition-all duration-150 cursor-pointer ${isSelected ? "bg-emerald-100 text-emerald-950 dark:bg-emerald-900/50 dark:text-emerald-100 font-bold" : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"}`}
               >
                 <span>{item}</span>
                 {isSelected && (
@@ -247,7 +247,7 @@ const VariantSelector = ({
                     animate={{ scale: 1 }}
                     transition={{ type: "spring", stiffness: 500, damping: 20 }}
                   >
-                    <Check size={12} className="text-indigo-600 dark:text-indigo-400 shrink-0 ml-auto" />
+                    <Check size={12} className="text-emerald-800 dark:text-emerald-300 shrink-0 ml-auto" />
                   </motion.span>
                 )}
               </motion.button>

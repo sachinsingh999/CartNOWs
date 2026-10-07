@@ -468,45 +468,45 @@ export const ProductDetailSkeleton = () => (
               {[1, 2, 3, 4].map((i) => (
                 <div
                   key={i}
-                  className="relative w-full aspect-[3/4] bg-slate-200 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-800 rounded-none overflow-hidden"
+                  className="relative w-full aspect-[3/4] bg-slate-200 dark:bg-slate-800 rounded-none overflow-hidden"
                 />
               ))}
               
               {/* Mock Video Thumbnail */}
-              <div className="relative w-full aspect-[3/4] border border-slate-200/80 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 rounded-none flex flex-col items-center justify-center p-1">
-                <div className="w-4 h-4 rounded-xs bg-slate-300 dark:bg-slate-700 mb-1" />
-                <div className="w-8 h-2 rounded-xs bg-slate-200 dark:bg-slate-800" />
+              <div className="relative w-full aspect-[3/4] bg-slate-100 dark:bg-slate-900 rounded-none flex flex-col items-center justify-center p-1">
+                <div className="w-4 h-4 rounded-none bg-slate-300 dark:bg-slate-700 mb-1" />
+                <div className="w-8 h-2 rounded-none bg-slate-200 dark:bg-slate-800" />
               </div>
 
               {/* Mock 360 Thumbnail */}
-              <div className="relative w-full aspect-[3/4] border border-slate-200/80 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 rounded-none flex flex-col items-center justify-center p-1">
-                <div className="w-4 h-4 rounded-xs bg-slate-300 dark:bg-slate-700 mb-1" />
-                <div className="w-10 h-2 rounded-xs bg-slate-200 dark:bg-slate-800" />
+              <div className="relative w-full aspect-[3/4] bg-slate-100 dark:bg-slate-900 rounded-none flex flex-col items-center justify-center p-1">
+                <div className="w-4 h-4 rounded-none bg-slate-300 dark:bg-slate-700 mb-1" />
+                <div className="w-10 h-2 rounded-none bg-slate-200 dark:bg-slate-800" />
               </div>
             </div>
 
             {/* Main Media Showcase Window */}
-            <div className="flex-1 relative aspect-[3/4] overflow-hidden rounded-none border border-slate-200/80 dark:border-slate-800 bg-slate-100 dark:bg-slate-900">
+            <div className="flex-1 relative aspect-[3/4] overflow-hidden rounded-none bg-slate-100 dark:bg-slate-900">
               
               {/* Float overlays top-left */}
               <div className="absolute top-4 left-4 z-20 flex gap-2">
-                <div className="h-6 w-28 rounded-full bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 shadow-xs" />
-                <div className="h-6 w-20 rounded-full bg-rose-100/80 dark:bg-rose-950/40 border border-rose-200/50 dark:border-rose-900/30" />
+                <div className="h-6 w-28 rounded-none bg-white/95 dark:bg-slate-900/95 shadow-xs" />
+                <div className="h-6 w-20 rounded-none bg-rose-100/80 dark:bg-rose-950/40" />
               </div>
 
               {/* Action buttons on image */}
               <div className="absolute top-4 right-4 z-20 flex flex-col gap-2">
-                <div className="h-10 w-10 rounded-full bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 shadow-xs" />
-                <div className="h-10 w-10 rounded-full bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 shadow-xs" />
+                <div className="h-10 w-10 rounded-none bg-white/95 dark:bg-slate-900/95 shadow-xs" />
+                <div className="h-10 w-10 rounded-none bg-white/95 dark:bg-slate-900/95 shadow-xs" />
               </div>
 
               {/* Center image placeholder silhouette */}
               <div className="w-full h-full flex items-center justify-center p-8">
-                <div className="w-4/5 h-4/5 bg-slate-200/70 dark:bg-slate-800/70 rounded-lg" />
+                <div className="w-4/5 h-4/5 bg-slate-200/70 dark:bg-slate-800/70 rounded-none" />
               </div>
 
               {/* Bottom right zoom expand icon */}
-              <div className="absolute bottom-4 right-4 z-20 h-10 w-10 bg-slate-900/40 dark:bg-slate-800/80" />
+              <div className="absolute bottom-4 right-4 z-20 h-10 w-10 bg-slate-900/40 dark:bg-slate-800/80 rounded-none" />
             </div>
           </div>
 
@@ -515,32 +515,32 @@ export const ProductDetailSkeleton = () => (
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div
                 key={i}
-                className="aspect-[3/4] w-14 bg-slate-200 dark:bg-slate-800 border border-slate-200 dark:border-slate-800 shrink-0"
+                className="aspect-[3/4] w-14 bg-slate-200 dark:bg-slate-800 rounded-none shrink-0"
               />
             ))}
           </div>
 
           {/* Nav Tabs Section (Under Images) */}
-          <div className="w-full text-left mt-6 pt-4 border-t border-slate-200 dark:border-slate-800/80">
-            <div className="border-b border-slate-200 dark:border-slate-800 flex items-center gap-8 overflow-x-auto pb-3">
-              <div className="h-4 w-20 bg-indigo-200 dark:bg-indigo-900/60 rounded-xs" />
-              <div className="h-4 w-28 bg-slate-200 dark:bg-slate-800 rounded-xs" />
-              <div className="h-4 w-32 bg-slate-200 dark:bg-slate-800 rounded-xs" />
-              <div className="h-4 w-24 bg-slate-200 dark:bg-slate-800 rounded-xs" />
+          <div className="w-full text-left mt-6 pt-4">
+            <div className="flex items-center gap-8 overflow-x-auto pb-3">
+              <div className="h-4 w-20 bg-indigo-200 dark:bg-indigo-900/60 rounded-none" />
+              <div className="h-4 w-28 bg-slate-200 dark:bg-slate-800 rounded-none" />
+              <div className="h-4 w-32 bg-slate-200 dark:bg-slate-800 rounded-none" />
+              <div className="h-4 w-24 bg-slate-200 dark:bg-slate-800 rounded-none" />
             </div>
 
             <div className="mt-5 space-y-3">
-              <div className="h-3.5 w-full bg-slate-200 dark:bg-slate-800 rounded-xs" />
-              <div className="h-3.5 w-11/12 bg-slate-200 dark:bg-slate-800 rounded-xs" />
-              <div className="h-3.5 w-4/5 bg-slate-200 dark:bg-slate-800 rounded-xs" />
+              <div className="h-3.5 w-full bg-slate-200 dark:bg-slate-800 rounded-none" />
+              <div className="h-3.5 w-11/12 bg-slate-200 dark:bg-slate-800 rounded-none" />
+              <div className="h-3.5 w-4/5 bg-slate-200 dark:bg-slate-800 rounded-none" />
               
-              <div className="pt-4 border-t border-slate-200 dark:border-slate-800 mt-4 space-y-2.5">
-                <div className="h-4 w-32 bg-slate-300 dark:bg-slate-700 rounded-xs mb-3" />
+              <div className="pt-4 mt-4 space-y-2.5">
+                <div className="h-4 w-32 bg-slate-300 dark:bg-slate-700 rounded-none mb-3" />
                 <div className="grid grid-cols-2 gap-3">
                   {[1, 2, 3, 4, 5].map((i) => (
                     <div key={i} className="flex items-center gap-2">
-                      <div className="w-3.5 h-3.5 rounded-xs bg-slate-200 dark:bg-slate-800 shrink-0" />
-                      <div className="h-3 w-3/4 bg-slate-100 dark:bg-slate-850 rounded-xs" />
+                      <div className="w-3.5 h-3.5 rounded-none bg-slate-200 dark:bg-slate-800 shrink-0" />
+                      <div className="h-3 w-3/4 bg-slate-100 dark:bg-slate-850 rounded-none" />
                     </div>
                   ))}
                 </div>
@@ -554,70 +554,70 @@ export const ProductDetailSkeleton = () => (
         <div className="space-y-5 text-left lg:sticky lg:top-24 lg:self-start">
           
           {/* Store brand / Category Badge */}
-          <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2.5">
+          <div className="flex items-center justify-between pb-2.5">
             <div className="flex items-center gap-2">
-              <div className="w-5 h-5 rounded-xs bg-slate-200 dark:bg-slate-800" />
-              <div className="h-3.5 w-24 bg-blue-100 dark:bg-blue-950/60 rounded-xs" />
+              <div className="w-5 h-5 rounded-none bg-slate-200 dark:bg-slate-800" />
+              <div className="h-3.5 w-24 bg-blue-100 dark:bg-blue-950/60 rounded-none" />
             </div>
-            <div className="h-3 w-20 bg-slate-200 dark:bg-slate-800 rounded-xs" />
+            <div className="h-3 w-20 bg-slate-200 dark:bg-slate-800 rounded-none" />
           </div>
 
           {/* Title & Review stars metrics */}
           <div className="space-y-2">
-            <div className="h-6 sm:h-7 w-4/5 bg-slate-300 dark:bg-slate-700 rounded-xs" />
-            <div className="h-6 sm:h-7 w-3/5 bg-slate-300 dark:bg-slate-700 rounded-xs" />
+            <div className="h-6 sm:h-7 w-4/5 bg-slate-300 dark:bg-slate-700 rounded-none" />
+            <div className="h-6 sm:h-7 w-3/5 bg-slate-300 dark:bg-slate-700 rounded-none" />
 
             {/* Badge Chips */}
             <div className="flex gap-1.5 pt-1">
-              <div className="h-4.5 w-20 bg-amber-100 dark:bg-amber-950/40 rounded-xs" />
-              <div className="h-4.5 w-24 bg-amber-100 dark:bg-amber-950/40 rounded-xs" />
+              <div className="h-4.5 w-20 bg-amber-100 dark:bg-amber-950/40 rounded-none" />
+              <div className="h-4.5 w-24 bg-amber-100 dark:bg-amber-950/40 rounded-none" />
             </div>
 
             {/* Review metrics */}
             <div className="flex items-center gap-2 pt-1">
-              <div className="h-3.5 w-6 bg-slate-300 dark:bg-slate-700 rounded-xs" />
-              <div className="h-3 w-16 bg-amber-200 dark:bg-amber-900/60 rounded-xs" />
+              <div className="h-3.5 w-6 bg-slate-300 dark:bg-slate-700 rounded-none" />
+              <div className="h-3 w-16 bg-amber-200 dark:bg-amber-900/60 rounded-none" />
               <span className="text-slate-300 dark:text-slate-700">•</span>
-              <div className="h-3.5 w-20 bg-slate-200 dark:bg-slate-800 rounded-xs" />
+              <div className="h-3.5 w-20 bg-slate-200 dark:bg-slate-800 rounded-none" />
             </div>
           </div>
 
           {/* Pricing Info block */}
           <div className="space-y-1">
             <div className="flex items-baseline gap-2.5">
-              <div className="h-8 sm:h-9 w-28 bg-red-200 dark:bg-red-950/70 rounded-xs" />
-              <div className="h-4 w-16 bg-slate-200 dark:bg-slate-800 rounded-xs" />
-              <div className="h-5 w-16 bg-rose-100 dark:bg-rose-950/60 rounded-xs" />
+              <div className="h-8 sm:h-9 w-28 bg-red-200 dark:bg-red-950/70 rounded-none" />
+              <div className="h-4 w-16 bg-slate-200 dark:bg-slate-800 rounded-none" />
+              <div className="h-5 w-16 bg-rose-100 dark:bg-rose-950/60 rounded-none" />
             </div>
-            <div className="h-2.5 w-28 bg-slate-100 dark:bg-slate-800/60 rounded-xs" />
+            <div className="h-2.5 w-28 bg-slate-100 dark:bg-slate-800/60 rounded-none" />
           </div>
 
           {/* Availability & Stock status block */}
-          <div className="flex items-center gap-3 border-t border-slate-200 dark:border-slate-800/80 pt-3.5">
-            <div className="h-4.5 w-16 bg-emerald-100 dark:bg-emerald-950/60 rounded-full" />
+          <div className="flex items-center gap-3 pt-3.5">
+            <div className="h-4.5 w-16 bg-emerald-100 dark:bg-emerald-950/60 rounded-none" />
             <span className="text-slate-300 dark:text-slate-700">•</span>
-            <div className="h-3.5 w-28 bg-slate-200 dark:bg-slate-800 rounded-xs" />
+            <div className="h-3.5 w-28 bg-slate-200 dark:bg-slate-800 rounded-none" />
             <span className="text-slate-300 dark:text-slate-700">•</span>
-            <div className="h-3.5 w-24 bg-slate-200 dark:bg-slate-800 rounded-xs" />
+            <div className="h-3.5 w-24 bg-slate-200 dark:bg-slate-800 rounded-none" />
           </div>
 
           {/* Trust Badges Card */}
-          <div className="border border-slate-200 dark:border-slate-800 rounded-sm p-3 bg-slate-50/50 dark:bg-slate-950/20 grid grid-cols-3 divide-x divide-slate-200 dark:divide-slate-800 text-center gap-1">
+          <div className="rounded-none p-3 bg-slate-100/70 dark:bg-slate-950/20 grid grid-cols-3 text-center gap-1">
             {[1, 2, 3].map((i) => (
               <div key={i} className="flex flex-col items-center justify-center p-1 space-y-1">
-                <div className="w-4 h-4 rounded-xs bg-slate-300 dark:bg-slate-700" />
-                <div className="h-2.5 w-16 bg-blue-100 dark:bg-blue-950/60 rounded-xs" />
-                <div className="h-2 w-12 bg-slate-100 dark:bg-slate-800/60 rounded-xs" />
+                <div className="w-4 h-4 rounded-none bg-slate-300 dark:bg-slate-700" />
+                <div className="h-2.5 w-16 bg-blue-100 dark:bg-blue-950/60 rounded-none" />
+                <div className="h-2 w-12 bg-slate-100 dark:bg-slate-800/60 rounded-none" />
               </div>
             ))}
           </div>
 
           {/* Feature List Skeleton */}
-          <div className="space-y-3 border-t border-slate-200 dark:border-slate-800 pt-4">
-            <div className="h-3.5 w-28 bg-slate-300 dark:bg-slate-700 rounded-xs" />
+          <div className="space-y-3 pt-4">
+            <div className="h-3.5 w-28 bg-slate-300 dark:bg-slate-700 rounded-none" />
             <div className="flex flex-wrap gap-2">
               {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-7 w-28 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm" />
+                <div key={i} className="h-7 w-28 bg-slate-100/70 dark:bg-slate-900 rounded-none" />
               ))}
             </div>
           </div>
@@ -626,12 +626,12 @@ export const ProductDetailSkeleton = () => (
           <div className="space-y-4 pt-3">
             {/* Color */}
             <div className="space-y-1.5">
-              <div className="h-2.5 w-20 bg-slate-200 dark:bg-slate-800 rounded-xs" />
+              <div className="h-2.5 w-20 bg-slate-200 dark:bg-slate-800 rounded-none" />
               <div className="flex flex-wrap gap-2">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-7 w-20 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm flex items-center gap-1.5 px-2">
-                    <div className="w-3.5 h-3.5 rounded-full bg-slate-200 dark:bg-slate-700" />
-                    <div className="h-2.5 w-10 bg-slate-200 dark:bg-slate-800 rounded-xs" />
+                  <div key={i} className="h-7 w-20 bg-slate-100 dark:bg-slate-900 rounded-none flex items-center gap-1.5 px-2">
+                    <div className="w-3.5 h-3.5 rounded-none bg-slate-200 dark:bg-slate-700" />
+                    <div className="h-2.5 w-10 bg-slate-200 dark:bg-slate-800 rounded-none" />
                   </div>
                 ))}
               </div>
@@ -640,52 +640,52 @@ export const ProductDetailSkeleton = () => (
             {/* Size */}
             <div className="space-y-1.5">
               <div className="flex justify-between items-center">
-                <div className="h-2.5 w-16 bg-slate-200 dark:bg-slate-800 rounded-xs" />
-                <div className="h-2.5 w-14 bg-indigo-100 dark:bg-indigo-950/60 rounded-xs" />
+                <div className="h-2.5 w-16 bg-slate-200 dark:bg-slate-800 rounded-none" />
+                <div className="h-2.5 w-14 bg-indigo-100 dark:bg-indigo-950/60 rounded-none" />
               </div>
               <div className="flex flex-wrap gap-2">
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="h-7 w-12 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm" />
+                  <div key={i} className="h-7 w-12 bg-slate-100 dark:bg-slate-900 rounded-none" />
                 ))}
               </div>
             </div>
 
             {/* Dynamic Selected Variant Card */}
-            <div className="relative overflow-hidden bg-slate-50/50 dark:bg-slate-950/30 rounded-sm p-3.5 border border-slate-100 dark:border-slate-800/60 mt-3 space-y-2">
+            <div className="relative overflow-hidden bg-slate-100/70 dark:bg-slate-950/30 rounded-none p-3.5 mt-3 space-y-2">
               <div className="flex justify-between items-center pl-2">
-                <div className="h-2.5 w-24 bg-indigo-100 dark:bg-indigo-950/60 rounded-xs" />
-                <div className="h-3.5 w-20 bg-indigo-50 dark:bg-indigo-950/50 rounded-xs" />
+                <div className="h-2.5 w-24 bg-indigo-100 dark:bg-indigo-950/60 rounded-none" />
+                <div className="h-3.5 w-20 bg-indigo-50 dark:bg-indigo-950/50 rounded-none" />
               </div>
               <div className="pl-2 space-y-2">
-                <div className="h-3 w-40 bg-slate-200 dark:bg-slate-800 rounded-xs" />
-                <div className="grid grid-cols-3 gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-900">
-                  <div className="h-8 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xs" />
-                  <div className="h-8 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xs" />
-                  <div className="h-8 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xs" />
+                <div className="h-3 w-40 bg-slate-200 dark:bg-slate-800 rounded-none" />
+                <div className="grid grid-cols-3 gap-2.5 pt-2">
+                  <div className="h-8 bg-white dark:bg-slate-900 rounded-none" />
+                  <div className="h-8 bg-white dark:bg-slate-900 rounded-none" />
+                  <div className="h-8 bg-white dark:bg-slate-900 rounded-none" />
                 </div>
               </div>
             </div>
           </div>
 
           {/* Quantity Selector */}
-          <div className="space-y-2.5 border-t border-slate-200 dark:border-slate-800 pt-4.5 flex items-center gap-4 text-left">
-            <div className="h-3.5 w-16 bg-slate-300 dark:bg-slate-700 rounded-xs" />
-            <div className="w-32 h-10 rounded-sm border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40" />
+          <div className="space-y-2.5 pt-4.5 flex items-center gap-4 text-left">
+            <div className="h-3.5 w-16 bg-slate-300 dark:bg-slate-700 rounded-none" />
+            <div className="w-32 h-10 rounded-none bg-slate-100 dark:bg-slate-950/40" />
           </div>
 
           {/* Buying Action buttons */}
           <div className="grid gap-3 pt-2">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-              <div className="h-11 rounded-sm border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900" />
-              <div className="h-11 rounded-sm bg-amber-400 dark:bg-amber-600" />
+              <div className="h-11 rounded-none bg-slate-200 dark:bg-slate-800" />
+              <div className="h-11 rounded-none bg-amber-400 dark:bg-amber-600" />
             </div>
 
             <div className="grid grid-cols-2 gap-2 mt-1">
-              <div className="h-8 rounded-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800" />
-              <div className="h-8 rounded-sm bg-indigo-50/20 dark:bg-indigo-950/10 border border-indigo-100 dark:border-indigo-900/50" />
+              <div className="h-8 rounded-none bg-slate-100 dark:bg-slate-900" />
+              <div className="h-8 rounded-none bg-indigo-50/40 dark:bg-indigo-950/20" />
             </div>
 
-            <div className="h-9.5 rounded-sm bg-gradient-to-r from-orange-300 via-amber-300 to-orange-300 dark:from-orange-800 dark:via-amber-800 dark:to-orange-800" />
+            <div className="h-9.5 rounded-none bg-gradient-to-r from-orange-300 via-amber-300 to-orange-300 dark:from-orange-800 dark:via-amber-800 dark:to-orange-800" />
           </div>
 
         </div>
@@ -694,50 +694,50 @@ export const ProductDetailSkeleton = () => (
         <div className="space-y-4 text-left lg:sticky lg:top-24 lg:self-start">
 
           {/* 1. Seller Info card */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm p-5 text-left shadow-2xs space-y-3">
-            <div className="h-3.5 w-32 bg-slate-300 dark:bg-slate-700 rounded-xs border-b border-slate-100 dark:border-slate-800 pb-2" />
+          <div className="bg-slate-100/70 dark:bg-slate-900 rounded-none p-5 text-left space-y-3">
+            <div className="h-3.5 w-32 bg-slate-300 dark:bg-slate-700 rounded-none pb-2" />
             <div className="flex items-center justify-between gap-4 pt-1">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-sm bg-slate-200 dark:bg-slate-800 shrink-0" />
+                <div className="w-10 h-10 rounded-none bg-slate-200 dark:bg-slate-800 shrink-0" />
                 <div className="space-y-1.5">
-                  <div className="h-3.5 w-24 bg-slate-300 dark:bg-slate-700 rounded-xs" />
-                  <div className="h-2.5 w-16 bg-amber-100 dark:bg-amber-950/60 rounded-xs" />
+                  <div className="h-3.5 w-24 bg-slate-300 dark:bg-slate-700 rounded-none" />
+                  <div className="h-2.5 w-16 bg-amber-100 dark:bg-amber-950/60 rounded-none" />
                 </div>
               </div>
-              <div className="h-7 w-20 rounded-sm bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-800" />
+              <div className="h-7 w-20 rounded-none bg-slate-200 dark:bg-slate-800" />
             </div>
           </div>
 
           {/* 2. Shipping Information card */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm p-5 text-left shadow-2xs space-y-3">
-            <div className="h-3.5 w-36 bg-slate-300 dark:bg-slate-700 rounded-xs border-b border-slate-100 dark:border-slate-800 pb-2" />
-            <div className="divide-y divide-slate-100 dark:divide-slate-800/80">
+          <div className="bg-slate-100/70 dark:bg-slate-900 rounded-none p-5 text-left space-y-3">
+            <div className="h-3.5 w-36 bg-slate-300 dark:bg-slate-700 rounded-none pb-2" />
+            <div className="space-y-2">
               <div className="py-2 flex justify-between">
-                <div className="h-3 w-14 bg-slate-200 dark:bg-slate-800 rounded-xs" />
-                <div className="h-3 w-10 bg-slate-300 dark:bg-slate-700 rounded-xs" />
+                <div className="h-3 w-14 bg-slate-200 dark:bg-slate-800 rounded-none" />
+                <div className="h-3 w-10 bg-slate-300 dark:bg-slate-700 rounded-none" />
               </div>
               <div className="py-2 flex justify-between">
-                <div className="h-3 w-20 bg-slate-200 dark:bg-slate-800 rounded-xs" />
-                <div className="h-3 w-16 bg-emerald-100 dark:bg-emerald-950/60 rounded-xs" />
+                <div className="h-3 w-20 bg-slate-200 dark:bg-slate-800 rounded-none" />
+                <div className="h-3 w-16 bg-emerald-100 dark:bg-emerald-950/60 rounded-none" />
               </div>
               <div className="py-2 flex justify-between">
-                <div className="h-3 w-24 bg-slate-200 dark:bg-slate-800 rounded-xs" />
-                <div className="h-3 w-16 bg-slate-300 dark:bg-slate-700 rounded-xs" />
+                <div className="h-3 w-24 bg-slate-200 dark:bg-slate-800 rounded-none" />
+                <div className="h-3 w-16 bg-slate-300 dark:bg-slate-700 rounded-none" />
               </div>
             </div>
           </div>
 
           {/* 3. Product Specifications card */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm p-5 text-left shadow-2xs space-y-3">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
-              <div className="h-3.5 w-36 bg-slate-300 dark:bg-slate-700 rounded-xs" />
-              <div className="h-4 w-20 bg-amber-100 dark:bg-amber-950/50 rounded-xs" />
+          <div className="bg-slate-100/70 dark:bg-slate-900 rounded-none p-5 text-left space-y-3">
+            <div className="flex items-center justify-between pb-2">
+              <div className="h-3.5 w-36 bg-slate-300 dark:bg-slate-700 rounded-none" />
+              <div className="h-4 w-20 bg-amber-100 dark:bg-amber-950/50 rounded-none" />
             </div>
-            <div className="divide-y divide-slate-100 dark:divide-slate-800/80">
+            <div className="space-y-2">
               {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div key={i} className="py-2 flex justify-between">
-                  <div className="h-3 w-16 bg-slate-200 dark:bg-slate-800 rounded-xs" />
-                  <div className="h-3 w-24 bg-slate-300 dark:bg-slate-700 rounded-xs" />
+                  <div className="h-3 w-16 bg-slate-200 dark:bg-slate-800 rounded-none" />
+                  <div className="h-3 w-24 bg-slate-300 dark:bg-slate-700 rounded-none" />
                 </div>
               ))}
             </div>
@@ -748,18 +748,18 @@ export const ProductDetailSkeleton = () => (
       </div>
 
       {/* SECTION: Related Products Horizontal Carousel Slider */}
-      <section className="mt-12 border-t border-slate-200 dark:border-slate-800 pt-10 text-left">
+      <section className="mt-12 pt-10 text-left">
         <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
-            <div className="h-3 w-20 bg-indigo-100 dark:bg-indigo-950/60 rounded-xs mb-1.5" />
-            <div className="h-6 sm:h-7 w-48 bg-slate-300 dark:bg-slate-700 rounded-xs" />
+            <div className="h-3 w-20 bg-indigo-100 dark:bg-indigo-950/60 rounded-none mb-1.5" />
+            <div className="h-6 sm:h-7 w-48 bg-slate-300 dark:bg-slate-700 rounded-none" />
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-3 py-1.5 rounded-xl shadow-xs">
-              <div className="w-6 h-6 rounded-lg bg-slate-200 dark:bg-slate-800" />
-              <div className="w-6 h-6 rounded-lg bg-slate-200 dark:bg-slate-800" />
+            <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-900 px-3 py-1.5 rounded-none">
+              <div className="w-6 h-6 rounded-none bg-slate-200 dark:bg-slate-800" />
+              <div className="w-6 h-6 rounded-none bg-slate-200 dark:bg-slate-800" />
             </div>
-            <div className="h-8.5 w-28 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800" />
+            <div className="h-8.5 w-28 rounded-none bg-slate-100 dark:bg-slate-900" />
           </div>
         </div>
 
@@ -767,21 +767,21 @@ export const ProductDetailSkeleton = () => (
           {[1, 2, 3, 4].map((n) => (
             <div
               key={n}
-              className="min-w-[220px] sm:min-w-[260px] md:min-w-[285px] max-w-[285px] flex-shrink-0 bg-white dark:bg-slate-900 rounded-md border border-slate-200/80 dark:border-slate-800 overflow-hidden space-y-3"
+              className="min-w-[220px] sm:min-w-[260px] md:min-w-[285px] max-w-[285px] flex-shrink-0 bg-white dark:bg-slate-900 rounded-none overflow-hidden space-y-3"
             >
               <div className="px-4 pt-4 pb-1 space-y-1.5">
-                <div className="h-3.5 w-full bg-slate-200 dark:bg-slate-800 rounded-xs" />
-                <div className="h-3.5 w-2/3 bg-slate-200 dark:bg-slate-800 rounded-xs" />
+                <div className="h-3.5 w-full bg-slate-200 dark:bg-slate-800 rounded-none" />
+                <div className="h-3.5 w-2/3 bg-slate-200 dark:bg-slate-800 rounded-none" />
               </div>
               <div className="h-[210px] w-full bg-slate-100 dark:bg-slate-850 p-3 flex items-center justify-center">
-                <div className="w-3/4 h-3/4 bg-slate-200/80 dark:bg-slate-800/80 rounded-md" />
+                <div className="w-3/4 h-3/4 bg-slate-200/80 dark:bg-slate-800/80 rounded-none" />
               </div>
               <div className="p-4 pt-0 space-y-2">
-                <div className="h-3 w-16 bg-slate-200 dark:bg-slate-800 rounded-xs" />
-                <div className="h-4 w-3/4 bg-slate-300 dark:bg-slate-700 rounded-xs" />
-                <div className="flex justify-between items-center pt-2 border-t border-slate-100 dark:border-slate-800">
-                  <div className="h-5 w-20 bg-red-200 dark:bg-red-950/60 rounded-xs" />
-                  <div className="h-8 w-8 rounded-full bg-slate-100 dark:bg-slate-800" />
+                <div className="h-3 w-16 bg-slate-200 dark:bg-slate-800 rounded-none" />
+                <div className="h-4 w-3/4 bg-slate-300 dark:bg-slate-700 rounded-none" />
+                <div className="flex justify-between items-center pt-2">
+                  <div className="h-5 w-20 bg-red-200 dark:bg-red-950/60 rounded-none" />
+                  <div className="h-8 w-8 rounded-none bg-slate-100 dark:bg-slate-800" />
                 </div>
               </div>
             </div>
@@ -790,15 +790,15 @@ export const ProductDetailSkeleton = () => (
       </section>
 
       {/* SECTION: Recently Viewed Products Horizontal Carousel Slider */}
-      <section className="mt-10 border-t border-slate-200 dark:border-slate-800 pt-8 text-left">
+      <section className="mt-10 pt-8 text-left">
         <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
-            <div className="h-3 w-24 bg-slate-200 dark:bg-slate-800 rounded-xs mb-1.5" />
-            <div className="h-6 sm:h-7 w-40 bg-slate-300 dark:bg-slate-700 rounded-xs" />
+            <div className="h-3 w-24 bg-slate-200 dark:bg-slate-800 rounded-none mb-1.5" />
+            <div className="h-6 sm:h-7 w-40 bg-slate-300 dark:bg-slate-700 rounded-none" />
           </div>
-          <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-3 py-1.5 rounded-xl shadow-xs">
-            <div className="w-6 h-6 rounded-lg bg-slate-200 dark:bg-slate-800" />
-            <div className="w-6 h-6 rounded-lg bg-slate-200 dark:bg-slate-800" />
+          <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-900 px-3 py-1.5 rounded-none">
+            <div className="w-6 h-6 rounded-none bg-slate-200 dark:bg-slate-800" />
+            <div className="w-6 h-6 rounded-none bg-slate-200 dark:bg-slate-800" />
           </div>
         </div>
 
@@ -806,21 +806,21 @@ export const ProductDetailSkeleton = () => (
           {[1, 2, 3, 4].map((n) => (
             <div
               key={n}
-              className="min-w-[220px] sm:min-w-[260px] md:min-w-[285px] max-w-[285px] flex-shrink-0 bg-white dark:bg-slate-900 rounded-md border border-slate-200/80 dark:border-slate-800 overflow-hidden space-y-3"
+              className="min-w-[220px] sm:min-w-[260px] md:min-w-[285px] max-w-[285px] flex-shrink-0 bg-white dark:bg-slate-900 rounded-none overflow-hidden space-y-3"
             >
               <div className="px-4 pt-4 pb-1 space-y-1.5">
-                <div className="h-3.5 w-full bg-slate-200 dark:bg-slate-800 rounded-xs" />
-                <div className="h-3.5 w-2/3 bg-slate-200 dark:bg-slate-800 rounded-xs" />
+                <div className="h-3.5 w-full bg-slate-200 dark:bg-slate-800 rounded-none" />
+                <div className="h-3.5 w-2/3 bg-slate-200 dark:bg-slate-800 rounded-none" />
               </div>
               <div className="h-[210px] w-full bg-slate-100 dark:bg-slate-850 p-3 flex items-center justify-center">
-                <div className="w-3/4 h-3/4 bg-slate-200/80 dark:bg-slate-800/80 rounded-md" />
+                <div className="w-3/4 h-3/4 bg-slate-200/80 dark:bg-slate-800/80 rounded-none" />
               </div>
               <div className="p-4 pt-0 space-y-2">
-                <div className="h-3 w-16 bg-slate-200 dark:bg-slate-800 rounded-xs" />
-                <div className="h-4 w-3/4 bg-slate-300 dark:bg-slate-700 rounded-xs" />
-                <div className="flex justify-between items-center pt-2 border-t border-slate-100 dark:border-slate-800">
-                  <div className="h-5 w-20 bg-red-200 dark:bg-red-950/60 rounded-xs" />
-                  <div className="h-8 w-8 rounded-full bg-slate-100 dark:bg-slate-800" />
+                <div className="h-3 w-16 bg-slate-200 dark:bg-slate-800 rounded-none" />
+                <div className="h-4 w-3/4 bg-slate-300 dark:bg-slate-700 rounded-none" />
+                <div className="flex justify-between items-center pt-2">
+                  <div className="h-5 w-20 bg-red-200 dark:bg-red-950/60 rounded-none" />
+                  <div className="h-8 w-8 rounded-none bg-slate-100 dark:bg-slate-800" />
                 </div>
               </div>
             </div>
@@ -829,17 +829,17 @@ export const ProductDetailSkeleton = () => (
       </section>
 
       {/* SECTION: Footer Features Bar */}
-      <div className="mt-12 border-t border-slate-200 dark:border-slate-800 pt-8 pb-4">
+      <div className="mt-12 pt-8 pb-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
-              className="flex items-center gap-4 bg-white/60 dark:bg-slate-900/25 border border-slate-200/50 dark:border-slate-800/80 rounded-2xl p-4 text-left"
+              className="flex items-center gap-4 bg-slate-100/70 dark:bg-slate-900/60 rounded-none p-4 text-left"
             >
-              <div className="h-11 w-11 rounded-xl bg-slate-200 dark:bg-slate-800 shrink-0" />
+              <div className="h-11 w-11 rounded-none bg-slate-200 dark:bg-slate-800 shrink-0" />
               <div className="space-y-1.5 flex-1">
-                <div className="h-3.5 w-3/4 bg-slate-300 dark:bg-slate-700 rounded-xs" />
-                <div className="h-2.5 w-1/2 bg-slate-200 dark:bg-slate-800 rounded-xs" />
+                <div className="h-3.5 w-3/4 bg-slate-300 dark:bg-slate-700 rounded-none" />
+                <div className="h-2.5 w-1/2 bg-slate-200 dark:bg-slate-800 rounded-none" />
               </div>
             </div>
           ))}

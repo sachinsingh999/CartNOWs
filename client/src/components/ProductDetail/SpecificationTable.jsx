@@ -4,8 +4,8 @@ const SpecificationTable = ({ product }) => {
   if (!product) return null;
 
   const blacklist = new Set([
-    "_id", "id", "createdat", "updatedat", "images", "reviews", "v", "__v", 
-    "variants", "variant", "status", "price", "originalprice", "name", "description", 
+    "_id", "id", "createdat", "updatedat", "images", "reviews", "v", "__v",
+    "variants", "variant", "status", "price", "originalprice", "name", "description",
     "shortdescription", "stock", "rating", "searchkeywords"
   ]);
 
@@ -82,18 +82,18 @@ const SpecificationTable = ({ product }) => {
   if (specsToRender.length === 0) return null;
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm p-5 text-left shadow-2xs space-y-3">
-      <h4 className="text-xs font-black uppercase text-slate-900 dark:text-white tracking-wider border-b border-slate-100 dark:border-slate-800 pb-2 flex items-center justify-between">
+    <div className="bg-slate-100/70 dark:bg-slate-900/60 rounded-none p-6 text-left space-y-4">
+      <h4 className="text-xs font-black uppercase text-slate-900 dark:text-white tracking-wider pb-1.5 flex items-center justify-between">
         <span>Product Specifications</span>
-        <span className="text-[9px] font-bold text-amber-500 uppercase tracking-widest bg-amber-500/10 px-2 py-0.5 rounded-xs border border-amber-500/20">
+        <span className="text-[9.5px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest bg-amber-500/15 px-3 py-1 rounded-none">
           Verified Specs
         </span>
       </h4>
-      <div className="divide-y divide-slate-100 dark:divide-slate-800/80 text-xs">
+      <div className="space-y-2.5 text-xs">
         {specsToRender.map((spec, index) => (
-          <div key={index} className="py-2 flex items-start justify-between gap-4 first:pt-0 last:pb-0">
+          <div key={index} className="py-2.5 flex items-start justify-between gap-4">
             <span className="font-bold text-slate-500 dark:text-slate-400 shrink-0 capitalize">{spec.key}</span>
-            <span className="text-right text-slate-900 dark:text-slate-100 font-semibold break-words leading-tight">{spec.value}</span>
+            <span className="text-right text-slate-900 dark:text-slate-100 font-semibold break-words leading-relaxed">{spec.value}</span>
           </div>
         ))}
       </div>

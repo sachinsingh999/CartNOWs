@@ -120,10 +120,7 @@ const DynamicFilterGroup = ({
         <span className="text-[11px] font-black uppercase tracking-wider text-slate-800 dark:text-slate-200 group-hover:text-[#ff3f6c] transition-colors">
           {groupKey}
         </span>
-        <div className="flex items-center gap-1.5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-colors">
-          {options.length > 8 && isExpanded && displayType === "checkbox-list" && (
-            <span className="text-[10px] text-slate-400">({options.length})</span>
-          )}
+        <div className="flex items-center text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-colors">
           {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
         </div>
       </div>

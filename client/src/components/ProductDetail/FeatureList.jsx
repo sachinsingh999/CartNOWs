@@ -41,15 +41,15 @@ const FeatureList = ({ product }) => {
   if (featuresToDisplay.length === 0) return null;
 
   return (
-    <div className="space-y-3 border-t border-slate-200 dark:border-slate-800 pt-4 text-left">
-      <span className="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-wider block">
+    <div className="space-y-2 pt-2 text-left">
+      <span className="text-[11px] font-black text-slate-900 dark:text-slate-100 uppercase tracking-wider block">
         Product Features
       </span>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-1.5">
         {featuresToDisplay.map((feat, index) => (
-          <div 
-            key={index} 
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 shadow-2xs"
+          <div
+            key={index}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-none bg-slate-100/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-700 dark:text-slate-300"
           >
             <Check size={12} className="text-emerald-500 shrink-0" />
             <span>{feat}</span>

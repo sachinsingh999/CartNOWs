@@ -35,6 +35,15 @@ import {
   Mic,
   LayoutGrid,
   Menu,
+  Laptop,
+  Smartphone,
+  Crown,
+  Shirt,
+  Footprints,
+  Watch,
+  Glasses,
+  Luggage,
+  MoreHorizontal,
 } from "lucide-react";
 import axios from "axios";
 import { backendUrl } from "../config";
@@ -754,16 +763,16 @@ const MEGA_MENU_DATA = {
 };
 
 const NAV_STRIP_CATEGORIES = [
-  { label: "Electronics", to: "/product?category=electronics" },
-  { label: "Mobiles & Tech", to: "/product?category=mobiles" },
-  { label: "Women's Fashion", to: "/product?category=women" },
-  { label: "Men's Apparel", to: "/product?category=men" },
-  { label: "Footwear", to: "/product?category=shoes" },
-  { label: "Jewelry & Watches", to: "/product?category=jewelry" },
-  { label: "Beauty & Care", to: "/product?category=beauty" },
-  { label: "Home & Living", to: "/product?category=home" },
-  { label: "Accessories", to: "/product?category=accessories" },
-  { label: "Bags & Luggage", to: "/product?category=bags" },
+  { label: "Electronics", to: "/product?category=electronics", icon: Laptop },
+  { label: "Mobiles & Tech", to: "/product?category=mobiles", icon: Smartphone },
+  { label: "Women's Fashion", to: "/product?category=women", icon: Crown },
+  { label: "Men's Apparel", to: "/product?category=men", icon: Shirt },
+  { label: "Footwear", to: "/product?category=shoes", icon: Footprints },
+  { label: "Jewelry & Watches", to: "/product?category=jewelry", icon: Watch },
+  { label: "Beauty & Care", to: "/product?category=beauty", icon: Sparkles },
+  { label: "Home & Living", to: "/product?category=home", icon: Home },
+  { label: "Accessories", to: "/product?category=accessories", icon: Glasses },
+  { label: "Bags & Luggage", to: "/product?category=bags", icon: Luggage },
 ];
 
 const Navbar = () => {
@@ -771,6 +780,8 @@ const Navbar = () => {
   const { logout } = useAuth();
   const location = useLocation();
   const { language, changeLanguage, t } = useLanguage();
+
+  const isHomePage = location.pathname === "/";
 
   /* State */
   const [navCategories, setNavCategories] = useState([]);
@@ -1559,14 +1570,14 @@ const Navbar = () => {
                   <button
                     type="button"
                     onClick={() => setPincodeOpen((p) => !p)}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-slate-100/70 dark:hover:bg-slate-900/60 transition cursor-pointer text-left select-none bg-transparent"
+                    className="flex h-9 items-center gap-2 px-3 rounded-full hover:bg-slate-100/70 dark:hover:bg-slate-900/60 transition cursor-pointer text-left select-none bg-transparent shrink-0"
                   >
                     <MapPin size={16} className="text-amber-500 shrink-0 stroke-[2.5]" />
-                    <div className="flex flex-col leading-none">
-                      <span className="text-[9.5px] font-bold text-slate-400">
+                    <div className="flex flex-col justify-center leading-none">
+                      <span className="text-[9.5px] font-bold text-slate-400 leading-none block">
                         Deliver to
                       </span>
-                      <span className="text-xs font-black text-slate-800 dark:text-slate-100 flex items-center gap-0.5 mt-0.5">
+                      <span className="text-xs font-black text-slate-800 dark:text-slate-100 flex items-center gap-0.5 mt-0.5 leading-none">
                         {locationLabel && locationLabel !== "Use location"
                           ? locationLabel
                           : "Vaghodia 391760"}
@@ -1702,23 +1713,23 @@ const Navbar = () => {
                 <button
                   type="button"
                   onClick={() => changeLanguage(language === "en" ? "hi" : "en")}
-                  className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-slate-100/70 dark:hover:bg-slate-900/60 text-xs font-black text-slate-800 dark:text-slate-200 transition cursor-pointer shrink-0"
+                  className="hidden lg:flex h-9 items-center justify-center gap-1.5 px-3 rounded-full hover:bg-slate-100/70 dark:hover:bg-slate-900/60 text-xs font-black text-slate-800 dark:text-slate-200 transition cursor-pointer shrink-0"
                 >
-                  <span className="text-sm">🇮🇳</span>
-                  <span className="uppercase">{language || "EN"}</span>
+                  <span className="text-sm leading-none">🇮🇳</span>
+                  <span className="uppercase leading-none">{language || "EN"}</span>
                 </button>
 
                 {/* Returns & Orders Link */}
                 <Link
                   to={token ? "/orderdetail" : "/login"}
-                  className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-slate-100/70 dark:hover:bg-slate-900/60 transition cursor-pointer select-none shrink-0"
+                  className="hidden md:flex h-9 items-center gap-2 px-3 rounded-full hover:bg-slate-100/70 dark:hover:bg-slate-900/60 transition cursor-pointer select-none shrink-0"
                 >
-                  <Package size={16} className="text-slate-600 dark:text-slate-400" />
-                  <div className="leading-none text-left">
-                    <span className="text-[9.5px] font-bold text-slate-400 block">
+                  <Package size={16} className="text-slate-600 dark:text-slate-400 shrink-0" />
+                  <div className="flex flex-col justify-center leading-none text-left">
+                    <span className="text-[9.5px] font-bold text-slate-400 leading-none block">
                       Returns
                     </span>
-                    <span className="text-xs font-black text-slate-800 dark:text-slate-100 mt-0.5 block">
+                    <span className="text-xs font-black text-slate-800 dark:text-slate-100 mt-0.5 leading-none block">
                       & Orders
                     </span>
                   </div>
@@ -1757,7 +1768,7 @@ const Navbar = () => {
                     <button
                       onClick={() => setNotiOpen((p) => !p)}
                       title="Notifications"
-                      className="relative flex h-9 w-9 items-center justify-center rounded-full bg-slate-100/80 dark:bg-slate-900/80 hover:bg-slate-200/80 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition cursor-pointer"
+                      className="relative flex h-9 w-9 items-center justify-center rounded-full bg-slate-100/80 dark:bg-slate-900/80 hover:bg-slate-200/80 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition cursor-pointer shrink-0"
                     >
                       <Bell size={16} className={unreadCount > 0 ? "animate-wiggle" : ""} />
                       {unreadCount > 0 && (
@@ -1935,16 +1946,16 @@ const Navbar = () => {
                       setOpen((p) => !p);
                       setPincodeOpen(false);
                     }}
-                    className="flex items-center gap-2 pl-2.5 pr-0 sm:pr-0.5 py-1 rounded-full hover:bg-slate-100/70 dark:hover:bg-slate-900/60 transition cursor-pointer bg-transparent"
+                    className="flex h-9 items-center gap-2 pl-2 pr-3 rounded-full hover:bg-slate-100/70 dark:hover:bg-slate-900/60 transition cursor-pointer bg-transparent shrink-0"
                   >
                     <div className="h-7 w-7 rounded-full bg-amber-500 text-slate-950 font-bold text-xs flex items-center justify-center shadow-xs shrink-0">
                       {initials || <User size={13} />}
                     </div>
-                    <div className="text-left leading-none">
-                      <span className="text-[9.5px] font-semibold text-slate-400 dark:text-slate-400 block">
+                    <div className="flex flex-col justify-center text-left leading-none">
+                      <span className="text-[9.5px] font-semibold text-slate-400 dark:text-slate-400 leading-none block">
                         Hello, {username ? username.split(" ")[0] : "Sign in"}
                       </span>
-                      <span className="text-xs font-bold text-slate-900 dark:text-slate-100 flex items-center gap-0.5 mt-0.5">
+                      <span className="text-xs font-bold text-slate-900 dark:text-slate-100 flex items-center gap-0.5 mt-0.5 leading-none">
                         Account{" "}
                         <ChevronDown
                           size={11}
@@ -2306,79 +2317,98 @@ const Navbar = () => {
             </div>
           </div>
 
-          {/* ═══════════ SECONDARY CATEGORIES BAR (MOCKUP ALIGNMENT) ═══════════ */}
-          <div className="relative z-40 bg-white dark:bg-slate-950 shadow-2xs">
-            <div className="w-full px-2 sm:px-4 lg:px-6 py-1.5 flex items-center justify-between gap-1.5 sm:gap-2 text-xs select-none">
-              {/* Category Links with Horizontal Scroll */}
-              <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-hide py-0.5 min-w-0 flex-1">
-                {/* All Categories Button */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (categoriesOpen && activeMegaDept !== "more") {
-                      setCategoriesOpen(false);
-                    } else {
-                      setActiveMegaDept("men");
-                      setCategoriesOpen(true);
-                    }
-                  }}
-                  className={`flex items-center gap-1.5 pl-0 pr-2 sm:pr-2.5 py-1 rounded-md transition font-bold shrink-0 cursor-pointer ${
-                    categoriesOpen && activeMegaDept !== "more"
-                      ? "text-[#FF6A00] dark:text-orange-400 bg-orange-50/80 dark:bg-orange-950/30"
-                      : "text-slate-800 dark:text-slate-100 hover:text-[#FF6A00] dark:hover:text-orange-400 bg-transparent hover:bg-slate-100/60 dark:hover:bg-slate-900/50"
-                  }`}
-                >
-                  <Menu size={14} className="stroke-[2.5]" />
-                  <span>All Categories</span>
-                  <ChevronDown
-                    size={11}
-                    className={`transition-transform duration-200 ${
-                      categoriesOpen && activeMegaDept !== "more" ? "rotate-180 text-[#FF6A00]" : "text-slate-400"
+          {/* ═══════════ SECONDARY CATEGORIES BAR (MOCKUP ALIGNMENT - HOME PAGE ONLY) ═══════════ */}
+          {isHomePage && (
+            <div className="relative z-40 bg-white dark:bg-slate-950 shadow-2xs">
+              <div className="w-full px-2 sm:px-4 lg:px-6 py-1.5 flex items-center justify-between gap-1.5 sm:gap-2 text-xs select-none">
+                {/* Category Links with Horizontal Scroll */}
+                <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-hide py-0.5 min-w-0 flex-1">
+                  {/* All Categories Button */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (categoriesOpen && activeMegaDept !== "more") {
+                        setCategoriesOpen(false);
+                      } else {
+                        setActiveMegaDept("men");
+                        setCategoriesOpen(true);
+                      }
+                    }}
+                    className={`flex items-center gap-1.5 pl-0 pr-2 sm:pr-2.5 py-1 rounded-md transition font-bold shrink-0 cursor-pointer ${
+                      categoriesOpen && activeMegaDept !== "more"
+                        ? "text-[#FF6A00] dark:text-orange-400 bg-orange-50/80 dark:bg-orange-950/30"
+                        : "text-slate-800 dark:text-slate-100 hover:text-[#FF6A00] dark:hover:text-orange-400 bg-transparent hover:bg-slate-100/60 dark:hover:bg-slate-900/50"
                     }`}
-                  />
-                </button>
-
-                {/* Category Quick Links */}
-                {NAV_STRIP_CATEGORIES.map((cat) => (
-                  <Link
-                    key={cat.label}
-                    to={cat.to}
-                    className="px-2 sm:px-2.5 py-1 text-slate-700 dark:text-slate-300 hover:text-[#FF6A00] dark:hover:text-orange-400 font-bold whitespace-nowrap transition cursor-pointer text-xs shrink-0"
                   >
-                    {cat.label}
-                  </Link>
-                ))}
-              </div>
+                    <Menu size={14} className="stroke-[2.5]" />
+                    <span>All Categories</span>
+                    <ChevronDown
+                      size={11}
+                      className={`transition-transform duration-200 ${
+                        categoriesOpen && activeMegaDept !== "more" ? "rotate-180 text-[#FF6A00]" : "text-slate-400"
+                      }`}
+                    />
+                  </button>
 
-              {/* More ▾ Button in secondary bar (Opens rich multi-column Mega Menu with 'more' tab) */}
-              <div className="relative shrink-0" ref={moreNavRef}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (categoriesOpen && activeMegaDept === "more") {
-                      setCategoriesOpen(false);
-                    } else {
-                      setActiveMegaDept("more");
-                      setCategoriesOpen(true);
-                    }
-                  }}
-                  className={`flex items-center gap-1 pl-2 sm:pl-2.5 pr-0 py-1 font-bold cursor-pointer rounded-md transition text-xs border ${
-                    categoriesOpen && activeMegaDept === "more"
-                      ? "text-[#FF6A00] bg-orange-50/70 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800/50"
-                      : "text-slate-700 dark:text-slate-300 hover:text-[#FF6A00] dark:hover:text-orange-400 border-transparent bg-transparent"
-                  }`}
-                >
-                  <span>More</span>
-                  <ChevronDown
-                    size={11}
-                    className={`transition-transform duration-200 ${
-                      categoriesOpen && activeMegaDept === "more" ? "rotate-180 text-[#FF6A00]" : ""
+                  {/* Category Quick Links */}
+                  {NAV_STRIP_CATEGORIES.map((cat) => {
+                    const IconComponent = cat.icon;
+                    return (
+                      <Link
+                        key={cat.label}
+                        to={cat.to}
+                        className="group flex items-center gap-1.5 px-2 sm:px-2.5 py-1 text-slate-700 dark:text-slate-300 hover:text-[#FF6A00] dark:hover:text-orange-400 font-bold whitespace-nowrap transition cursor-pointer text-xs shrink-0 rounded-md hover:bg-slate-100/60 dark:hover:bg-slate-900/50"
+                      >
+                        {IconComponent && (
+                          <IconComponent
+                            size={13}
+                            className="text-slate-500 dark:text-slate-400 group-hover:text-[#FF6A00] dark:group-hover:text-orange-400 transition-colors duration-150 stroke-[2.2]"
+                          />
+                        )}
+                        <span>{cat.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+
+                {/* More ▾ Button in secondary bar (Opens rich multi-column Mega Menu with 'more' tab) */}
+                <div className="relative shrink-0" ref={moreNavRef}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (categoriesOpen && activeMegaDept === "more") {
+                        setCategoriesOpen(false);
+                      } else {
+                        setActiveMegaDept("more");
+                        setCategoriesOpen(true);
+                      }
+                    }}
+                    className={`flex items-center gap-1.5 pl-2 sm:pl-2.5 pr-2 py-1 font-bold cursor-pointer rounded-md transition text-xs border ${
+                      categoriesOpen && activeMegaDept === "more"
+                        ? "text-[#FF6A00] bg-orange-50/70 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800/50"
+                        : "text-slate-700 dark:text-slate-300 hover:text-[#FF6A00] dark:hover:text-orange-400 border-transparent bg-transparent hover:bg-slate-100/60 dark:hover:bg-slate-900/50"
                     }`}
-                  />
-                </button>
+                  >
+                    <MoreHorizontal
+                      size={13}
+                      className={`stroke-[2.2] transition-colors duration-150 ${
+                        categoriesOpen && activeMegaDept === "more"
+                          ? "text-[#FF6A00]"
+                          : "text-slate-500 dark:text-slate-400 group-hover:text-[#FF6A00]"
+                      }`}
+                    />
+                    <span>More</span>
+                    <ChevronDown
+                      size={11}
+                      className={`transition-transform duration-200 ${
+                        categoriesOpen && activeMegaDept === "more" ? "rotate-180 text-[#FF6A00]" : "text-slate-400"
+                      }`}
+                    />
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* ═══════════ CATEGORY MULTI-COLUMN MEGA MENU (SHARP CORNERS, DIRECTLY UNDER SEARCH BAR, NO BG BLUR) ═══════════ */}
           <AnimatePresence>

@@ -231,7 +231,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
         } catch (e) { }
         navigate(`/product/${product._id}`);
       }}
-      className="group relative flex flex-col bg-white dark:bg-slate-900 rounded-none border border-slate-200/90 dark:border-slate-800 overflow-hidden shadow-2xs hover:shadow-md transition-all duration-300 cursor-pointer text-left w-full h-full animate-fadeIn"
+      className="group relative flex flex-col bg-white dark:bg-slate-900 rounded-none overflow-hidden shadow-2xs hover:shadow-md transition-all duration-300 cursor-pointer text-left w-full h-full animate-fadeIn"
     >
       
       {/* Category Promo discount header row (Matches top of mockup card) */}
@@ -242,7 +242,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
       </div>
 
       {/* Image Slider container with compact peek previews on sides */}
-      <div className="relative w-full h-[240px] bg-white dark:bg-slate-900 flex items-center justify-center gap-1.5 px-1 select-none overflow-hidden group/slider border-b border-slate-100/50 dark:border-slate-800/50">
+      <div className="relative w-full h-[240px] bg-white dark:bg-slate-900 flex items-center justify-center gap-1.5 px-1 select-none overflow-hidden group/slider">
 
         {!hasImage || imgError ? (
           <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-955 text-slate-400 p-4 rounded-none">
@@ -254,7 +254,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
             {/* Left Peek Image Preview with chevron arrow */}
             <div 
               onClick={(e) => { e.stopPropagation(); setImgIdx(prevIdx); }}
-              className="w-[10%] h-[190px] opacity-40 hover:opacity-75 transition-all duration-300 flex items-center justify-center shrink-0 border border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-none p-0.5 overflow-hidden relative cursor-pointer"
+              className="w-[10%] h-[190px] opacity-40 hover:opacity-75 transition-all duration-300 flex items-center justify-center shrink-0 bg-slate-100/60 dark:bg-slate-800/60 rounded-none p-0.5 overflow-hidden relative cursor-pointer"
             >
               <img src={getSrc(prevIdx)} width="400" height="400" className="max-h-full max-w-full object-contain" alt={product.name || "Product"} loading="lazy" decoding="async" />
               <div className="absolute inset-0 bg-black/5 flex items-center justify-end pr-0.5 text-slate-700 dark:text-white">
@@ -263,7 +263,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
             </div>
 
             {/* Active Center Image Panel */}
-            <div className="w-[76%] h-[218px] z-10 flex items-center justify-center shrink-0 border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-none p-1.5 shadow-xs relative">
+            <div className="w-[76%] h-[218px] z-10 flex items-center justify-center shrink-0 bg-slate-50/70 dark:bg-slate-800/40 rounded-none p-1.5 relative">
               <img
                 src={getSrc(imgIdx)}
                 width="400"
@@ -288,7 +288,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
                 type="button"
                 onClick={toggleFavorite}
                 aria-label={isFavorite ? "Remove from wishlist" : "Add to wishlist"}
-                className="absolute top-2 right-2 h-7 w-7 bg-white/95 dark:bg-slate-900/95 rounded-full flex items-center justify-center shadow-xs cursor-pointer transition-all duration-200 active:scale-90 z-30 border-none"
+                className="absolute top-2 right-2 h-7 w-7 bg-white/95 dark:bg-slate-900/95 rounded-none flex items-center justify-center shadow-xs cursor-pointer transition-all duration-200 active:scale-90 z-30 border-none"
               >
                 <Heart
                   size={12}
@@ -308,7 +308,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
                   }
                 }}
                 aria-label={isComparing ? "Remove from product comparison" : "Compare product"}
-                className={`absolute top-10 right-2 h-7 w-7 backdrop-blur-md rounded-full flex items-center justify-center shadow-xs z-30 cursor-pointer transition-all duration-200 active:scale-90 ${isComparing ? "bg-indigo-600 border-none text-white" : "bg-white/95 dark:bg-slate-900/95 border-none text-slate-500 dark:text-slate-400 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/20" }`}
+                className={`absolute top-10 right-2 h-7 w-7 backdrop-blur-md rounded-none flex items-center justify-center shadow-xs z-30 cursor-pointer transition-all duration-200 active:scale-90 ${isComparing ? "bg-indigo-600 border-none text-white" : "bg-white/95 dark:bg-slate-900/95 border-none text-slate-500 dark:text-slate-400 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/20" }`}
                 title="Compare product"
               >
                 <BarChart2 size={12} className={isComparing ? "stroke-[2.5px]" : ""} />
@@ -319,7 +319,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
                 {images.map((_, i) => (
                   <span 
                     key={i} 
-                    className={`w-1 h-1 rounded-full transition-all duration-300 ${i === imgIdx ? "bg-indigo-600 w-2.5" : "bg-slate-200"}`} 
+                    className={`w-1 h-1 rounded-none transition-all duration-300 ${i === imgIdx ? "bg-indigo-600 w-2.5" : "bg-slate-200"}`} 
                   />
                 ))}
               </div>
@@ -328,7 +328,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
             {/* Right Peek Image Preview with chevron arrow */}
             <div 
               onClick={(e) => { e.stopPropagation(); setImgIdx(nextIdx); }}
-              className="w-[10%] h-[190px] opacity-40 hover:opacity-75 transition-all duration-300 flex items-center justify-center shrink-0 border border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-none p-0.5 overflow-hidden relative cursor-pointer"
+              className="w-[10%] h-[190px] opacity-40 hover:opacity-75 transition-all duration-300 flex items-center justify-center shrink-0 bg-slate-100/60 dark:bg-slate-800/60 rounded-none p-0.5 overflow-hidden relative cursor-pointer"
             >
               <img src={getSrc(nextIdx)} width="400" height="400" className="max-h-full max-w-full object-contain" alt={product.name || "Product"} loading="lazy" decoding="async" />
               <div className="absolute inset-0 bg-black/5 flex items-center justify-start pl-0.5 text-slate-700 dark:text-white">
@@ -345,7 +345,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
               type="button"
               onClick={toggleFavorite}
               aria-label={isFavorite ? "Remove from wishlist" : "Add to wishlist"}
-              className="absolute top-3 right-3 h-7 w-7 bg-white/95 dark:bg-slate-900/95 rounded-full flex items-center justify-center shadow-xs cursor-pointer transition-all duration-200 active:scale-90 z-30 border-none"
+              className="absolute top-3 right-3 h-7 w-7 bg-white/95 dark:bg-slate-900/95 rounded-none flex items-center justify-center shadow-xs cursor-pointer transition-all duration-200 active:scale-90 z-30 border-none"
             >
               <Heart
                 size={12}
@@ -365,7 +365,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
                 }
               }}
               aria-label={isComparing ? "Remove from product comparison" : "Compare product"}
-              className={`absolute top-11 right-3 h-7 w-7 backdrop-blur-md rounded-full flex items-center justify-center shadow-xs z-30 cursor-pointer transition-all duration-200 active:scale-90 ${isComparing ? "bg-indigo-600 border-none text-white" : "bg-white/95 dark:bg-slate-900/95 border-none text-slate-500 dark:text-slate-400 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/20" }`}
+              className={`absolute top-11 right-3 h-7 w-7 backdrop-blur-md rounded-none flex items-center justify-center shadow-xs z-30 cursor-pointer transition-all duration-200 active:scale-90 ${isComparing ? "bg-indigo-600 border-none text-white" : "bg-white/95 dark:bg-slate-900/95 border-none text-slate-500 dark:text-slate-400 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/20" }`}
               title="Compare product"
             >
               <BarChart2 size={12} className={isComparing ? "stroke-[2.5px]" : ""} />
@@ -431,7 +431,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
         </div>
 
         {/* Action button triggers */}
-        <div className="flex items-center gap-2 mt-2.5 pt-2.5 border-t border-slate-100 dark:border-slate-800/80">
+        <div className="flex items-center gap-2 mt-2.5 pt-2.5">
           <button
             type="button"
             disabled={isOOS || isAdding}

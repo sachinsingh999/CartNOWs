@@ -15,14 +15,14 @@ import { toast } from "react-toastify";
 import Loader from "../components/Loader";
 import { ProductDetailSkeleton } from "../components/SkeletonLoader";
 import { useLanguage } from "../context/LanguageContext";
-import { 
-  Sparkles, 
-  ArrowLeft, 
-  Star, 
-  Truck, 
-  RotateCcw, 
-  ShieldCheck, 
-  ShoppingCart, 
+import {
+  Sparkles,
+  ArrowLeft,
+  Star,
+  Truck,
+  RotateCcw,
+  ShieldCheck,
+  ShoppingCart,
   ShoppingBag,
   Zap,
   Plus,
@@ -81,6 +81,19 @@ const ProductDetail = () => {
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [activeTab, setActiveTab] = useState("description");
   const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
+  const [openSections, setOpenSections] = useState({
+    description: true,
+    care: true,
+    shipping: true,
+    reviews: true
+  });
+
+  const toggleSection = (key) => {
+    setOpenSections((prev) => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  };
   const [isZoomed, setIsZoomed] = useState(false);
   const [showAssistant, setShowAssistant] = useState(false);
   const [chatMessages, setChatMessages] = useState([]);
@@ -90,9 +103,9 @@ const ProductDetail = () => {
   const isComparing = isInCompare(id);
 
   // Redesign state additions
-  const [mediaMode, setMediaMode] = useState("image"); 
-  const [openAccordion, setOpenAccordion] = useState("overview"); 
-  const [bundleChecked, setBundleChecked] = useState([true, true]); 
+  const [mediaMode, setMediaMode] = useState("image");
+  const [openAccordion, setOpenAccordion] = useState("overview");
+  const [bundleChecked, setBundleChecked] = useState([true, true]);
   const [showStickyBar, setShowStickyBar] = useState(false);
   const [size, setSize] = useState("");
   const relatedSliderRef = React.useRef(null);
@@ -327,9 +340,9 @@ const ProductDetail = () => {
     if (typeof attrs === "string") {
       try {
         attrs = JSON.parse(attrs);
-      } catch (e) {}
+      } catch (e) { }
     }
-    
+
     if (Array.isArray(attrs)) {
       const match = attrs.find(attr => {
         const name = (attr.name || attr.key || "").trim().toLowerCase();
@@ -346,14 +359,14 @@ const ProductDetail = () => {
   const isOptionAvailable = (attrName, optionValue) => {
     if (!product) return true;
     if (!product.variants || product.variants.length === 0) return (Number(product.stock) || 0) > 0;
-    
+
     const hasExplicitVariantStock = product.variants.some(v => Number(v.stock) > 0);
     const hasProductStock = (Number(product.stock) || 0) > 0;
 
     const testSelection = { ...selectedAttributes, [attrName]: optionValue };
     return product.variants.some(variant => {
       if (variant.availability === false) return false;
-      
+
       const match = Object.entries(testSelection).every(([key, val]) => {
         if (!val || key === attrName) return true;
         const varVal = getVariantAttributeValue(variant, key);
@@ -410,7 +423,7 @@ const ProductDetail = () => {
     }
     return imgs;
   }, [currentVariant, product]);
-  
+
   const [brokenImages, setBrokenImages] = useState(new Set());
 
   const markImageBroken = useCallback((imgUrl) => {
@@ -425,8 +438,8 @@ const ProductDetail = () => {
 
   const displayImages = displayImagesRaw.filter((img) => !brokenImages.has(img));
 
-  const isAvailable = currentVariant 
-    ? (currentVariant.availability !== false && displayStock > 0) 
+  const isAvailable = currentVariant
+    ? (currentVariant.availability !== false && displayStock > 0)
     : (product ? (Number(product.stock || 0) > 0) : false);
   const isPurchaseDisabled = !isAvailable || (hasDynamicAttrs && !currentVariant);
 
@@ -441,6 +454,7 @@ const ProductDetail = () => {
   // High-fidelity lightbox and interactive states
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxImgIdx, setLightboxImgIdx] = useState(0);
+  const [showMediaGalleryModal, setShowMediaGalleryModal] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [showSizeGuide, setShowSizeGuide] = useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
@@ -518,9 +532,19 @@ const ProductDetail = () => {
 
   const handleMouseMove = (e) => {
     const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
-    const x = ((e.clientX - left) / width) * 100;
-    const y = ((e.clientY - top) / height) * 100;
+    const x = Math.max(0, Math.min(100, ((e.clientX - left) / width) * 100));
+    const y = Math.max(0, Math.min(100, ((e.clientY - top) / height) * 100));
     setZoomPos({ x, y });
+  };
+
+  const handleTouchMove = (e) => {
+    if (e.touches && e.touches[0]) {
+      const touch = e.touches[0];
+      const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+      const x = Math.max(0, Math.min(100, ((touch.clientX - left) / width) * 100));
+      const y = Math.max(0, Math.min(100, ((touch.clientY - top) / height) * 100));
+      setZoomPos({ x, y });
+    }
   };
 
   const isFashionItem = (p) => {
@@ -697,7 +721,7 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
       try {
         const res = await fetch(`${backendUrl}/api/product/single/${id}`);
         const data = await res.json();
-        
+
         if (data.success && data.product) {
           const parsedProd = parseProductJSONFields(data.product);
           setProduct(parsedProd);
@@ -712,7 +736,7 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
                 item._id !== parsedProd._id &&
                 item.category?.toLowerCase() === parsedProd.category?.toLowerCase()
             );
-            
+
             // Fallback: If not enough related products in same category, fill with others
             if (related.length < 5) {
               const others = listRes.data.products.filter(
@@ -748,15 +772,15 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
   if (product === false) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center transition-colors duration-300">
-        <div className="text-center p-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-sm max-w-sm">
-          <div className="h-12 w-12 rounded-2xl bg-rose-50 dark:bg-rose-950/30 text-rose-500 dark:text-rose-400 flex items-center justify-center mx-auto mb-4">
+        <div className="text-center p-8 bg-white dark:bg-slate-900 rounded-none shadow-sm max-w-sm">
+          <div className="h-12 w-12 rounded-none bg-rose-50 dark:bg-rose-950/30 text-rose-500 dark:text-rose-400 flex items-center justify-center mx-auto mb-4">
             <X size={24} />
           </div>
           <h3 className="text-lg font-black text-slate-900 dark:text-slate-100">Product Not Found</h3>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5">The item you are looking for might have been removed or is temporarily unavailable.</p>
-          <button 
+          <button
             onClick={() => navigate("/product")}
-            className="mt-5 w-full py-2.5 bg-slate-950 dark:bg-indigo-600 text-slate-100 dark:text-white rounded-xl text-xs font-bold hover:bg-slate-800 dark:hover:bg-indigo-700 active:scale-95 transition cursor-pointer"
+            className="mt-5 w-full py-2.5 bg-slate-950 dark:bg-indigo-600 text-slate-100 dark:text-white rounded-none text-xs font-bold hover:bg-slate-800 dark:hover:bg-indigo-700 active:scale-95 transition cursor-pointer"
           >
             Browse Catalog
           </button>
@@ -776,7 +800,7 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
   const getHighlights = () => {
     const name = (product.name || "").toLowerCase();
     const cat = (product.category || "").toLowerCase();
-    
+
     if (name.includes("roller") || name.includes("foam")) {
       return [
         { title: "Premium Quality", desc: "Top graded material" },
@@ -828,12 +852,12 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
       : (size || "standard");
 
     navigate("/placeorder", {
-      state: { 
-        product, 
-        qty, 
-        size: cartSize, 
+      state: {
+        product,
+        qty,
+        size: cartSize,
         selectedAttributes: hasDynamicAttrs ? selectedAttributes : undefined,
-        total: displayPrice * qty 
+        total: displayPrice * qty
       },
     });
   };
@@ -861,7 +885,7 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
     let guestCart = {};
     try {
       guestCart = JSON.parse(localStorage.getItem("cart") || "{}");
-    } catch (err) {}
+    } catch (err) { }
 
     // Only check guest localStorage if user is not logged in
     if (!token) {
@@ -895,9 +919,9 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
       try {
         const res = await axios.post(
           `${backendUrl}/api/cart/add`,
-          { 
-            itemId: product._id, 
-            size: cartSize, 
+          {
+            itemId: product._id,
+            size: cartSize,
             qty: qty || 1,
             selectedAttributes: hasDynamicAttrs ? selectedAttributes : undefined
           },
@@ -973,33 +997,209 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
     setIsLightboxOpen(true);
   };
 
+  const renderNavTabs = () => (
+    <div className="w-full text-left mt-5 sm:mt-6 pt-3 px-2 sm:px-0 space-y-3.5">
+      {/* 1. Description & Specifications */}
+      <div className="bg-slate-100/70 dark:bg-slate-900/60 rounded-none overflow-hidden">
+        <button
+          type="button"
+          onClick={() => toggleSection("description")}
+          className="w-full flex items-center justify-between px-6 py-4.5 bg-slate-200/50 dark:bg-slate-950/40 text-left font-black text-xs uppercase tracking-wider text-slate-900 dark:text-white cursor-pointer select-none hover:bg-slate-200/80 dark:hover:bg-slate-800/60 transition-colors"
+        >
+          <span className="flex items-center gap-2">
+            <FileText size={16} className="text-indigo-600 dark:text-indigo-400" />
+            <span>Description & Specifications</span>
+          </span>
+          <ChevronDown
+            size={16}
+            className={`text-slate-500 transition-transform duration-200 ${openSections.description ? "rotate-180" : ""}`}
+          />
+        </button>
+        {openSections.description && (
+          <div className="p-6 sm:p-7 space-y-5 animate-fade-in text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+            <p>{product.description}</p>
+            <SpecificationTable product={product} />
+          </div>
+        )}
+      </div>
+
+      {/* 2. Care Instructions */}
+      <div className="bg-slate-100/70 dark:bg-slate-900/60 rounded-none overflow-hidden">
+        <button
+          type="button"
+          onClick={() => toggleSection("care")}
+          className="w-full flex items-center justify-between px-6 py-4.5 bg-slate-200/50 dark:bg-slate-950/40 text-left font-black text-xs uppercase tracking-wider text-slate-900 dark:text-white cursor-pointer select-none hover:bg-slate-200/80 dark:hover:bg-slate-800/60 transition-colors"
+        >
+          <span className="flex items-center gap-2">
+            <Shirt size={16} className="text-indigo-600 dark:text-indigo-400" />
+            <span>Care Instructions</span>
+          </span>
+          <ChevronDown
+            size={16}
+            className={`text-slate-500 transition-transform duration-200 ${openSections.care ? "rotate-180" : ""}`}
+          />
+        </button>
+        {openSections.care && (
+          <div className="p-6 sm:p-7 space-y-4 animate-fade-in text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+            <h4 className="text-xs font-black uppercase text-slate-800 dark:text-slate-200 tracking-wider">
+              Garment Care Guide
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2 text-xs">
+              <div className="flex items-center gap-2.5 p-2.5 bg-white/70 dark:bg-slate-950/30 rounded-none">
+                <RotateCcw size={15} className="text-slate-400 shrink-0" />
+                <span>Machine Wash Cold (Gentle cycle)</span>
+              </div>
+              <div className="flex items-center gap-2.5 p-2.5 bg-white/70 dark:bg-slate-950/30 rounded-none">
+                <Droplets size={15} className="text-slate-400 shrink-0" />
+                <span>Do Not Bleach</span>
+              </div>
+              <div className="flex items-center gap-2.5 p-2.5 bg-white/70 dark:bg-slate-950/30 rounded-none">
+                <Flame size={15} className="text-slate-400 shrink-0" />
+                <span>Iron Low Temperature (Max 110°C)</span>
+              </div>
+              <div className="flex items-center gap-2.5 p-2.5 bg-white/70 dark:bg-slate-950/30 rounded-none">
+                <Sun size={15} className="text-slate-400 shrink-0" />
+                <span>Dry in shade / Hang to dry</span>
+              </div>
+              <div className="flex items-center gap-2.5 p-2.5 bg-white/70 dark:bg-slate-950/30 rounded-none col-span-1 sm:col-span-2">
+                <Shirt size={15} className="text-slate-400 shrink-0" />
+                <span>Wash inside out with similar colors to preserve texture</span>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 3. Shipping & Returns */}
+      <div className="bg-slate-100/70 dark:bg-slate-900/60 rounded-none overflow-hidden">
+        <button
+          type="button"
+          onClick={() => toggleSection("shipping")}
+          className="w-full flex items-center justify-between px-6 py-4.5 bg-slate-200/50 dark:bg-slate-950/40 text-left font-black text-xs uppercase tracking-wider text-slate-900 dark:text-white cursor-pointer select-none hover:bg-slate-200/80 dark:hover:bg-slate-800/60 transition-colors"
+        >
+          <span className="flex items-center gap-2">
+            <Truck size={16} className="text-indigo-600 dark:text-indigo-400" />
+            <span>Shipping & Returns</span>
+          </span>
+          <ChevronDown
+            size={16}
+            className={`text-slate-500 transition-transform duration-200 ${openSections.shipping ? "rotate-180" : ""}`}
+          />
+        </button>
+        {openSections.shipping && (
+          <div className="p-6 sm:p-7 space-y-3.5 animate-fade-in text-xs sm:text-sm text-slate-700 dark:text-slate-400 leading-relaxed text-left">
+            <p>At CartNOW, our logistic network operates standard express delivery across domestic zipcodes. Packages leave our regional hub within 24 hours of placement.</p>
+            <p className="font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider text-xs">Expected Timelines:</p>
+            <ul className="list-disc list-inside space-y-1.5 pl-2 text-xs">
+              <li>Metros: 2-3 business days.</li>
+              <li>Regional hubs: 4-5 business days.</li>
+              <li>International: 7-10 business days.</li>
+            </ul>
+          </div>
+        )}
+      </div>
+
+      {/* 4. Customer Feedback / Reviews */}
+      <div className="bg-slate-100/70 dark:bg-slate-900/60 rounded-none overflow-hidden">
+        <button
+          type="button"
+          onClick={() => toggleSection("reviews")}
+          className="w-full flex items-center justify-between px-6 py-4.5 bg-slate-200/50 dark:bg-slate-950/40 text-left font-black text-xs uppercase tracking-wider text-slate-900 dark:text-white cursor-pointer select-none hover:bg-slate-200/80 dark:hover:bg-slate-800/60 transition-colors"
+        >
+          <span className="flex items-center gap-2">
+            <MessageSquare size={16} className="text-indigo-600 dark:text-indigo-400" />
+            <span>Customer Feedback ({reviewCount})</span>
+          </span>
+          <ChevronDown
+            size={16}
+            className={`text-slate-500 transition-transform duration-200 ${openSections.reviews ? "rotate-180" : ""}`}
+          />
+        </button>
+        {openSections.reviews && (
+          <div className="p-6 sm:p-7 space-y-5 animate-fade-in text-left w-full">
+            {/* Reviews Header: Title, Sort, and Write Review Button */}
+            <div className="flex justify-between items-center gap-3 flex-wrap pb-2">
+              <div>
+                <h4 className="text-xs font-black uppercase text-slate-900 dark:text-white tracking-wider">
+                  Verified Reviews
+                </h4>
+                <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+                  Showing {reviewCount} verified buyer {reviewCount === 1 ? "review" : "reviews"}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {/* Sorting select */}
+                <select
+                  value={reviewsSortBy}
+                  onChange={(e) => setReviewsSortBy(e.target.value)}
+                  className="h-8 px-2 bg-white dark:bg-slate-950 rounded-none text-xs font-semibold text-slate-700 dark:text-slate-300 outline-none cursor-pointer"
+                >
+                  <option>Most Recent</option>
+                  <option>Most Helpful</option>
+                  <option>Highest Rated</option>
+                  <option>Lowest Rated</option>
+                </select>
+
+                <button
+                  onClick={() => setShowWriteReview(true)}
+                  className="h-8 px-3 bg-slate-950 dark:bg-indigo-600 hover:bg-slate-800 dark:hover:bg-indigo-500 text-white text-xs font-bold rounded-none transition active:scale-95 cursor-pointer flex items-center gap-1.5 shadow-xs"
+                >
+                  <MessageSquare size={13} />
+                  <span>Write Review</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Feed Filters */}
+            <div className="flex flex-wrap items-center gap-1.5">
+              {["All Reviews", "5 Star", "4 Star", "Verified Purchase"].map(chip => {
+                const isActive = reviewsFilter === chip;
+                return (
+                  <button
+                    key={chip}
+                    onClick={() => setReviewsFilter(chip)}
+                    className={`px-2.5 py-0.5 rounded-none text-xs font-bold transition-all duration-150 cursor-pointer ${isActive
+                        ? "bg-slate-900 dark:bg-indigo-600 text-white shadow-xs"
+                        : "bg-white/80 dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-white"
+                      }`}
+                  >
+                    {chip}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Customers Reviews List */}
+            <CostomersReviews
+              reviews={product.reviews || []}
+              filter={reviewsFilter}
+              sortBy={reviewsSortBy}
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   return (
-    <div className="relative min-h-screen bg-slate-50 dark:bg-slate-950 font-sans text-slate-800 dark:text-slate-200 transition-colors duration-300 overflow-x-hidden pb-32">
+    <div className="relative min-h-screen bg-slate-50 dark:bg-slate-950 font-sans text-slate-800 dark:text-slate-200 transition-colors duration-300 overflow-x-hidden pb-16">
       {/* Background radial overlays */}
       <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-indigo-500/5 dark:bg-indigo-500/5 rounded-full blur-3xl pointer-events-none -z-10" />
       <div className="absolute top-1/2 left-1/4 w-[650px] h-[650px] bg-violet-500/5 dark:bg-violet-500/5 rounded-full blur-3xl pointer-events-none -z-10" />
 
-      <div className="mx-auto max-w-[1440px] px-4 sm:px-8 lg:px-12 pt-6">
-        {/* Premium Breadcrumb bar */}
-        <nav className="flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-6">
-          <span className="hover:text-slate-600 dark:hover:text-slate-300 cursor-pointer" onClick={() => navigate("/")}>Home</span>
-          <span>&gt;</span>
-          <span className="hover:text-slate-600 dark:hover:text-slate-300 cursor-pointer" onClick={() => navigate(`/product?category=${product.category}`)}>{product.category}</span>
-          <span>&gt;</span>
-          <span className="hover:text-slate-600 dark:hover:text-slate-300 cursor-pointer" onClick={() => navigate(`/product?category=${product.category}&subCategory=${product.subCategory}`)}>{product.subCategory || "Dresses"}</span>
-          <span>&gt;</span>
-          <span className="text-slate-600 dark:text-slate-300 truncate max-w-[150px] sm:max-w-none">{product.name}</span>
-        </nav>
+      <div className="w-full max-w-full px-2 sm:px-4 lg:px-6 pt-3.5 sm:pt-4 lg:pt-5">
 
         {/* 3-Column Split Showcase Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1.1fr_0.8fr] gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1.15fr)_minmax(0,0.85fr)] gap-3 lg:gap-4 items-start w-full max-w-full">
           {/* COLUMN 1: E-commerce Image Showcase */}
-          <div className="flex flex-col gap-6 lg:sticky lg:top-24 lg:self-start min-w-0 max-w-full">
-            <div className="flex gap-2.5 items-stretch">
-              
+          <div className="flex flex-col gap-2.5 min-w-0 max-w-full">
+            <div className="flex gap-2 items-stretch">
+
               {/* Vertical Thumbnail Deck (Desktop) */}
-              <div className="hidden sm:flex flex-col gap-2 w-20 shrink-0 justify-between">
-                {displayImages?.map((img, i) => {
+              <div className="hidden sm:flex flex-col gap-1.5 w-18 shrink-0">
+                {/* Show only first 3 thumbnails */}
+                {displayImages?.slice(0, 3).map((img, i) => {
                   const isActive = mainImg === img && mediaMode === "image";
                   return (
                     <button
@@ -1008,7 +1208,7 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
                         setMainImg(img);
                         setMediaMode("image");
                       }}
-                      className={`relative w-full aspect-[3/4] overflow-hidden border transition-all cursor-pointer ${ isActive ? "border-slate-950 dark:border-white border-2" : "border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-600" }`}
+                      className={`relative w-full aspect-[3/4] overflow-hidden transition-all cursor-pointer ${isActive ? "ring-2 ring-slate-950 dark:ring-white" : "opacity-75 hover:opacity-100"}`}
                     >
                       <img
                         src={getOptimizedImageUrl(img.startsWith("http") ? img : `${backendUrl}/${img}`, { width: 200, quality: 75 })}
@@ -1021,37 +1221,75 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
                     </button>
                   );
                 })}
-                
-                {/* Mock Video Thumbnail */}
+
+                {/* 360° View Button on left thumbnail deck */}
                 <button
-                  onClick={() => setMediaMode("video")}
-                  className={`relative w-full aspect-[3/4] overflow-hidden border transition-all flex flex-col items-center justify-center cursor-pointer ${ mediaMode === "video" ? "border-slate-950 dark:border-white border-2" : "border-slate-200 dark:border-slate-800 hover:border-slate-400" }`}
+                  type="button"
+                  onClick={() => setMediaMode(mediaMode === "360" ? "image" : "360")}
+                  className={`relative w-full aspect-[3/4] overflow-hidden transition-all flex flex-col items-center justify-center cursor-pointer group ${mediaMode === "360"
+                      ? "bg-indigo-100/70 dark:bg-indigo-950/70 ring-2 ring-indigo-500"
+                      : "bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800"
+                    }`}
+                  title="360° Interactive View"
                 >
-                  <Video size={16} className="text-slate-500 dark:text-indigo-400" />
-                  <span className="text-[8px] font-bold uppercase mt-1">Video</span>
+                  <div className="p-1.5 rounded-none bg-slate-200 dark:bg-slate-800 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-950/60 group-hover:scale-110 transition-transform">
+                    <Rotate3d size={16} className={`transition-colors ${mediaMode === "360" ? "text-indigo-600 dark:text-indigo-400 animate-spin" : "text-slate-600 dark:text-slate-300"}`} />
+                  </div>
+                  <span className="text-[8px] font-black uppercase tracking-wider mt-1 text-slate-700 dark:text-slate-300">
+                    360° View
+                  </span>
                 </button>
 
-                {/* Mock 360 Thumbnail */}
+                {/* More Media Button (shows other images, video, etc.) */}
                 <button
-                  onClick={() => setMediaMode("360")}
-                  className={`relative w-full aspect-[3/4] overflow-hidden border transition-all flex flex-col items-center justify-center cursor-pointer ${ mediaMode === "360" ? "border-slate-950 dark:border-white border-2" : "border-slate-200 dark:border-slate-800 hover:border-slate-400" }`}
+                  type="button"
+                  onClick={() => setShowMediaGalleryModal(true)}
+                  className={`relative w-full aspect-[3/4] overflow-hidden transition-all cursor-pointer group flex flex-col items-center justify-center ${(displayImages.indexOf(mainImg) >= 3 && mediaMode === "image") || mediaMode === "video"
+                      ? "ring-2 ring-slate-950 dark:ring-white"
+                      : "bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800"
+                    }`}
+                  title="View all photos and media"
                 >
-                  <Rotate3d size={16} className="text-slate-500 dark:text-indigo-400" />
-                  <span className="text-[8px] font-bold uppercase mt-1">360° View</span>
+                  {displayImages[3] ? (
+                    <img
+                      src={getOptimizedImageUrl(displayImages[3].startsWith("http") ? displayImages[3] : `${backendUrl}/${displayImages[3]}`, { width: 200, quality: 75 })}
+                      className="absolute inset-0 h-full w-full object-cover filter brightness-[0.45] group-hover:scale-105 transition-transform"
+                      alt="more media preview"
+                    />
+                  ) : null}
+                  <div className="relative z-10 flex flex-col items-center justify-center text-white text-center p-1">
+                    <span className="text-xs font-black drop-shadow-md">
+                      +{Math.max(1, displayImages.length - 3)}
+                    </span>
+                    <span className="text-[8px] font-black uppercase tracking-wider drop-shadow-md mt-0.5">
+                      More
+                    </span>
+                  </div>
                 </button>
               </div>
 
               {/* Main Media Showcase Window */}
               <div className="flex-1 relative aspect-[3/4] overflow-hidden rounded-none">
-                
+
                 {/* Float overlays */}
                 <div className="absolute top-4 left-4 z-25 flex gap-2">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200 dark:border-slate-800 px-3 py-1 text-[9px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 shadow-xs">
+                  <span className="inline-flex items-center gap-1.5 rounded-none bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-3 py-1 text-[9px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300">
                     <Sparkles size={10} className="text-indigo-600 dark:text-indigo-400 animate-pulse" />
                     <span>{mainImg === product?.bgRemovedImage ? "Studio Cutout" : "Premium Model"}</span>
                   </span>
+                  <button
+                    onClick={() => setMediaMode(mediaMode === "360" ? "image" : "360")}
+                    className={`inline-flex items-center gap-1.5 rounded-none backdrop-blur-md px-3 py-1 text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer ${mediaMode === "360"
+                        ? "bg-indigo-600 text-white"
+                        : "bg-white/95 dark:bg-slate-900/95 text-slate-700 dark:text-slate-300 hover:text-indigo-500"
+                      }`}
+                    title="Toggle 360° Interactive View"
+                  >
+                    <Rotate3d size={11} className={mediaMode === "360" ? "animate-spin text-white" : "text-indigo-600 dark:text-indigo-400"} />
+                    <span>360° View</span>
+                  </button>
                   {displayStock <= 5 && displayStock > 0 && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/30 px-3 py-1 text-[9px] font-black uppercase tracking-wider text-rose-600 dark:text-rose-400 shadow-xs animate-pulse">
+                    <span className="inline-flex items-center gap-1 rounded-none bg-rose-100/90 dark:bg-rose-950/40 px-3 py-1 text-[9px] font-black uppercase tracking-wider text-rose-600 dark:text-rose-400 animate-pulse">
                       Low Stock
                     </span>
                   )}
@@ -1059,18 +1297,18 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
 
                 {/* Action buttons on image */}
                 <div className="absolute top-4 right-4 z-25 flex flex-col gap-2">
-                  <button 
+                  <button
                     onClick={toggleFavorite}
-                    className="h-10 w-10 flex items-center justify-center rounded-full bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 shadow-xs text-slate-500 dark:text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 hover:scale-105 active:scale-95 transition cursor-pointer"
+                    className="h-10 w-10 flex items-center justify-center rounded-none bg-white/95 dark:bg-slate-900/95 text-slate-500 dark:text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 hover:scale-105 active:scale-95 transition cursor-pointer"
                   >
                     <Heart size={16} className={isFavorite ? "fill-rose-500 stroke-rose-500 scale-105" : ""} />
                   </button>
-                  <button 
+                  <button
                     onClick={() => {
                       navigator.clipboard.writeText(window.location.href);
                       toast.info("Product link copied to clipboard!");
                     }}
-                    className="h-10 w-10 flex items-center justify-center rounded-full bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 shadow-xs text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:scale-105 active:scale-95 transition cursor-pointer"
+                    className="h-10 w-10 flex items-center justify-center rounded-none bg-white/95 dark:bg-slate-900/95 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:scale-105 active:scale-95 transition cursor-pointer"
                   >
                     <Share2 size={16} />
                   </button>
@@ -1078,29 +1316,82 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
 
                 {/* Image Zoom Mode */}
                 {mediaMode === "image" && (
-                  <div 
+                  <div
                     onMouseMove={handleMouseMove}
                     onMouseEnter={() => setIsZoomed(true)}
-                    onMouseLeave={() => setIsZoomed(false)}
+                    onMouseLeave={() => {
+                      setIsZoomed(false);
+                      setZoomPos({ x: 50, y: 50 });
+                    }}
+                    onPointerEnter={(e) => {
+                      if (e.pointerType !== "touch") {
+                        setIsZoomed(true);
+                        handleMouseMove(e);
+                      }
+                    }}
+                    onPointerMove={(e) => {
+                      if (e.pointerType !== "touch" || isZoomed) {
+                        handleMouseMove(e);
+                      }
+                    }}
+                    onPointerLeave={() => {
+                      setIsZoomed(false);
+                      setZoomPos({ x: 50, y: 50 });
+                    }}
+                    onPointerDown={(e) => {
+                      if (e.pointerType === "touch") {
+                        setIsZoomed(true);
+                        handleMouseMove(e);
+                      }
+                    }}
+                    onPointerUp={() => {
+                      setIsZoomed(false);
+                      setZoomPos({ x: 50, y: 50 });
+                    }}
+                    onTouchStart={(e) => {
+                      setIsZoomed(true);
+                      handleTouchMove(e);
+                    }}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={() => {
+                      setIsZoomed(false);
+                      setZoomPos({ x: 50, y: 50 });
+                    }}
+                    onTouchCancel={() => {
+                      setIsZoomed(false);
+                      setZoomPos({ x: 50, y: 50 });
+                    }}
                     onClick={() => triggerLightbox(displayImages.indexOf(mainImg))}
-                    className="relative flex h-full w-full items-center justify-center overflow-hidden bg-transparent cursor-zoom-in rounded-none"
+                    className={`relative flex h-full w-full items-center justify-center overflow-hidden bg-transparent select-none rounded-none ${isZoomed ? "cursor-zoom-out" : "cursor-zoom-in"
+                      }`}
                   >
-                    <motion.img
+                    <img
                       key={activeMainImgSrc}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.3 }}
                       src={activeMainImgSrc}
                       alt={product.name}
                       onError={() => markImageBroken(mainImg)}
-                      className="w-full h-full object-contain pointer-events-none transition-transform duration-150 ease-out"
+                      className="w-full h-full object-contain pointer-events-none transition-transform duration-200 ease-out will-change-transform"
                       style={{
-                        transform: isZoomed ? "scale(1.85)" : "scale(1)",
+                        transform: isZoomed ? "scale(2.2)" : "scale(1)",
                         transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`
                       }}
                     />
-                    <button 
-                      onClick={() => triggerLightbox(displayImages.indexOf(mainImg))}
+
+                    {/* Zoom status badge */}
+                    {isZoomed && (
+                      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-25 px-2.5 py-1 rounded-none bg-slate-950/80 backdrop-blur-md text-white text-[9.5px] font-black uppercase tracking-wider shadow-lg flex items-center gap-1.5 pointer-events-none">
+                        <span>2.2x Zoom</span>
+                        <span className="text-slate-400">• Drag or hover to inspect</span>
+                      </div>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        triggerLightbox(displayImages.indexOf(mainImg));
+                      }}
+                      title="Fullscreen Lightbox"
                       className="absolute bottom-4 right-4 z-25 h-10 w-10 flex items-center justify-center rounded-none bg-slate-950/80 backdrop-blur-md text-slate-100 dark:text-white hover:scale-105 active:scale-95 transition cursor-pointer shadow-md"
                     >
                       <Maximize2 size={15} />
@@ -1112,16 +1403,16 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
                 {mediaMode === "video" && (
                   <div className="relative flex h-full w-full items-center justify-center bg-slate-950 dark:bg-slate-900">
                     <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-xs flex flex-col items-center justify-center text-slate-100 dark:text-white p-6 text-center space-y-4">
-                      <div className="h-16 w-16 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-md border border-white/25">
+                      <div className="h-16 w-16 rounded-none bg-white/10 flex items-center justify-center backdrop-blur-md">
                         <Video size={28} className="text-slate-100 dark:text-white animate-pulse" />
                       </div>
                       <div>
                         <h4 className="text-xs font-black uppercase tracking-wider">Product Showcase Walkthrough</h4>
                         <p className="text-[10px] text-slate-300 max-w-xs mt-1">Check out our visual model walkthrough showing fits, material quality, and real-time usage.</p>
                       </div>
-                      <button 
+                      <button
                         onClick={() => setMediaMode("image")}
-                        className="px-4 py-2 bg-white dark:bg-slate-900 text-slate-950 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-slate-100 transition active:scale-95"
+                        className="px-4 py-2 bg-white dark:bg-slate-900 text-slate-950 text-[10px] font-black uppercase tracking-widest rounded-none hover:bg-slate-100 transition active:scale-95"
                       >
                         Back to Images
                       </button>
@@ -1133,16 +1424,16 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
                 {mediaMode === "360" && (
                   <div className="relative flex h-full w-full items-center justify-center bg-slate-50 dark:bg-slate-900">
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-800 dark:text-slate-100 p-6 text-center space-y-4">
-                      <div className="h-16 w-16 rounded-full bg-slate-200/50 dark:bg-slate-800/80 flex items-center justify-center border border-slate-300 dark:border-slate-700">
+                      <div className="h-16 w-16 rounded-none bg-slate-200/50 dark:bg-slate-800/80 flex items-center justify-center">
                         <Rotate3d size={28} className="text-slate-600 dark:text-indigo-400 animate-[spin_5s_linear_infinite]" />
                       </div>
                       <div>
                         <h4 className="text-xs font-black uppercase tracking-wider">360° Interactive Viewport</h4>
                         <p className="text-[10px] text-slate-500 dark:text-slate-400 max-w-xs mt-1">Rotate this product in 3D to see details from every angle. Use your mouse to drag and rotate.</p>
                       </div>
-                      <button 
+                      <button
                         onClick={() => setMediaMode("image")}
-                        className="px-4 py-2 bg-slate-950 dark:bg-indigo-600 text-slate-100 dark:text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:opacity-90 transition active:scale-95"
+                        className="px-4 py-2 bg-slate-950 dark:bg-indigo-600 text-slate-100 dark:text-white text-[10px] font-black uppercase tracking-widest rounded-none hover:opacity-90 transition active:scale-95"
                       >
                         Exit 3D View
                       </button>
@@ -1152,7 +1443,7 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
 
               </div>
             </div>
-            
+
             {/* Horizontal Swipeable thumbnails (Mobile view) */}
             <div className="sm:hidden flex gap-2 overflow-x-auto pb-1.5 scrollbar-thin">
               {displayImages?.map((img, i) => (
@@ -1162,7 +1453,7 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
                     setMainImg(img);
                     setMediaMode("image");
                   }}
-                  className={`relative aspect-[3/4] w-14 overflow-hidden border shrink-0 ${ mainImg === img && mediaMode === "image" ? "border-slate-950 dark:border-white border-2" : "border-slate-200 dark:border-slate-800" }`}
+                  className={`relative aspect-[3/4] w-14 overflow-hidden shrink-0 ${mainImg === img && mediaMode === "image" ? "ring-2 ring-slate-950 dark:ring-white" : "opacity-80 hover:opacity-100"}`}
                 >
                   <img
                     src={img.startsWith("http") ? img : `${backendUrl}/${img}`}
@@ -1174,216 +1465,50 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
               ))}
               <button
                 onClick={() => setMediaMode("video")}
-                className={`w-14 aspect-[3/4] border shrink-0 flex flex-col items-center justify-center bg-white dark:bg-slate-900 ${ mediaMode === "video" ? "border-slate-950 dark:border-white border-2" : "border-slate-200 dark:border-slate-800" }`}
+                className={`w-14 aspect-[3/4] shrink-0 flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-900 ${mediaMode === "video" ? "ring-2 ring-slate-950 dark:ring-white" : "opacity-80 hover:opacity-100"}`}
               >
                 <Video size={14} className="text-slate-500" />
                 <span className="text-[8px] font-bold mt-1">VIDEO</span>
               </button>
               <button
                 onClick={() => setMediaMode("360")}
-                className={`w-14 aspect-[3/4] border shrink-0 flex flex-col items-center justify-center bg-white dark:bg-slate-900 ${ mediaMode === "360" ? "border-slate-950 dark:border-white border-2" : "border-slate-200 dark:border-slate-800" }`}
+                className={`w-14 aspect-[3/4] shrink-0 flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-900 ${mediaMode === "360" ? "ring-2 ring-slate-950 dark:ring-white" : "opacity-80 hover:opacity-100"}`}
               >
                 <Rotate3d size={14} className="text-slate-500" />
                 <span className="text-[8px] font-bold mt-1">360°</span>
               </button>
             </div>
 
-            {/* Nav Tabs Section (Under Images) */}
-            <div className="w-full text-left mt-6 pt-4 border-t border-slate-200 dark:border-slate-800/80">
-              <div className="border-b border-slate-200 dark:border-slate-800 flex items-center gap-8 overflow-x-auto scrollbar-hide">
-                {[
-                  { id: "description", label: "Description" },
-                  { id: "care", label: "Care Instructions" },
-                  { id: "shipping", label: "Shipping & Returns" },
-                  { id: "reviews", label: `Reviews (${reviewCount})` }
-                ].map((tab) => {
-                  const isActive = activeTab === tab.id || (tab.id === "care" && activeTab === "care_instructions");
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`relative pb-3 text-sm font-semibold transition-all cursor-pointer whitespace-nowrap ${ isActive ? "text-indigo-600 dark:text-indigo-400 font-bold" : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200" }`}
-                    >
-                      {tab.label}
-                      {isActive && (
-                        <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-indigo-600 dark:bg-indigo-400" />
-                      )}
-                    </button>
-                  );
-                })}
+            {/* Trust Badges Card (Bottom of Image) */}
+            <div className="rounded-none p-5 bg-slate-100/70 dark:bg-slate-900/60 grid grid-cols-3 text-center gap-2">
+              <div className="flex flex-col items-center justify-center p-1.5">
+                <Truck size={18} className="text-slate-500 dark:text-indigo-400 mb-1" />
+                <span className="text-[10.5px] font-black text-blue-500 dark:text-blue-400 leading-tight">Free Shipping</span>
+                <span className="text-[9px] text-slate-400 leading-none mt-1">On all orders</span>
               </div>
-
-              <div className="mt-5 min-h-[140px]">
-                {(activeTab === "description" || activeTab === "care_instructions") && (
-                  <div className="space-y-6 text-sm text-slate-600 dark:text-slate-400 leading-relaxed animate-fade-in">
-                    {activeTab === "description" && (
-                      <>
-                        <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{product.description}</p>
-                        <div className="mt-6 mb-8">
-                          <SpecificationTable product={product} />
-                        </div>
-                        <div className="border-t border-slate-200 dark:border-slate-800/80 pt-6 mt-6">
-                          <h4 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-4">Care Instructions</h4>
-                          <div className="grid grid-cols-2 gap-3 text-xs text-slate-500">
-                            <div className="flex items-center gap-2">
-                              <RotateCcw size={14} className="text-slate-400" />
-                              <span>Machine wash cold</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Droplets size={14} className="text-slate-400" />
-                              <span>Do not bleach</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Flame size={14} className="text-slate-400" />
-                              <span>Iron at low temperature</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Sun size={14} className="text-slate-400" />
-                              <span>Dry in shade</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Shirt size={14} className="text-slate-400" />
-                              <span>Wash with similar colors</span>
-                            </div>
-                          </div>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                )}
-
-                {activeTab === "care" && (
-                  <div className="space-y-4 text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed animate-fade-in">
-                    <h4 className="text-xs font-black uppercase text-slate-800 dark:text-slate-200 tracking-wider">Garment Care Guide</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2 text-xs">
-                      <div className="flex items-center gap-2.5 p-2 bg-slate-50 dark:bg-slate-950/20 border border-slate-100 dark:border-slate-800 rounded-xl">
-                        <RotateCcw size={16} className="text-slate-400 shrink-0" />
-                        <span>Machine Wash Cold (Gentle cycle)</span>
-                      </div>
-                      <div className="flex items-center gap-2.5 p-2 bg-slate-50 dark:bg-slate-950/20 border border-slate-100 dark:border-slate-800 rounded-xl">
-                        <Droplets size={16} className="text-slate-400 shrink-0" />
-                        <span>Do Not Bleach</span>
-                      </div>
-                      <div className="flex items-center gap-2.5 p-2 bg-slate-50 dark:bg-slate-950/20 border border-slate-100 dark:border-slate-800 rounded-xl">
-                        <Flame size={16} className="text-slate-400 shrink-0" />
-                        <span>Iron Low Temperature (Max 110°C)</span>
-                      </div>
-                      <div className="flex items-center gap-2.5 p-2 bg-slate-50 dark:bg-slate-950/20 border border-slate-100 dark:border-slate-800 rounded-xl">
-                        <Sun size={16} className="text-slate-400 shrink-0" />
-                        <span>Dry in shade / Hang to dry</span>
-                      </div>
-                      <div className="flex items-center gap-2.5 p-2 bg-slate-50 dark:bg-slate-950/20 border border-slate-100 dark:border-slate-800 rounded-xl col-span-1 sm:col-span-2">
-                        <Shirt size={16} className="text-slate-400 shrink-0" />
-                        <span>Wash inside out with similar colors to preserve texture</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {activeTab === "shipping" && (
-                  <div className="space-y-4 text-xs sm:text-sm text-slate-700 dark:text-slate-400 leading-relaxed animate-fade-in text-left">
-                    <p>At CartNOW, our logistic network operates standard express delivery across domestic zipcodes. Packages leave our regional hub within 24 hours of placement.</p>
-                    <p className="font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider text-xs">Expected Timelines:</p>
-                    <ul className="list-disc list-inside space-y-1 pl-2 text-xs">
-                      <li>Metros: 2-3 business days.</li>
-                      <li>Regional hubs: 4-5 business days.</li>
-                      <li>International: 7-10 business days.</li>
-                    </ul>
-                  </div>
-                )}
-
-                {activeTab === "reviews" && (
-                  <div className="space-y-6 animate-fade-in text-left w-full">
-                    {/* Reviews Header: Title, Sort, and Write Review Button */}
-                    <div className="flex justify-between items-center gap-4 flex-wrap border-b border-slate-100 dark:border-slate-800 pb-3.5">
-                      <div>
-                        <h4 className="text-xs font-black uppercase text-slate-900 dark:text-white tracking-wider">
-                          Customer Feedback
-                        </h4>
-                        <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
-                          Showing {reviewCount} verified buyer {reviewCount === 1 ? "review" : "reviews"}
-                        </p>
-                      </div>
-
-                      <div className="flex items-center gap-2 sm:gap-2.5">
-                        {/* Sorting select */}
-                        <select
-                          value={reviewsSortBy}
-                          onChange={(e) => setReviewsSortBy(e.target.value)}
-                          className="h-8.5 px-2.5 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 rounded-md text-xs font-semibold text-slate-700 dark:text-slate-300 outline-none cursor-pointer hover:border-slate-300 transition-colors"
-                        >
-                          <option>Most Recent</option>
-                          <option>Most Helpful</option>
-                          <option>Highest Rated</option>
-                          <option>Lowest Rated</option>
-                        </select>
-
-                        <button
-                          onClick={() => setShowWriteReview(true)}
-                          className="h-8.5 px-3.5 bg-slate-950 dark:bg-indigo-600 hover:bg-slate-800 dark:hover:bg-indigo-500 text-white text-xs font-bold rounded-md transition active:scale-95 cursor-pointer flex items-center gap-1.5 shadow-xs"
-                        >
-                          <MessageSquare size={13} />
-                          <span>Write Review</span>
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Feed Filters */}
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      {["All Reviews", "5 Star", "4 Star", "Verified Purchase"].map(chip => {
-                        const isActive = reviewsFilter === chip;
-                        return (
-                          <button
-                            key={chip}
-                            onClick={() => setReviewsFilter(chip)}
-                            className={`px-3 py-1 rounded-md text-xs font-bold transition-all duration-150 cursor-pointer ${
-                              isActive
-                                ? "bg-slate-900 dark:bg-indigo-600 text-white shadow-xs"
-                                : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50"
-                            }`}
-                          >
-                            {chip}
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    {/* Customers Reviews List */}
-                    <CostomersReviews 
-                      reviews={product.reviews || []} 
-                      filter={reviewsFilter}
-                      sortBy={reviewsSortBy}
-                    />
-                  </div>
-                )}
+              <div className="flex flex-col items-center justify-center p-1.5">
+                <Clock size={18} className="text-slate-500 dark:text-indigo-400 mb-1" />
+                <span className="text-[10.5px] font-black text-slate-800 dark:text-slate-200 leading-tight">
+                  {!isAvailable ? "No Delivery" : "3-5 Days Delivery"}
+                </span>
+                <span className="text-[9px] text-slate-400 leading-none mt-1">
+                  {!isAvailable ? "Out of stock" : "Estimated delivery"}
+                </span>
+              </div>
+              <div className="flex flex-col items-center justify-center p-1.5">
+                <RotateCcw size={18} className="text-slate-500 dark:text-indigo-400 mb-1" />
+                <span className="text-[10.5px] font-black text-slate-800 dark:text-slate-200 leading-tight">Easy Returns</span>
+                <span className="text-[9px] text-slate-400 leading-none mt-1">Within 7 days</span>
               </div>
             </div>
 
           </div>
 
           {/* COLUMN 2: Center Details Panel & Buying CTA options */}
-          <div className="space-y-5 text-left lg:sticky lg:top-24 lg:self-start">
-            
-            {/* Store brand / Category Badge */}
-            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2.5">
-              <div 
-                onClick={() => navigate(`/brand/${encodeURIComponent(product.brand || "FashionAura")}`)}
-                className="flex items-center gap-2 cursor-pointer group"
-              >
-                <BrandLogo
-                  brand={product.brand || "FashionAura"}
-                  brandDomain={product.brandDomain}
-                  className="w-5 h-5 rounded-xs"
-                />
-                <span className="text-xs font-black text-blue-500 group-hover:underline tracking-wider">
-                  {product.brand || "FashionAura"}
-                </span>
-              </div>
-              <span className="text-[9px] font-bold text-slate-400">SKU: {displaySku || `CN-${product._id?.substring(0,8).toUpperCase()}`}</span>
-            </div>
+          <div className="space-y-3 text-left min-w-0 max-w-full px-2 sm:px-0">
 
             {/* Title & Review stars metrics */}
-            <div className="space-y-1">
+            <div className="space-y-0.5">
               <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
                 {product.name}
               </h1>
@@ -1392,7 +1517,7 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
               <BadgeChips product={product} />
 
               {/* Review metrics */}
-              <div className="flex items-center gap-2 pt-1">
+              <div className="flex items-center gap-2 pt-0.5">
                 <span className="text-xs font-black text-slate-800 dark:text-slate-200">{averageRating ? averageRating.toFixed(1) : "4.6"}</span>
                 <div className="flex text-amber-500">
                   <Star size={11} className="fill-amber-500 stroke-none" />
@@ -1407,62 +1532,17 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
             </div>
 
             {/* Pricing Info block */}
-            <div className="space-y-1">
+            <div className="space-y-0.5">
               <div className="flex items-baseline gap-2.5">
                 <span className="text-2xl sm:text-3xl font-black text-red-600 dark:text-red-500">₹{displayPrice.toLocaleString("en-IN")}</span>
                 <span className="text-xs sm:text-sm font-bold text-slate-400 line-through">₹{originalPrice.toLocaleString("en-IN")}</span>
-                <span className="px-2 py-0.5 rounded border border-rose-200 bg-rose-50 text-rose-600 dark:text-rose-400 text-[10px] font-bold">{discountPercent}% OFF</span>
+                <span className="px-2 py-0.5 rounded-none bg-rose-100/80 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 text-[10px] font-bold">{discountPercent}% OFF</span>
               </div>
               <p className="text-[10px] text-slate-400">Inclusive of all taxes</p>
             </div>
 
-            {/* Availability & Stock status block */}
-            <div className="flex flex-wrap items-center gap-3 text-xs border-t border-slate-200 dark:border-slate-800/80 pt-3.5">
-              <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${ isAvailable ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/20 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/30" : "bg-rose-50 text-rose-600 dark:bg-rose-950/20 dark:text-rose-400 border border-rose-200 dark:border-rose-900/30 animate-pulse" }`}>
-                {isAvailable ? "In Stock" : "Out of Stock"}
-              </span>
-              <span className="text-slate-300 dark:text-slate-700">•</span>
-              <span className={`font-bold ${ !isAvailable ? "text-slate-400 dark:text-slate-500" : displayStock <= 5 ? "text-rose-600 dark:text-rose-400 animate-pulse" : "text-slate-600 dark:text-slate-300" }`}>
-                {!isAvailable 
-                  ? "Currently Unavailable" 
-                  : displayStock <= 5 
-                  ? `Only ${displayStock} left in stock!` 
-                  : `${displayStock} units available`}
-              </span>
-              <span className="text-slate-300 dark:text-slate-700">•</span>
-              <span className="text-slate-500 dark:text-slate-400 font-medium">
-                Ships from {product.location || "Delhi"}
-              </span>
-            </div>
-
-            {/* Trust Badges Card */}
-            <div className="border border-slate-200 dark:border-slate-800 rounded-sm p-3 bg-slate-50/50 dark:bg-slate-950/20 grid grid-cols-3 divide-x divide-slate-200 dark:divide-slate-800 text-center gap-1">
-              <div className="flex flex-col items-center justify-center p-1">
-                <Truck size={16} className="text-slate-500 dark:text-indigo-400 mb-1" />
-                <span className="text-[10px] font-black text-blue-500 dark:text-blue-400 leading-tight">Free Shipping</span>
-                <span className="text-[8.5px] text-slate-400 leading-none mt-0.5">On all orders</span>
-              </div>
-              <div className="flex flex-col items-center justify-center p-1">
-                <Clock size={16} className="text-slate-500 dark:text-indigo-400 mb-1" />
-                <span className="text-[10px] font-black text-slate-800 dark:text-slate-200 leading-tight">
-                  {!isAvailable ? "No Delivery" : "3-5 Days Delivery"}
-                </span>
-                <span className="text-[8.5px] text-slate-400 leading-none mt-0.5">
-                  {!isAvailable ? "Out of stock" : "Estimated delivery"}
-                </span>
-              </div>
-              <div className="flex flex-col items-center justify-center p-1">
-                <RotateCcw size={16} className="text-slate-500 dark:text-indigo-400 mb-1" />
-                <span className="text-[10px] font-black text-slate-800 dark:text-slate-200 leading-tight">Easy Returns</span>
-                <span className="text-[8.5px] text-slate-400 leading-none mt-0.5">Within 7 days</span>
-              </div>
-            </div>
-
-            {/* Feature List (Product Features / Highlights) */}
-            <FeatureList product={product} />
-
             {/* Natural Variant Selector attributes in the purchase area */}
-            <div className="space-y-4 pt-3">
+            <div className="space-y-2.5 pt-1">
               <VariantSelector
                 product={product}
                 selectedAttributes={selectedAttributes}
@@ -1475,20 +1555,17 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
 
               {/* Dynamic Selected Variant Card */}
               {hasDynamicAttrs && (
-                <div className="relative overflow-hidden bg-slate-50/50 dark:bg-slate-950/30 rounded-sm p-3.5 border border-slate-100 dark:border-slate-800/60 shadow-2xs mt-3">
-                  {/* Premium left accent bar */}
-                  <div className="absolute top-0 left-0 bottom-0 w-1 bg-gradient-to-b from-indigo-500 via-purple-500 to-pink-500" />
-                  
-                  <div className="flex items-center justify-between mb-2.5 pl-2">
-                    <span className="text-[9px] font-black uppercase text-indigo-600 dark:text-indigo-400 tracking-wider">
+                <div className="bg-amber-50/70 dark:bg-amber-950/20 rounded-none p-5 mt-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black uppercase text-amber-800 dark:text-amber-400 tracking-wider">
                       Selected Variant
                     </span>
-                    <div className="flex flex-wrap gap-1">
+                    <div className="flex flex-wrap gap-1.5">
                       {Object.keys(parsedAttributes).map((key) => {
                         const val = selectedAttributes[key];
                         if (!val) return null;
                         return (
-                          <span key={key} className="px-2 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/50 text-[9px] font-bold text-indigo-600 dark:text-indigo-400 border border-indigo-100/60 dark:border-indigo-900/40">
+                          <span key={key} className="px-3 py-1 rounded-none bg-emerald-100/90 dark:bg-emerald-950/70 text-[10px] font-bold text-emerald-900 dark:text-emerald-300">
                             {val}
                           </span>
                         );
@@ -1496,29 +1573,29 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
                     </div>
                   </div>
 
-                  <div className="pl-2">
+                  <div>
                     {!currentVariant ? (
-                      <span className="text-xs font-bold text-amber-600 dark:text-amber-500 animate-pulse block bg-amber-50/30 dark:bg-amber-950/10 py-1.5 px-3 rounded-lg border border-amber-100/60 dark:border-amber-900/30 text-center">
+                      <span className="text-xs font-bold text-amber-700 dark:text-amber-400 animate-pulse block bg-amber-100/60 dark:bg-amber-950/30 py-2.5 px-3.5 rounded-none text-center">
                         Please select the remaining options
                       </span>
                     ) : (
-                      <div className="space-y-2">
-                        <div className="text-[11px] font-black text-slate-800 dark:text-white flex items-center gap-1.5 flex-wrap">
-                          <span className="text-slate-400 dark:text-slate-500 text-[9px] uppercase font-bold tracking-wider">Selected Combination:</span>
+                      <div className="space-y-2.5">
+                        <div className="text-[11.5px] font-black text-slate-800 dark:text-white flex items-center gap-2 flex-wrap">
+                          <span className="text-amber-800/70 dark:text-amber-400/80 text-[10px] uppercase font-bold tracking-wider">Selected Combination:</span>
                           <span>{Object.keys(parsedAttributes).map(k => selectedAttributes[k]).filter(Boolean).join(" • ")}</span>
                         </div>
-                        <div className="grid grid-cols-3 gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-900 text-xs">
+                        <div className="grid grid-cols-3 gap-3.5 pt-1.5 text-xs">
                           <div>
-                            <span className="text-slate-500 dark:text-slate-400 block text-[8px] uppercase font-bold tracking-wider mb-0.5">SKU Reference</span>
-                            <span className="font-mono text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded border border-slate-100 dark:border-slate-800 font-bold tracking-wider truncate block text-[10px]">{displaySku}</span>
+                            <span className="text-amber-800/70 dark:text-amber-400/70 block text-[9px] uppercase font-bold tracking-wider mb-1.5">SKU Reference</span>
+                            <span className="font-mono text-slate-800 dark:text-amber-100 bg-white/95 dark:bg-amber-950/60 px-2.5 py-1.5 rounded-none font-bold tracking-wider truncate block text-[11px]">{displaySku}</span>
                           </div>
                           <div>
-                            <span className="text-slate-500 dark:text-slate-400 block text-[8px] uppercase font-bold tracking-wider mb-0.5">Retail Price</span>
-                            <span className="font-black text-rose-600 dark:text-rose-500 block text-xs">₹{displayPrice.toLocaleString("en-IN")}</span>
+                            <span className="text-amber-800/70 dark:text-amber-400/70 block text-[9px] uppercase font-bold tracking-wider mb-1.5">Retail Price</span>
+                            <span className="font-black text-rose-600 dark:text-rose-500 block text-base">₹{displayPrice.toLocaleString("en-IN")}</span>
                           </div>
                           <div>
-                            <span className="text-slate-500 dark:text-slate-400 block text-[8px] uppercase font-bold tracking-wider mb-0.5">Stock Status</span>
-                            <span className={`font-bold block text-[10px] uppercase ${displayStock > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
+                            <span className="text-amber-800/70 dark:text-amber-400/70 block text-[9px] uppercase font-bold tracking-wider mb-1.5">Stock Status</span>
+                            <span className={`font-bold block text-[11px] uppercase ${displayStock > 0 ? "text-emerald-700 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
                               {displayStock > 0 ? `${displayStock} Available` : "Out of Stock"}
                             </span>
                           </div>
@@ -1531,16 +1608,16 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
             </div>
 
             {/* Quantity Selector: rounded segmented control */}
-            <div className="space-y-2.5 border-t border-slate-200 dark:border-slate-800 pt-4.5 flex items-center gap-4 text-left">
+            <div className="pt-1 flex items-center gap-3 text-left">
               <span className="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-wider block">Quantity:</span>
-              <div className="flex items-center justify-between rounded-sm border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40 p-1 w-32 shadow-inner">
+              <div className="flex items-center justify-between rounded-none bg-slate-100 dark:bg-slate-900/60 p-0.5 w-28">
                 <button
                   type="button"
                   disabled={isPurchaseDisabled || qty <= 1}
                   onClick={() => setQty(qty - 1)}
-                  className="w-8 h-8 rounded-xs flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 cursor-pointer shadow-xs"
+                  className="w-7 h-7 rounded-none flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 cursor-pointer"
                 >
-                  <Minus size={12} />
+                  <Minus size={11} />
                 </button>
                 <span className="text-xs font-black text-slate-950 dark:text-white select-none">
                   {isPurchaseDisabled ? 0 : qty}
@@ -1549,37 +1626,37 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
                   type="button"
                   disabled={isPurchaseDisabled || qty >= displayStock}
                   onClick={() => setQty(qty + 1)}
-                  className="w-8 h-8 rounded-xs flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 cursor-pointer shadow-xs"
+                  className="w-7 h-7 rounded-none flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 cursor-pointer"
                 >
-                  <Plus size={12} />
+                  <Plus size={11} />
                 </button>
               </div>
             </div>
 
             {/* Buying Action buttons */}
-            <div className="grid gap-3 pt-2">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+            <div className="grid gap-2 pt-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <button
                   onClick={handleCart}
                   disabled={isPurchaseDisabled || isAdding}
-                  className={`flex items-center justify-center gap-2 rounded-sm py-3 text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${ isPurchaseDisabled || isAdding ? "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-600 border border-slate-200 dark:border-slate-800 cursor-not-allowed opacity-50" : "border-2 border-slate-900 dark:border-slate-100 text-slate-900 dark:text-slate-100 hover:bg-slate-900 hover:text-white dark:hover:bg-slate-100 dark:hover:text-slate-900 hover:shadow-xs" }`}
+                  className={`flex items-center justify-center gap-2 rounded-none py-2.5 text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${isPurchaseDisabled || isAdding ? "bg-slate-200/60 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-50" : "bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:hover:bg-slate-200 dark:text-slate-950"}`}
                 >
-                  <ShoppingCart size={15} />
+                  <ShoppingCart size={14} />
                   <span>{isAdding ? "Adding..." : "Add to Cart"}</span>
                 </button>
 
                 <button
                   onClick={handleBuyNow}
                   disabled={isPurchaseDisabled}
-                  className={`flex items-center justify-center gap-2 rounded-sm py-3 text-xs font-black uppercase tracking-wider text-slate-950 transition-all cursor-pointer ${ isPurchaseDisabled ? "bg-slate-100 dark:bg-slate-800 text-slate-300 dark:text-slate-600 border border-slate-200 dark:border-slate-800 cursor-not-allowed opacity-50" : "bg-amber-500 hover:bg-amber-600 shadow-sm" }`}
+                  className={`flex items-center justify-center gap-2 rounded-none py-2.5 text-xs font-black uppercase tracking-wider text-slate-950 transition-all cursor-pointer ${isPurchaseDisabled ? "bg-slate-200/60 dark:bg-slate-800 text-slate-300 dark:text-slate-600 cursor-not-allowed opacity-50" : "bg-amber-500 hover:bg-amber-600"}`}
                 >
-                  <Zap size={15} />
+                  <Zap size={14} />
                   <span>Buy Now</span>
                 </button>
               </div>
 
               {/* Extra interactivity buttons: Compare + AI Assistant drawer */}
-              <div className="grid grid-cols-2 gap-2 mt-1">
+              <div className="grid grid-cols-2 gap-1.5 mt-0.5">
                 <button
                   onClick={() => {
                     if (isComparing) {
@@ -1588,7 +1665,7 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
                       addToCompare(product);
                     }
                   }}
-                  className={`flex items-center justify-center gap-2 rounded-sm border py-2 text-[10.5px] font-black transition active:scale-98 cursor-pointer uppercase ${ isComparing ? "border-indigo-600 bg-indigo-600 text-white" : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-50" }`}
+                  className={`flex items-center justify-center gap-1.5 rounded-none py-1.5 text-[10.5px] font-black transition active:scale-98 cursor-pointer uppercase ${isComparing ? "bg-indigo-600 text-white" : "bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"}`}
                 >
                   <BarChart2 size={12} />
                   <span className="truncate">{isComparing ? "In Compare" : "Compare"}</span>
@@ -1596,7 +1673,7 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
 
                 <button
                   onClick={() => setShowAssistant(true)}
-                  className="flex items-center justify-center gap-2 rounded-sm border border-indigo-100 dark:border-indigo-900/50 bg-indigo-50/20 dark:bg-indigo-950/10 py-2 text-[10.5px] font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition active:scale-98 cursor-pointer"
+                  className="flex items-center justify-center gap-1.5 rounded-none bg-indigo-50/70 dark:bg-indigo-950/40 py-1.5 text-[10.5px] font-black uppercase tracking-wider text-indigo-700 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-950/70 transition active:scale-98 cursor-pointer"
                 >
                   <MessageSquare size={12} className="text-indigo-600 dark:text-indigo-400" />
                   <span>Ask AI Assistant</span>
@@ -1607,7 +1684,7 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
               {isFashionItem(product) && (
                 <button
                   onClick={() => navigate("/tryon", { state: { productId: product._id } })}
-                  className="relative flex items-center justify-center gap-2 rounded-sm bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 bg-[size:200%_auto] hover:bg-[position:right_center] py-2.5 text-xs font-black uppercase tracking-wider text-slate-100 dark:text-white shadow-xs hover:shadow-sm active:scale-98 transition-all duration-500 group overflow-hidden cursor-pointer"
+                  className="relative flex items-center justify-center gap-2 rounded-none bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 bg-[size:200%_auto] hover:bg-[position:right_center] py-2 text-xs font-black uppercase tracking-wider text-slate-100 dark:text-white shadow-xs hover:shadow-sm active:scale-98 transition-all duration-500 group overflow-hidden cursor-pointer"
                 >
                   <Sparkles className="h-3.5 w-3.5 animate-pulse" />
                   <span>AI Interactive Try-On</span>
@@ -1615,42 +1692,64 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
               )}
             </div>
 
+            {/* Availability & Stock status block */}
+            <div className="flex flex-wrap items-center gap-2 text-xs pt-1.5">
+              <span className={`px-2 py-0.5 rounded-none text-[9px] font-black uppercase tracking-wider ${isAvailable ? "bg-emerald-100/80 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300" : "bg-rose-100/80 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 animate-pulse"}`}>
+                {isAvailable ? "In Stock" : "Out of Stock"}
+              </span>
+              <span className="text-slate-300 dark:text-slate-700">•</span>
+              <span className={`font-bold ${!isAvailable ? "text-slate-400 dark:text-slate-500" : displayStock <= 5 ? "text-rose-600 dark:text-rose-400 animate-pulse" : "text-slate-600 dark:text-slate-300"}`}>
+                {!isAvailable
+                  ? "Currently Unavailable"
+                  : displayStock <= 5
+                    ? `Only ${displayStock} left in stock!`
+                    : `${displayStock} units available`}
+              </span>
+              <span className="text-slate-300 dark:text-slate-700">•</span>
+              <span className="text-slate-500 dark:text-slate-400 font-medium">
+                Ships from {product.location || "Delhi"}
+              </span>
+            </div>
+
+            {/* Feature List (Product Features / Highlights) */}
+            <FeatureList product={product} />
+
           </div>
 
           {/* COLUMN 3: Seller, Shipping, and Specifications Sidebar cards (Extreme Right Column) */}
-          <div className="space-y-4 text-left lg:sticky lg:top-24 lg:self-start">
+          <div className="space-y-2.5 text-left min-w-0 max-w-full px-2 sm:px-0">
 
             {/* 1. Seller Info card */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm p-5 text-left shadow-2xs space-y-3">
-              <h4 className="text-xs font-black uppercase text-slate-900 dark:text-white tracking-wider border-b border-slate-100 dark:border-slate-800 pb-2">
+            <div className="bg-slate-100/70 dark:bg-slate-900/60 rounded-none p-6 text-left space-y-4">
+              <h4 className="text-xs font-black uppercase text-slate-900 dark:text-white tracking-wider pb-1.5">
                 Seller Information
               </h4>
-              <div className="flex items-center justify-between gap-4 pt-1">
+              <div className="flex items-center justify-between gap-3 pt-0.5">
                 <div className="flex items-center gap-3">
                   <BrandLogo
                     brand={product.brand || "Fashion Aura Store"}
                     brandDomain={product.brandDomain}
-                    className="w-10 h-10 rounded-sm border-slate-200/80 dark:border-slate-700"
+                    className="w-11 h-11 rounded-none border-0"
                   />
                   <div>
-                    <h5 className="text-sm font-black text-slate-900 dark:text-white">
+                    <h5 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white">
                       {product.brand || "Fashion Aura Store"}
                     </h5>
-                    <div className="flex items-center gap-1 mt-1 text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                    <div className="flex items-center gap-1.5 mt-1 text-[11px] font-bold text-slate-500 dark:text-slate-400">
                       <span>{averageRating ? averageRating.toFixed(1) : "4.6"}</span>
                       <div className="flex text-amber-500">
-                        <Star size={10} className="fill-amber-500 stroke-none" />
-                        <Star size={10} className="fill-amber-500 stroke-none" />
-                        <Star size={10} className="fill-amber-500 stroke-none" />
-                        <Star size={10} className="fill-amber-500 stroke-none" />
-                        <Star size={10} className="fill-amber-500 stroke-none" />
+                        <Star size={11} className="fill-amber-500 stroke-none" />
+                        <Star size={11} className="fill-amber-500 stroke-none" />
+                        <Star size={11} className="fill-amber-500 stroke-none" />
+                        <Star size={11} className="fill-amber-500 stroke-none" />
+                        <Star size={11} className="fill-amber-500 stroke-none" />
                       </div>
                     </div>
                   </div>
                 </div>
-                <button 
+                <button
                   onClick={() => navigate(`/brand/${encodeURIComponent(product.brand || "FashionAura")}`)}
-                  className="px-3 py-1.5 border border-slate-200 dark:border-slate-800 hover:border-slate-950 dark:hover:border-indigo-400 text-slate-700 dark:text-slate-300 rounded-sm text-xs font-bold transition cursor-pointer"
+                  className="px-3.5 py-2 bg-slate-200/70 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-none text-xs font-bold transition cursor-pointer"
                 >
                   View Store
                 </button>
@@ -1658,12 +1757,12 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
             </div>
 
             {/* 2. Shipping Information card */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm p-5 text-left shadow-2xs space-y-3">
-              <h4 className="text-xs font-black uppercase text-slate-900 dark:text-white tracking-wider border-b border-slate-100 dark:border-slate-800 pb-2">
+            <div className="bg-slate-100/70 dark:bg-slate-900/60 rounded-none p-6 text-left space-y-4">
+              <h4 className="text-xs font-black uppercase text-slate-900 dark:text-white tracking-wider pb-1.5">
                 Shipping Information
               </h4>
-              <div className="divide-y divide-slate-100 dark:divide-slate-800/80 text-xs">
-                <div className="py-2 flex justify-between first:pt-0">
+              <div className="space-y-2.5 text-xs">
+                <div className="py-2 flex justify-between">
                   <span className="font-bold text-slate-500 dark:text-slate-400">Weight</span>
                   <span className="text-slate-900 dark:text-slate-100 font-semibold">{product.weight || "350g"}</span>
                 </div>
@@ -1671,7 +1770,7 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
                   <span className="font-bold text-slate-500 dark:text-slate-400">Free Shipping</span>
                   <span className="text-emerald-600 dark:text-emerald-400 font-bold">On all orders</span>
                 </div>
-                <div className="py-2 flex justify-between last:pb-0">
+                <div className="py-2 flex justify-between">
                   <span className="font-bold text-slate-500 dark:text-slate-400">Estimated Delivery</span>
                   <span className={`font-semibold ${!isAvailable ? "text-rose-500" : "text-slate-900 dark:text-slate-100"}`}>
                     {!isAvailable ? "Unavailable (Out of stock)" : "3-5 Days"}
@@ -1681,46 +1780,69 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
             </div>
 
             {/* 3. Product Specifications card (Extreme Right Column) */}
-            <SpecificationTable product={product} />
+            <div className="hidden lg:block">
+              <SpecificationTable product={product} />
+            </div>
+
+            {/* 4. Store brand / Category Badge & SKU Bar (Bottom of Column 3) */}
+            <div className="flex items-center justify-between pb-1.5 pt-1 px-1">
+              <div
+                onClick={() => navigate(`/brand/${encodeURIComponent(product.brand || "FashionAura")}`)}
+                className="flex items-center gap-2 cursor-pointer group"
+              >
+                <BrandLogo
+                  brand={product.brand || "FashionAura"}
+                  brandDomain={product.brandDomain}
+                  className="w-5 h-5 rounded-none border-0"
+                />
+                <span className="text-xs font-black text-blue-500 group-hover:underline tracking-wider">
+                  {product.brand || "FashionAura"}
+                </span>
+              </div>
+              <span className="text-[9px] font-bold text-slate-400">SKU: {displaySku || `CN-${product._id?.substring(0, 8).toUpperCase()}`}</span>
+            </div>
 
           </div>
 
         </div>
 
+        {/* Full-width Product Tabs Section (Description, Care, Shipping, Reviews) - Below All 3 Columns */}
+        {renderNavTabs()}
+
         {/* SECTION: Related Products Horizontal Carousel Slider */}
         {relatedProducts.length > 0 && (
-          <section className="mt-12 border-t border-slate-200 dark:border-slate-800 pt-10 text-left">
-            <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+          <section className="mt-6 pt-4 text-left">
+            <div className="mb-3 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
               <div>
                 <span className="text-[10px] font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400 block">Related items</span>
-                <h2 className="mt-1 text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+                <h2 className="mt-0.5 text-lg sm:text-xl font-black text-slate-900 dark:text-white">
                   Customers Also Viewed
                 </h2>
               </div>
-              
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-3 py-1.5 rounded-xl shadow-xs">
+
+              <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-1.5 bg-slate-100/70 dark:bg-slate-900/60 px-2.5 py-1 rounded-none">
                   <button
                     type="button"
                     onClick={() => scrollSlider(relatedSliderRef, "left")}
-                    className="p-1.5 border border-slate-200 dark:border-slate-800 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer select-none text-slate-600 dark:text-slate-400"
+                    className="p-1 rounded-none hover:bg-slate-200/60 dark:hover:bg-slate-800/60 transition cursor-pointer select-none text-slate-600 dark:text-slate-400"
                     aria-label="Previous related products"
                   >
-                    <ChevronLeft size={14} />
+                    <ChevronLeft size={13} />
                   </button>
                   <button
                     type="button"
                     onClick={() => scrollSlider(relatedSliderRef, "right")}
-                    className="p-1.5 border border-slate-200 dark:border-slate-800 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer select-none text-slate-600 dark:text-slate-400"
+                    className="p-1 rounded-none hover:bg-slate-200/60 dark:hover:bg-slate-800/60 transition cursor-pointer select-none text-slate-600 dark:text-slate-400"
                     aria-label="Next related products"
                   >
-                    <ChevronRight size={14} />
+                    <ChevronRight size={13} />
                   </button>
                 </div>
-                
+
                 <button
                   onClick={() => navigate(`/product?category=${product.category}`)}
-                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5 text-xs font-black text-slate-800 dark:text-slate-200 transition hover:border-slate-800 hover:bg-slate-50 cursor-pointer"
+                  className="rounded-none bg-slate-100/80 dark:bg-slate-900/80 px-3.5 py-1.5 text-xs font-black text-slate-800 dark:text-slate-200 transition hover:bg-slate-200 dark:hover:bg-slate-800 cursor-pointer"
                 >
                   View Collection
                 </button>
@@ -1728,15 +1850,15 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
             </div>
 
             {/* Carousel Container */}
-            <div 
+            <div
               ref={relatedSliderRef}
-              className="flex gap-5 overflow-x-auto scrollbar-hide scroll-smooth pb-4"
+              className="flex gap-3 overflow-x-auto scrollbar-hide scroll-smooth pb-2"
               style={{ scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}
             >
               {relatedProducts.map((item) => (
-                <div 
-                  key={item._id} 
-                  className="min-w-[220px] sm:min-w-[260px] md:min-w-[285px] max-w-[285px] scroll-snap-align-start flex-shrink-0"
+                <div
+                  key={item._id}
+                  className="min-w-[200px] sm:min-w-[240px] md:min-w-[260px] max-w-[260px] scroll-snap-align-start flex-shrink-0"
                 >
                   <ProductCard product={item} />
                 </div>
@@ -1747,45 +1869,45 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
 
         {/* SECTION: Recently Viewed Products Horizontal Carousel Slider */}
         {recentlyViewed.length > 0 && (
-          <section className="mt-10 border-t border-slate-200 dark:border-slate-800 pt-8 text-left">
-            <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+          <section className="mt-6 pt-4 text-left">
+            <div className="mb-3 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
               <div>
                 <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">Personal history</span>
-                <h2 className="mt-1 text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+                <h2 className="mt-0.5 text-lg sm:text-xl font-black text-slate-900 dark:text-white">
                   Recently Viewed
                 </h2>
               </div>
-              
-              <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-3 py-1.5 rounded-xl shadow-xs">
+
+              <div className="flex items-center gap-1.5 bg-slate-100/70 dark:bg-slate-900/60 px-2.5 py-1 rounded-none">
                 <button
                   type="button"
                   onClick={() => scrollSlider(recentlySliderRef, "left")}
-                  className="p-1.5 border border-slate-200 dark:border-slate-800 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer select-none text-slate-600 dark:text-slate-400"
+                  className="p-1 rounded-none hover:bg-slate-200/60 dark:hover:bg-slate-800/60 transition cursor-pointer select-none text-slate-600 dark:text-slate-400"
                   aria-label="Previous recently viewed products"
                 >
-                  <ChevronLeft size={14} />
+                  <ChevronLeft size={13} />
                 </button>
                 <button
                   type="button"
                   onClick={() => scrollSlider(recentlySliderRef, "right")}
-                  className="p-1.5 border border-slate-200 dark:border-slate-800 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer select-none text-slate-600 dark:text-slate-400"
+                  className="p-1 rounded-none hover:bg-slate-200/60 dark:hover:bg-slate-800/60 transition cursor-pointer select-none text-slate-600 dark:text-slate-400"
                   aria-label="Next recently viewed products"
                 >
-                  <ChevronRight size={14} />
+                  <ChevronRight size={13} />
                 </button>
               </div>
             </div>
 
             {/* Carousel Container */}
-            <div 
+            <div
               ref={recentlySliderRef}
-              className="flex gap-5 overflow-x-auto scrollbar-hide scroll-smooth pb-4"
+              className="flex gap-3 overflow-x-auto scrollbar-hide scroll-smooth pb-2"
               style={{ scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}
             >
               {recentlyViewed.map((item) => (
-                <div 
-                  key={item._id} 
-                  className="min-w-[220px] sm:min-w-[260px] md:min-w-[285px] max-w-[285px] scroll-snap-align-start flex-shrink-0"
+                <div
+                  key={item._id}
+                  className="min-w-[200px] sm:min-w-[240px] md:min-w-[260px] max-w-[260px] scroll-snap-align-start flex-shrink-0"
                 >
                   <ProductCard product={item} />
                 </div>
@@ -1795,8 +1917,8 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
         )}
 
         {/* SECTION: Footer Features Bar */}
-        <div className="mt-12 border-t border-slate-200 dark:border-slate-800 pt-8 pb-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="mt-6 pt-4 pb-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {[
               {
                 icon: ShieldCheck,
@@ -1825,18 +1947,18 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
             ].map((feature, i) => {
               const Icon = feature.icon;
               const colorClasses = {
-                indigo: "bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 border-indigo-100/40 dark:border-indigo-900/30",
-                emerald: "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 border-emerald-100/40 dark:border-emerald-900/30",
-                sky: "bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 border-sky-100/40 dark:border-sky-900/30",
-                amber: "bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 border-amber-100/40 dark:border-amber-900/30"
+                indigo: "bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400",
+                emerald: "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400",
+                sky: "bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400",
+                amber: "bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400"
               }[feature.color];
 
               return (
-                <div 
-                  key={i} 
-                  className="flex items-center gap-4 bg-white/60 dark:bg-slate-900/25 border border-slate-200/50 dark:border-slate-800/80 rounded-2xl p-4 transition-all duration-300 hover:border-slate-300 dark:hover:border-slate-700 text-left"
+                <div
+                  key={i}
+                  className="flex items-center gap-4 bg-slate-100/70 dark:bg-slate-900/60 rounded-none p-4 transition-all duration-300 hover:bg-slate-100 dark:hover:bg-slate-900 text-left"
                 >
-                  <div className={`h-11 w-11 rounded-xl flex items-center justify-center border shrink-0 ${colorClasses}`}>
+                  <div className={`h-11 w-11 rounded-none flex items-center justify-center shrink-0 ${colorClasses}`}>
                     <Icon size={20} />
                   </div>
                   <div className="space-y-0.5">
@@ -1855,54 +1977,196 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
 
       </div>
 
+      {/* PRODUCT MEDIA GALLERY MODAL ("MORE" VIEW) */}
+      {showMediaGalleryModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-md animate-[fade-in_0.2s_ease-out]">
+          <div className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-none shadow-2xl overflow-hidden flex flex-col max-h-[85vh] animate-[slide-up_0.25s_ease-out]">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 bg-slate-100/70 dark:bg-slate-950/50">
+              <div>
+                <h3 className="text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white">
+                  Product Media Gallery
+                </h3>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  {displayImages.length} photos • Video showcase • 360° interactive view
+                </p>
+              </div>
+              <button
+                onClick={() => setShowMediaGalleryModal(false)}
+                className="h-8 w-8 rounded-none flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                aria-label="Close media gallery"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-thin text-left">
+              {/* All Photos Grid */}
+              <div>
+                <h4 className="text-xs font-black uppercase text-slate-500 dark:text-slate-400 tracking-wider mb-3">
+                  All Photos ({displayImages.length})
+                </h4>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                  {displayImages.map((img, i) => {
+                    const isActive = mainImg === img && mediaMode === "image";
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => {
+                          setMainImg(img);
+                          setMediaMode("image");
+                          setShowMediaGalleryModal(false);
+                        }}
+                        className={`group relative aspect-[3/4] overflow-hidden rounded-none transition-all cursor-pointer ${isActive
+                            ? "ring-2 ring-indigo-500"
+                            : "hover:opacity-90"
+                          }`}
+                      >
+                        <img
+                          src={getOptimizedImageUrl(img.startsWith("http") ? img : `${backendUrl}/${img}`, { width: 300, quality: 80 })}
+                          className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-200"
+                          alt={`Product photo ${i + 1}`}
+                          loading="lazy"
+                        />
+                        <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded-none bg-black/60 backdrop-blur-xs text-[9px] font-bold text-white">
+                          #{i + 1}
+                        </div>
+                        {isActive && (
+                          <div className="absolute bottom-2 inset-x-2 py-1 bg-indigo-600/90 backdrop-blur-xs text-white text-[9px] font-black uppercase tracking-wider rounded-none text-center">
+                            Viewing
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Interactive Media Section */}
+              <div>
+                <h4 className="text-xs font-black uppercase text-slate-500 dark:text-slate-400 tracking-wider mb-3">
+                  Interactive Media
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Video Option */}
+                  <button
+                    onClick={() => {
+                      setMediaMode("video");
+                      setShowMediaGalleryModal(false);
+                    }}
+                    className={`p-4 rounded-none flex items-center gap-3.5 transition-all cursor-pointer text-left ${mediaMode === "video"
+                        ? "bg-indigo-50/70 dark:bg-indigo-950/50 ring-2 ring-indigo-500/20"
+                        : "hover:bg-slate-100 dark:hover:bg-slate-800 bg-slate-50/70 dark:bg-slate-900/60"
+                      }`}
+                  >
+                    <div className="h-10 w-10 rounded-none bg-indigo-600 text-white flex items-center justify-center shrink-0">
+                      <Video size={18} />
+                    </div>
+                    <div>
+                      <h5 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
+                        Product Video Tour
+                      </h5>
+                      <p className="text-[10px] text-slate-500 mt-0.5">
+                        Visual model walkthrough and fit showcase
+                      </p>
+                    </div>
+                  </button>
+
+                  {/* 360 View Option */}
+                  <button
+                    onClick={() => {
+                      setMediaMode("360");
+                      setShowMediaGalleryModal(false);
+                    }}
+                    className={`p-4 rounded-none flex items-center gap-3.5 transition-all cursor-pointer text-left ${mediaMode === "360"
+                        ? "bg-indigo-50/70 dark:bg-indigo-950/50 ring-2 ring-indigo-500/20"
+                        : "hover:bg-slate-100 dark:hover:bg-slate-800 bg-slate-50/70 dark:bg-slate-900/60"
+                      }`}
+                  >
+                    <div className="h-10 w-10 rounded-none bg-violet-600 text-white flex items-center justify-center shrink-0">
+                      <Rotate3d size={18} />
+                    </div>
+                    <div>
+                      <h5 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
+                        360° Interactive Spin
+                      </h5>
+                      <p className="text-[10px] text-slate-500 mt-0.5">
+                        Drag and rotate to inspect from every angle
+                      </p>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-3 bg-slate-100/70 dark:bg-slate-950/50 flex items-center justify-between">
+              <span className="text-xs font-medium text-slate-500">
+                Click any thumbnail to preview on main showcase
+              </span>
+              <button
+                onClick={() => {
+                  setShowMediaGalleryModal(false);
+                  triggerLightbox(displayImages.indexOf(mainImg) >= 0 ? displayImages.indexOf(mainImg) : 0);
+                }}
+                className="px-3.5 py-1.5 rounded-none bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-black uppercase tracking-wider hover:opacity-90 transition cursor-pointer"
+              >
+                Fullscreen Lightbox
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* FULLSCREEN LIGHTBOX MODAL */}
       {isLightboxOpen && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-950/95 backdrop-blur-md p-4 animate-[fade-in_0.2s_ease-out]">
-          <button 
+          <button
             onClick={() => setIsLightboxOpen(false)}
-            className="absolute top-6 right-6 z-[210] h-11 w-11 rounded-full bg-white/10 text-slate-100 dark:text-white hover:bg-white/20 active:scale-95 flex items-center justify-center transition cursor-pointer"
+            className="absolute top-6 right-6 z-[210] h-11 w-11 rounded-none bg-white/10 text-slate-100 dark:text-white hover:bg-white/20 active:scale-95 flex items-center justify-center transition cursor-pointer"
           >
             <X size={20} />
           </button>
 
           {displayImages?.length > 1 && (
-            <button 
+            <button
               onClick={() => {
                 const total = displayImages.length;
                 const nextIdx = (lightboxImgIdx - 1 + total) % total;
                 setLightboxImgIdx(nextIdx);
                 setMainImg(displayImages[nextIdx]);
               }}
-              className="absolute left-6 z-[210] h-12 w-12 rounded-full bg-white/10 text-slate-100 dark:text-white hover:bg-white/20 active:scale-95 flex items-center justify-center transition cursor-pointer"
+              className="absolute left-6 z-[210] h-12 w-12 rounded-none bg-white/10 text-slate-100 dark:text-white hover:bg-white/20 active:scale-95 flex items-center justify-center transition cursor-pointer"
             >
               <ChevronLeft size={24} />
             </button>
           )}
 
           <div className="relative max-h-[85vh] max-w-[85vw] flex items-center justify-center select-none">
-            <img 
+            <img
               src={(displayImages?.[lightboxImgIdx] && typeof displayImages[lightboxImgIdx] === "string")
                 ? (displayImages[lightboxImgIdx].startsWith("http") ? displayImages[lightboxImgIdx] : `${backendUrl}/${displayImages[lightboxImgIdx]}`)
-                : ""} 
+                : ""}
               alt="lightbox"
-              className="max-h-[80vh] max-w-full object-contain rounded-xl shadow-2xl"
+              className="max-h-[80vh] max-w-full object-contain rounded-none shadow-2xl"
             />
             {displayImages?.length > 1 && (
-              <span className="absolute bottom-[-40px] text-xs font-bold text-slate-400 bg-white/5 border border-white/10 px-3 py-1 rounded-full">
+              <span className="absolute bottom-[-40px] text-xs font-bold text-slate-400 bg-white/10 px-3 py-1 rounded-none">
                 {lightboxImgIdx + 1} / {displayImages.length}
               </span>
             )}
           </div>
 
           {displayImages?.length > 1 && (
-            <button 
+            <button
               onClick={() => {
                 const total = displayImages.length;
                 const nextIdx = (lightboxImgIdx + 1) % total;
                 setLightboxImgIdx(nextIdx);
                 setMainImg(displayImages[nextIdx]);
               }}
-              className="absolute right-6 z-[210] h-12 w-12 rounded-full bg-white/10 text-slate-100 dark:text-white hover:bg-white/20 active:scale-95 flex items-center justify-center transition cursor-pointer"
+              className="absolute right-6 z-[210] h-12 w-12 rounded-none bg-white/10 text-slate-100 dark:text-white hover:bg-white/20 active:scale-95 flex items-center justify-center transition cursor-pointer"
             >
               <ChevronRight size={24} />
             </button>
@@ -1916,7 +2180,7 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
       {!showAssistant && (
         <button
           onClick={() => setShowAssistant(true)}
-          className="fixed bottom-6 right-6 z-[90] flex items-center gap-2.5 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 p-4 text-slate-100 dark:text-white shadow-xl hover:shadow-indigo-500/35 transition-all duration-300 group cursor-pointer"
+          className="fixed bottom-6 right-6 z-[90] flex items-center gap-2.5 rounded-none bg-gradient-to-r from-violet-600 to-indigo-600 p-4 text-slate-100 dark:text-white shadow-xl hover:shadow-indigo-500/35 transition-all duration-300 group cursor-pointer"
         >
           <div className="relative">
             <MessageSquare size={20} />
@@ -1933,19 +2197,19 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
 
       {/* STICKY BOTTOM VIEWPORT CTA BAR */}
       {showStickyBar && (
-        <div className="fixed bottom-0 inset-x-0 z-[80] bg-white/95 dark:bg-slate-950/95 border-t border-slate-200 dark:border-slate-800 px-6 py-4 shadow-xl backdrop-blur-md animate-[slide-up_0.35s_ease-out] flex items-center justify-between gap-4">
+        <div className="fixed bottom-0 inset-x-0 z-[80] bg-white/95 dark:bg-slate-950/95 px-6 py-4 shadow-xl backdrop-blur-md animate-[slide-up_0.35s_ease-out] flex items-center justify-between gap-4">
           <div className="flex items-center gap-3.5 text-left">
-            <img 
-              src={activeMainImgSrc} 
-              alt="sticky-thumbnail" 
-              className="h-10 w-10 object-contain rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800"
+            <img
+              src={activeMainImgSrc}
+              alt="sticky-thumbnail"
+              className="h-10 w-10 object-contain rounded-none bg-slate-100 dark:bg-slate-900"
             />
             <div className="hidden sm:block">
               <h5 className="text-xs font-black text-slate-900 dark:text-white truncate max-w-sm">{product.name}</h5>
               <p className="text-[10px] font-black text-slate-400 dark:text-indigo-400 mt-0.5">₹{displayPrice}</p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-3 shrink-0">
             {hasDynamicAttrs && (
               <span className="hidden lg:inline text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
@@ -1964,7 +2228,7 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
             <button
               onClick={handleCart}
               disabled={isPurchaseDisabled || isAdding}
-              className={`px-6 py-3 text-[10px] font-black uppercase tracking-wider rounded-xl transition active:scale-95 shadow-md flex items-center gap-1.5 ${ isPurchaseDisabled || isAdding ? "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-60" : "bg-slate-950 dark:bg-indigo-600 hover:bg-slate-800 dark:hover:bg-indigo-700 text-slate-100 dark:text-white cursor-pointer" }`}
+              className={`px-6 py-3 text-[10px] font-black uppercase tracking-wider rounded-none transition active:scale-95 shadow-md flex items-center gap-1.5 ${isPurchaseDisabled || isAdding ? "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-60" : "bg-slate-950 dark:bg-indigo-600 hover:bg-slate-800 dark:hover:bg-indigo-700 text-slate-100 dark:text-white cursor-pointer"}`}
             >
               {isAdding ? (
                 <>
@@ -1978,7 +2242,7 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
             <button
               onClick={handleBuyNow}
               disabled={isPurchaseDisabled}
-              className={`hidden md:block px-6 py-3 text-[10px] font-black uppercase tracking-wider rounded-xl transition active:scale-95 shadow-md ${ isPurchaseDisabled ? "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-60" : "bg-violet-600 hover:bg-violet-700 text-slate-100 dark:text-white cursor-pointer" }`}
+              className={`hidden md:block px-6 py-3 text-[10px] font-black uppercase tracking-wider rounded-none transition active:scale-95 shadow-md ${isPurchaseDisabled ? "bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-60" : "bg-violet-600 hover:bg-violet-700 text-slate-100 dark:text-white cursor-pointer"}`}
             >
               Buy Now
             </button>
@@ -1989,34 +2253,34 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
       {/* SIZE REFERENCE MODAL */}
       {showSizeGuide && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-950/80 backdrop-blur-xs p-4 animate-[fade-in_0.2s_ease-out]">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative">
+          <div className="bg-white dark:bg-slate-900 rounded-none p-6 sm:p-8 max-w-md w-full shadow-2xl relative">
             <button
               onClick={() => setShowSizeGuide(false)}
               className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-white transition cursor-pointer"
             >
               <X size={20} />
             </button>
-            
+
             <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 mb-2">Size Reference Guide</h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 mb-6">Find your perfect fit with standard measurements for {product.category || "this catalog"}.</p>
-            
+
             {product.category?.toLowerCase() === "kids" ? (
               <div className="overflow-x-auto">
                 <table className="w-full text-xs text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-400 font-bold uppercase tracking-wider text-[9px]">
-                      <th className="py-2.5">Size/Age</th>
-                      <th className="py-2.5">Height (in)</th>
-                      <th className="py-2.5">Chest (in)</th>
+                    <tr className="bg-slate-100/70 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-[9px]">
+                      <th className="py-2.5 px-3">Size/Age</th>
+                      <th className="py-2.5 px-3">Height (in)</th>
+                      <th className="py-2.5 px-3">Chest (in)</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium text-slate-800 dark:text-slate-200">
-                    <tr><td className="py-3">2Y</td><td className="py-3">33" - 35"</td><td className="py-3">20" - 21"</td></tr>
-                    <tr><td className="py-3">4Y</td><td className="py-3">39" - 41"</td><td className="py-3">22" - 23"</td></tr>
-                    <tr><td className="py-3">6Y</td><td className="py-3">45" - 47"</td><td className="py-3">24" - 25"</td></tr>
-                    <tr><td className="py-3">8Y</td><td className="py-3">50" - 52"</td><td className="py-3">26" - 27"</td></tr>
-                    <tr><td className="py-3">10Y</td><td className="py-3">55" - 57"</td><td className="py-3">28" - 30"</td></tr>
-                    <tr><td className="py-3">12Y</td><td className="py-3">60" - 62"</td><td className="py-3">31" - 33"</td></tr>
+                  <tbody className="font-medium text-slate-800 dark:text-slate-200">
+                    <tr className="even:bg-slate-50/50 dark:even:bg-slate-800/20"><td className="py-2.5 px-3">2Y</td><td className="py-2.5 px-3">33" - 35"</td><td className="py-2.5 px-3">20" - 21"</td></tr>
+                    <tr className="even:bg-slate-50/50 dark:even:bg-slate-800/20"><td className="py-2.5 px-3">4Y</td><td className="py-2.5 px-3">39" - 41"</td><td className="py-2.5 px-3">22" - 23"</td></tr>
+                    <tr className="even:bg-slate-50/50 dark:even:bg-slate-800/20"><td className="py-2.5 px-3">6Y</td><td className="py-2.5 px-3">45" - 47"</td><td className="py-2.5 px-3">24" - 25"</td></tr>
+                    <tr className="even:bg-slate-50/50 dark:even:bg-slate-800/20"><td className="py-2.5 px-3">8Y</td><td className="py-2.5 px-3">50" - 52"</td><td className="py-2.5 px-3">26" - 27"</td></tr>
+                    <tr className="even:bg-slate-50/50 dark:even:bg-slate-800/20"><td className="py-2.5 px-3">10Y</td><td className="py-2.5 px-3">55" - 57"</td><td className="py-2.5 px-3">28" - 30"</td></tr>
+                    <tr className="even:bg-slate-50/50 dark:even:bg-slate-800/20"><td className="py-2.5 px-3">12Y</td><td className="py-2.5 px-3">60" - 62"</td><td className="py-2.5 px-3">31" - 33"</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -2024,28 +2288,28 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
               <div className="overflow-x-auto">
                 <table className="w-full text-xs text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-400 font-bold uppercase tracking-wider text-[9px]">
-                      <th className="py-2.5">Size</th>
-                      <th className="py-2.5">Chest (in)</th>
-                      <th className="py-2.5">Waist (in)</th>
-                      <th className="py-2.5">Hip (in)</th>
+                    <tr className="bg-slate-100/70 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-[9px]">
+                      <th className="py-2.5 px-3">Size</th>
+                      <th className="py-2.5 px-3">Chest (in)</th>
+                      <th className="py-2.5 px-3">Waist (in)</th>
+                      <th className="py-2.5 px-3">Hip (in)</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium text-slate-800 dark:text-slate-200">
-                    <tr><td className="py-3 font-bold">XS</td><td className="py-3">32" - 34"</td><td className="py-3">26" - 28"</td><td className="py-3">32" - 34"</td></tr>
-                    <tr><td className="py-3 font-bold">S</td><td className="py-3">35" - 37"</td><td className="py-3">29" - 31"</td><td className="py-3">35" - 37"</td></tr>
-                    <tr><td className="py-3 font-bold">M</td><td className="py-3">38" - 40"</td><td className="py-3">32" - 34"</td><td className="py-3">38" - 40"</td></tr>
-                    <tr><td className="py-3 font-bold">L</td><td className="py-3">41" - 43"</td><td className="py-3">35" - 37"</td><td className="py-3">41" - 43"</td></tr>
-                    <tr><td className="py-3 font-bold">XL</td><td className="py-3">44" - 46"</td><td className="py-3">38" - 40"</td><td className="py-3">44" - 46"</td></tr>
-                    <tr><td className="py-3 font-bold">XXL</td><td className="py-3">47" - 49"</td><td className="py-3">41" - 43"</td><td className="py-3">47" - 49"</td></tr>
+                  <tbody className="font-medium text-slate-800 dark:text-slate-200">
+                    <tr className="even:bg-slate-50/50 dark:even:bg-slate-800/20"><td className="py-2.5 px-3 font-bold">XS</td><td className="py-2.5 px-3">32" - 34"</td><td className="py-2.5 px-3">26" - 28"</td><td className="py-2.5 px-3">32" - 34"</td></tr>
+                    <tr className="even:bg-slate-50/50 dark:even:bg-slate-800/20"><td className="py-2.5 px-3 font-bold">S</td><td className="py-2.5 px-3">35" - 37"</td><td className="py-2.5 px-3">29" - 31"</td><td className="py-2.5 px-3">35" - 37"</td></tr>
+                    <tr className="even:bg-slate-50/50 dark:even:bg-slate-800/20"><td className="py-2.5 px-3 font-bold">M</td><td className="py-2.5 px-3">38" - 40"</td><td className="py-2.5 px-3">32" - 34"</td><td className="py-2.5 px-3">38" - 40"</td></tr>
+                    <tr className="even:bg-slate-50/50 dark:even:bg-slate-800/20"><td className="py-2.5 px-3 font-bold">L</td><td className="py-2.5 px-3">41" - 43"</td><td className="py-2.5 px-3">35" - 37"</td><td className="py-2.5 px-3">41" - 43"</td></tr>
+                    <tr className="even:bg-slate-50/50 dark:even:bg-slate-800/20"><td className="py-2.5 px-3 font-bold">XL</td><td className="py-2.5 px-3">44" - 46"</td><td className="py-2.5 px-3">38" - 40"</td><td className="py-2.5 px-3">44" - 46"</td></tr>
+                    <tr className="even:bg-slate-50/50 dark:even:bg-slate-800/20"><td className="py-2.5 px-3 font-bold">XXL</td><td className="py-2.5 px-3">47" - 49"</td><td className="py-2.5 px-3">41" - 43"</td><td className="py-2.5 px-3">47" - 49"</td></tr>
                   </tbody>
                 </table>
               </div>
             )}
-            
+
             <button
               onClick={() => setShowSizeGuide(false)}
-              className="mt-6 w-full py-3 bg-slate-950 dark:bg-indigo-600 hover:bg-slate-800 dark:hover:bg-indigo-700 text-slate-100 dark:text-white rounded-2xl text-xs font-black uppercase tracking-wider transition active:scale-[0.98] cursor-pointer"
+              className="mt-6 w-full py-3 bg-slate-950 dark:bg-indigo-600 hover:bg-slate-800 dark:hover:bg-indigo-700 text-slate-100 dark:text-white rounded-none text-xs font-black uppercase tracking-wider transition active:scale-[0.98] cursor-pointer"
             >
               Close Guide
             </button>
@@ -2054,17 +2318,17 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
       )}
 
       {/* AI ASSISTANT SLIDE-OUT DRAWER PANEL */}
-      <div 
+      <div
         onClick={() => setShowAssistant(false)}
-        className={`fixed inset-0 z-[99] bg-slate-950/40 dark:bg-slate-950/60 backdrop-blur-xs transition-opacity duration-300 ${ showAssistant ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none" }`}
+        className={`fixed inset-0 z-[99] bg-slate-950/40 dark:bg-slate-950/60 backdrop-blur-xs transition-opacity duration-300 ${showAssistant ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
       />
 
-      <div className={`fixed inset-y-0 right-0 z-[100] w-full sm:max-w-md bg-white dark:bg-slate-950 border-l border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col transition-transform duration-300 ease-out transform ${ showAssistant ? "translate-x-0" : "translate-x-full" }`}>
-        
+      <div className={`fixed inset-y-0 right-0 z-[100] w-full sm:max-w-md bg-white dark:bg-slate-950 shadow-2xl flex flex-col transition-transform duration-300 ease-out transform ${showAssistant ? "translate-x-0" : "translate-x-full"}`}>
+
         {/* Drawer Header */}
-        <div className="flex items-center justify-between bg-slate-900 dark:bg-slate-950 px-6 py-4 text-slate-100 dark:text-white shadow-md border-b border-slate-800">
+        <div className="flex items-center justify-between bg-slate-900 dark:bg-slate-950 px-6 py-4 text-slate-100 dark:text-white shadow-md">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-sm bg-amber-500/10 border border-amber-500/20 text-amber-500 shadow-inner">
+            <div className="flex h-9 w-9 items-center justify-center rounded-none bg-amber-500/10 text-amber-500 shadow-inner">
               <Sparkles size={18} className="text-amber-500" />
             </div>
             <div className="text-left">
@@ -2077,7 +2341,7 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
           </div>
           <button
             onClick={() => setShowAssistant(false)}
-            className="rounded-sm bg-slate-800 hover:bg-slate-700 p-1.5 text-slate-300 hover:text-white transition active:scale-95 cursor-pointer border border-slate-700"
+            className="rounded-none bg-slate-800 hover:bg-slate-700 p-1.5 text-slate-300 hover:text-white transition active:scale-95 cursor-pointer"
           >
             <X size={16} />
           </button>
@@ -2190,17 +2454,17 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
                 className={`flex ${isUser ? "justify-end text-right" : "justify-start text-left"}`}
               >
                 <div
-                  className={`max-w-[88%] rounded-sm p-4 text-xs shadow-2xs leading-relaxed ${ isUser ? "bg-slate-900 dark:bg-slate-900 text-white border border-slate-800 shadow-sm" : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100" }`}
+                  className={`max-w-[88%] rounded-none p-4 text-xs leading-relaxed ${isUser ? "bg-slate-900 dark:bg-slate-900 text-white shadow-sm" : "bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100"}`}
                 >
                   {isUser ? msg.text : renderFormattedMessage(msg.text)}
                 </div>
               </div>
             );
           })}
-          
+
           {chatLoading && (
             <div className="flex justify-start">
-              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-sm px-4 py-3 shadow-2xs">
+              <div className="bg-slate-100 dark:bg-slate-800 rounded-none px-4 py-3">
                 <div className="flex gap-1.5 items-center h-4">
                   <span className="h-1.5 w-1.5 rounded-xs bg-amber-500 animate-bounce" style={{ animationDelay: "0ms" }} />
                   <span className="h-1.5 w-1.5 rounded-xs bg-amber-500 animate-bounce" style={{ animationDelay: "150ms" }} />
@@ -2213,7 +2477,7 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
 
         {/* Suggested Questions */}
         {chatMessages.length === 1 && (
-          <div className="px-5 py-3 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950">
+          <div className="px-5 py-3 bg-white dark:bg-slate-950">
             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 text-left">Suggested Questions</p>
             <div className="flex flex-wrap gap-2">
               {[
@@ -2226,7 +2490,7 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
                   key={i}
                   type="button"
                   onClick={() => handleSendMessage(sug)}
-                  className="text-[10px] font-bold text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-3 py-1.5 rounded-sm hover:border-amber-500 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-500/5 transition cursor-pointer shadow-2xs"
+                  className="text-[10px] font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-900 px-3 py-1.5 rounded-none hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-500/10 transition cursor-pointer"
                 >
                   {sug}
                 </button>
@@ -2241,19 +2505,19 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
             e.preventDefault();
             handleSendMessage();
           }}
-          className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 flex gap-2"
+          className="bg-white dark:bg-slate-950 p-4 flex gap-2"
         >
           <input
             type="text"
             value={chatInput}
             onChange={(e) => setChatInput(e.target.value)}
             placeholder={`Ask about this product...`}
-            className="flex-1 rounded-sm border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-xs outline-none dark:text-white focus:border-amber-500 dark:focus:border-amber-500 transition"
+            className="flex-1 rounded-none bg-slate-100 dark:bg-slate-900 px-3 py-2 text-xs outline-none dark:text-white focus:ring-1 focus:ring-amber-500 transition"
           />
           <button
             type="submit"
             disabled={!chatInput.trim() || chatLoading}
-            className="rounded-sm bg-amber-500 hover:bg-amber-600 text-slate-950 px-4 text-xs font-black uppercase tracking-wider transition disabled:opacity-50 active:scale-95 shrink-0 flex items-center justify-center cursor-pointer border-none shadow-sm"
+            className="rounded-none bg-amber-500 hover:bg-amber-600 text-slate-950 px-4 text-xs font-black uppercase tracking-wider transition disabled:opacity-50 active:scale-95 shrink-0 flex items-center justify-center cursor-pointer border-none shadow-sm"
           >
             <Send size={14} className="mr-1.5 stroke-[2.5]" />
             <span>Send</span>

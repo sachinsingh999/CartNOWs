@@ -94,10 +94,10 @@ const FilterSidebar = ({
   }, [dynamicFilters, isBroadCatalog]);
 
   return (
-    <aside className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-none text-left text-[#282c3f] dark:text-slate-100 transition-all duration-300 w-full overflow-hidden shadow-2xs select-none">
+    <aside className="h-full flex flex-col bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-none text-left text-[#282c3f] dark:text-slate-100 transition-all duration-300 w-full overflow-hidden shadow-2xs select-none">
       
       {/* 1. Header: FILTERS / CLEAR ALL */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
+      <div className="shrink-0 flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
         <div className="flex items-center gap-2">
           <SlidersHorizontal size={14} className="text-[#ff3f6c]" />
           <span className="text-[13px] font-black uppercase tracking-wider text-[#282c3f] dark:text-white">
@@ -118,6 +118,9 @@ const FilterSidebar = ({
         </button>
       </div>
 
+      {/* Scrollable Filters Content Area */}
+      <div className="flex-1 overflow-y-auto scrollbar-thin">
+
       {/* 2. CATEGORIES SECTION */}
       {rawCategories.length > 0 && (
         <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800 space-y-3">
@@ -128,10 +131,7 @@ const FilterSidebar = ({
             <span className="text-[11px] font-black uppercase tracking-wider text-slate-800 dark:text-slate-200 group-hover:text-[#ff3f6c] transition-colors">
               Categories
             </span>
-            <div className="flex items-center gap-1.5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-colors">
-              {rawCategories.length > 8 && isCategoryExpanded && (
-                <span className="text-[10px] text-slate-400">({rawCategories.length})</span>
-              )}
+            <div className="flex items-center text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-colors">
               {isCategoryExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             </div>
           </div>
@@ -401,9 +401,11 @@ const FilterSidebar = ({
         </label>
       </div>
 
+      </div>
+
       {/* Mobile Drawer Bottom Action */}
       {onCloseMobileFilters && (
-        <div className="p-4 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800">
+        <div className="shrink-0 p-4 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800">
           <button
             onClick={onCloseMobileFilters}
             className="w-full bg-[#ff3f6c] hover:bg-[#e0355e] text-white py-2.5 rounded-lg text-xs font-black uppercase tracking-wider cursor-pointer shadow-md transition-all border-none"

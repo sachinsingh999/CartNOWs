@@ -1,13 +1,13 @@
 import React, { useEffect, useMemo, useState, useRef } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import ProductCard from "../pages/ProductCard";
 import ProductListCard from "../components/ProductListCard";
 import FilterSidebar from "../components/FilterSidebar";
 import { backendUrl } from "../config";
 import { getAverageRating } from "../utils/productRatings";
-import { Star, X, ShoppingCart, Eye, AlertTriangle, ArrowRight, Filter, ChevronLeft, ChevronRight, SlidersHorizontal, Search, Heart, RotateCcw, PackageSearch, Sparkles, LayoutGrid, List } from "lucide-react";
+import { Star, X, ShoppingCart, Eye, AlertTriangle, ArrowRight, Filter, ChevronLeft, ChevronRight, ChevronDown, SlidersHorizontal, Search, Heart, RotateCcw, PackageSearch, Sparkles, LayoutGrid, List, Home, ArrowUpDown, Layers } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ProductCardSkeleton } from "../components/SkeletonLoader";
 import BrandLogo from "../components/BrandLogo";
@@ -32,6 +32,22 @@ const Product = () => {
   const [dynamicFilters, setDynamicFilters] = useState({});
   const [priceRange, setPriceRange] = useState({ min: 0, max: 200000 });
   const [categoryMeta, setCategoryMeta] = useState(null);
+
+  // Dynamic measurement of sticky control bar height
+  const controlBarRef = useRef(null);
+  const [controlBarHeight, setControlBarHeight] = useState(56);
+
+  useEffect(() => {
+    const el = controlBarRef.current;
+    if (!el) return;
+    const updateH = () => {
+      if (el) setControlBarHeight(el.offsetHeight);
+    };
+    updateH();
+    const ro = new ResizeObserver(updateH);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   // Active filter state variables initialized from searchParams
   const [sortBy, setSortBy] = useState("featured");
@@ -832,45 +848,111 @@ const Product = () => {
 
       {/* ── Sticky Control Bar ── */}
       <div 
-        className="sticky z-30 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 py-2 sm:py-2.5 shadow-[0_2px_4px_rgba(0,0,0,0.05)] dark:shadow-[0_2px_4px_rgba(0,0,0,0.3)] transition-all duration-300"
-        style={{ top: "var(--navbar-height, 80px)" }}
+        ref={controlBarRef}
+        className="sticky z-30 bg-white/95 dark:bg-slate-950/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 py-2.5 sm:py-3 shadow-[0_4px_16px_-4px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.35)] transition-all duration-300"
+        style={{ top: "var(--navbar-height, 64px)" }}
       >
-        <div className="w-full px-2.5 sm:px-4 lg:px-6 flex flex-col md:flex-row md:items-center justify-between gap-2.5 md:gap-4">
-          {/* Title & Count (Myntra style) */}
-          <div className="flex flex-col text-left justify-center">
-            <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider leading-none">
-              Home / {categoryMeta ? (categoryMeta.parentCategory ? `${categoryMeta.parentCategory} / ` : "") + categoryMeta.name : "Products Catalog"}
-            </span>
-            <h2 className="text-xs sm:text-sm font-black text-slate-800 dark:text-white uppercase tracking-wider mt-1 leading-tight">
-              {categoryMeta ? `${categoryMeta.name} Collection` : "Products Collection"} <span className="text-[11px] font-normal text-slate-400 dark:text-slate-500 lowercase normal-case ml-1"> - {totalCount} items</span>
-            </h2>
+        <div className="w-full px-3 sm:px-4 lg:px-6 flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
+          {/* Left: Breadcrumbs, Title & Result Count Badge */}
+          <div className="flex flex-col text-left justify-center min-w-0">
+            {/* Elegant Breadcrumb Trail */}
+            <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[10px] sm:text-[11px] font-semibold tracking-wider text-slate-400 dark:text-slate-500 uppercase select-none">
+              <Link 
+                to="/" 
+                className="hover:text-[#FF6A00] dark:hover:text-orange-400 transition-colors flex items-center gap-1 group"
+              >
+                <Home size={11} className="stroke-[2.2] group-hover:scale-110 transition-transform" />
+                <span>Home</span>
+              </Link>
+              <ChevronRight size={10} className="text-slate-300 dark:text-slate-700 shrink-0 stroke-[2.5]" />
+              
+              {categoryMeta?.parentCategory && (
+                <>
+                  <Link 
+                    to={`/product?category=${categoryMeta.parentCategory.toLowerCase()}`}
+                    className="hover:text-[#FF6A00] dark:hover:text-orange-400 transition-colors"
+                  >
+                    {categoryMeta.parentCategory}
+                  </Link>
+                  <ChevronRight size={10} className="text-slate-300 dark:text-slate-700 shrink-0 stroke-[2.5]" />
+                </>
+              )}
+              
+              <span className="text-slate-600 dark:text-slate-300 font-bold truncate">
+                {categoryMeta 
+                  ? categoryMeta.name 
+                  : (category && category !== "all" 
+                      ? category 
+                      : (searchQuery ? `Search: "${searchQuery}"` : "Products Catalog"))}
+              </span>
+            </nav>
+
+            {/* Collection Title & Items Count Pill */}
+            <div className="flex items-center gap-2.5 mt-0.5 flex-wrap">
+              <h1 className="text-sm sm:text-base lg:text-lg font-black text-slate-900 dark:text-white uppercase tracking-wider leading-tight">
+                {categoryMeta 
+                  ? `${categoryMeta.name} Collection` 
+                  : (category && category !== "all" 
+                      ? `${category} Collection` 
+                      : (searchQuery ? `Results for "${searchQuery}"` : "Products Collection"))}
+              </h1>
+              
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-orange-50 dark:bg-orange-950/40 text-[#FF6A00] dark:text-orange-400 border border-orange-200/70 dark:border-orange-800/50 shadow-2xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#FF6A00] dark:bg-orange-400 animate-pulse" />
+                <span>{totalCount.toLocaleString()} {totalCount === 1 ? "item" : "items"}</span>
+              </span>
+            </div>
           </div>
 
-          {/* Right Controls: Category, Sort, Results */}
-          <div className="flex flex-wrap items-center gap-2.5 justify-end">
+          {/* Right Controls: Filters, Category Select, Sort Select, View Switcher */}
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 justify-between md:justify-end">
             
-            {/* Category dropdown */}
-            <div className="flex items-center gap-1.5">
-              <span className="hidden lg:inline text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Category:</span>
+            {/* Mobile Quick Filter Sheet Trigger Button */}
+            <button
+              type="button"
+              onClick={() => setShowMobileFilters(true)}
+              className="md:hidden inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-bold text-slate-700 dark:text-slate-200 hover:border-[#FF6A00] hover:text-[#FF6A00] transition cursor-pointer shadow-2xs"
+            >
+              <SlidersHorizontal size={13} className="text-[#FF6A00]" />
+              <span>Filters</span>
+              {activeFiltersChips && activeFiltersChips.length > 0 && (
+                <span className="w-4 h-4 rounded-full bg-[#FF6A00] text-white text-[10px] flex items-center justify-center font-bold">
+                  {activeFiltersChips.length}
+                </span>
+              )}
+            </button>
+
+            {/* Category Custom Dropdown Pill */}
+            <div className="relative flex items-center group">
+              <div className="pointer-events-none absolute left-2.5 flex items-center text-slate-400 dark:text-slate-500 group-hover:text-[#FF6A00] dark:group-hover:text-orange-400 transition-colors">
+                <Layers size={13} />
+              </div>
               <select
                 value={category}
                 onChange={(e) => handleCategoryPillChange(e.target.value)}
-                className="border border-slate-200 dark:border-slate-800 rounded-md px-2.5 py-1 text-xs font-bold text-slate-800 dark:text-slate-300 bg-white dark:bg-slate-900 cursor-pointer outline-none shadow-2xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="appearance-none cursor-pointer text-xs font-bold text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/70 border border-slate-200/90 dark:border-slate-800 rounded-lg pl-8 pr-7 py-1.5 transition-all shadow-2xs hover:border-slate-300 dark:hover:border-slate-700 focus:outline-none focus:ring-2 focus:ring-[#FF6A00]/20 focus:border-[#FF6A00]"
+                aria-label="Filter by Category"
               >
                 <option value="all">All Categories</option>
                 {categoriesList.filter(c => c !== "all").map(c => (
                   <option key={c} value={c} className="capitalize">{c}</option>
                 ))}
               </select>
+              <div className="pointer-events-none absolute right-2 flex items-center text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-colors">
+                <ChevronDown size={12} className="stroke-[2.5]" />
+              </div>
             </div>
 
-            {/* Sort selection dropdown */}
-            <div className="flex items-center gap-1.5">
-              <span className="hidden lg:inline text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Sort:</span>
+            {/* Sort Custom Dropdown Pill */}
+            <div className="relative flex items-center group">
+              <div className="pointer-events-none absolute left-2.5 flex items-center text-slate-400 dark:text-slate-500 group-hover:text-[#FF6A00] dark:group-hover:text-orange-400 transition-colors">
+                <ArrowUpDown size={13} />
+              </div>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="border border-slate-200 dark:border-slate-800 rounded-md px-2.5 py-1 text-xs font-bold text-slate-800 dark:text-slate-300 bg-white dark:bg-slate-900 cursor-pointer outline-none shadow-2xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="appearance-none cursor-pointer text-xs font-bold text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/70 border border-slate-200/90 dark:border-slate-800 rounded-lg pl-8 pr-7 py-1.5 transition-all shadow-2xs hover:border-slate-300 dark:hover:border-slate-700 focus:outline-none focus:ring-2 focus:ring-[#FF6A00]/20 focus:border-[#FF6A00]"
+                aria-label="Sort products"
               >
                 <option value="featured">Best Matches</option>
                 <option value="popularity">Popularity</option>
@@ -879,61 +961,58 @@ const Product = () => {
                 <option value="price-high">Price: High → Low</option>
                 <option value="highest-rated">Highest Rated</option>
               </select>
+              <div className="pointer-events-none absolute right-2 flex items-center text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-colors">
+                <ChevronDown size={12} className="stroke-[2.5]" />
+              </div>
             </div>
 
             {/* View Mode Switcher (Grid / List) */}
-            <div className="flex items-center border border-slate-200 dark:border-slate-800 rounded-md overflow-hidden bg-slate-50 dark:bg-slate-900 p-0.5">
+            <div className="flex items-center p-0.5 bg-slate-100 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 rounded-lg shadow-2xs">
               <button
                 type="button"
                 onClick={() => setViewMode("grid")}
-                className={`p-1 rounded-sm transition-colors cursor-pointer border-none flex items-center justify-center ${
+                className={`p-1.5 rounded-md transition-all cursor-pointer border-none flex items-center justify-center ${
                   viewMode === "grid"
-                    ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-2xs font-bold"
+                    ? "bg-white dark:bg-slate-800 text-[#FF6A00] dark:text-orange-400 shadow-2xs font-bold"
                     : "text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 bg-transparent"
                 }`}
                 title="Grid View"
                 aria-label="Grid View"
               >
-                <LayoutGrid size={13} />
+                <LayoutGrid size={13} className="stroke-[2.3]" />
               </button>
               <button
                 type="button"
                 onClick={() => setViewMode("list")}
-                className={`p-1 rounded-sm transition-colors cursor-pointer border-none flex items-center justify-center ${
+                className={`p-1.5 rounded-md transition-all cursor-pointer border-none flex items-center justify-center ${
                   viewMode === "list"
-                    ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-2xs font-bold"
+                    ? "bg-white dark:bg-slate-800 text-[#FF6A00] dark:text-orange-400 shadow-2xs font-bold"
                     : "text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 bg-transparent"
                 }`}
                 title="List View"
                 aria-label="List View"
               >
-                <List size={13} />
+                <List size={13} className="stroke-[2.3]" />
               </button>
             </div>
 
-            {/* Results Count indicator */}
-            <div className="hidden sm:flex items-center gap-2 pl-2.5 border-l border-slate-200 dark:border-slate-800">
-              <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 tracking-widest uppercase">Found</span>
-              <span className="text-xs font-extrabold text-slate-800 dark:text-slate-100 bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded-md">
-                {totalCount} items
-              </span>
-            </div>
           </div>
         </div>
 
         {/* Active Filter Chips bar at the top */}
         {activeFiltersChips && activeFiltersChips.length > 0 && (
-          <div className="w-full px-2.5 sm:px-4 lg:px-6 flex flex-wrap gap-1.5 items-center mt-2 pt-2 border-t border-slate-200/40 dark:border-slate-800/40">
-            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mr-1">
+          <div className="w-full px-3 sm:px-4 lg:px-6 flex flex-wrap gap-1.5 items-center mt-2.5 pt-2 border-t border-slate-200/60 dark:border-slate-800/60">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mr-1 flex items-center gap-1">
+              <Filter size={11} className="text-[#FF6A00]" />
               Active Filters ({activeFiltersChips.length}):
             </span>
             {activeFiltersChips.map((chip, idx) => (
               <span
                 key={`${chip.key}-${idx}`}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-indigo-50/70 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 text-[11px] font-bold border border-indigo-200/80 dark:border-indigo-800/60 shadow-2xs group hover:border-rose-400 dark:hover:border-rose-600 transition-all"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-orange-50/80 dark:bg-orange-950/30 text-slate-800 dark:text-slate-200 text-[11px] font-semibold border border-orange-200/70 dark:border-orange-800/50 shadow-2xs group hover:border-rose-400 dark:hover:border-rose-600 transition-all"
               >
                 {chip.groupLabel && chip.groupLabel.toLowerCase() !== String(chip.label || "").toLowerCase() && (
-                  <span className="text-[9.5px] text-slate-400 font-semibold">{chip.groupLabel}:</span>
+                  <span className="text-[10px] text-slate-400 font-medium">{chip.groupLabel}:</span>
                 )}
                 <span className="capitalize">{chip.label}</span>
                 <button
@@ -948,7 +1027,7 @@ const Product = () => {
             ))}
             <button
               onClick={handleReset}
-              className="inline-flex items-center gap-1 text-[11px] font-black uppercase tracking-wider text-[#ff3f6c] hover:opacity-80 bg-transparent border-none cursor-pointer transition-opacity ml-2"
+              className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-rose-500 hover:text-rose-600 bg-transparent border-none cursor-pointer transition-colors ml-2 py-0.5"
             >
               <RotateCcw size={11} className="stroke-[2.5]" />
               <span>Clear All</span>
@@ -958,12 +1037,15 @@ const Product = () => {
       </div>
 
       {/* ── Layout Grid Columns ── */}
-      <div className="w-full px-1.5 sm:px-2 lg:px-2.5 py-1.5 sm:py-2 grid grid-cols-1 md:grid-cols-[240px_1fr] lg:grid-cols-[250px_1fr] gap-1.5 sm:gap-2 items-start relative">
+      <div className="w-full px-1.5 sm:px-2 lg:px-2.5 pt-0 pb-2 grid grid-cols-1 md:grid-cols-[240px_1fr] lg:grid-cols-[250px_1fr] gap-1.5 sm:gap-2 items-start relative">
         
         {/* Desktop Sidebar filter card */}
         <div 
-          className="hidden md:block sticky max-h-[calc(100vh-175px)] overflow-y-auto select-none scrollbar-hide"
-          style={{ top: "calc(var(--navbar-height, 80px) + 54px)" }}
+          className="hidden md:flex flex-col sticky z-20 select-none overflow-hidden"
+          style={{ 
+            top: `calc(var(--navbar-height, 64px) + ${controlBarHeight}px)`,
+            height: `calc(100vh - var(--navbar-height, 64px) - ${controlBarHeight}px)`
+          }}
         >
           <FilterSidebar
             category={category}
@@ -1044,7 +1126,7 @@ const Product = () => {
         )}
 
         {/* Product listing grid content area */}
-        <div className="flex-1 w-full">
+        <div className="flex-1 w-full pt-1.5 sm:pt-2">
           {error ? (
             <div className="text-center py-16 px-6 bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-lg max-w-xl mx-auto space-y-4">
               <div className="h-12 w-12 bg-rose-500/10 text-rose-500 rounded-full flex items-center justify-center mx-auto shadow-inner">

@@ -143,12 +143,12 @@ const ReviewCard = ({ review, getAvatarStyle }) => {
     : null;
 
   return (
-    <div className="w-full rounded-md border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-3.5 shadow-2xs transition-all duration-200 hover:border-slate-300 dark:hover:border-slate-700 text-left space-y-2.5">
+    <div className="w-full rounded-none bg-slate-100/70 dark:bg-slate-900/60 p-5 transition-all duration-200 text-left space-y-3.5">
       {/* Top Header: Reviewer Info + Star Rating */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           <div
-            className={`w-8 h-8 rounded-md shrink-0 flex items-center justify-center font-black text-xs shadow-xs ${getAvatarStyle(
+            className={`w-8 h-8 rounded-none shrink-0 flex items-center justify-center font-black text-xs ${getAvatarStyle(
               displayName
             )}`}
           >
@@ -165,7 +165,7 @@ const ReviewCard = ({ review, getAvatarStyle }) => {
                 {displayName}
               </span>
               {!isAnonymous && (
-                <span className="inline-flex items-center gap-0.5 rounded bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.2 text-[8px] font-black uppercase text-emerald-700 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-900/50">
+                <span className="inline-flex items-center gap-0.5 rounded-none bg-emerald-100/80 dark:bg-emerald-950/60 px-1.5 py-0.5 text-[8px] font-black uppercase text-emerald-800 dark:text-emerald-300">
                   <ShieldCheck size={9} className="stroke-[2.5]" />
                   Verified
                 </span>
@@ -182,8 +182,8 @@ const ReviewCard = ({ review, getAvatarStyle }) => {
         </div>
 
         {/* Rating Score Badge */}
-        <div className="flex items-center gap-1 bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-900/50 px-1.5 py-0.5 rounded-md shrink-0">
-          <span className="text-[11px] font-black text-amber-700 dark:text-amber-400">
+        <div className="flex items-center gap-1 bg-amber-100/80 dark:bg-amber-950/40 px-1.5 py-0.5 rounded-none shrink-0">
+          <span className="text-[11px] font-black text-amber-800 dark:text-amber-300">
             {review.rating}.0
           </span>
           {renderStars(review.rating)}
@@ -205,7 +205,7 @@ const ReviewCard = ({ review, getAvatarStyle }) => {
 
       {/* Pros & Cons Highlights */}
       {(pros.length > 0 || cons.length > 0) && (
-        <div className="rounded-md bg-slate-50/70 dark:bg-slate-950/30 border border-slate-200/70 dark:border-slate-800/70 p-2 space-y-1 text-xs">
+        <div className="rounded-none bg-white/70 dark:bg-slate-950/40 p-2 space-y-1 text-xs">
           {pros.length > 0 && (
             <div className="flex items-center gap-1.5 flex-wrap">
               <span className="text-[9.5px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-400 shrink-0">
@@ -215,7 +215,7 @@ const ReviewCard = ({ review, getAvatarStyle }) => {
                 {pros.map((pro, i) => (
                   <span
                     key={i}
-                    className="inline-flex items-center gap-0.5 rounded bg-emerald-100/70 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 px-1.5 py-0.5 text-[10px] font-semibold"
+                    className="inline-flex items-center gap-0.5 rounded-none bg-emerald-100/70 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 px-1.5 py-0.5 text-[10px] font-semibold"
                   >
                     <Check size={9} className="stroke-[3]" />
                     {pro}
@@ -234,7 +234,7 @@ const ReviewCard = ({ review, getAvatarStyle }) => {
                 {cons.map((con, i) => (
                   <span
                     key={i}
-                    className="inline-flex items-center gap-0.5 rounded bg-rose-100/70 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60 px-1.5 py-0.5 text-[10px] font-semibold"
+                    className="inline-flex items-center gap-0.5 rounded-none bg-rose-100/70 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 px-1.5 py-0.5 text-[10px] font-semibold"
                   >
                     <span className="font-black text-[9px]">✕</span>
                     {con}
@@ -249,7 +249,7 @@ const ReviewCard = ({ review, getAvatarStyle }) => {
       {/* Review Media Attachment */}
       {mediaUrl && (
         <div className="flex gap-2 pt-0.5">
-          <div className="relative group/thumb w-12 h-12 rounded-md overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-900 cursor-zoom-in">
+          <div className="relative group/thumb w-12 h-12 rounded-none overflow-hidden bg-slate-200 dark:bg-slate-800 cursor-zoom-in">
             <img
               src={mediaUrl}
               alt="customer upload"
@@ -267,7 +267,7 @@ const ReviewCard = ({ review, getAvatarStyle }) => {
             .map((rep, idx) => (
               <div
                 key={idx}
-                className="rounded-md border border-indigo-100 dark:border-indigo-900/40 bg-indigo-50/20 dark:bg-indigo-950/20 p-2 text-left space-y-1"
+                className="rounded-none bg-indigo-50/40 dark:bg-indigo-950/30 p-2 text-left space-y-1"
               >
                 <div className="flex items-center justify-between gap-1">
                   <div className="flex items-center gap-1">
@@ -292,15 +292,15 @@ const ReviewCard = ({ review, getAvatarStyle }) => {
       )}
 
       {/* Bottom Actions Toolbar */}
-      <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800/80 pt-2 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+      <div className="flex items-center justify-between pt-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={handleHelpfulClick}
-            className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded transition-colors cursor-pointer ${
+            className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-none transition-colors cursor-pointer ${
               hasVotedHelpful
-                ? "bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-bold"
-                : "hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300"
+                ? "bg-indigo-100 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-bold"
+                : "hover:bg-slate-200/60 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300"
             }`}
           >
             <ThumbsUp
@@ -313,10 +313,10 @@ const ReviewCard = ({ review, getAvatarStyle }) => {
           <button
             type="button"
             onClick={handleLikeClick}
-            className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded transition-colors cursor-pointer ${
+            className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-none transition-colors cursor-pointer ${
               isLiked
-                ? "bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 font-bold"
-                : "hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300"
+                ? "bg-rose-100 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 font-bold"
+                : "hover:bg-slate-200/60 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300"
             }`}
           >
             <Heart
@@ -329,7 +329,7 @@ const ReviewCard = ({ review, getAvatarStyle }) => {
           <button
             type="button"
             onClick={() => setShowReplyForm(!showReplyForm)}
-            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-none hover:bg-slate-200/60 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300 transition-colors cursor-pointer"
           >
             <MessageSquare size={11} />
             <span>Reply</span>
@@ -340,7 +340,7 @@ const ReviewCard = ({ review, getAvatarStyle }) => {
           type="button"
           onClick={handleReportClick}
           disabled={isReported}
-          className={`inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[10.5px] transition-colors cursor-pointer ${
+          className={`inline-flex items-center gap-0.5 px-1 py-0.5 rounded-none text-[10.5px] transition-colors cursor-pointer ${
             isReported
               ? "text-rose-600 font-bold"
               : "text-slate-400 hover:text-rose-600 dark:hover:text-rose-400"
@@ -355,7 +355,7 @@ const ReviewCard = ({ review, getAvatarStyle }) => {
       {showReplyForm && (
         <form
           onSubmit={handleSendReply}
-          className="flex gap-2 items-center bg-slate-50 dark:bg-slate-950 p-1.5 rounded-md border border-slate-200 dark:border-slate-800 animate-in fade-in duration-150 mt-1.5"
+          className="flex gap-2 items-center bg-white dark:bg-slate-950 p-1.5 rounded-none animate-in fade-in duration-150 mt-1.5"
         >
           <input
             type="text"
@@ -367,7 +367,7 @@ const ReviewCard = ({ review, getAvatarStyle }) => {
           <button
             type="submit"
             disabled={!newReplyText.trim()}
-            className="h-6 px-2.5 rounded bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white text-[10.5px] font-bold transition flex items-center gap-1 cursor-pointer"
+            className="h-6 px-2.5 rounded-none bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white text-[10.5px] font-bold transition flex items-center gap-1 cursor-pointer"
           >
             <Send size={10} />
             <span>Send</span>
@@ -422,7 +422,7 @@ const CostomersReviews = ({
 
   if (parsedReviews.length === 0) {
     return (
-      <div className="rounded-md border-2 border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 px-5 py-8 text-center">
+      <div className="rounded-none bg-slate-100/70 dark:bg-slate-900/40 px-5 py-8 text-center">
         <p className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">
           No matching reviews
         </p>
@@ -457,7 +457,7 @@ const CostomersReviews = ({
             <button
               type="button"
               onClick={() => handleScroll("left")}
-              className="w-6 h-6 flex items-center justify-center rounded border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer active:scale-95"
+              className="w-6 h-6 flex items-center justify-center rounded-none bg-slate-200/70 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 transition cursor-pointer active:scale-95"
               aria-label="Previous review"
             >
               <ChevronLeft size={13} />
@@ -465,7 +465,7 @@ const CostomersReviews = ({
             <button
               type="button"
               onClick={() => handleScroll("right")}
-              className="w-6 h-6 flex items-center justify-center rounded border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer active:scale-95"
+              className="w-6 h-6 flex items-center justify-center rounded-none bg-slate-200/70 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 transition cursor-pointer active:scale-95"
               aria-label="Next review"
             >
               <ChevronRight size={13} />
