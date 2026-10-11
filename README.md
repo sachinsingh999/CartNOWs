@@ -16,7 +16,7 @@
   <a href="#-tech-stack"><img src="https://img.shields.io/badge/MongoDB-v6+-47A248.svg?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB" /></a>
   <a href="#-tech-stack"><img src="https://img.shields.io/badge/Socket.io-Real--Time-010101.svg?style=for-the-badge&logo=socket.io&logoColor=white" alt="Socket.io" /></a>
   <a href="#-security--hardening"><img src="https://img.shields.io/badge/Security-Hardened%20%26%20Zero--Leak-success.svg?style=for-the-badge&logo=securityscorecard&logoColor=white" alt="Security Hardened" /></a>
-  <a href="#-license"><img src="https://img.shields.io/badge/License-ISC-orange.svg?style=for-the-badge" alt="License" /></a>
+  <a href="#-license"><img src="https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge" alt="License" /></a>
 </p>
 
 ---
@@ -467,7 +467,7 @@ Contributions are what make the open-source community an incredible place to lea
 
 ## 📄 License
 
-Distributed under the **ISC License**. See the `LICENSE` file or package configurations for more information.
+Distributed under the **MIT License**. See the [LICENSE](LICENSE) file for more information.
 
 <p align="center">
   Made with ❤️ by <a href="https://github.com/sachinsingh999">Sachin Singh</a>
