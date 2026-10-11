@@ -50,6 +50,7 @@ import {
   EyeOff
 } from "lucide-react";
 import { backendUrl } from "../config";
+import { useAuth } from "../context/AuthContext";
 import { useLanguage } from "../context/LanguageContext";
 import { cachedGet } from "../utils/apiCache";
 import { toast } from "react-toastify";
@@ -70,6 +71,7 @@ const PRESET_AVATARS = [
 ];
 
 const Profile = () => {
+  const { setUser: setAuthUser } = useAuth();
   const [user, setUser] = useState(null);
   const [orders, setOrders] = useState([]);
   const [totalSpent, setTotalSpent] = useState(0);
@@ -118,6 +120,7 @@ const Profile = () => {
   const [editPassword, setEditPassword] = useState("");
   const [selectedAvatar, setSelectedAvatar] = useState("");
   const [savingProfile, setSavingProfile] = useState(false);
+  const [savingAvatar, setSavingAvatar] = useState(false);
   const [copiedKey, setCopiedKey] = useState(false);
   const [revealKey, setRevealKey] = useState(false);
 
@@ -225,6 +228,34 @@ const Profile = () => {
     }
   };
 
+  const handleSaveAvatar = async (avatarToSave) => {
+    const avatarVal = avatarToSave !== undefined ? avatarToSave : selectedAvatar;
+    setSavingAvatar(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.put(
+        `${backendUrl}/api/user/update-profile`,
+        { profilePhoto: avatarVal },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (res.data.success) {
+        setUser(res.data.user);
+        setSelectedAvatar(res.data.user.profilePhoto || "");
+        if (typeof setAuthUser === "function") setAuthUser(res.data.user);
+        localStorage.setItem("user", JSON.stringify(res.data.user));
+        window.dispatchEvent(new Event("userUpdated"));
+        toast.success("Avatar saved & synchronized across your account! ✨");
+      } else {
+        toast.error(res.data.message || "Failed to update avatar.");
+      }
+    } catch (error) {
+      console.error("AVATAR SAVE ERROR 👉", error);
+      toast.error("Failed to update avatar.");
+    } finally {
+      setSavingAvatar(false);
+    }
+  };
+
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     if (!editName.trim() || !editEmail.trim()) {
@@ -246,7 +277,11 @@ const Profile = () => {
       );
       if (res.data.success) {
         setUser(res.data.user);
+        setSelectedAvatar(res.data.user.profilePhoto || "");
+        if (typeof setAuthUser === "function") setAuthUser(res.data.user);
         setEditPassword("");
+        localStorage.setItem("user", JSON.stringify(res.data.user));
+        window.dispatchEvent(new Event("userUpdated"));
         toast.success("Profile credentials successfully updated! ✨");
       } else {
         toast.error(res.data.message || "Failed to update profile details.");
@@ -260,7 +295,7 @@ const Profile = () => {
   };
 
   const handleAvatarFileUpload = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
         toast.error("File is too large. Max limit is 2MB.");
@@ -269,6 +304,7 @@ const Profile = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setSelectedAvatar(reader.result);
+        toast.info("Image loaded! Click 'Save Avatar' to apply. 📸");
       };
       reader.readAsDataURL(file);
     }
@@ -304,6 +340,8 @@ const Profile = () => {
 
         if (profileRes.data.success) {
           setUser(profileRes.data.user);
+          if (typeof setAuthUser === "function") setAuthUser(profileRes.data.user);
+          localStorage.setItem("user", JSON.stringify(profileRes.data.user));
         }
 
         if (ordersRes.data.success) {
@@ -1757,43 +1795,84 @@ const Profile = () => {
                 <div className="lg:col-span-5 space-y-3 sm:space-y-4">
                   
                   {/* Avatar Picker Card */}
-                  <div className="rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-xs space-y-2.5">
-                    <div>
-                      <h4 className="text-xs sm:text-sm font-black uppercase text-slate-900 dark:text-white tracking-wider flex items-center gap-2">
-                        <Camera size={14} className="text-purple-500" />
-                        <span>Luxury Avatar Presets</span>
-                      </h4>
-                      <p className="text-[10px] text-slate-400 font-medium mt-0.5">Choose a designer gradient or upload a photo.</p>
+                  <div className="rounded-none border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-xs space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-xs sm:text-sm font-black uppercase text-slate-900 dark:text-white tracking-wider flex items-center gap-2">
+                          <Camera size={14} className="text-indigo-500" />
+                          <span>Avatar & Profile Photo</span>
+                        </h4>
+                        <p className="text-[10px] text-slate-400 font-medium mt-0.5">Select a luxury gradient preset or upload your photo.</p>
+                      </div>
+                      {user?.profilePhoto === selectedAvatar ? (
+                        <span className="px-2 py-0.5 text-[9.5px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                          Active
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 text-[9.5px] font-black uppercase tracking-wider bg-amber-500/10 text-amber-500 border border-amber-500/20 animate-pulse">
+                          Unsaved
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Selected Avatar Live Preview & Quick Action Bar */}
+                    <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800">
+                      <div className="shrink-0">
+                        {renderAvatarContent(selectedAvatar, "h-12 w-12 text-lg")}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <span className="text-[9.5px] font-bold uppercase tracking-wider text-slate-400 block">Preview Selection</span>
+                        <span className="text-xs font-black text-slate-900 dark:text-white truncate block">
+                          {selectedAvatar?.startsWith("data:") || selectedAvatar?.startsWith("http")
+                            ? "Custom Uploaded Photo"
+                            : PRESET_AVATARS.find(p => p.id === selectedAvatar)?.name || "Default Initials"}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleSaveAvatar(selectedAvatar)}
+                        disabled={savingAvatar || user?.profilePhoto === selectedAvatar}
+                        className="px-3.5 py-1.5 rounded-none bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-[11px] font-black uppercase tracking-wider transition cursor-pointer border-none shadow-xs flex items-center gap-1.5 shrink-0"
+                      >
+                        {savingAvatar ? <RefreshCw size={12} className="animate-spin" /> : <Check size={12} />}
+                        <span>{savingAvatar ? "Saving..." : user?.profilePhoto === selectedAvatar ? "Saved" : "Save Avatar"}</span>
+                      </button>
                     </div>
 
                     {/* Presets Grid */}
-                    <div className="grid grid-cols-4 gap-2 pt-1">
-                      {PRESET_AVATARS.map((avatar) => {
-                        const isSelected = selectedAvatar === avatar.id;
-                        return (
-                          <button
-                            key={avatar.id}
-                            type="button"
-                            onClick={() => {
-                              setSelectedAvatar(avatar.id);
-                              toast.info(`Selected Preset: ${avatar.name} 🎨`);
-                            }}
-                            className={`h-9 sm:h-10 rounded-md bg-gradient-to-tr ${avatar.gradient} relative cursor-pointer border ${
-                              isSelected ? "border-indigo-500 ring-2 ring-indigo-500/40" : "border-white/10"
-                            } transition hover:opacity-90`}
-                            title={avatar.name}
-                          >
-                            {isSelected && (
-                              <span className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-md">
-                                <Check size={14} className="text-white" />
-                              </span>
-                            )}
-                          </button>
-                        );
-                      })}
+                    <div className="space-y-1.5 pt-1">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Luxury Preset Gradients</span>
+                      <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
+                        {PRESET_AVATARS.map((avatar) => {
+                          const isSelected = selectedAvatar === avatar.id;
+                          const isCurrentActive = user?.profilePhoto === avatar.id;
+                          return (
+                            <button
+                              key={avatar.id}
+                              type="button"
+                              onClick={() => {
+                                setSelectedAvatar(avatar.id);
+                              }}
+                              className={`h-9 sm:h-10 rounded-none bg-gradient-to-tr ${avatar.gradient} relative cursor-pointer border ${
+                                isSelected ? "border-indigo-500 ring-2 ring-indigo-500/50" : "border-white/10"
+                              } transition hover:opacity-90`}
+                              title={avatar.name}
+                            >
+                              {isSelected && (
+                                <span className="absolute inset-0 flex items-center justify-center bg-black/30">
+                                  <Check size={14} className="text-white stroke-[3]" />
+                                </span>
+                              )}
+                              {isCurrentActive && !isSelected && (
+                                <span className="absolute bottom-1 right-1 h-1.5 w-1.5 rounded-none bg-emerald-400"></span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
 
-                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-1.5">
+                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex flex-col gap-2">
                       <input
                         type="file"
                         accept="image/*"
@@ -1801,25 +1880,35 @@ const Profile = () => {
                         onChange={handleAvatarFileUpload}
                         className="hidden"
                       />
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current.click()}
-                        className="w-full py-2 rounded border border-slate-200 dark:border-slate-800 text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer flex items-center justify-center gap-1.5"
-                      >
-                        <Camera size={13} />
-                        <span>Upload Custom Image</span>
-                      </button>
-
-                      {selectedAvatar && selectedAvatar.startsWith("data:") && (
-                        <div className="flex items-center justify-between text-xs pt-1">
-                          <span className="text-emerald-500 font-bold text-[10.5px]">Custom Photo Loaded</span>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="flex-1 py-2 rounded-none border border-slate-300 dark:border-slate-700 text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer flex items-center justify-center gap-1.5"
+                        >
+                          <Camera size={13} />
+                          <span>Upload Photo</span>
+                        </button>
+                        {selectedAvatar && (
                           <button
                             type="button"
-                            onClick={() => setSelectedAvatar("")}
-                            className="text-rose-500 hover:underline text-[10px] font-black uppercase bg-transparent border-none cursor-pointer"
+                            onClick={() => {
+                              setSelectedAvatar("");
+                            }}
+                            className="px-3 py-2 rounded-none border border-rose-300 dark:border-rose-900/50 text-xs font-bold uppercase tracking-wider text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition cursor-pointer flex items-center justify-center"
+                            title="Reset to default initials"
                           >
-                            Remove
+                            Reset
                           </button>
+                        )}
+                      </div>
+
+                      {selectedAvatar && (selectedAvatar.startsWith("data:") || selectedAvatar.startsWith("http")) && (
+                        <div className="flex items-center justify-between text-xs px-1">
+                          <span className="text-emerald-500 font-bold text-[10.5px] flex items-center gap-1">
+                            <Sparkles size={11} />
+                            <span>Custom photo ready to save</span>
+                          </span>
                         </div>
                       )}
                     </div>

@@ -4,6 +4,7 @@ import axios from "axios";
 import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { backendUrl } from "../config";
 import { toast } from "react-toastify";
+import OrderSuccessCelebrationModal from "../components/OrderSuccessCelebrationModal";
 
 const Verify = () => {
   const [searchParams] = useSearchParams();
@@ -42,13 +43,7 @@ const Verify = () => {
 
         if (res.data.success) {
           setIsSuccess(true);
-          toast.success("Payment verified successfully!");
-          
-          // Clear cart on success just in case
-          // The backend does it, but we can sync locally or let it route
-          setTimeout(() => {
-            navigate(`/order-confirmed/${orderId}`);
-          }, 3000);
+          toast.success("Payment verified successfully! 🎉");
         } else {
           setIsSuccess(false);
           setErrorMessage(res.data.message || "Payment verification failed.");
@@ -73,6 +68,17 @@ const Verify = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center px-4 py-12 text-slate-900 dark:text-slate-100 transition-colors duration-200">
+      {/* Full-Screen Order Confirmation Celebration Animation on Success */}
+      {isSuccess && (
+        <OrderSuccessCelebrationModal
+          isOpen={true}
+          orderId={orderId}
+          onComplete={() => {
+            navigate(`/order-confirmed/${orderId}`);
+          }}
+        />
+      )}
+
       <div className="w-full max-w-md rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 p-8 shadow-lg dark:shadow-slate-950/20 text-center space-y-6">
         
         {verifying && (

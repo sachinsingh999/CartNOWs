@@ -842,27 +842,24 @@ const Product = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#eaeded] dark:bg-slate-950 font-sans transition-colors duration-300 relative text-left pb-16">
-      
-
-
+    <div className="min-h-screen bg-[#eaeded] dark:bg-slate-950 font-sans transition-colors duration-300 relative text-left pb-12">
       {/* ── Sticky Control Bar ── */}
       <div 
         ref={controlBarRef}
-        className="sticky z-30 bg-white/95 dark:bg-slate-950/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 py-2.5 sm:py-3 shadow-[0_4px_16px_-4px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.35)] transition-all duration-300"
+        className="sticky z-30 bg-white/95 dark:bg-slate-950/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 py-1.5 md:py-3.5 shadow-[0_4px_16px_-4px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.35)] transition-all duration-300"
         style={{ top: "var(--navbar-height, 64px)" }}
       >
-        <div className="w-full px-3 sm:px-4 lg:px-6 flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
-          {/* Left: Breadcrumbs, Title & Result Count Badge */}
-          <div className="flex flex-col text-left justify-center min-w-0">
-            {/* Elegant Breadcrumb Trail */}
-            <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[10px] sm:text-[11px] font-semibold tracking-wider text-slate-400 dark:text-slate-500 uppercase select-none">
+        {/* ── DESKTOP VIEW (md and up): Restored Original Desktop Header ── */}
+        <div className="hidden md:flex w-full px-3 sm:px-4 lg:px-6 flex-row items-center justify-between gap-4">
+          {/* Left Title & Breadcrumbs */}
+          <div className="flex flex-col gap-0.5 min-w-0">
+            {/* Breadcrumb Trail */}
+            <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 select-none">
               <Link 
                 to="/" 
-                className="hover:text-[#FF6A00] dark:hover:text-orange-400 transition-colors flex items-center gap-1 group"
+                className="hover:text-[#FF6A00] dark:hover:text-orange-400 transition-colors"
               >
-                <Home size={11} className="stroke-[2.2] group-hover:scale-110 transition-transform" />
-                <span>Home</span>
+                Home
               </Link>
               <ChevronRight size={10} className="text-slate-300 dark:text-slate-700 shrink-0 stroke-[2.5]" />
               
@@ -882,8 +879,8 @@ const Product = () => {
                 {categoryMeta 
                   ? categoryMeta.name 
                   : (category && category !== "all" 
-                      ? category 
-                      : (searchQuery ? `Search: "${searchQuery}"` : "Products Catalog"))}
+                    ? category 
+                    : (searchQuery ? `Search: "${searchQuery}"` : "Products Catalog"))}
               </span>
             </nav>
 
@@ -893,8 +890,8 @@ const Product = () => {
                 {categoryMeta 
                   ? `${categoryMeta.name} Collection` 
                   : (category && category !== "all" 
-                      ? `${category} Collection` 
-                      : (searchQuery ? `Results for "${searchQuery}"` : "Products Collection"))}
+                    ? `${category} Collection` 
+                    : (searchQuery ? `Results for "${searchQuery}"` : "Products Collection"))}
               </h1>
               
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-orange-50 dark:bg-orange-950/40 text-[#FF6A00] dark:text-orange-400 border border-orange-200/70 dark:border-orange-800/50 shadow-2xs">
@@ -904,24 +901,9 @@ const Product = () => {
             </div>
           </div>
 
-          {/* Right Controls: Filters, Category Select, Sort Select, View Switcher */}
-          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 justify-between md:justify-end">
+          {/* Right Controls: Category Select, Sort Select, View Switcher */}
+          <div className="flex items-center gap-2 sm:gap-2.5 justify-end">
             
-            {/* Mobile Quick Filter Sheet Trigger Button */}
-            <button
-              type="button"
-              onClick={() => setShowMobileFilters(true)}
-              className="md:hidden inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-bold text-slate-700 dark:text-slate-200 hover:border-[#FF6A00] hover:text-[#FF6A00] transition cursor-pointer shadow-2xs"
-            >
-              <SlidersHorizontal size={13} className="text-[#FF6A00]" />
-              <span>Filters</span>
-              {activeFiltersChips && activeFiltersChips.length > 0 && (
-                <span className="w-4 h-4 rounded-full bg-[#FF6A00] text-white text-[10px] flex items-center justify-center font-bold">
-                  {activeFiltersChips.length}
-                </span>
-              )}
-            </button>
-
             {/* Category Custom Dropdown Pill */}
             <div className="relative flex items-center group">
               <div className="pointer-events-none absolute left-2.5 flex items-center text-slate-400 dark:text-slate-500 group-hover:text-[#FF6A00] dark:group-hover:text-orange-400 transition-colors">
@@ -999,6 +981,82 @@ const Product = () => {
           </div>
         </div>
 
+        {/* ── MOBILE VIEW (< md): Balanced Compact Mockup Layout ── */}
+        <div className="flex md:hidden w-full px-3 flex-col gap-1.5">
+          {/* Breadcrumb Trail */}
+          <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-[11px] font-medium text-slate-500 dark:text-slate-400 select-none py-0">
+            <Link 
+              to="/" 
+              className="text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-white transition-colors flex items-center"
+              aria-label="Home"
+            >
+              <Home size={13} className="stroke-[1.8]" />
+            </Link>
+            <ChevronRight size={10} className="text-slate-300 dark:text-slate-600 shrink-0 stroke-[2.2]" />
+            <Link 
+              to="/" 
+              className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors font-medium"
+            >
+              Home
+            </Link>
+            <ChevronRight size={10} className="text-slate-300 dark:text-slate-600 shrink-0 stroke-[2.2]" />
+            
+            {categoryMeta?.parentCategory && (
+              <>
+                <Link 
+                  to={`/product?category=${categoryMeta.parentCategory.toLowerCase()}`}
+                  className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors capitalize font-medium"
+                >
+                  {categoryMeta.parentCategory}
+                </Link>
+                <ChevronRight size={10} className="text-slate-300 dark:text-slate-600 shrink-0 stroke-[2.2]" />
+              </>
+            )}
+            
+            <span className="text-slate-900 dark:text-white font-bold truncate capitalize">
+              {categoryMeta 
+                ? categoryMeta.name 
+                : (category && category !== "all" 
+                    ? category 
+                    : (searchQuery ? `Search: "${searchQuery}"` : "Products Catalog"))}
+            </span>
+          </nav>
+
+          {/* Heading Row: Title on Left, Green Count Badge on Right */}
+          <div className="flex items-center justify-between gap-2">
+            <h1 className="text-base sm:text-lg font-black tracking-tight leading-tight flex items-center gap-1">
+              {categoryMeta ? (
+                <>
+                  <span className="text-slate-950 dark:text-white font-black">{categoryMeta.name}</span>
+                  <span className="text-[#2563EB] dark:text-blue-500 font-black">Collection</span>
+                </>
+              ) : category && category !== "all" ? (
+                <>
+                  <span className="text-slate-950 dark:text-white font-black capitalize">{category}</span>
+                  <span className="text-[#2563EB] dark:text-blue-500 font-black">Collection</span>
+                </>
+              ) : searchQuery ? (
+                <>
+                  <span className="text-slate-950 dark:text-white font-black">Results for</span>
+                  <span className="text-[#2563EB] dark:text-blue-500 font-black">"{searchQuery}"</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-slate-950 dark:text-white font-black">Products</span>
+                  <span className="text-[#2563EB] dark:text-blue-500 font-black">Collection</span>
+                </>
+              )}
+            </h1>
+            
+            {/* Green Items Count Badge */}
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#ECFDF5] dark:bg-emerald-950/40 text-slate-900 dark:text-emerald-300 border border-[#A7F3D0] dark:border-emerald-800/60 shadow-2xs shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] shrink-0" />
+              <span>{totalCount.toLocaleString()} {totalCount === 1 ? "item" : "items"}</span>
+            </span>
+          </div>
+
+        </div>
+
         {/* Active Filter Chips bar at the top */}
         {activeFiltersChips && activeFiltersChips.length > 0 && (
           <div className="w-full px-3 sm:px-4 lg:px-6 flex flex-wrap gap-1.5 items-center mt-2.5 pt-2 border-t border-slate-200/60 dark:border-slate-800/60">
@@ -1037,7 +1095,7 @@ const Product = () => {
       </div>
 
       {/* ── Layout Grid Columns ── */}
-      <div className="w-full px-1.5 sm:px-2 lg:px-2.5 pt-0 pb-2 grid grid-cols-1 md:grid-cols-[240px_1fr] lg:grid-cols-[250px_1fr] gap-1.5 sm:gap-2 items-start relative">
+      <div className="w-full px-0 sm:px-2 lg:px-2.5 pt-0 pb-2 grid grid-cols-1 md:grid-cols-[240px_1fr] lg:grid-cols-[250px_1fr] gap-1.5 sm:gap-2 items-start relative">
         
         {/* Desktop Sidebar filter card */}
         <div 

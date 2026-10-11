@@ -416,24 +416,30 @@ const HeroSplitBanner = ({ homepageData }) => {
               }
             }
 
-            return {
-              id: asset._id || `hero-asset-${idx}`,
-              tag: asset.tagline
-                ? `${asset.category?.toUpperCase() || "FEATURED"} • SPECIAL`
-                : `${asset.category?.toUpperCase() || "FEATURED"} CAMPAIGN`,
-              tagColor: theme.tagColor,
-              tagPillBg: theme.tagPillBg,
-              title: displayTitle,
-              subtitle: displaySubtitle,
-              ctaText: theme.ctaText,
-              ctaLink: theme.ctaLink,
-              ctaBg: theme.ctaBg,
-              bgGradient: theme.bgGradient,
-              borderColor: theme.borderColor,
-              glowColor: theme.glowColor,
-              image: getOptimizedImageUrl(asset.imageUrl?.startsWith("http") ? asset.imageUrl : `${backendUrl}${asset.imageUrl}`, { width: 1000, quality: 80 }),
-              alt: asset.name || "Hero Model"
-            };
+              const rawImgUrl = asset.imageUrl?.startsWith("http") ? asset.imageUrl : `${backendUrl}${asset.imageUrl}`;
+              // Apply e_trim to eliminate empty transparent borders and deliver high-res trimmed image
+              const trimmedImgUrl = rawImgUrl.includes("res.cloudinary.com") && rawImgUrl.includes("/image/upload/") && !rawImgUrl.includes("e_trim")
+                ? rawImgUrl.replace("/image/upload/", "/image/upload/e_trim,f_auto,q_auto,w_1100/")
+                : getOptimizedImageUrl(rawImgUrl, { width: 1100, quality: 85 });
+
+              return {
+                id: asset._id || `hero-asset-${idx}`,
+                tag: asset.tagline
+                  ? `${asset.category?.toUpperCase() || "FEATURED"} • SPECIAL`
+                  : `${asset.category?.toUpperCase() || "FEATURED"} CAMPAIGN`,
+                tagColor: theme.tagColor,
+                tagPillBg: theme.tagPillBg,
+                title: displayTitle,
+                subtitle: displaySubtitle,
+                ctaText: theme.ctaText,
+                ctaLink: theme.ctaLink,
+                ctaBg: theme.ctaBg,
+                bgGradient: theme.bgGradient,
+                borderColor: theme.borderColor,
+                glowColor: theme.glowColor,
+                image: trimmedImgUrl,
+                alt: asset.name || "Hero Model"
+              };
           });
 
           if (isMounted && dynamicSlides.length > 0) {
@@ -485,7 +491,7 @@ const HeroSplitBanner = ({ homepageData }) => {
 
   return (
     <div
-      className="w-full px-2 sm:px-4 lg:px-6 pt-1 pb-0.5 select-none"
+      className="w-full px-0 py-0 select-none"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
@@ -496,7 +502,7 @@ const HeroSplitBanner = ({ homepageData }) => {
             ════════════════════════════════════════════════════════ */}
         <div className="lg:col-span-7 xl:col-span-7 relative flex flex-col h-[370px] sm:h-[430px] lg:h-[490px]">
           <div
-            className={`relative w-full h-full rounded-none border ${activeSlide.borderColor} bg-gradient-to-r ${activeSlide.bgGradient} overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.04)] dark:shadow-none transition-colors duration-500`}
+            className={`relative w-full h-full rounded-none border-0 lg:border-r ${activeSlide.borderColor} bg-gradient-to-r ${activeSlide.bgGradient} overflow-hidden shadow-none transition-colors duration-500`}
           >
             {/* Ambient Radial Backlight Glow Behind Cutout Model */}
             <div className="absolute right-[-5%] top-1/2 -translate-y-1/2 w-[360px] sm:w-[440px] h-[360px] sm:h-[440px] rounded-full blur-[80px] pointer-events-none transition-colors duration-700 opacity-80 dark:opacity-40">
@@ -507,9 +513,6 @@ const HeroSplitBanner = ({ homepageData }) => {
             <div className="absolute inset-0 pointer-events-none opacity-30 dark:opacity-15 overflow-hidden">
               <svg className="absolute top-10 left-[42%] w-8 h-8 text-amber-500 stroke-current fill-none stroke-[2]" viewBox="0 0 24 24">
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-              </svg>
-              <svg className="absolute bottom-16 left-1/3 w-6 h-6 text-orange-400 stroke-current fill-none stroke-[2]" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="8" />
               </svg>
             </div>
 
@@ -523,64 +526,68 @@ const HeroSplitBanner = ({ homepageData }) => {
                 transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
                 className="absolute inset-0 w-full h-full flex flex-col md:flex-row items-stretch justify-between z-10 pointer-events-none"
               >
-                {/* Left Text Block */}
-                <div className="w-[62%] sm:w-[54%] md:w-[50%] lg:w-[48%] text-left z-20 flex flex-col justify-center px-3.5 sm:px-8 lg:px-10 py-3 sm:py-6 pointer-events-auto h-full">
-                  {/* Category Pill Tag */}
-                  <div className="inline-flex items-center gap-1.5 mb-1.5 sm:mb-3">
-                    <span className={`text-[9px] sm:text-xs font-black tracking-wider uppercase px-2 py-0.5 sm:py-1 rounded-none border shadow-2xs backdrop-blur-md ${activeSlide.tagPillBg || "bg-white/90 text-slate-800 border-slate-200"}`}>
-                      <Sparkles size={10} className="inline-block mr-1 text-amber-500 animate-pulse" />
-                      {activeSlide.tag}
-                    </span>
-                  </div>
-
-                  {/* High-Impact Headline (Concise & Limited) */}
-                  <h1 className="text-lg sm:text-2xl lg:text-[32px] xl:text-[36px] font-black text-slate-950 dark:text-white leading-[1.14] tracking-tight line-clamp-2 max-w-[260px] sm:max-w-[340px]">
-                    {Array.isArray(activeSlide.title) ? (
-                      activeSlide.title.join(" ")
-                    ) : (
-                      <span>{activeSlide.title}</span>
-                    )}
-                  </h1>
-
-                  {/* Subtitle (Strictly Clamped to 2 lines max) */}
-                  <p className="text-[11px] sm:text-xs md:text-sm text-slate-600 dark:text-slate-300 font-medium max-w-[240px] sm:max-w-[320px] mt-1 sm:mt-2.5 leading-snug line-clamp-2">
-                    {activeSlide.subtitle}
-                  </p>
-
-                  {/* Trust Highlights Strip */}
-                  <div className="hidden min-[380px]:flex items-center gap-2.5 sm:gap-4 mt-2 sm:mt-4 text-[10px] sm:text-xs font-bold text-slate-700 dark:text-slate-300">
-                    <span className="flex items-center gap-1">
-                      <CheckCircle2 size={12} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
-                      Verified
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <ShieldCheck size={12} className="text-blue-600 dark:text-blue-400 shrink-0" />
-                      Fast Delivery
-                    </span>
-                  </div>
-
-                  {/* CTA Button */}
-                  <div className="mt-3 sm:mt-6">
-                    <button
-                      onClick={() => navigate(activeSlide.ctaLink)}
-                      className={`inline-flex items-center gap-1.5 sm:gap-2.5 ${activeSlide.ctaBg} active:scale-95 font-black text-[11px] sm:text-sm px-4 sm:px-6 py-2 sm:py-3.5 rounded-none cursor-pointer border-none transition-all duration-300 group`}
-                    >
-                      <span>{activeSlide.ctaText}</span>
-                      <ArrowRight size={14} className="stroke-[2.5] group-hover:translate-x-1 transition-transform" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Right Model Cutout Block (Full Height & Full Width - Completely Visible & Clean) */}
-                <div className="absolute right-0 bottom-0 top-0 h-full w-[54%] sm:w-[58%] md:w-[60%] lg:w-[62%] flex items-end justify-end pointer-events-none z-10 overflow-hidden">
+                {/* Right Model Cutout: Anchored by Height with e_trim so all subjects appear consistently tall & prominent */}
+                <div className="absolute right-0 bottom-0 top-0 h-full w-[62%] sm:w-[58%] md:w-[54%] lg:w-[52%] flex items-end justify-end pointer-events-none z-10 overflow-hidden">
                   <img
                     src={activeSlide.image}
                     alt={activeSlide.alt}
-                    className="h-full w-auto max-h-full max-w-full object-contain object-bottom select-none opacity-100"
+                    className="h-[92%] sm:h-[95%] lg:h-full w-auto max-w-full object-contain object-bottom select-none opacity-100"
                     loading="eager"
                     fetchPriority="high"
                     decoding="async"
                   />
+                </div>
+
+                {/* Left Text Block: Text positioned at Top, Action Button below at Bottom - All aligned to Left Side */}
+                <div className="relative w-[58%] min-[390px]:w-[56%] sm:w-[52%] md:w-[50%] lg:w-[48%] text-left z-20 flex flex-col justify-between items-start pl-3.5 sm:pl-6 lg:pl-8 pr-1.5 sm:pr-4 py-3.5 sm:py-6 lg:py-8 pointer-events-auto h-full">
+                  {/* TOP GROUP: Tagline Pill + Headline + Subtitle + Trust Strip */}
+                  <div className="space-y-1 sm:space-y-2 text-left">
+                    {/* Category Pill Tag */}
+                    <div className="inline-flex items-center gap-1.5 mb-0.5">
+                      <span className={`text-[9px] sm:text-xs font-black tracking-wider uppercase px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-none border shadow-2xs backdrop-blur-md ${activeSlide.tagPillBg || "bg-white/90 text-slate-800 border-slate-200"}`}>
+                        <Sparkles size={10} className="inline-block mr-1 text-amber-500 animate-pulse" />
+                        {activeSlide.tag}
+                      </span>
+                    </div>
+
+                    {/* High-Impact Headline */}
+                    <h1 className="text-lg min-[380px]:text-xl sm:text-2xl lg:text-[32px] xl:text-[36px] font-black text-slate-950 dark:text-white leading-[1.12] tracking-tight line-clamp-2 max-w-[260px] sm:max-w-[340px]">
+                      {Array.isArray(activeSlide.title) ? (
+                        activeSlide.title.join(" ")
+                      ) : (
+                        <span>{activeSlide.title}</span>
+                      )}
+                    </h1>
+
+                    {/* Subtitle */}
+                    <p className="text-[11px] min-[380px]:text-[11.5px] sm:text-xs md:text-sm text-slate-600 dark:text-slate-300 font-medium max-w-[250px] sm:max-w-[320px] leading-snug line-clamp-2">
+                      {activeSlide.subtitle}
+                    </p>
+
+                    {/* Trust Highlights Strip */}
+                    <div className="hidden min-[360px]:flex items-center gap-1.5 sm:gap-3 pt-0.5 text-[9.5px] sm:text-xs font-bold text-slate-700 dark:text-slate-300">
+                      <span className="flex items-center gap-1 bg-white/75 dark:bg-slate-900/75 backdrop-blur-xs px-1.5 sm:px-2 py-0.5 rounded-none border border-slate-200/50 dark:border-slate-800/50 shadow-2xs">
+                        <CheckCircle2 size={11} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+                        Verified
+                      </span>
+                      <span className="flex items-center gap-1 bg-white/75 dark:bg-slate-900/75 backdrop-blur-xs px-1.5 sm:px-2 py-0.5 rounded-none border border-slate-200/50 dark:border-slate-800/50 shadow-2xs">
+                        <ShieldCheck size={11} className="text-blue-600 dark:text-blue-400 shrink-0" />
+                        Fast Delivery
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* BOTTOM GROUP: Action Button strictly aligned to Left Side */}
+                  <div className="pt-2 pb-1 sm:pb-2 flex items-center justify-start">
+                    <button
+                      type="button"
+                      onClick={() => navigate(activeSlide.ctaLink)}
+                      className={`inline-flex items-center gap-2 ${activeSlide.ctaBg} active:scale-95 font-black text-xs sm:text-sm px-4 sm:px-6 py-2.5 sm:py-3.5 rounded-none cursor-pointer border-none shadow-md hover:shadow-lg transition-all duration-300 group`}
+                    >
+                      <span>{activeSlide.ctaText}</span>
+                      <ArrowRight size={13} className="stroke-[2.5] group-hover:translate-x-1 transition-transform" />
+                    </button>
+                  </div>
                 </div>
               </motion.div>
             </AnimatePresence>
@@ -613,7 +620,7 @@ const HeroSplitBanner = ({ homepageData }) => {
           onMouseEnter={() => setIsBazaarPaused(true)}
           onMouseLeave={() => setIsBazaarPaused(false)}
         >
-          <div className="w-full h-full bg-white dark:bg-slate-900 rounded-none p-3 sm:p-3.5 border border-slate-200/90 dark:border-slate-800 shadow-[0_4px_20px_rgba(0,0,0,0.04)] dark:shadow-none flex flex-col justify-between overflow-hidden">
+          <div className="w-full h-full bg-white dark:bg-slate-900 rounded-none p-3 sm:p-3.5 border-0 lg:border-l border-slate-200/90 dark:border-slate-800 shadow-none flex flex-col justify-between overflow-hidden">
             
             {/* Header: Delivery Perks + Extra Cashback Banner */}
             <div className="flex items-center justify-between select-none mb-2 sm:mb-2.5 shrink-0">

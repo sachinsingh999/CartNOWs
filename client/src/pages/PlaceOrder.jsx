@@ -31,6 +31,7 @@ import {
 import { backendUrl } from "../config";
 import { toast } from "react-toastify";
 import { clearApiCache } from "../utils/apiCache";
+import OrderSuccessCelebrationModal from "../components/OrderSuccessCelebrationModal";
 
 // Helper function to dynamically load Razorpay checkout script
 const loadRazorpayScript = () => {
@@ -86,6 +87,7 @@ const PlaceOrder = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [activeStep, setActiveStep] = useState(1); // 1: Address, 2: Payment, 3: Review
+  const [confirmedOrderData, setConfirmedOrderData] = useState(null);
 
   // Form data for the final order placement
   const [formData, setFormData] = useState({
@@ -1036,9 +1038,12 @@ const PlaceOrder = () => {
 
         if (res.data.success) {
           clearApiCache();
-          toast.success("Order placed successfully!");
-          navigate(`/order-confirmed/${res.data.order._id}`, {
-            state: { order: res.data.order },
+          toast.success("Order placed successfully! 🎉");
+          setConfirmedOrderData({
+            orderId: res.data.order._id,
+            order: res.data.order,
+            total: finalTotal,
+            itemCount: items?.length || 1,
           });
         } else {
           setError(res.data.message || "Order placement failed.");
@@ -1096,8 +1101,13 @@ const PlaceOrder = () => {
 
               if (verifyRes.data.success) {
                 clearApiCache();
-                toast.success("Mock payment verified!");
-                navigate(`/order-confirmed/${orderId}`);
+                toast.success("Mock payment verified! 🎉");
+                setConfirmedOrderData({
+                  orderId: orderId,
+                  order: verifyRes.data.order,
+                  total: finalTotal,
+                  itemCount: items?.length || 1,
+                });
               } else {
                 setError(verifyRes.data.message || "Mock signature verification failed.");
               }
@@ -1138,8 +1148,14 @@ const PlaceOrder = () => {
                 );
 
                 if (verifyRes.data.success) {
-                  toast.success("Payment verified successfully!");
-                  navigate(`/order-confirmed/${orderId}`);
+                  clearApiCache();
+                  toast.success("Payment verified successfully! 🎉");
+                  setConfirmedOrderData({
+                    orderId: orderId,
+                    order: verifyRes.data.order,
+                    total: finalTotal,
+                    itemCount: items?.length || 1,
+                  });
                 } else {
                   setError(verifyRes.data.message || "Signature verification failed.");
                 }
@@ -1211,11 +1227,11 @@ const PlaceOrder = () => {
   }
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-[#f8fafc] dark:bg-slate-950 px-2 sm:px-6 lg:px-8 xl:px-10 pt-4 sm:pt-6 pb-16 text-slate-700 dark:text-slate-200 transition-colors duration-200">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-[#f8fafc] dark:bg-slate-950 px-0 sm:px-6 lg:px-8 xl:px-10 pt-3 sm:pt-6 pb-16 text-slate-700 dark:text-slate-200 transition-colors duration-200">
       <form onSubmit={onSubmitHandler} className="w-full max-w-full min-w-0">
         
         {/* CHECKOUT HEADER AREA */}
-        <div className="mb-4 sm:mb-8 flex flex-col md:flex-row items-start md:items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 sm:pb-6 gap-3 sm:gap-4 w-full min-w-0">
+        <div className="mb-4 sm:mb-8 flex flex-col md:flex-row items-start md:items-center justify-between pb-1 sm:pb-6 gap-3 sm:gap-4 w-full min-w-0 px-3 sm:px-0">
           <div className="flex items-center gap-2.5 sm:gap-3 text-left w-full md:w-auto min-w-0">
             <button
               type="button"
@@ -1287,17 +1303,17 @@ const PlaceOrder = () => {
         </div>
 
         {error && (
-          <div className="mb-6 rounded-sm border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-950/40 px-4 py-3 text-xs text-red-700 dark:text-red-300 text-left flex items-center gap-2 shadow-xs">
+          <div className="mb-4 sm:mb-6 rounded-none sm:rounded-sm border-y sm:border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-950/40 px-4 py-3 text-xs text-red-700 dark:text-red-300 text-left flex items-center gap-2 shadow-xs">
             <span className="h-1.5 w-1.5 rounded-full bg-red-500 shrink-0" />
             {error}
           </div>
         )}
 
         {/* TWO COLUMN GRID */}
-        <div className="grid gap-6 lg:gap-8 lg:grid-cols-[1fr_380px] xl:grid-cols-[1fr_420px] 2xl:grid-cols-[1fr_460px] items-start w-full min-w-0">
+        <div className="grid gap-4 sm:gap-6 lg:gap-8 lg:grid-cols-[1fr_380px] xl:grid-cols-[1fr_420px] 2xl:grid-cols-[1fr_460px] items-start w-full min-w-0">
           
           {/* LEFT CONTENT CONTAINER */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md p-3.5 sm:p-6 shadow-xs text-left w-full min-w-0">
+          <div className="bg-white dark:bg-slate-900 border-y sm:border border-slate-200 dark:border-slate-800 rounded-none sm:rounded-md p-3.5 sm:p-6 shadow-xs text-left w-full min-w-0">
             
             {/* STEP 1: SELECT A DELIVERY ADDRESS */}
             {activeStep === 1 && (
@@ -1317,8 +1333,6 @@ const PlaceOrder = () => {
                   </div>
                 </div>
 
-                <hr className="border-slate-100 dark:border-slate-800" />
-
                 {/* Addresses Deck */}
                 <div className="space-y-4">
                   {savedAddresses.length > 0 ? (
@@ -1332,10 +1346,10 @@ const PlaceOrder = () => {
                             <div
                               key={addr._id}
                               onClick={() => handleSelectAddress(addr)}
-                              className={`flex items-start gap-3 sm:gap-4 p-3.5 sm:p-4.5 rounded-md border transition duration-200 cursor-pointer relative ${
+                              className={`flex items-start gap-3 sm:gap-4 p-3.5 sm:p-4.5 rounded-md transition duration-200 cursor-pointer relative ${
                                 isSelected 
-                                  ? "border-orange-500 bg-orange-500/[0.03] dark:bg-orange-500/[0.08]" 
-                                  : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-slate-50 dark:hover:bg-slate-800/70"
+                                  ? "bg-orange-500/[0.08] dark:bg-orange-500/[0.14]" 
+                                  : "bg-slate-50/50 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800/70"
                               }`}
                             >
                               
@@ -1491,10 +1505,10 @@ const PlaceOrder = () => {
                       <div
                         key={m.id}
                         onClick={() => setMethod(m.id)}
-                        className={`flex items-start gap-4.5 p-4 rounded-md border transition duration-200 cursor-pointer ${
+                        className={`flex items-start gap-4.5 p-4 rounded-md transition duration-200 cursor-pointer ${
                           isSelected 
-                            ? "border-orange-500 bg-orange-500/[0.03] dark:bg-orange-500/[0.08]" 
-                            : "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-slate-50 dark:hover:bg-slate-800/70"
+                            ? "bg-orange-500/[0.08] dark:bg-orange-500/[0.14]" 
+                            : "bg-slate-50/50 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800/70"
                         }`}
                       >
                         <div className="mt-1 flex items-center gap-3 shrink-0">
@@ -1634,7 +1648,7 @@ const PlaceOrder = () => {
           <div className="space-y-4 w-full min-w-0">
             
             {/* Sidebar Card */}
-            <aside className="w-full min-w-0 h-fit rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-xs text-left lg:sticky lg:top-24">
+            <aside className="w-full min-w-0 h-fit rounded-none sm:rounded-md border-y sm:border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-xs text-left lg:sticky lg:top-24">
               
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
                 <h3 className="font-extrabold text-slate-900 dark:text-white text-[13px] uppercase tracking-wider flex items-center gap-1.5">
@@ -2110,6 +2124,21 @@ const PlaceOrder = () => {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Full-Screen Order Confirmation Celebration Animation */}
+      {confirmedOrderData && (
+        <OrderSuccessCelebrationModal
+          isOpen={true}
+          orderId={confirmedOrderData.orderId}
+          orderTotal={confirmedOrderData.total}
+          itemCount={confirmedOrderData.itemCount}
+          onComplete={() => {
+            navigate(`/order-confirmed/${confirmedOrderData.orderId}`, {
+              state: { order: confirmedOrderData.order },
+            });
+          }}
+        />
       )}
     </div>
   );

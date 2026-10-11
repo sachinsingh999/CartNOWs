@@ -333,9 +333,9 @@ const ShopByCollections = ({ trendingCollections = [] }) => {
   };
 
   return (
-    <div className="w-full bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-none p-3.5 sm:p-4.5 lg:p-5 shadow-xs transition-colors duration-200 select-none text-left">
+    <div className="w-full bg-white dark:bg-slate-900 border-0 rounded-none px-0 sm:px-4.5 lg:px-5 py-3.5 sm:py-4.5 lg:py-5 shadow-none transition-colors duration-200 select-none text-left">
       {/* Section Top Header Row */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3.5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3.5 px-3 sm:px-0">
         <div className="text-left space-y-1">
           <div className="flex items-center gap-2 flex-wrap">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200/80 dark:border-indigo-800/60 rounded-none text-[9px] font-black uppercase tracking-wider text-indigo-700 dark:text-indigo-300 shadow-2xs">

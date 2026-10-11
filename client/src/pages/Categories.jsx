@@ -570,46 +570,45 @@ const Categories = () => {
   }, [dbCategories, selectedBubble, searchQuery, sortBy]);
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#07090E] px-2 sm:px-4 lg:px-6 py-2.5 text-slate-800 dark:text-slate-100 font-sans transition-colors duration-200 pb-12 w-full">
-      <div className="w-full space-y-5">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#07090E] text-slate-800 dark:text-slate-100 font-sans transition-colors duration-200 pb-12 w-full">
+      {/* ================= 1. CATEGORIES TOP HERO BANNER SLIDESHOW (FULL WIDTH, ZERO TOP GAP, BALANCED DESKTOP LAYOUT) ================= */}
+      <div
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        style={{ backgroundColor: activeSlide?.bgColor || undefined }}
+        className={`relative overflow-hidden rounded-none bg-gradient-to-r ${activeSlide?.gradient || "from-[#EFF6FF] via-[#F3F4FD] to-[#E9EFFD] dark:from-[#0F172A] dark:via-[#111C38] dark:to-[#0B132B]"} border-b border-slate-200/80 dark:border-slate-800/80 shadow-xs w-full transition-colors duration-700 m-0 p-0 border-t-0`}
+      >
+        {/* Subtle Ambient Background Gradients & Glow Orbs */}
+        <div className="absolute -top-24 -left-20 w-80 h-80 rounded-full bg-blue-400/20 dark:bg-blue-600/15 blur-[90px] pointer-events-none" />
+        <div className="absolute -bottom-24 right-1/4 w-80 h-80 rounded-full bg-purple-400/20 dark:bg-indigo-600/15 blur-[90px] pointer-events-none" />
 
-        {/* ================= 1. CATEGORIES TOP HERO BANNER SLIDESHOW (COMPACT HALF HEIGHT, FULL WIDTH & SHARP CORNERS) ================= */}
-        <div
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-          style={{ backgroundColor: activeSlide?.bgColor || undefined }}
-          className={`relative overflow-hidden rounded-sm bg-gradient-to-r ${activeSlide?.gradient || "from-[#EFF6FF] via-[#F3F4FD] to-[#E9EFFD] dark:from-[#0F172A] dark:via-[#111C38] dark:to-[#0B132B]"} border border-blue-100/90 dark:border-slate-800 shadow-xs w-full transition-colors duration-700`}
-        >
-          {/* Subtle Ambient Background Gradients */}
-          <div className="absolute top-0 left-0 w-1/3 h-full bg-gradient-to-r from-blue-100/40 to-transparent pointer-events-none" />
-          <div className="absolute top-0 right-1/4 w-1/3 h-full bg-gradient-to-l from-pink-100/30 via-indigo-100/20 to-transparent pointer-events-none" />
+        {/* Slideshow Previous / Next Navigation Chevrons */}
+        {slides.length > 1 && (
+          <>
+            <button
+              type="button"
+              onClick={handlePrevSlide}
+              className="absolute left-2 sm:left-4 lg:left-6 top-1/2 -translate-y-1/2 z-30 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200/80 dark:border-slate-700/80 shadow-md text-slate-700 dark:text-slate-200 hover:text-white hover:bg-[#3B5AFE] dark:hover:bg-[#3B5AFE] flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+              title="Previous Banner"
+              aria-label="Previous Slide"
+            >
+              <ChevronLeft size={18} />
+            </button>
 
-          {/* Slideshow Previous / Next Navigation Chevrons */}
-          {slides.length > 1 && (
-            <>
-              <button
-                type="button"
-                onClick={handlePrevSlide}
-                className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 z-30 w-7 h-7 sm:w-8 sm:h-8 rounded-sm bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-slate-200/90 dark:border-slate-700 shadow-md text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer opacity-80 hover:opacity-100"
-                title="Previous Banner"
-                aria-label="Previous Slide"
-              >
-                <ChevronLeft size={16} />
-              </button>
+            <button
+              type="button"
+              onClick={handleNextSlide}
+              className="absolute right-2 sm:right-4 lg:right-6 top-1/2 -translate-y-1/2 z-30 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200/80 dark:border-slate-700/80 shadow-md text-slate-700 dark:text-slate-200 hover:text-white hover:bg-[#3B5AFE] dark:hover:bg-[#3B5AFE] flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+              title="Next Banner"
+              aria-label="Next Slide"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </>
+        )}
 
-              <button
-                type="button"
-                onClick={handleNextSlide}
-                className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 z-30 w-7 h-7 sm:w-8 sm:h-8 rounded-sm bg-white/90 dark:bg-slate-900/90 backdrop-blur-xs border border-slate-200/90 dark:border-slate-700 shadow-md text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer opacity-80 hover:opacity-100"
-                title="Next Banner"
-                aria-label="Next Slide"
-              >
-                <ChevronRight size={16} />
-              </button>
-            </>
-          )}
-
-          {/* Slide Content with AnimatePresence */}
+        {/* Inner Content Centered with Balanced Max-Width */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 py-5 sm:py-7 lg:py-8">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeSlide?.id || currentSlide}
@@ -617,22 +616,26 @@ const Categories = () => {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.4, ease: "easeInOut" }}
-              className="relative z-10 grid grid-cols-1 lg:grid-cols-12 items-center min-h-[280px] sm:min-h-[310px] lg:min-h-[270px] px-4 sm:px-6 lg:px-8 py-0 gap-4"
+              className="relative z-10 grid grid-cols-1 lg:grid-cols-12 items-center gap-6 lg:gap-8 min-h-[290px] sm:min-h-[320px] lg:min-h-[340px]"
             >
-              {/* Left Content (lg:col-span-5): Tagline, Headline, Subtitle, CTA, Perks */}
-              <div className="lg:col-span-5 xl:col-span-5 space-y-2 sm:space-y-2.5 text-left z-20 py-3 sm:py-4">
-
-                {/* Tagline */}
-                <p className="text-[9.5px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-slate-700 dark:text-slate-300">
-                  {activeSlide?.tagline || "EXPLORE. SHOP. BELONG."}
-                </p>
+              {/* Left Content (lg:col-span-7 xl:col-span-6): Tagline, Headline, Subtitle, CTA, Perks */}
+              <div className="lg:col-span-7 xl:col-span-6 space-y-3 sm:space-y-3.5 text-left z-20">
+                {/* Tagline Capsule */}
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/85 dark:bg-slate-800/80 backdrop-blur-sm border border-blue-200/70 dark:border-blue-900/40 shadow-2xs">
+                  <Sparkles size={12} className="text-[#3B5AFE] dark:text-blue-400 animate-pulse" />
+                  <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                    {activeSlide?.tagline || "EXPLORE. SHOP. BELONG."}
+                  </span>
+                </div>
 
                 {/* Main Headline */}
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.1]">
+                <h1 className="text-2xl sm:text-3xl lg:text-[38px] xl:text-[42px] font-black text-slate-900 dark:text-white tracking-tight leading-[1.12]">
                   {activeSlide?.title === "Shop by Category" ? (
                     <>
-                      Shop by <br className="hidden sm:block" />
-                      <span className="text-[#3B5AFE] dark:text-[#5373FF]">Category</span>
+                      Shop by{" "}
+                      <span className="bg-gradient-to-r from-[#3B5AFE] via-indigo-600 to-[#6366F1] bg-clip-text text-transparent">
+                        Category
+                      </span>
                     </>
                   ) : (
                     activeSlide?.title
@@ -640,139 +643,143 @@ const Categories = () => {
                 </h1>
 
                 {/* Subtitle */}
-                <p className="text-[11.5px] sm:text-xs text-slate-600 dark:text-slate-300 font-medium leading-relaxed line-clamp-2 max-w-md">
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium leading-relaxed max-w-lg line-clamp-2">
                   {activeSlide?.subtitle}
                 </p>
 
-                {/* CTA Button */}
-                <div className="pt-0.5">
+                {/* CTA Action Buttons */}
+                <div className="flex flex-wrap items-center gap-3 pt-1">
                   <button
+                    type="button"
                     onClick={() => navigate(activeSlide?.linkUrl || "/product")}
-                    className="inline-flex items-center gap-1.5 px-5 py-2 rounded-sm bg-[#4361EE] hover:bg-[#3451D1] active:scale-95 text-white text-xs font-bold shadow-xs transition-all cursor-pointer group"
+                    className="inline-flex items-center gap-2 px-5 sm:px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#3B5AFE] to-[#4F46E5] hover:from-[#314CD8] hover:to-[#4338CA] active:scale-95 text-white text-xs sm:text-sm font-bold shadow-md shadow-blue-500/20 transition-all cursor-pointer group"
                   >
                     <span>{activeSlide?.ctaText || "Start Shopping"}</span>
-                    <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
+                    <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const gridEl = document.getElementById("popular-categories-grid");
+                      if (gridEl) {
+                        gridEl.scrollIntoView({ behavior: "smooth" });
+                      }
+                    }}
+                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/75 dark:bg-slate-800/75 hover:bg-white dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 text-slate-700 dark:text-slate-200 text-xs font-bold transition-all cursor-pointer shadow-2xs hover:shadow-xs"
+                  >
+                    <span>Browse All Categories</span>
                   </button>
                 </div>
 
-                {/* 3 Assurance Perks Row */}
+                {/* 3 Assurance Perks Row (Clean Glass Cards) */}
                 {activeSlide?.showPerks !== false && (
-                  <div className="pt-2 grid grid-cols-1 sm:grid-cols-3 gap-2 border-t border-slate-200/60 dark:border-slate-800/80">
+                  <div className="pt-3 grid grid-cols-3 gap-2 sm:gap-3 border-t border-slate-200/70 dark:border-slate-800/70">
                     {/* Perk 1 */}
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-sm bg-blue-500/10 text-[#4361EE] dark:text-blue-400 flex items-center justify-center shrink-0">
-                        <Truck size={13} />
+                    <div className="flex items-center gap-2 p-1.5 rounded-lg bg-white/50 dark:bg-slate-850/50 backdrop-blur-xs border border-white/60 dark:border-slate-800/60">
+                      <div className="w-7 h-7 rounded-md bg-blue-500/10 text-[#3B5AFE] dark:text-blue-400 flex items-center justify-center shrink-0">
+                        <Truck size={14} />
                       </div>
-                      <div>
-                        <p className="text-[10px] font-bold text-slate-900 dark:text-white leading-none">Free Delivery</p>
-                        <p className="text-[8.5px] font-medium text-slate-500 dark:text-slate-400 mt-0.5">on select items</p>
+                      <div className="min-w-0">
+                        <p className="text-[10.5px] font-bold text-slate-900 dark:text-white leading-tight truncate">Free Delivery</p>
+                        <p className="text-[9px] font-medium text-slate-500 dark:text-slate-400 truncate">On select items</p>
                       </div>
                     </div>
 
                     {/* Perk 2 */}
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-sm bg-blue-500/10 text-[#4361EE] dark:text-blue-400 flex items-center justify-center shrink-0">
-                        <ShieldCheck size={13} />
+                    <div className="flex items-center gap-2 p-1.5 rounded-lg bg-white/50 dark:bg-slate-850/50 backdrop-blur-xs border border-white/60 dark:border-slate-800/60">
+                      <div className="w-7 h-7 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                        <ShieldCheck size={14} />
                       </div>
-                      <div>
-                        <p className="text-[10px] font-bold text-slate-900 dark:text-white leading-none">100% Protected</p>
-                        <p className="text-[8.5px] font-medium text-slate-500 dark:text-slate-400 mt-0.5">secure checkout</p>
+                      <div className="min-w-0">
+                        <p className="text-[10.5px] font-bold text-slate-900 dark:text-white leading-tight truncate">100% Protected</p>
+                        <p className="text-[9px] font-medium text-slate-500 dark:text-slate-400 truncate">Secure checkout</p>
                       </div>
                     </div>
 
                     {/* Perk 3 */}
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-sm bg-blue-500/10 text-[#4361EE] dark:text-blue-400 flex items-center justify-center shrink-0">
-                        <RotateCcw size={13} />
+                    <div className="flex items-center gap-2 p-1.5 rounded-lg bg-white/50 dark:bg-slate-850/50 backdrop-blur-xs border border-white/60 dark:border-slate-800/60">
+                      <div className="w-7 h-7 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                        <RotateCcw size={14} />
                       </div>
-                      <div>
-                        <p className="text-[10px] font-bold text-slate-900 dark:text-white leading-none">Easy Returns</p>
-                        <p className="text-[8.5px] font-medium text-slate-500 dark:text-slate-400 mt-0.5">hassle free</p>
+                      <div className="min-w-0">
+                        <p className="text-[10.5px] font-bold text-slate-900 dark:text-white leading-tight truncate">Easy Returns</p>
+                        <p className="text-[9px] font-medium text-slate-500 dark:text-slate-400 truncate">Hassle free</p>
                       </div>
                     </div>
                   </div>
                 )}
-
               </div>
 
-              {/* Middle & Right Content (lg:col-span-7): Full Unclipped Banner/Model Photography */}
-              <div className="lg:col-span-7 xl:col-span-7 relative flex items-center lg:items-end justify-center h-full min-h-[260px] sm:min-h-[300px] lg:min-h-[280px] py-2 sm:py-0">
-
-                {/* Handwritten Script Flanking Left of Model (Hidden on small mobile so image has full space) */}
-                <div className="hidden md:block absolute top-2 left-2 sm:left-4 md:left-6 z-20 select-none text-left pointer-events-none">
-                  <p className="font-handwriting text-2xl sm:text-3xl lg:text-[32px] font-bold text-slate-900 dark:text-slate-100 leading-[0.95] drop-shadow-xs">
-                    {activeSlide?.leftScript ? (
-                      activeSlide.leftScript.split(" ").map((w, idx) => (
-                        <React.Fragment key={idx}>
-                          {w} <br />
-                        </React.Fragment>
-                      ))
-                    ) : (
-                      <>Good <br />Things <br />Belong <br />Here</>
-                    )}
-                  </p>
-                  <div className="flex items-center gap-1 mt-0.5 pl-1">
-                    <span className="w-2.5 h-0.5 bg-orange-400 rotate-12 rounded-full inline-block" />
-                    <span className="w-2 h-0.5 bg-orange-400 -rotate-12 rounded-full inline-block" />
-                  </div>
+              {/* Right Visual Composition (lg:col-span-5 xl:col-span-6): Framed Model & Floating Badges */}
+              <div className="lg:col-span-5 xl:col-span-6 relative flex items-center justify-center h-full min-h-[250px] sm:min-h-[290px] lg:min-h-[330px]">
+                {/* Radiant Ambient Glow Behind Image */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="w-60 sm:w-72 lg:w-80 h-60 sm:h-72 lg:h-80 rounded-full bg-gradient-to-tr from-blue-400/25 via-indigo-300/20 to-purple-400/25 blur-3xl" />
                 </div>
 
-                {/* Center Banner / Model Image (Fully Visible, Zero Cropping, Zero Clipping) */}
-                <div className="relative z-10 w-full max-w-full flex items-center justify-center mx-auto px-2">
+                {/* Floating Glass Capsule - Top Left */}
+                <motion.div
+                  animate={{ y: [0, -6, 0] }}
+                  transition={{ repeat: Infinity, duration: 4.5, ease: "easeInOut" }}
+                  className="hidden sm:flex absolute top-3 left-2 sm:left-4 z-20 items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200/80 dark:border-slate-700/80 shadow-lg text-slate-800 dark:text-slate-100 select-none pointer-events-none"
+                >
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-[11px] font-bold tracking-tight">
+                    {activeSlide?.leftScript ? activeSlide.leftScript.replace(/\n|<br \/>/g, " ") : "Curated For You"}
+                  </span>
+                </motion.div>
+
+                {/* Floating Glass Capsule - Bottom Right */}
+                <motion.div
+                  animate={{ y: [0, 6, 0] }}
+                  transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 0.8 }}
+                  className="hidden sm:flex absolute bottom-3 right-2 sm:right-4 z-20 items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200/80 dark:border-slate-700/80 shadow-lg text-slate-800 dark:text-slate-100 select-none pointer-events-none"
+                >
+                  <span className="text-amber-500 font-black text-xs">✨</span>
+                  <span className="text-[11px] font-bold tracking-tight">
+                    {activeSlide?.rightScript ? activeSlide.rightScript.replace(/♡|✧|\n/g, "").trim() : "Discover & Save"}
+                  </span>
+                </motion.div>
+
+                {/* Center Visual Cutout Image */}
+                <div className="relative z-10 w-full flex items-center justify-center">
                   <img
                     src={activeSlide?.image || "/categories_hero_model.webp"}
                     alt={activeSlide?.title || "Category Banner"}
-                    className="max-h-[260px] sm:max-h-[300px] lg:max-h-[280px] w-auto max-w-full object-contain drop-shadow-md select-none mx-auto block"
+                    className="max-h-[240px] sm:max-h-[280px] lg:max-h-[320px] w-auto max-w-full object-contain drop-shadow-xl select-none mx-auto block transition-transform duration-500 hover:scale-105"
                     loading="eager"
                     decoding="async"
                     fetchPriority="high"
                   />
                 </div>
-
-                {/* Handwritten Script Flanking Right of Model (Hidden on small mobile so image has full space) */}
-                <div className="hidden md:block absolute top-2 right-2 sm:right-4 md:right-6 z-20 select-none text-center pointer-events-none">
-                  <p className="font-handwriting text-xl sm:text-2xl lg:text-[26px] font-bold text-slate-900 dark:text-slate-100 leading-tight drop-shadow-xs">
-                    {activeSlide?.rightScript ? (
-                      activeSlide.rightScript.replace(/♡|✧/g, "").trim().split(" ").map((w, idx) => (
-                        <React.Fragment key={idx}>
-                          {w} <br />
-                        </React.Fragment>
-                      ))
-                    ) : (
-                      <>Discover <br />Shop <br />Repeat</>
-                    )}
-                  </p>
-                  <div className="mt-0.5">
-                    <span className="font-handwriting text-xl sm:text-2xl text-orange-500 font-bold inline-block">
-                      {activeSlide?.rightScript?.includes("✧") ? "✧" : "♡"}
-                    </span>
-                  </div>
-                </div>
-
               </div>
             </motion.div>
           </AnimatePresence>
-
-          {/* Bottom Slideshow Pagination Indicator Dots */}
-          {slides.length > 1 && (
-            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 bg-black/10 dark:bg-black/30 backdrop-blur-xs px-2 py-0.5 rounded-full">
-              {slides.map((_, sIdx) => (
-                <button
-                  key={sIdx}
-                  type="button"
-                  onClick={() => setCurrentSlide(sIdx)}
-                  className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${currentSlide === sIdx
-                    ? "w-5 bg-[#3B5AFE] dark:bg-blue-400"
-                    : "w-1.5 bg-slate-300/80 dark:bg-slate-600 hover:bg-slate-400"
-                    }`}
-                  aria-label={`Go to slide ${sIdx + 1}`}
-                />
-              ))}
-            </div>
-          )}
         </div>
 
-        {/* ================= 2. HORIZONTAL CATEGORY ICON BUBBLES BAR (MOVING LEFT-TO-RIGHT INFINITE TICKER, NO SCROLLBAR) ================= */}
+        {/* Bottom Slideshow Pagination Indicator Dots */}
+        {slides.length > 1 && (
+          <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 bg-slate-900/10 dark:bg-slate-100/10 backdrop-blur-md px-2.5 py-1 rounded-full">
+            {slides.map((_, sIdx) => (
+              <button
+                key={sIdx}
+                type="button"
+                onClick={() => setCurrentSlide(sIdx)}
+                className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                  currentSlide === sIdx
+                    ? "w-6 bg-[#3B5AFE] dark:bg-blue-400 shadow-2xs"
+                    : "w-2 bg-slate-400/60 dark:bg-slate-500 hover:bg-slate-600"
+                }`}
+                aria-label={`Go to slide ${sIdx + 1}`}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+        <div className="w-full px-0 sm:px-4 lg:px-6 py-2.5 space-y-5">
+          {/* ================= 2. HORIZONTAL CATEGORY ICON BUBBLES BAR (MOVING LEFT-TO-RIGHT INFINITE TICKER, NO SCROLLBAR) ================= */}
         <div className="w-full overflow-hidden py-2.5 sm:py-3.5 select-none relative group/marquee">
           {/* Subtle ambient fade on left and right edges */}
           <div className="absolute left-0 top-0 bottom-0 w-6 sm:w-12 bg-gradient-to-r from-[#F8FAFC] dark:from-[#07090E] to-transparent z-10 pointer-events-none" />
@@ -825,10 +832,10 @@ const Categories = () => {
         </div>
 
         {/* ================= 3. POPULAR CATEGORIES SECTION (SHARP CORNERS) ================= */}
-        <div className="space-y-3.5">
+        <div id="popular-categories-grid" className="space-y-3.5 scroll-mt-20">
 
           {/* Section Header with Title, Search & Filter Controls */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-3">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 px-3 sm:px-0">
 
             {/* Title & Subtitle */}
             <div className="text-left">

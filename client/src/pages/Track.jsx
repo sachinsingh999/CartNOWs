@@ -8,14 +8,15 @@ import {
   CheckCircle2, 
   Copy, 
   HelpCircle, 
-  KeyRound,
+  KeyRound, 
   MapPin, 
   Package, 
-  RotateCcw,
+  RotateCcw, 
   ShieldCheck, 
   Truck, 
-  Warehouse,
-  XCircle
+  Warehouse, 
+  XCircle,
+  Check
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { OrderListSkeleton } from "../components/SkeletonLoader";
@@ -54,6 +55,7 @@ const Track = () => {
   const navigate = useNavigate();
   const [orderItem, setOrderItem] = useState(location.state?.item || null);
   const [loading, setLoading] = useState(!orderItem);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const fetchOrderDetails = async () => {
@@ -138,11 +140,9 @@ const Track = () => {
   
   const currentStep = isCancelled ? 1 : (statusMap[displayStatus.toLowerCase()] ?? 4);
 
-  const [copied, setCopied] = useState(false);
-
   if (loading && !item) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-200 max-w-6xl mx-auto px-4 py-12">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-200 max-w-6xl mx-auto px-4 py-8">
         <OrderListSkeleton />
       </div>
     );
@@ -151,11 +151,11 @@ const Track = () => {
   if (!item) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 transition-colors duration-200">
-        <HelpCircle size={48} className="text-slate-400 dark:text-slate-500 animate-bounce" />
-        <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 mt-4">Order tracking data not found.</p>
+        <HelpCircle size={40} className="text-slate-400 mb-3" />
+        <p className="text-sm font-bold text-slate-800 dark:text-slate-200">Order tracking data not found.</p>
         <button
           onClick={() => navigate(-1)}
-          className="mt-4 rounded-xl bg-slate-900 dark:bg-orange-600 px-5 py-2.5 text-xs font-bold text-slate-100 dark:text-white transition hover:bg-slate-800 dark:hover:bg-orange-500 cursor-pointer"
+          className="mt-4 rounded-xl bg-indigo-600 px-5 py-2.5 text-xs font-bold text-white transition hover:bg-indigo-700 cursor-pointer"
         >
           Go Back
         </button>
@@ -163,95 +163,80 @@ const Track = () => {
     );
   }
 
-  const handleCopyId = () => {
-    navigator.clipboard.writeText(id);
-    setCopied(true);
-    toast.success("Order ID copied to clipboard!");
-    setTimeout(() => setCopied(false), 2000);
-  };
+  const imageUrl = item.image?.startsWith("http") ? item.image : `${backendUrl}/${item.image}`;
 
-  const getEstimatedDate = () => {
-    // Generate a mock delivery date 3 days after today's date for display
-    const deliveryDate = new Date();
-    deliveryDate.setDate(deliveryDate.getDate() + 3);
-    return deliveryDate.toLocaleDateString("en-US", {
-      weekday: "long",
-      month: "short",
-      day: "numeric",
-    });
-  };
-
-  const imageUrl = item.image?.startsWith("http") ? item.image : `${backendUrl}/${item.image}`;  return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 px-4 py-8 sm:px-6 lg:px-8 text-slate-900 dark:text-slate-100 transition-colors duration-200">
-      <div className="mx-auto max-w-7xl space-y-6">
+  return (
+    <div className="min-h-screen bg-slate-50/70 dark:bg-slate-950 px-0 sm:px-6 lg:px-8 py-0 sm:py-6 text-slate-900 dark:text-slate-100 transition-colors duration-200">
+      
+      {/* Zero gap container */}
+      <div className="mx-auto max-w-7xl space-y-0 divide-y-0">
         
-        {/* Top Full-Width Navigation & Header Bar */}
-        <div className="rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-5 shadow-xs flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
+        {/* Top Header Bar - Borderless & Zero Gap */}
+        <div className="bg-white dark:bg-slate-900 rounded-none sm:rounded-2xl p-4 sm:p-6 shadow-xs flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
             <button
               onClick={() => navigate(-1)}
-              className="group inline-flex items-center gap-2 rounded-sm border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 transition hover:border-slate-300 dark:hover:border-slate-700 hover:text-slate-950 dark:hover:text-slate-100 cursor-pointer"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 transition hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer"
             >
-              <ArrowLeft size={15} className="transition-transform group-hover:-translate-x-1" />
+              <ArrowLeft size={15} />
               <span>Back</span>
             </button>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-black text-slate-900 dark:text-slate-50 tracking-tight">
+                <h1 className="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-50 tracking-tight">
                   Track Order #{String(item.orderNumber || id).slice(-8).toUpperCase()}
                 </h1>
-                <span className={`px-2.5 py-0.5 rounded-sm text-[10px] font-black uppercase tracking-wider ${
-                  isCancelled ? "bg-rose-100 dark:bg-rose-950/50 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-900/50" : "bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/50"
+                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                  isCancelled ? "bg-rose-100 dark:bg-rose-950/50 text-rose-700 dark:text-rose-400" : "bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400"
                 }`}>
                   {displayStatus}
                 </span>
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
-                Placed on {new Date(item.date || Date.now()).toLocaleDateString(undefined, { dateStyle: "long" })} · Order ID: <span className="font-mono">{id}</span>
+              <p className="text-xs text-slate-400 dark:text-slate-500 font-medium mt-0.5">
+                Placed on {new Date(item.date || Date.now()).toLocaleDateString("en-IN", { dateStyle: "long" })}
               </p>
             </div>
           </div>
 
-          {/* Quick Header Actions Suite */}
           <div className="flex items-center gap-2">
             <button
               onClick={() => navigate(`/order/${id}`)}
-              className="px-3.5 py-2 rounded-sm bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition cursor-pointer flex items-center gap-1.5"
+              className="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition cursor-pointer flex items-center gap-1.5"
             >
               <Package size={13} />
-              <span>Order Details</span>
+              <span>Details</span>
             </button>
             <button
               onClick={() => navigate(`/order/${id}#chat`)}
-              className="px-3.5 py-2 rounded-sm bg-indigo-50 dark:bg-indigo-950/40 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 transition cursor-pointer flex items-center gap-1.5"
+              className="px-3.5 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 transition cursor-pointer flex items-center gap-1.5"
             >
               <HelpCircle size={13} />
-              <span>Support Chat</span>
+              <span>Support</span>
             </button>
           </div>
         </div>
 
-        {/* 2-COLUMN FULL-WIDTH LAYOUT */}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 items-start">
+        {/* 2-Column Layout - Zero Gap */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 items-start">
           
-          {/* LEFT SIDE: Shipment Timeline (7 Cols) */}
-          <div className="lg:col-span-7 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 p-6 sm:p-8 shadow-xs space-y-6">
-            <div className="border-b border-slate-100 dark:border-slate-800 pb-4">
-              <h2 className="text-lg font-black text-slate-900 dark:text-slate-50 tracking-tight">
+          {/* LEFT: Shipment Timeline (7 Cols) */}
+          <div className="lg:col-span-7 bg-white dark:bg-slate-900 p-4 sm:p-6 sm:p-8 space-y-5">
+            <div>
+              <h2 className="text-base font-black text-slate-900 dark:text-slate-50 tracking-tight">
                 Shipment Transit Progress
               </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-0.5">
-                Real-time status updates from our logistics network
+              <p className="text-xs text-slate-400 dark:text-slate-500 font-medium mt-0.5">
+                Real-time milestone tracking from our courier network
               </p>
             </div>
 
             {/* Vertical timeline steps */}
-            <div className="relative space-y-8 pt-2">
+            <div className="relative space-y-6 pt-2">
               
-              {/* Timeline Connector Line */}
-              <div className="absolute left-[20px] -translate-x-1/2 top-5 bottom-5 w-0.5 bg-slate-100 dark:bg-slate-800 z-0">
+              {/* Connector line */}
+              <div className="absolute left-[18px] -translate-x-1/2 top-4 bottom-4 w-0.5 bg-slate-100 dark:bg-slate-800 z-0">
                 <div 
-                  className={`w-full transition-all duration-700 ease-out ${ isCancelled ? "bg-rose-500" : "bg-gradient-to-b from-orange-500 to-amber-500" }`} 
+                  className={`w-full transition-all duration-700 ease-out ${ isCancelled ? "bg-rose-500" : "bg-gradient-to-b from-emerald-500 to-indigo-600" }`} 
                   style={{
                     height: `${(currentStep / (steps.length - 1)) * 100}%`,
                   }}
@@ -263,45 +248,37 @@ const Track = () => {
                 const isCompleted = idx < currentStep;
                 const isActive = idx === currentStep;
 
-                let nodeStyleClass = "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-300 dark:text-slate-600";
+                let nodeStyleClass = "bg-slate-100 dark:bg-slate-800 text-slate-400";
                 if (isCompleted) {
-                  nodeStyleClass = "bg-slate-900 dark:bg-slate-100 border-slate-900 dark:border-slate-100 text-white dark:text-slate-900";
+                  nodeStyleClass = "bg-emerald-600 text-white";
                 } else if (isActive) {
-                  if (isCancelled && idx === 1) {
-                    nodeStyleClass = "bg-rose-500 border-rose-500 text-white scale-105 shadow-xs shadow-rose-500/30";
-                  } else {
-                    nodeStyleClass = "bg-white dark:bg-slate-900 border-orange-500 text-orange-600 dark:text-orange-400 scale-105";
-                  }
+                  nodeStyleClass = isCancelled && idx === 1 ? "bg-rose-500 text-white" : "bg-indigo-600 text-white";
                 }
 
                 return (
-                  <div key={idx} className="relative flex gap-5 items-start z-10">
+                  <div key={idx} className="relative flex gap-4 items-start z-10">
                     
-                    {/* Node circle */}
-                    <div className="relative flex h-10 w-10 shrink-0 items-center justify-center">
+                    <div className="relative flex h-9 w-9 shrink-0 items-center justify-center">
                       {isActive && (
-                        <span className={`absolute h-10 w-10 rounded-full animate-ping pointer-events-none ${ isCancelled && idx === 1 ? "bg-rose-400/20" : "bg-orange-400/20" }`} />
+                        <span className={`absolute h-9 w-9 rounded-full animate-ping pointer-events-none ${ isCancelled && idx === 1 ? "bg-rose-400/20" : "bg-indigo-400/20" }`} />
                       )}
-                      <div
-                        className={`flex h-10 w-10 items-center justify-center rounded-sm border-2 transition-all duration-300 shadow-xs ${nodeStyleClass}`}
-                      >
-                        <StepIcon size={18} className={isActive ? "animate-pulse" : ""} />
+                      <div className={`flex h-9 w-9 items-center justify-center rounded-xl transition-all shadow-xs ${nodeStyleClass}`}>
+                        <StepIcon size={16} className={isActive ? "animate-pulse" : ""} />
                       </div>
                     </div>
 
-                    {/* Step details */}
-                    <div className="min-w-0 flex-1 pt-1.5">
+                    <div className="min-w-0 flex-1 pt-1">
                       <div className="flex items-center gap-2">
-                        <h3 className={`text-sm font-bold ${ isCompleted || isActive ? (isCancelled && idx === 1 ? "text-rose-600 dark:text-rose-400" : "text-slate-900 dark:text-slate-50") : "text-slate-400 dark:text-slate-500" }`}>
+                        <h3 className={`text-xs sm:text-sm font-bold ${ isCompleted || isActive ? (isCancelled && idx === 1 ? "text-rose-600 dark:text-rose-400" : "text-slate-900 dark:text-slate-50") : "text-slate-400 dark:text-slate-500" }`}>
                           {step.title}
                         </h3>
                         {isActive && (
-                          <span className={`rounded-sm px-2 py-0.5 text-[9px] font-black uppercase tracking-wider ${ isCancelled && idx === 1 ? "bg-rose-50 dark:bg-rose-950/40 border border-rose-100 dark:border-rose-900/50 text-rose-600 dark:text-rose-400" : "bg-orange-50 dark:bg-orange-950/40 border border-orange-100 dark:border-orange-900/50 text-orange-600 dark:text-orange-400" }`}>
-                            {isCancelled && idx === 1 ? "Cancelled" : "Active Stage"}
+                          <span className={`rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider ${ isCancelled && idx === 1 ? "bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400" : "bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400" }`}>
+                            {isCancelled && idx === 1 ? "Cancelled" : "Current"}
                           </span>
                         )}
                       </div>
-                      <p className={`mt-1 text-xs leading-relaxed ${ isActive ? "text-slate-600 dark:text-slate-300 font-medium" : "text-slate-400 dark:text-slate-500" }`}>
+                      <p className={`mt-0.5 text-xs leading-relaxed ${ isActive ? "text-slate-600 dark:text-slate-300 font-medium" : "text-slate-400 dark:text-slate-500" }`}>
                         {step.description}
                       </p>
                     </div>
@@ -312,49 +289,31 @@ const Track = () => {
             </div>
           </div>
 
-          {/* RIGHT SIDE: Information & Logistics Intelligence (5 Cols) */}
-          <div className="lg:col-span-5 space-y-6">
+          {/* RIGHT: Logistics & Info (5 Cols) */}
+          <div className="lg:col-span-5 bg-white dark:bg-slate-900 p-4 sm:p-6 space-y-4">
             
-            {/* Dynamic Status Banner Card */}
-            <div className={`rounded-md border p-5 shadow-xs ${ isCancelled ? "border-rose-200 dark:border-rose-900/50 bg-rose-50/30 dark:bg-rose-950/10" : "border-orange-200 dark:border-orange-900/50 bg-orange-50/30 dark:bg-orange-950/10" }`}>
-              <div className="flex items-center gap-3.5">
-                <div className={`flex h-11 w-11 items-center justify-center rounded-sm shadow-xs ${ isCancelled ? "bg-rose-100 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400" : "bg-orange-100 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400" }`}>
-                  {isCancelled ? (
-                    <XCircle size={20} />
-                  ) : (
-                    <Calendar size={20} />
-                  )}
+            {/* Status Card */}
+            <div className={`p-4 rounded-xl ${ isCancelled ? "bg-rose-50/50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-300" : "bg-emerald-50/50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-300" }`}>
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 rounded-xl bg-white dark:bg-slate-800 flex items-center justify-center shrink-0 shadow-2xs">
+                  {isCancelled ? <XCircle size={18} className="text-rose-500" /> : <Calendar size={18} className="text-emerald-500" />}
                 </div>
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
-                    {isCancelled ? "Order Status" : "Current Status"}
-                  </p>
-                  <p className={`text-base font-black mt-0.5 ${ isCancelled ? "text-rose-600 dark:text-rose-400" : "text-slate-900 dark:text-slate-50" }`}>
-                    {isCancelled ? "Cancelled" : displayStatus}
-                  </p>
+                  <span className="text-[10px] font-black uppercase text-slate-400 block leading-tight">Status</span>
+                  <span className="text-sm font-black block mt-0.5">{isCancelled ? "Order Cancelled" : displayStatus}</span>
                 </div>
               </div>
             </div>
 
-            {/* Delivery Verification OTP Card */}
+            {/* OTP if available */}
             {item?.verificationCode && displayStatus !== "Delivered" && !isCancelled && (
-              <div className="rounded-md border border-amber-200 dark:border-amber-900 bg-gradient-to-r from-amber-500/10 to-orange-500/10 p-5 shadow-xs space-y-3">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-amber-500/20 text-amber-600 dark:text-amber-400">
-                    <KeyRound size={18} className="animate-pulse" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-400">
-                      Delivery Verification OTP
-                    </p>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">
-                      Share this code with the delivery associate to confirm receipt.
-                    </p>
-                  </div>
+              <div className="bg-amber-500/10 dark:bg-amber-500/15 p-4 rounded-xl space-y-2">
+                <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
+                  <KeyRound size={16} />
+                  <span className="text-xs font-black uppercase tracking-wider">Handover Verification OTP</span>
                 </div>
-                
-                <div className="flex items-center justify-between bg-white dark:bg-slate-900 border border-amber-500/20 rounded-sm px-4 py-2.5">
-                  <span className="font-mono font-black text-lg tracking-widest text-amber-700 dark:text-amber-300">
+                <div className="flex items-center justify-between bg-white dark:bg-slate-800 p-2.5 rounded-lg shadow-2xs">
+                  <span className="font-mono font-black text-base tracking-widest text-slate-900 dark:text-white">
                     {item.verificationCode}
                   </span>
                   <button
@@ -362,71 +321,47 @@ const Track = () => {
                       navigator.clipboard.writeText(item.verificationCode);
                       toast.success("Verification code copied!");
                     }}
-                    className="flex items-center gap-1 text-[11px] font-black uppercase tracking-wider px-3 py-1.5 rounded-sm bg-amber-500 hover:bg-amber-600 active:scale-95 text-white transition cursor-pointer shadow-xs"
+                    className="text-xs font-bold text-indigo-600 dark:text-indigo-400 px-2 py-1 rounded cursor-pointer"
                   >
-                    <Copy size={11} />
-                    <span>Copy</span>
+                    Copy
                   </button>
                 </div>
               </div>
             )}
 
-            {/* Product Item Details Card */}
-            <div className="rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 p-5 shadow-xs space-y-4">
-              <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">Purchased Item</h3>
-              <div className="flex gap-4 items-center">
+            {/* Purchased Item Info */}
+            <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl space-y-2">
+              <span className="text-[10px] font-black uppercase text-slate-400 block">Item Summary</span>
+              <div className="flex gap-3 items-center">
                 <img
                   src={imageUrl}
                   alt={item.name}
-                  className="h-16 w-16 object-contain rounded-sm bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-800 p-1.5 shrink-0"
+                  className="h-14 w-14 object-contain rounded-lg bg-white dark:bg-slate-900 p-1 shrink-0"
                 />
                 <div className="min-w-0 flex-1">
-                  <h4 className="font-extrabold text-sm text-slate-900 dark:text-slate-100 truncate">{item.name}</h4>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-semibold">
-                    Qty: {item.qty} · Size: <span className="font-bold">{item.size}</span>
+                  <h4 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 truncate">{item.name}</h4>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Qty: {item.qty} · Size: {item.size}
                   </p>
-                  <p className="font-black text-sm text-slate-900 dark:text-slate-100 mt-1">
+                  <p className="font-black text-xs text-slate-900 dark:text-slate-100 mt-0.5">
                     ₹{(item.price * item.qty).toLocaleString("en-IN")}
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Logistics & Address Summary Card */}
-            <div className="rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 p-5 shadow-xs space-y-4">
-              <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                Delivery Logistics
-              </h3>
-              
-              <div className="grid grid-cols-2 gap-4 text-xs font-semibold">
-                <div>
-                  <p className="text-slate-400 dark:text-slate-400 font-semibold">
-                    Logistics Partner
-                  </p>
-                  <p className="font-extrabold text-slate-900 dark:text-slate-100 mt-0.5">
-                    {item.courierName || "CartNOW Express"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-slate-400 dark:text-slate-400 font-semibold">
-                    Shipping Method
-                  </p>
-                  <p className="font-extrabold text-slate-900 dark:text-slate-100 mt-0.5">
-                    Priority Shipping
-                  </p>
-                </div>
-
-                <div className="col-span-2 border-t border-slate-100 dark:border-slate-800 pt-3">
-                  <p className="text-slate-400 dark:text-slate-400 font-semibold">Delivery Address</p>
-                  <p className="font-bold text-slate-700 dark:text-slate-300 mt-1 leading-relaxed">
-                    {item.address?.street || item.address?.address || "123, Shopping Avenue"}, {item.address?.city || "New Delhi"}, {item.address?.zipcode || item.address?.pincode || "110001"}
-                  </p>
-                </div>
-              </div>
+            {/* Address */}
+            <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl space-y-1 text-xs">
+              <span className="text-[10px] font-black uppercase text-slate-400 block">Shipping Destination</span>
+              <p className="font-bold text-slate-900 dark:text-white">
+                {item.address?.street || item.address?.address || "Delivery Address"}, {item.address?.city || ""}, {item.address?.zipcode || item.address?.pincode || ""}
+              </p>
+              <p className="text-[11px] text-slate-400 mt-1">Carrier: {item.courierName || "CartNOW Express Priority"}</p>
             </div>
 
           </div>
         </div>
+
       </div>
     </div>
   );

@@ -9,12 +9,12 @@ export const SkeletonPulse = ({ className = "" }) => (
 
 /* ─────────────── 1. HERO SPLIT BANNER SKELETON (EXACT 1-TO-1) ─────────────── */
 export const HeroSplitBannerSkeleton = () => (
-  <div className="w-full px-2 sm:px-4 lg:px-6 pt-1 pb-0.5 select-none animate-pulse">
+  <div className="w-full px-0 pt-0 pb-1 sm:pb-1.5 select-none animate-pulse">
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-1.5 sm:gap-2 items-stretch">
       
       {/* Left: Main Hero Banner Skeleton (~58% desktop width, 490px height) */}
       <div className="lg:col-span-7 xl:col-span-7 relative flex flex-col h-[460px] sm:h-[480px] lg:h-[490px]">
-        <div className="relative w-full h-full rounded-sm border border-slate-200/90 dark:border-slate-800 bg-gradient-to-r from-[#F8FAFC] via-[#EEF4FF] to-[#E2ECFF] dark:from-slate-900 dark:via-slate-850 dark:to-slate-900 overflow-hidden flex flex-col md:flex-row items-stretch justify-between p-6 sm:p-8 lg:p-10">
+        <div className="relative w-full h-full rounded-none border border-x-0 lg:border-l-0 lg:border-r border-slate-200/90 dark:border-slate-800 bg-gradient-to-r from-[#F8FAFC] via-[#EEF4FF] to-[#E2ECFF] dark:from-slate-900 dark:via-slate-850 dark:to-slate-900 overflow-hidden flex flex-col md:flex-row items-stretch justify-between p-6 sm:p-8 lg:p-10">
           
           {/* Left Text Block */}
           <div className="w-full md:w-[50%] lg:w-[48%] flex flex-col justify-center h-full z-10 space-y-3 sm:space-y-4">
@@ -58,7 +58,7 @@ export const HeroSplitBannerSkeleton = () => (
 
       {/* Right: Quick Bazaar 2x2 Grid Skeleton (~42% desktop width, 490px height) */}
       <div className="lg:col-span-5 xl:col-span-5 relative flex flex-col h-[460px] sm:h-[480px] lg:h-[490px] overflow-hidden">
-        <div className="w-full h-full bg-white dark:bg-slate-900 rounded-sm p-3 sm:p-3.5 border border-slate-200/90 dark:border-slate-800 flex flex-col justify-between">
+        <div className="w-full h-full bg-white dark:bg-slate-900 rounded-none p-3 sm:p-3.5 border border-x-0 lg:border-l lg:border-r-0 border-slate-200/90 dark:border-slate-800 flex flex-col justify-between">
           
           {/* Header Strip */}
           <div className="flex items-center justify-between mb-2 sm:mb-2.5 shrink-0">
@@ -116,8 +116,8 @@ export const HeroSplitBannerSkeleton = () => (
 
 /* ─────────────── 2. TECH AD BANNER SKELETON (EXACT 1-TO-1) ─────────────── */
 export const TechAdBannerSkeleton = () => (
-  <section className="w-full px-2 sm:px-4 lg:px-6 py-0.5 sm:py-1 select-none animate-pulse">
-    <div className="relative w-full max-w-[1600px] mx-auto rounded-none overflow-hidden border border-slate-200/80 dark:border-slate-800/80 bg-gradient-to-r from-[#F9F7FF] via-[#F4F1FD] to-[#EDF2FE] dark:from-slate-900 dark:via-slate-850 dark:to-slate-900 min-h-[300px] min-[400px]:min-h-[320px] sm:min-h-[360px] md:min-h-[400px] lg:min-h-[430px] xl:min-h-[440px] px-3.5 sm:px-8 md:px-10 lg:px-12 pt-3.5 sm:pt-6 md:pt-7 pb-10 sm:pb-14 lg:pb-14 flex flex-row items-center justify-between">
+  <section className="w-full px-0 py-0.5 sm:py-1 select-none animate-pulse">
+    <div className="relative w-full rounded-none overflow-hidden border border-x-0 border-slate-200/80 dark:border-slate-800/80 bg-gradient-to-r from-[#F9F7FF] via-[#F4F1FD] to-[#EDF2FE] dark:from-slate-900 dark:via-slate-850 dark:to-slate-900 min-h-[300px] min-[400px]:min-h-[320px] sm:min-h-[360px] md:min-h-[400px] lg:min-h-[430px] xl:min-h-[440px] px-3.5 sm:px-8 md:px-10 lg:px-12 pt-3.5 sm:pt-6 md:pt-7 pb-10 sm:pb-14 lg:pb-14 flex flex-row items-center justify-between">
       
       {/* Left Column: Text & CTA */}
       <div className="w-[58%] min-[480px]:w-[54%] sm:w-[50%] lg:w-[44%] flex flex-col justify-center space-y-2 sm:space-y-3 z-10 pr-2 sm:pr-4">
@@ -153,29 +153,29 @@ export const TechAdBannerSkeleton = () => (
 
 /* ─────────────── 3. FEATURED DEALS CAROUSEL SKELETON ─────────────── */
 export const FeaturedDealsSkeleton = () => (
-  <section className="w-full px-2 sm:px-4 lg:px-6 py-1.5 select-none animate-pulse">
-    <div className="w-full bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-sm p-3.5 sm:p-4.5 lg:p-5 shadow-xs">
+  <section className="w-full px-0 py-1.5 select-none animate-pulse">
+    <div className="w-full bg-white dark:bg-slate-900 border border-x-0 border-slate-200/90 dark:border-slate-800 rounded-none p-3.5 sm:p-4.5 lg:p-5 shadow-xs">
       <div className="flex items-center justify-between mb-3">
         <div className="space-y-1">
-          <div className="h-5 w-36 bg-slate-200 dark:bg-slate-800 rounded-sm" />
-          <div className="h-3 w-48 bg-slate-100 dark:bg-slate-800/60 rounded-sm" />
+          <div className="h-5 w-36 bg-slate-200 dark:bg-slate-800 rounded-none" />
+          <div className="h-3 w-48 bg-slate-100 dark:bg-slate-800/60 rounded-none" />
         </div>
         <div className="flex gap-1.5">
-          <div className="w-20 h-7 rounded-sm bg-slate-200 dark:bg-slate-800" />
-          <div className="w-7 h-7 rounded-sm bg-slate-200 dark:bg-slate-800" />
-          <div className="w-7 h-7 rounded-sm bg-slate-200 dark:bg-slate-800" />
+          <div className="w-20 h-7 rounded-none bg-slate-200 dark:bg-slate-800" />
+          <div className="w-7 h-7 rounded-none bg-slate-200 dark:bg-slate-800" />
+          <div className="w-7 h-7 rounded-none bg-slate-200 dark:bg-slate-800" />
         </div>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
         <div className="lg:col-span-5 space-y-2.5">
-          <div className="h-4 w-24 bg-slate-200 dark:bg-slate-800 rounded-sm" />
-          <div className="h-6 w-4/5 bg-slate-200 dark:bg-slate-800 rounded-sm" />
-          <div className="h-3.5 w-1/3 bg-slate-100 dark:bg-slate-800/60 rounded-sm" />
-          <div className="h-7 w-36 bg-slate-200 dark:bg-slate-800 rounded-sm" />
-          <div className="h-8 w-full max-w-sm bg-slate-100 dark:bg-slate-800/60 rounded-sm" />
-          <div className="h-8 w-32 bg-slate-200 dark:bg-slate-800 rounded-sm" />
+          <div className="h-4 w-24 bg-slate-200 dark:bg-slate-800 rounded-none" />
+          <div className="h-6 w-4/5 bg-slate-200 dark:bg-slate-800 rounded-none" />
+          <div className="h-3.5 w-1/3 bg-slate-100 dark:bg-slate-800/60 rounded-none" />
+          <div className="h-7 w-36 bg-slate-200 dark:bg-slate-800 rounded-none" />
+          <div className="h-8 w-full max-w-sm bg-slate-100 dark:bg-slate-800/60 rounded-none" />
+          <div className="h-8 w-32 bg-slate-200 dark:bg-slate-800 rounded-none" />
         </div>
-        <div className="lg:col-span-7 h-[285px] sm:h-[300px] lg:h-[315px] bg-slate-100 dark:bg-slate-800/40 rounded-sm" />
+        <div className="lg:col-span-7 h-[285px] sm:h-[300px] lg:h-[315px] bg-slate-100 dark:bg-slate-800/40 rounded-none" />
       </div>
     </div>
   </section>
@@ -183,17 +183,17 @@ export const FeaturedDealsSkeleton = () => (
 
 /* ─────────────── 4. RECOMMENDED CATEGORIES SKELETON ─────────────── */
 export const RecommendedCategoriesSkeleton = () => (
-  <section className="w-full px-2 sm:px-4 lg:px-6 py-1 select-none animate-pulse">
-    <div className="w-full bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-sm p-3 sm:p-4">
+  <section className="w-full px-0 py-1 select-none animate-pulse">
+    <div className="w-full bg-white dark:bg-slate-900 border border-x-0 border-slate-200/90 dark:border-slate-800 rounded-none p-3 sm:p-4">
       <div className="flex items-center justify-between mb-3">
-        <div className="h-5 w-48 bg-slate-200 dark:bg-slate-800 rounded-sm" />
-        <div className="h-4 w-24 bg-slate-100 dark:bg-slate-800/60 rounded-sm" />
+        <div className="h-5 w-48 bg-slate-200 dark:bg-slate-800 rounded-none" />
+        <div className="h-4 w-24 bg-slate-100 dark:bg-slate-800/60 rounded-none" />
       </div>
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2.5 sm:gap-3">
         {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-          <div key={i} className="flex flex-col items-center gap-2 p-2 rounded-sm border border-slate-100 dark:border-slate-800">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-slate-200 dark:bg-slate-800 rounded-sm" />
-            <div className="h-3 w-14 bg-slate-200 dark:bg-slate-800 rounded-sm" />
+          <div key={i} className="flex flex-col items-center gap-2 p-2 rounded-none border border-slate-100 dark:border-slate-800">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-slate-200 dark:bg-slate-800 rounded-none" />
+            <div className="h-3 w-14 bg-slate-200 dark:bg-slate-800 rounded-none" />
           </div>
         ))}
       </div>
@@ -203,25 +203,25 @@ export const RecommendedCategoriesSkeleton = () => (
 
 /* ─────────────── 5. FLASH DEALS SECTION SKELETON ─────────────── */
 export const FlashDealsSectionSkeleton = () => (
-  <section className="w-full px-2 sm:px-4 lg:px-6 py-1 select-none animate-pulse">
-    <div className="w-full bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-sm p-3.5 sm:p-4">
+  <section className="w-full px-0 py-1 select-none animate-pulse">
+    <div className="w-full bg-white dark:bg-slate-900 border border-x-0 border-slate-200/90 dark:border-slate-800 rounded-none p-3.5 sm:p-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-sm bg-rose-200 dark:bg-rose-900/60" />
-          <div className="h-5 w-36 bg-slate-200 dark:bg-slate-800 rounded-sm" />
-          <div className="h-5 w-28 bg-slate-100 dark:bg-slate-800/60 rounded-sm" />
+          <div className="w-6 h-6 rounded-none bg-rose-200 dark:bg-rose-900/60" />
+          <div className="h-5 w-36 bg-slate-200 dark:bg-slate-800 rounded-none" />
+          <div className="h-5 w-28 bg-slate-100 dark:bg-slate-800/60 rounded-none" />
         </div>
-        <div className="h-4 w-20 bg-slate-200 dark:bg-slate-800 rounded-sm" />
+        <div className="h-4 w-20 bg-slate-200 dark:bg-slate-800 rounded-none" />
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 sm:gap-3">
         {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="rounded-sm border border-slate-200/80 dark:border-slate-800 p-2.5 space-y-2">
-            <div className="aspect-square w-full bg-slate-200 dark:bg-slate-800 rounded-sm" />
-            <div className="h-3.5 w-3/4 bg-slate-200 dark:bg-slate-800 rounded-sm" />
-            <div className="h-3 w-1/2 bg-slate-100 dark:bg-slate-800/60 rounded-sm" />
+          <div key={i} className="rounded-none border border-slate-200/80 dark:border-slate-800 p-2.5 space-y-2">
+            <div className="aspect-square w-full bg-slate-200 dark:bg-slate-800 rounded-none" />
+            <div className="h-3.5 w-3/4 bg-slate-200 dark:bg-slate-800 rounded-none" />
+            <div className="h-3 w-1/2 bg-slate-100 dark:bg-slate-800/60 rounded-none" />
             <div className="flex justify-between items-center pt-1">
-              <div className="h-4 w-16 bg-slate-200 dark:bg-slate-800 rounded-sm" />
-              <div className="h-3.5 w-12 bg-rose-100 dark:bg-rose-950/60 rounded-sm" />
+              <div className="h-4 w-16 bg-slate-200 dark:bg-slate-800 rounded-none" />
+              <div className="h-3.5 w-12 bg-rose-100 dark:bg-rose-950/60 rounded-none" />
             </div>
           </div>
         ))}

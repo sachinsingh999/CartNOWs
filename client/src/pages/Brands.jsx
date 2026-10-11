@@ -192,7 +192,7 @@ const Brands = () => {
     <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 text-[#0F172A] dark:text-slate-100 font-sans transition-colors duration-200 text-left pb-16 select-none">
       
       {/* ── FULL-WIDTH FLUID CONTAINER ── */}
-      <div className="w-full px-3 sm:px-5 lg:px-6 py-2.5 space-y-3.5">
+      <div className="w-full px-0 sm:px-5 lg:px-6 py-2.5 space-y-3.5">
 
         {/* ── SECTION: FEATURED BRAND ADVERTISING & CAMPAIGN BANNER ── */}
         <BrandAdBanner />

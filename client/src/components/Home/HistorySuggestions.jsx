@@ -204,11 +204,11 @@ const HistorySuggestions = ({ fallbackProducts = [], onQuickView }) => {
   const hasHistory = recentlyViewed.length > 0;
 
   return (
-    <section className="w-full px-2 sm:px-4 lg:px-6 py-0.5 sm:py-1 select-none text-left">
-      <div className="w-full bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-none p-3.5 sm:p-4.5 lg:p-5 shadow-xs transition-shadow duration-300">
+    <section className="w-full px-0 py-0 select-none text-left">
+      <div className="w-full bg-white dark:bg-slate-900 border-0 rounded-none px-0 sm:px-4.5 lg:px-5 py-3.5 sm:py-4.5 lg:py-5 shadow-none">
         
         {/* Section Top Header Row */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3.5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3.5 px-3 sm:px-0">
           <div className="text-left space-y-1">
             <div className="flex items-center gap-2">
               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-blue-50 dark:bg-blue-950/50 border border-blue-200/80 dark:border-blue-800/60 rounded-none text-[9px] font-black uppercase tracking-wider text-blue-700 dark:text-blue-300 shadow-2xs">

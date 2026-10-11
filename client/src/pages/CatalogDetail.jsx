@@ -489,20 +489,21 @@ const CatalogDetail = ({ type: propType }) => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 px-3 sm:px-6 lg:px-10 py-4 text-left transition-colors duration-350">
-      {/* Back button */}
-      <button
-        onClick={() => navigate(meta.backPath)}
-        className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors border-none bg-transparent cursor-pointer mb-2"
-      >
-        <ArrowLeft size={13} className="stroke-[2.5]" />
-        <span>{meta.backLabel}</span>
-      </button>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 px-0 sm:px-6 lg:px-10 py-4 text-left transition-colors duration-350">
+      <div className="px-3 sm:px-0">
+        {/* Back button */}
+        <button
+          onClick={() => navigate(meta.backPath)}
+          className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors border-none bg-transparent cursor-pointer mb-2"
+        >
+          <ArrowLeft size={13} className="stroke-[2.5]" />
+          <span>{meta.backLabel}</span>
+        </button>
 
-      {/* Header section with Per-Page Toolbar */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-4">
-        <div>
-          <span className={`inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md mb-1 ${meta.badgeColor}`}>
+        {/* Header section with Per-Page Toolbar */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-4">
+          <div>
+            <span className={`inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md mb-1 ${meta.badgeColor}`}>
             <HeaderIcon size={10} className="stroke-[2.5]" />
             {meta.badgeLabel}
           </span>
@@ -535,6 +536,7 @@ const CatalogDetail = ({ type: propType }) => {
             </select>
           </div>
         )}
+      </div>
       </div>
 
       {loading ? (

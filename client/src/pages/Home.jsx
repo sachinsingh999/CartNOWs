@@ -263,7 +263,7 @@ const Home = () => {
   }, [activeDeal, homepageData, isCampaignActive]);
 
   return (
-    <div className="bg-[#F8FAFC] dark:bg-slate-950 min-h-screen text-[#0F172A] dark:text-slate-100 font-sans pb-16 antialiased text-left transition-colors duration-200">
+    <div className="bg-[#F8FAFC] dark:bg-slate-950 min-h-screen text-[#0F172A] dark:text-slate-100 font-sans pb-0 antialiased text-left transition-colors duration-200">
       {/* Custom Keyframes */}
       <style>{`
         @keyframes float-gentle {
@@ -332,12 +332,12 @@ const Home = () => {
       <RecommendedCategories homepageData={homepageData} />
 
       {/* 7. POPULAR BRANDS */}
-      <section className="w-full px-2 sm:px-4 lg:px-6 py-0.5 sm:py-1 select-none">
+      <section className="w-full px-0 py-0 select-none">
         <ShopByBrands popularBrands={homepageData.popularBrands} />
       </section>
 
       {/* 8. UNIFIED DISCOVERY & RECOMMENDATION SHOWCASE */}
-      <section className="w-full px-2 sm:px-4 lg:px-6 py-0.5 sm:py-1 select-none">
+      <section className="w-full px-0 py-0 select-none">
         <RecommendedProducts
           recommended={homepageData.recommended}
           trending={homepageData.trending}
@@ -356,12 +356,12 @@ const Home = () => {
       </section>
 
       {/* 9. CURATED THEME COLLECTIONS */}
-      <section className="w-full px-2 sm:px-4 lg:px-6 py-0.5 sm:py-1 select-none">
+      <section className="w-full px-0 py-0 select-none">
         <ShopByCollections trendingCollections={homepageData.trendingCollections} />
       </section>
 
       {/* 10. BUDGET STORE & PRICE DROP RADAR */}
-      <section className="w-full px-2 sm:px-4 lg:px-6 py-0.5 sm:py-1 select-none">
+      <section className="w-full px-0 py-0 select-none">
         <BudgetStoreRadar
           homepageData={homepageData}
           onQuickView={setQuickViewProduct}
@@ -372,7 +372,7 @@ const Home = () => {
       </section>
 
       {/* 11. "THIS OR THAT?" COMMUNITY PRODUCT DUELS */}
-      <section className="w-full px-2 sm:px-4 lg:px-6 py-0.5 sm:py-1 select-none">
+      <section className="w-full px-0 py-0 select-none">
         <ProductDuel
           homepageData={homepageData}
           onQuickView={setQuickViewProduct}
@@ -381,10 +381,10 @@ const Home = () => {
       </section>
 
       {/* 12. 3-COLUMN FEATURE HUB (Deal of Day, Seller Spotlight, AI Robot Chat) - BOTTOM PLACEMENT */}
-      <section className="w-full px-2 sm:px-4 lg:px-6 py-0.5 sm:py-1 select-none text-left">
-        <div className="w-full bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-none p-3.5 sm:p-4.5 lg:p-5 shadow-xs transition-colors duration-200">
+      <section className="w-full px-0 py-0 select-none text-left">
+        <div className="w-full bg-white dark:bg-slate-900 border-0 rounded-none px-0 sm:px-4.5 lg:px-5 py-3.5 sm:py-4.5 lg:py-5 shadow-none transition-colors duration-200">
           {/* Section Top Header Row */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3.5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3.5 px-3 sm:px-0">
             <div className="text-left space-y-1">
               <div className="flex items-center gap-2">
                 <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-amber-50 dark:bg-amber-950/50 border border-amber-200/80 dark:border-amber-800/60 rounded-none text-[9px] font-black uppercase tracking-wider text-amber-700 dark:text-amber-300 shadow-2xs">

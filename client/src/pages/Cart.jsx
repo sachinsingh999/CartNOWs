@@ -594,11 +594,11 @@ const Cart = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FC] dark:bg-[#050508] px-4 sm:px-6 py-6 transition-colors duration-200 pb-28 lg:pb-12 text-slate-800 dark:text-slate-100">
+    <div className="min-h-screen bg-[#F8F9FC] dark:bg-[#050508] px-0 sm:px-6 py-6 transition-colors duration-200 pb-28 lg:pb-12 text-slate-800 dark:text-slate-100">
       <div className="mx-auto max-w-[1440px]">
         
         {/* Breadcrumb and Header */}
-        <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200 dark:border-slate-800/60 pb-4 text-left">
+        <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200 dark:border-slate-800/60 pb-4 text-left px-3 sm:px-0">
           <div>
             <nav className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1.5">
               <span className="hover:text-slate-600 dark:hover:text-slate-300 cursor-pointer transition" onClick={() => navigate("/")}>Home</span>

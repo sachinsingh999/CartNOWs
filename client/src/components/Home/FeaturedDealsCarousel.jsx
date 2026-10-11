@@ -189,8 +189,8 @@ const FeaturedDealsCarousel = () => {
   // Loading Skeleton State
   if (loading) {
     return (
-      <section className="w-full px-2 sm:px-4 lg:px-6 py-1.5 select-none">
-        <div className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-none p-3.5 sm:p-4.5 lg:p-5 shadow-xs animate-pulse">
+      <section className="w-full px-0 py-0 select-none">
+        <div className="w-full bg-white dark:bg-slate-900 border-0 rounded-none p-3.5 sm:p-4.5 lg:p-5 shadow-none animate-pulse">
           <div className="flex items-center justify-between mb-3">
             <div className="space-y-1">
               <div className="h-5 w-32 bg-slate-200 dark:bg-slate-800 rounded-none" />
@@ -246,9 +246,9 @@ const FeaturedDealsCarousel = () => {
   };
 
   return (
-    <section className="w-full px-2 sm:px-4 lg:px-6 py-0.5 sm:py-1 select-none">
+    <section className="w-full px-0 py-0 select-none">
       <div
-        className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-none p-3.5 sm:p-4.5 lg:p-5 shadow-xs hover:shadow-md transition-shadow duration-300 relative overflow-hidden"
+        className="w-full bg-white dark:bg-slate-900 border-0 rounded-none p-3.5 sm:p-4.5 lg:p-5 shadow-none relative overflow-hidden"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
         onTouchStart={handleTouchStart}
@@ -406,11 +406,11 @@ const FeaturedDealsCarousel = () => {
                     RIGHT SIDE (~58%): ASYMMETRICAL 4-IMAGE MOSAIC GRID
                     ────────────────────────────────────────────────────────── */}
                 <div className="lg:col-span-7 xl:col-span-7 w-full order-1 lg:order-2">
-                  <div className="grid grid-cols-2 gap-2 sm:gap-2.5 h-[190px] min-[420px]:h-[220px] sm:h-[300px] lg:h-[315px]">
+                  <div className="grid grid-cols-2 gap-0 h-[190px] min-[420px]:h-[220px] sm:h-[300px] lg:h-[315px] border border-slate-200/80 dark:border-slate-800 rounded-none overflow-hidden">
                     {/* Slot 0: Tall Main Image (Left Half) */}
                     <div
                       onClick={() => navigate(`/product/${currentProduct._id}`)}
-                      className="group/s0 relative w-full h-full min-h-0 rounded-none overflow-hidden bg-slate-950 shadow-xs hover:shadow-md transition-all cursor-pointer border border-slate-200/50 dark:border-slate-800"
+                      className="group/s0 relative w-full h-full min-h-0 rounded-none overflow-hidden bg-slate-950 transition-all cursor-pointer border-r border-slate-200/80 dark:border-slate-800"
                     >
                       {/* Discount Badge */}
                       {discount > 0 && (
@@ -448,11 +448,11 @@ const FeaturedDealsCarousel = () => {
                     </div>
 
                     {/* Right Half: Grid of 2 rows (Top Wide + Bottom 2 Cards) */}
-                    <div className="grid grid-rows-[1.15fr_1fr] gap-2 sm:gap-2.5 h-full min-h-0">
+                    <div className="grid grid-rows-[1.15fr_1fr] gap-0 h-full min-h-0">
                       {/* Slot 1: Top Wide Card */}
                       <div
                         onClick={() => navigate(`/product/${currentProduct._id}`)}
-                        className="group/s1 relative w-full h-full min-h-0 rounded-none overflow-hidden bg-slate-950 shadow-xs hover:shadow-md transition-all cursor-pointer border border-slate-200/50 dark:border-slate-800"
+                        className="group/s1 relative w-full h-full min-h-0 rounded-none overflow-hidden bg-slate-950 transition-all cursor-pointer border-b border-slate-200/80 dark:border-slate-800"
                       >
                         <button
                           type="button"
@@ -481,11 +481,11 @@ const FeaturedDealsCarousel = () => {
                       </div>
 
                       {/* Bottom Row: 2 Cards Side-by-Side */}
-                      <div className="grid grid-cols-2 gap-2 sm:gap-2.5 h-full min-h-0">
+                      <div className="grid grid-cols-2 gap-0 h-full min-h-0">
                         {/* Slot 2: Bottom-Left Card */}
                         <div
                           onClick={() => navigate(`/product/${currentProduct._id}`)}
-                          className="group/s2 relative w-full h-full min-h-0 rounded-none overflow-hidden bg-slate-950 shadow-xs hover:shadow-md transition-all cursor-pointer border border-slate-200/50 dark:border-slate-800"
+                          className="group/s2 relative w-full h-full min-h-0 rounded-none overflow-hidden bg-slate-950 transition-all cursor-pointer border-r border-slate-200/80 dark:border-slate-800"
                         >
                           <button
                             type="button"
@@ -516,7 +516,7 @@ const FeaturedDealsCarousel = () => {
                         {/* Slot 3: Bottom-Right Card */}
                         <div
                           onClick={() => navigate(`/product/${currentProduct._id}`)}
-                          className="group/s3 relative w-full h-full min-h-0 rounded-none overflow-hidden bg-slate-950 shadow-xs hover:shadow-md transition-all cursor-pointer border border-slate-200/50 dark:border-slate-800"
+                          className="group/s3 relative w-full h-full min-h-0 rounded-none overflow-hidden bg-slate-950 transition-all cursor-pointer border-none"
                         >
                           <button
                             type="button"
@@ -525,7 +525,7 @@ const FeaturedDealsCarousel = () => {
                               setSelectedImageIdx(3);
                               setIsLightboxOpen(true);
                             }}
-                            className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 z-20 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white/95 hover:bg-white text-slate-800 flex items-center justify-center shadow-sm hover:scale-110 transition-transform cursor-pointer border border-slate-200/60"
+                            className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 z-20 w-6 h-6 sm:w-7 sm:h-7 rounded-none bg-white/95 hover:bg-white text-slate-800 flex items-center justify-center shadow-sm hover:scale-110 transition-transform cursor-pointer border border-slate-200/60"
                             title="View Full Size"
                           >
                             <Maximize2 size={10} className="stroke-[2.5]" />

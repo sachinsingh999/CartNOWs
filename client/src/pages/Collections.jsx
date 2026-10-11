@@ -591,7 +591,7 @@ const Collections = () => {
       </div>
 
       {/* ── MAIN CONTENT WRAPPER (FULL FLUID WIDTH) ── */}
-      <div className="w-full px-2 sm:px-4 lg:px-6 py-3 sm:py-5 space-y-4 sm:space-y-6">
+      <div className="w-full px-0 sm:px-4 lg:px-6 py-3 sm:py-5 space-y-4 sm:space-y-6">
 
         {/* ═══════════════════════════════════════════════════════════════════
             1. CINEMATIC HERO SECTION (TALL, EDITORIAL 2-SIDED SPLIT)

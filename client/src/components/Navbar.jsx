@@ -775,9 +775,20 @@ const NAV_STRIP_CATEGORIES = [
   { label: "Bags & Luggage", to: "/product?category=bags", icon: Luggage },
 ];
 
+// Luxury Preset Avatars mapping
+const PRESET_AVATARS_MAP = {
+  aurora: "from-pink-500 via-purple-600 to-indigo-700",
+  gold: "from-yellow-400 via-amber-500 to-orange-600",
+  neon: "from-cyan-400 via-blue-500 to-indigo-600",
+  emerald: "from-emerald-400 via-teal-500 to-cyan-700",
+  silver: "from-slate-300 via-slate-500 to-slate-700",
+  obsidian: "from-slate-900 via-purple-950 to-slate-950",
+  deep: "from-indigo-900 via-purple-900 to-pink-900",
+};
+
 const Navbar = () => {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, user: authUser } = useAuth();
   const location = useLocation();
   const { language, changeLanguage, t } = useLanguage();
 
@@ -796,6 +807,7 @@ const Navbar = () => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [username, setUsername] = useState("");
+  const [profilePhoto, setProfilePhoto] = useState("");
   const [searchValue, setSearchValue] = useState("");
   const [locationLabel, setLocationLabel] = useState(() => {
     return localStorage.getItem("delivery_location") || "Use location";
@@ -972,6 +984,65 @@ const Navbar = () => {
       .slice(0, 2);
   }, [username]);
 
+  /* ── Sync user profile & avatar state in real-time ── */
+  useEffect(() => {
+    if (authUser) {
+      if (authUser.name) setUsername(authUser.name);
+      if (authUser.profilePhoto !== undefined) setProfilePhoto(authUser.profilePhoto || "");
+    }
+  }, [authUser]);
+
+  useEffect(() => {
+    const syncUserFromStorage = () => {
+      try {
+        const stored = localStorage.getItem("user");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed.name) setUsername(parsed.name);
+          if (parsed.profilePhoto !== undefined) setProfilePhoto(parsed.profilePhoto || "");
+        }
+      } catch {}
+    };
+    syncUserFromStorage();
+    window.addEventListener("userUpdated", syncUserFromStorage);
+    window.addEventListener("storage", syncUserFromStorage);
+    return () => {
+      window.removeEventListener("userUpdated", syncUserFromStorage);
+      window.removeEventListener("storage", syncUserFromStorage);
+    };
+  }, []);
+
+  const renderNavbarAvatar = (sizeClass = "h-7 w-7", textSizeClass = "text-xs") => {
+    if (profilePhoto) {
+      if (profilePhoto.startsWith("data:") || profilePhoto.startsWith("http")) {
+        return (
+          <img
+            src={profilePhoto}
+            alt={username || "User"}
+            className={`${sizeClass} rounded-full object-cover shrink-0 border border-slate-300 dark:border-slate-700 shadow-xs`}
+          />
+        );
+      }
+      const gradient = PRESET_AVATARS_MAP[profilePhoto];
+      if (gradient) {
+        return (
+          <div
+            className={`${sizeClass} rounded-full bg-gradient-to-tr ${gradient} text-white font-black ${textSizeClass} flex items-center justify-center shrink-0 border border-white/20 shadow-xs`}
+          >
+            {initials || <User size={13} strokeWidth={2.2} />}
+          </div>
+        );
+      }
+    }
+    return (
+      <div
+        className={`${sizeClass} rounded-full bg-amber-500 text-slate-950 font-bold ${textSizeClass} flex items-center justify-center shrink-0 shadow-xs`}
+      >
+        {initials || <User size={13} strokeWidth={2.2} />}
+      </div>
+    );
+  };
+
   /* ── Click outside ── */
   useEffect(() => {
     const handler = (e) => {
@@ -1051,11 +1122,17 @@ const Navbar = () => {
         const res = await axios.get(`${backendUrl}/api/user/profile`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (res.data.success) setUsername(res.data.user.name);
+        if (res.data.success && res.data.user) {
+          setUsername(res.data.user.name || "");
+          setProfilePhoto(res.data.user.profilePhoto || "");
+          localStorage.setItem("user", JSON.stringify(res.data.user));
+        }
       } catch (err) {
         if (err.response?.status === 401) {
           localStorage.removeItem("token");
+          localStorage.removeItem("user");
           setUsername("");
+          setProfilePhoto("");
           setCartCount(0);
         }
       }
@@ -1294,7 +1371,7 @@ const Navbar = () => {
             <div className="flex h-16 items-center gap-3 lg:gap-5 w-full">
               {/* ── Logo ── */}
               <Link to="/" className="-ml-1 group flex shrink-0 items-center select-none">
-                <Logo className="h-11 sm:h-[50px] w-auto text-slate-900 dark:text-white group-hover:scale-105 transition-transform duration-300" />
+                <Logo className="h-9 sm:h-10 w-auto text-slate-900 dark:text-white group-hover:scale-105 transition-transform duration-300" />
               </Link>
 
               {/* ── Integrated Search Capsule ── */}
@@ -1946,22 +2023,25 @@ const Navbar = () => {
                       setOpen((p) => !p);
                       setPincodeOpen(false);
                     }}
-                    className="flex h-9 items-center gap-2 pl-2 pr-3 rounded-full hover:bg-slate-100/70 dark:hover:bg-slate-900/60 transition cursor-pointer bg-transparent shrink-0"
+                    className={`flex h-9 items-center gap-2 px-2.5 rounded-none transition-all cursor-pointer select-none shrink-0 border ${
+                      open
+                        ? "bg-slate-100 dark:bg-slate-800 border-slate-400 dark:border-slate-600 text-slate-950 dark:text-white"
+                        : "hover:bg-slate-100/80 dark:hover:bg-slate-900/80 border-transparent text-slate-700 dark:text-slate-200"
+                    }`}
                   >
-                    <div className="h-7 w-7 rounded-full bg-amber-500 text-slate-950 font-bold text-xs flex items-center justify-center shadow-xs shrink-0">
-                      {initials || <User size={13} />}
-                    </div>
+                    {renderNavbarAvatar("h-7 w-7", "text-xs")}
                     <div className="flex flex-col justify-center text-left leading-none">
-                      <span className="text-[9.5px] font-semibold text-slate-400 dark:text-slate-400 leading-none block">
+                      <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 leading-tight block">
                         Hello, {username ? username.split(" ")[0] : "Sign in"}
                       </span>
-                      <span className="text-xs font-bold text-slate-900 dark:text-slate-100 flex items-center gap-0.5 mt-0.5 leading-none">
+                      <span className="text-xs font-bold text-slate-900 dark:text-slate-100 flex items-center gap-0.5 mt-0.5 leading-tight">
                         Account{" "}
                         <ChevronDown
-                          size={11}
+                          size={12}
                           strokeWidth={2.2}
-                          className={`text-slate-400 transition-transform duration-300 ${open ? "rotate-180" : ""
-                            }`}
+                          className={`text-slate-500 transition-transform duration-200 ${
+                            open ? "rotate-180 text-amber-500" : ""
+                          }`}
                         />
                       </span>
                     </div>
@@ -1975,200 +2055,171 @@ const Navbar = () => {
                         animate="visible"
                         exit="exit"
                         variants={dropdownVariants}
-                        className="absolute right-0 top-[calc(100%+8px)] w-64 overflow-hidden rounded-md bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl shadow-2xl z-50 text-left border border-slate-200/80 dark:border-slate-800/80 font-normal"
+                        className="absolute right-0 top-[calc(100%+6px)] w-[280px] sm:w-[300px] rounded-none bg-white dark:bg-slate-900 shadow-2xl z-50 text-left border border-slate-300 dark:border-slate-700 transition-colors divide-y divide-slate-200 dark:divide-slate-800"
                       >
                         {token ? (
                           <>
                             {/* User Header */}
-                            <div className="flex items-center gap-3 bg-slate-50/80 dark:bg-slate-900/60 px-4 py-3">
-                              <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-amber-500 text-xs font-bold text-slate-950 shrink-0 shadow-xs">
-                                {initials || <User size={15} />}
-                              </div>
+                            <div className="flex items-center gap-3.5 p-4 bg-slate-50 dark:bg-slate-900/90">
+                              {renderNavbarAvatar("h-10 w-10", "text-sm")}
                               <div className="min-w-0 flex-1">
-                                <span className="text-[9px] font-medium tracking-widest uppercase text-slate-400 block leading-none">
+                                <span className="text-[10px] font-bold tracking-wider uppercase text-slate-500 dark:text-slate-400 block leading-tight">
                                   WELCOME BACK
                                 </span>
-                                <p className="text-xs font-medium text-slate-900 dark:text-white truncate capitalize mt-1 leading-none">
+                                <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate capitalize mt-0.5 leading-tight">
                                   {username || "My Account"}
-                                </p>
+                                </h4>
                               </div>
                             </div>
 
                             {/* Nav Items List */}
-                            <div className="p-1 space-y-0.5">
+                            <div className="py-1">
                               {[
-                                { icon: User, label: t("profile"), to: "/profile" },
-                                { icon: Package, label: t("orders"), to: "/orderdetail" },
+                                { icon: User, label: t("profile") || "Profile", to: "/profile" },
+                                { icon: Package, label: t("orders") || "Orders", to: "/orderdetail" },
                                 { icon: Heart, label: "Wishlist", to: "/wishlist" },
                                 { icon: Globe, label: "Social Feed", to: "/social" },
                                 { icon: HelpCircle, label: "Help & Support", to: "/help" },
-                                {
-                                  icon: Store,
-                                  label: "Become a Seller",
-                                  externalUrl: "https://cartnow-seller.vercel.app/",
-                                  isExternal: true,
-                                },
-                                {
-                                  icon: Truck,
-                                  label: "Join as Deliveryman",
-                                  externalUrl:
-                                    "https://cart-now-deliveryagent.vercel.app/",
-                                  isExternal: true,
-                                },
                               ].map((item) => (
-                                <motion.div
+                                <button
                                   key={item.label}
-                                  variants={listItemVariants}
+                                  type="button"
+                                  onClick={() => {
+                                    setOpen(false);
+                                    navigate(item.to);
+                                  }}
+                                  className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-xs font-semibold text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer border-none bg-transparent rounded-none"
                                 >
-                                  {item.isExternal ? (
-                                    <a
-                                      href={item.externalUrl}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      onClick={() => setOpen(false)}
-                                      className="flex w-full items-center justify-between px-3 py-1.5 rounded-md text-left text-xs font-normal text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 transition-colors cursor-pointer group"
-                                    >
-                                      <div className="flex items-center gap-2.5">
-                                        <item.icon
-                                          size={14}
-                                          className="text-amber-500 group-hover:scale-110 transition-transform"
-                                        />
-                                        <span>{item.label}</span>
-                                      </div>
-                                      <ExternalLink
-                                        size={12}
-                                        className="text-amber-400 opacity-60 group-hover:opacity-100 transition-opacity"
-                                      />
-                                    </a>
-                                  ) : (
-                                    <button
-                                      onClick={() => {
-                                        setOpen(false);
-                                        navigate(item.to);
-                                      }}
-                                      className="flex w-full items-center justify-between px-3 py-1.5 rounded-md text-left text-xs font-normal text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors cursor-pointer group border-none bg-transparent"
-                                    >
-                                      <div className="flex items-center gap-2.5">
-                                        <item.icon
-                                          size={14}
-                                          className="text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors"
-                                        />
-                                        <span>{item.label}</span>
-                                      </div>
-                                      <ChevronRight
-                                        size={12}
-                                        className="text-slate-400 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-150"
-                                      />
-                                    </button>
-                                  )}
-                                </motion.div>
+                                  <item.icon size={15} className="text-slate-500 dark:text-slate-400 shrink-0 stroke-[2]" />
+                                  <span className="truncate">{item.label}</span>
+                                </button>
                               ))}
                             </div>
 
-                            {/* Settings Section */}
-                            <motion.div
-                              variants={listItemVariants}
-                              className="mx-1 my-1 p-2.5 rounded-md border border-slate-200/80 dark:border-slate-800/80 bg-slate-50/60 dark:bg-slate-900/30 space-y-2"
-                            >
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                  {isDarkMode ? (
-                                    <Moon size={12} className="text-amber-400" />
-                                  ) : (
-                                    <Sun size={12} className="text-amber-500" />
-                                  )}
-                                  <span className="text-[9.5px] font-normal uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                                    THEME
-                                  </span>
+                            {/* Partner Portals */}
+                            <div className="py-1">
+                              <a
+                                href="https://cartnow-seller.vercel.app/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={() => setOpen(false)}
+                                className="flex w-full items-center justify-between px-4 py-2 text-xs font-semibold text-amber-700 dark:text-amber-400 hover:bg-amber-500/10 transition-colors cursor-pointer rounded-none"
+                              >
+                                <div className="flex items-center gap-3 min-w-0">
+                                  <Store size={15} className="shrink-0 stroke-[2]" />
+                                  <span className="truncate">Become a Seller</span>
                                 </div>
-                                <button
-                                  type="button"
-                                  onClick={() => setIsDarkMode(!isDarkMode)}
-                                  aria-label="Toggle theme"
-                                  className={`relative h-5 w-9 rounded-full transition-colors duration-200 cursor-pointer border-none ${isDarkMode ? "bg-slate-700" : "bg-slate-300"
-                                    }`}
-                                >
-                                  <span
-                                    className={`absolute top-0.5 left-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-white shadow transition-transform duration-200 ${isDarkMode ? "translate-x-4" : "translate-x-0"
-                                      }`}
-                                  >
-                                    {isDarkMode ? (
-                                      <Moon size={9} className="text-slate-800" />
-                                    ) : (
-                                      <Sun size={9} className="text-amber-500" />
-                                    )}
-                                  </span>
-                                </button>
-                              </div>
+                                <ExternalLink size={13} className="shrink-0 opacity-70" />
+                              </a>
 
-                              <div className="flex items-center justify-between pt-1.5 border-t border-slate-200/60 dark:border-slate-800/60">
-                                <span className="text-[9.5px] font-normal uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                                  LANGUAGE
-                                </span>
-                                <select
-                                  value={language}
-                                  onChange={(e) => changeLanguage(e.target.value)}
-                                  className="h-6 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-2 text-[10px] font-normal text-slate-800 dark:text-slate-200 cursor-pointer"
-                                >
-                                  <option value="en">English (EN)</option>
-                                  <option value="hi">Hindi (HI)</option>
-                                  <option value="es">Español (ES)</option>
-                                </select>
+                              <a
+                                href="https://cart-now-deliveryagent.vercel.app/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={() => setOpen(false)}
+                                className="flex w-full items-center justify-between px-4 py-2 text-xs font-semibold text-amber-700 dark:text-amber-400 hover:bg-amber-500/10 transition-colors cursor-pointer rounded-none"
+                              >
+                                <div className="flex items-center gap-3 min-w-0">
+                                  <Truck size={15} className="shrink-0 stroke-[2]" />
+                                  <span className="truncate">Join as Deliveryman</span>
+                                </div>
+                                <ExternalLink size={13} className="shrink-0 opacity-70" />
+                              </a>
+                            </div>
+
+                            {/* Settings Section (Theme & Language) */}
+                            <div className="p-3 bg-slate-50/70 dark:bg-slate-900/50">
+                              <div className="p-2.5 rounded-none border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                                    {isDarkMode ? <Moon size={14} /> : <Sun size={14} />}
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                                      THEME
+                                    </span>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => setIsDarkMode(!isDarkMode)}
+                                    aria-label="Toggle theme"
+                                    className={`relative h-5 w-10 rounded-none transition-colors duration-200 cursor-pointer border ${
+                                      isDarkMode ? "bg-amber-500 border-amber-600" : "bg-slate-300 border-slate-400"
+                                    }`}
+                                  >
+                                    <span
+                                      className={`absolute top-0.5 left-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-none bg-white shadow transition-transform duration-200 ${
+                                        isDarkMode ? "translate-x-5" : "translate-x-0"
+                                      }`}
+                                    >
+                                      {isDarkMode ? (
+                                        <Moon size={8} className="text-slate-900" />
+                                      ) : (
+                                        <Sun size={8} className="text-amber-500" />
+                                      )}
+                                    </span>
+                                  </button>
+                                </div>
+
+                                <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+                                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                                    LANGUAGE
+                                  </span>
+                                  <select
+                                    value={language}
+                                    onChange={(e) => changeLanguage(e.target.value)}
+                                    className="h-7 rounded-none border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 text-xs font-semibold text-slate-800 dark:text-slate-200 cursor-pointer focus:outline-none focus:border-amber-500"
+                                  >
+                                    <option value="en">English (EN)</option>
+                                    <option value="hi">Hindi (HI)</option>
+                                    <option value="es">Español (ES)</option>
+                                  </select>
+                                </div>
                               </div>
-                            </motion.div>
+                            </div>
 
                             {/* Logout */}
-                            <motion.div
-                              variants={listItemVariants}
-                              className="p-1 border-t border-slate-100 dark:border-slate-900/80"
-                            >
+                            <div className="py-1">
                               <button
+                                type="button"
                                 onClick={handleLogout}
-                                className="flex w-full items-center justify-between px-3 py-1.5 rounded-md text-left text-xs font-normal text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer border-none bg-transparent group"
+                                className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer border-none bg-transparent rounded-none"
                               >
-                                <div className="flex items-center gap-2.5">
-                                  <LogOut size={14} className="text-rose-500" />
-                                  <span>{t("logout")}</span>
-                                </div>
-                                <ChevronRight
-                                  size={12}
-                                  className="text-rose-400 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all"
-                                />
+                                <LogOut size={15} className="shrink-0 stroke-[2]" />
+                                <span>{t("logout") || "Logout"}</span>
                               </button>
-                            </motion.div>
+                            </div>
                           </>
                         ) : (
                           <>
-                            {/* Guest Header with Login / Signup actions */}
-                            <div className="p-3.5 pb-3 border-b border-slate-100 dark:border-slate-900 bg-slate-50/80 dark:bg-slate-900/60">
-                              <div className="text-center pb-2">
-                                <div className="mx-auto mb-1.5 flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-white border border-slate-200 dark:border-slate-700 shadow-2xs">
-                                  <User size={16} />
-                                </div>
-                                <h4 className="text-xs font-bold text-slate-900 dark:text-white">
-                                  Welcome Guest!
-                                </h4>
-                                <p className="text-[9.5px] text-slate-400 dark:text-slate-500 mt-0.5">
-                                  Sign in to track orders & personalized perks
-                                </p>
+                            {/* Guest Header */}
+                            <div className="p-4 bg-slate-50 dark:bg-slate-900/90 text-center">
+                              <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-none bg-amber-500 text-slate-950 font-bold">
+                                <User size={18} strokeWidth={2.2} />
                               </div>
+                              <h4 className="text-xs font-bold text-slate-900 dark:text-white">
+                                Welcome Guest
+                              </h4>
+                              <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
+                                Sign in to access your account
+                              </p>
 
-                              <div className="space-y-1.5 pt-1">
+                              <div className="space-y-1.5 mt-3">
                                 <button
+                                  type="button"
                                   onClick={() => {
                                     setOpen(false);
                                     navigate("/login", { state: { from: location } });
                                   }}
-                                  className="w-full py-2 rounded-md bg-amber-500 hover:bg-amber-600 text-slate-950 text-center text-xs font-bold active:scale-95 transition-all cursor-pointer border-none uppercase tracking-wider shadow-2xs"
+                                  className="w-full py-2 rounded-none bg-amber-500 hover:bg-amber-600 text-slate-950 text-center text-xs font-bold transition cursor-pointer border-none uppercase tracking-wider"
                                 >
-                                  {t("login")}
+                                  {t("login") || "Login"}
                                 </button>
                                 <button
+                                  type="button"
                                   onClick={() => {
                                     setOpen(false);
                                     navigate("/signup", { state: { from: location } });
                                   }}
-                                  className="w-full py-1.5 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-center text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 active:scale-95 transition-all cursor-pointer uppercase tracking-wider"
+                                  className="w-full py-1.5 rounded-none border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-center text-xs font-semibold text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer uppercase tracking-wider"
                                 >
                                   Create Account
                                 </button>
@@ -2176,127 +2227,107 @@ const Navbar = () => {
                             </div>
 
                             {/* Nav Items List for Guest */}
-                            <div className="p-1 space-y-0.5">
+                            <div className="py-1">
                               {[
-                                { icon: Package, label: t("orders") || "Orders & Returns", to: "/orderdetail" },
+                                { icon: Package, label: t("orders") || "Orders", to: "/orderdetail" },
                                 { icon: Heart, label: "Wishlist", to: "/wishlist" },
-                                { icon: Truck, label: "Track Shipment", to: "/track" },
                                 { icon: Globe, label: "Social Feed", to: "/social" },
                                 { icon: HelpCircle, label: "Help & Support", to: "/help" },
-                                {
-                                  icon: Store,
-                                  label: "Become a Seller",
-                                  externalUrl: "https://cartnow-seller.vercel.app/",
-                                  isExternal: true,
-                                },
-                                {
-                                  icon: Truck,
-                                  label: "Join as Deliveryman",
-                                  externalUrl:
-                                    "https://cart-now-deliveryagent.vercel.app/",
-                                  isExternal: true,
-                                },
                               ].map((item) => (
-                                <motion.div
+                                <button
                                   key={item.label}
-                                  variants={listItemVariants}
+                                  type="button"
+                                  onClick={() => {
+                                    setOpen(false);
+                                    navigate(item.to);
+                                  }}
+                                  className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-xs font-semibold text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer border-none bg-transparent rounded-none"
                                 >
-                                  {item.isExternal ? (
-                                    <a
-                                      href={item.externalUrl}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      onClick={() => setOpen(false)}
-                                      className="flex w-full items-center justify-between px-3 py-1.5 rounded-md text-left text-xs font-normal text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 transition-colors cursor-pointer group"
-                                    >
-                                      <div className="flex items-center gap-2.5">
-                                        <item.icon
-                                          size={14}
-                                          className="text-amber-500 group-hover:scale-110 transition-transform"
-                                        />
-                                        <span>{item.label}</span>
-                                      </div>
-                                      <ExternalLink
-                                        size={12}
-                                        className="text-amber-400 opacity-60 group-hover:opacity-100 transition-opacity"
-                                      />
-                                    </a>
-                                  ) : (
-                                    <button
-                                      onClick={() => {
-                                        setOpen(false);
-                                        navigate(item.to);
-                                      }}
-                                      className="flex w-full items-center justify-between px-3 py-1.5 rounded-md text-left text-xs font-normal text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors cursor-pointer group border-none bg-transparent"
-                                    >
-                                      <div className="flex items-center gap-2.5">
-                                        <item.icon
-                                          size={14}
-                                          className="text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors"
-                                        />
-                                        <span>{item.label}</span>
-                                      </div>
-                                      <ChevronRight
-                                        size={12}
-                                        className="text-slate-400 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-150"
-                                      />
-                                    </button>
-                                  )}
-                                </motion.div>
+                                  <item.icon size={15} className="text-slate-500 dark:text-slate-400 shrink-0 stroke-[2]" />
+                                  <span className="truncate">{item.label}</span>
+                                </button>
                               ))}
                             </div>
 
-                            {/* Settings Section for Guest (Theme & Language) */}
-                            <motion.div
-                              variants={listItemVariants}
-                              className="mx-1 my-1 p-2.5 rounded-md border border-slate-200/80 dark:border-slate-800/80 bg-slate-50/60 dark:bg-slate-900/30 space-y-2"
-                            >
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                  {isDarkMode ? (
-                                    <Moon size={12} className="text-amber-400" />
-                                  ) : (
-                                    <Sun size={12} className="text-amber-500" />
-                                  )}
-                                  <span className="text-[9.5px] font-normal uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                                    THEME
-                                  </span>
+                            {/* Partner Portals */}
+                            <div className="py-1">
+                              <a
+                                href="https://cartnow-seller.vercel.app/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={() => setOpen(false)}
+                                className="flex w-full items-center justify-between px-4 py-2 text-xs font-semibold text-amber-700 dark:text-amber-400 hover:bg-amber-500/10 transition-colors cursor-pointer rounded-none"
+                              >
+                                <div className="flex items-center gap-3 min-w-0">
+                                  <Store size={15} className="shrink-0 stroke-[2]" />
+                                  <span className="truncate">Become a Seller</span>
                                 </div>
-                                <button
-                                  type="button"
-                                  onClick={() => setIsDarkMode(!isDarkMode)}
-                                  aria-label="Toggle theme"
-                                  className={`relative h-5 w-9 rounded-full transition-colors duration-200 cursor-pointer border-none ${isDarkMode ? "bg-slate-700" : "bg-slate-300"
-                                    }`}
-                                >
-                                  <span
-                                    className={`absolute top-0.5 left-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-white shadow transition-transform duration-200 ${isDarkMode ? "translate-x-4" : "translate-x-0"
-                                      }`}
-                                  >
-                                    {isDarkMode ? (
-                                      <Moon size={9} className="text-slate-800" />
-                                    ) : (
-                                      <Sun size={9} className="text-amber-500" />
-                                    )}
-                                  </span>
-                                </button>
-                              </div>
+                                <ExternalLink size={13} className="shrink-0 opacity-70" />
+                              </a>
 
-                              <div className="flex items-center justify-between pt-1.5 border-t border-slate-200/60 dark:border-slate-800/60">
-                                <span className="text-[9.5px] font-normal uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                                  LANGUAGE
-                                </span>
-                                <select
-                                  value={language}
-                                  onChange={(e) => changeLanguage(e.target.value)}
-                                  className="h-6 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-2 text-[10px] font-normal text-slate-800 dark:text-slate-200 cursor-pointer"
-                                >
-                                  <option value="en">English (EN)</option>
-                                  <option value="hi">Hindi (HI)</option>
-                                  <option value="es">Español (ES)</option>
-                                </select>
+                              <a
+                                href="https://cart-now-deliveryagent.vercel.app/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={() => setOpen(false)}
+                                className="flex w-full items-center justify-between px-4 py-2 text-xs font-semibold text-amber-700 dark:text-amber-400 hover:bg-amber-500/10 transition-colors cursor-pointer rounded-none"
+                              >
+                                <div className="flex items-center gap-3 min-w-0">
+                                  <Truck size={15} className="shrink-0 stroke-[2]" />
+                                  <span className="truncate">Join as Deliveryman</span>
+                                </div>
+                                <ExternalLink size={13} className="shrink-0 opacity-70" />
+                              </a>
+                            </div>
+
+                            {/* Settings Section for Guest (Theme & Language) */}
+                            <div className="p-3 bg-slate-50/70 dark:bg-slate-900/50">
+                              <div className="p-2.5 rounded-none border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                                    {isDarkMode ? <Moon size={14} /> : <Sun size={14} />}
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                                      THEME
+                                    </span>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => setIsDarkMode(!isDarkMode)}
+                                    aria-label="Toggle theme"
+                                    className={`relative h-5 w-10 rounded-none transition-colors duration-200 cursor-pointer border ${
+                                      isDarkMode ? "bg-amber-500 border-amber-600" : "bg-slate-300 border-slate-400"
+                                    }`}
+                                  >
+                                    <span
+                                      className={`absolute top-0.5 left-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-none bg-white shadow transition-transform duration-200 ${
+                                        isDarkMode ? "translate-x-5" : "translate-x-0"
+                                      }`}
+                                    >
+                                      {isDarkMode ? (
+                                        <Moon size={8} className="text-slate-900" />
+                                      ) : (
+                                        <Sun size={8} className="text-amber-500" />
+                                      )}
+                                    </span>
+                                  </button>
+                                </div>
+
+                                <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+                                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                                    LANGUAGE
+                                  </span>
+                                  <select
+                                    value={language}
+                                    onChange={(e) => changeLanguage(e.target.value)}
+                                    className="h-7 rounded-none border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 text-xs font-semibold text-slate-800 dark:text-slate-200 cursor-pointer focus:outline-none focus:border-amber-500"
+                                  >
+                                    <option value="en">English (EN)</option>
+                                    <option value="hi">Hindi (HI)</option>
+                                    <option value="es">Español (ES)</option>
+                                  </select>
+                                </div>
                               </div>
-                            </motion.div>
+                            </div>
                           </>
                         )}
                       </motion.div>
@@ -2898,8 +2929,18 @@ const Navbar = () => {
                         : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
                       }`}
                   >
-                    {token && initials ? (
-                      <span className="text-[11px] font-black">{initials}</span>
+                    {token ? (
+                      profilePhoto && (profilePhoto.startsWith("data:") || profilePhoto.startsWith("http")) ? (
+                        <img src={profilePhoto} alt="" className="h-7 w-7 rounded-full object-cover" />
+                      ) : profilePhoto && PRESET_AVATARS_MAP[profilePhoto] ? (
+                        <div className={`h-7 w-7 rounded-full bg-gradient-to-tr ${PRESET_AVATARS_MAP[profilePhoto]} text-white font-black text-[11px] flex items-center justify-center`}>
+                          {initials || <User size={13} />}
+                        </div>
+                      ) : initials ? (
+                        <span className="text-[11px] font-black">{initials}</span>
+                      ) : (
+                        <Icon size={14} />
+                      )
                     ) : (
                       <Icon size={14} />
                     )}

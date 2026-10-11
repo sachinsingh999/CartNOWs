@@ -392,7 +392,7 @@ const TechAdBanner = () => {
   };
 
   return (
-    <section className="w-full px-2 sm:px-4 lg:px-6 py-0.5 sm:py-1 select-none">
+    <section className="w-full px-0 py-0 select-none">
       {/* ═════════════════════════════════════════════════════════════
           SHARP-CORNER RESPONSIVE CAMPAIGN CARD
           ═════════════════════════════════════════════════════════════ */}
@@ -402,7 +402,7 @@ const TechAdBanner = () => {
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        className="group relative w-full max-w-[1600px] mx-auto rounded-none overflow-hidden cursor-pointer shadow-[0_4px_24px_rgba(0,0,0,0.04)] hover:shadow-[0_10px_36px_rgba(0,0,0,0.08)] transition-all duration-500 border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900"
+        className="group relative w-full rounded-none overflow-hidden cursor-pointer transition-all duration-500 border-0 bg-white dark:bg-slate-900"
         role="region"
         aria-label={title}
       >

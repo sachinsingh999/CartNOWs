@@ -14,6 +14,16 @@ const cleanReviewText = (text) => {
     .trim();
 };
 
+const PRESET_AVATARS_MAP = {
+  aurora: "from-pink-500 via-purple-600 to-indigo-700",
+  gold: "from-yellow-400 via-amber-500 to-orange-600",
+  neon: "from-cyan-400 via-blue-500 to-indigo-600",
+  emerald: "from-emerald-400 via-teal-500 to-cyan-700",
+  silver: "from-slate-300 via-slate-500 to-slate-700",
+  obsidian: "from-slate-900 via-purple-950 to-slate-950",
+  deep: "from-indigo-900 via-purple-900 to-pink-900",
+};
+
 const TestimonialCard = ({ item, idx, direction }) => {
   const isLeftCard = idx === 0;
   const exitX = isLeftCard
@@ -100,10 +110,14 @@ const TestimonialCard = ({ item, idx, direction }) => {
           <div className="flex items-center gap-3.5">
             {/* Customer avatar */}
             <div className="w-14 h-14 rounded-none overflow-hidden border border-slate-100 dark:border-[#242A3B] bg-slate-50 dark:bg-[#1B2030] shrink-0 flex items-center justify-center font-bold text-slate-700 dark:text-slate-300 shadow-inner">
-              {item.avt && (item.avt.startsWith("http") || item.avt.startsWith("/")) ? (
+              {item.avt && (item.avt.startsWith("http") || item.avt.startsWith("/") || item.avt.startsWith("data:")) ? (
                 <img src={item.avt} alt={item.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
+              ) : item.avt && PRESET_AVATARS_MAP[item.avt] ? (
+                <div className={`w-full h-full bg-gradient-to-tr ${PRESET_AVATARS_MAP[item.avt]} flex items-center justify-center font-bold text-white`}>
+                  <span className="text-lg">{item.initials || item.name?.charAt(0).toUpperCase()}</span>
+                </div>
               ) : (
-                <span className="text-lg">{item.initials || item.name.charAt(0).toUpperCase()}</span>
+                <span className="text-lg">{item.initials || item.name?.charAt(0).toUpperCase()}</span>
               )}
             </div>
 

@@ -56,7 +56,9 @@ import {
   Droplets,
   Sun,
   Wind,
-  Shirt
+  Shirt,
+  CreditCard,
+  Headphones
 } from "lucide-react";
 import { useComparison } from "../context/ComparisonContext";
 import BadgeChips from "../components/ProductDetail/BadgeChips";
@@ -998,13 +1000,13 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
   };
 
   const renderNavTabs = () => (
-    <div className="w-full text-left mt-5 sm:mt-6 pt-3 px-2 sm:px-0 space-y-3.5">
+    <div className="w-full text-left mt-5 sm:mt-6 pt-3 px-0 sm:px-0 space-y-3 sm:space-y-3.5">
       {/* 1. Description & Specifications */}
       <div className="bg-slate-100/70 dark:bg-slate-900/60 rounded-none overflow-hidden">
         <button
           type="button"
           onClick={() => toggleSection("description")}
-          className="w-full flex items-center justify-between px-6 py-4.5 bg-slate-200/50 dark:bg-slate-950/40 text-left font-black text-xs uppercase tracking-wider text-slate-900 dark:text-white cursor-pointer select-none hover:bg-slate-200/80 dark:hover:bg-slate-800/60 transition-colors"
+          className="w-full flex items-center justify-between px-4 sm:px-6 py-4 sm:py-4.5 bg-slate-200/50 dark:bg-slate-950/40 text-left font-black text-xs uppercase tracking-wider text-slate-900 dark:text-white cursor-pointer select-none hover:bg-slate-200/80 dark:hover:bg-slate-800/60 transition-colors"
         >
           <span className="flex items-center gap-2">
             <FileText size={16} className="text-indigo-600 dark:text-indigo-400" />
@@ -1016,7 +1018,7 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
           />
         </button>
         {openSections.description && (
-          <div className="p-6 sm:p-7 space-y-5 animate-fade-in text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+          <div className="p-4 sm:p-6 sm:p-7 space-y-5 animate-fade-in text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
             <p>{product.description}</p>
             <SpecificationTable product={product} />
           </div>
@@ -1028,7 +1030,7 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
         <button
           type="button"
           onClick={() => toggleSection("care")}
-          className="w-full flex items-center justify-between px-6 py-4.5 bg-slate-200/50 dark:bg-slate-950/40 text-left font-black text-xs uppercase tracking-wider text-slate-900 dark:text-white cursor-pointer select-none hover:bg-slate-200/80 dark:hover:bg-slate-800/60 transition-colors"
+          className="w-full flex items-center justify-between px-4 sm:px-6 py-4 sm:py-4.5 bg-slate-200/50 dark:bg-slate-950/40 text-left font-black text-xs uppercase tracking-wider text-slate-900 dark:text-white cursor-pointer select-none hover:bg-slate-200/80 dark:hover:bg-slate-800/60 transition-colors"
         >
           <span className="flex items-center gap-2">
             <Shirt size={16} className="text-indigo-600 dark:text-indigo-400" />
@@ -1040,7 +1042,7 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
           />
         </button>
         {openSections.care && (
-          <div className="p-6 sm:p-7 space-y-4 animate-fade-in text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+          <div className="p-4 sm:p-6 sm:p-7 space-y-4 animate-fade-in text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
             <h4 className="text-xs font-black uppercase text-slate-800 dark:text-slate-200 tracking-wider">
               Garment Care Guide
             </h4>
@@ -1075,7 +1077,7 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
         <button
           type="button"
           onClick={() => toggleSection("shipping")}
-          className="w-full flex items-center justify-between px-6 py-4.5 bg-slate-200/50 dark:bg-slate-950/40 text-left font-black text-xs uppercase tracking-wider text-slate-900 dark:text-white cursor-pointer select-none hover:bg-slate-200/80 dark:hover:bg-slate-800/60 transition-colors"
+          className="w-full flex items-center justify-between px-4 sm:px-6 py-4 sm:py-4.5 bg-slate-200/50 dark:bg-slate-950/40 text-left font-black text-xs uppercase tracking-wider text-slate-900 dark:text-white cursor-pointer select-none hover:bg-slate-200/80 dark:hover:bg-slate-800/60 transition-colors"
         >
           <span className="flex items-center gap-2">
             <Truck size={16} className="text-indigo-600 dark:text-indigo-400" />
@@ -1087,7 +1089,7 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
           />
         </button>
         {openSections.shipping && (
-          <div className="p-6 sm:p-7 space-y-3.5 animate-fade-in text-xs sm:text-sm text-slate-700 dark:text-slate-400 leading-relaxed text-left">
+          <div className="p-4 sm:p-6 sm:p-7 space-y-3.5 animate-fade-in text-xs sm:text-sm text-slate-700 dark:text-slate-400 leading-relaxed text-left">
             <p>At CartNOW, our logistic network operates standard express delivery across domestic zipcodes. Packages leave our regional hub within 24 hours of placement.</p>
             <p className="font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider text-xs">Expected Timelines:</p>
             <ul className="list-disc list-inside space-y-1.5 pl-2 text-xs">
@@ -1100,11 +1102,11 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
       </div>
 
       {/* 4. Customer Feedback / Reviews */}
-      <div className="bg-slate-100/70 dark:bg-slate-900/60 rounded-none overflow-hidden">
+      <div id="customer-reviews-section" className="bg-slate-100/70 dark:bg-slate-900/60 rounded-none overflow-hidden">
         <button
           type="button"
           onClick={() => toggleSection("reviews")}
-          className="w-full flex items-center justify-between px-6 py-4.5 bg-slate-200/50 dark:bg-slate-950/40 text-left font-black text-xs uppercase tracking-wider text-slate-900 dark:text-white cursor-pointer select-none hover:bg-slate-200/80 dark:hover:bg-slate-800/60 transition-colors"
+          className="w-full flex items-center justify-between px-4 sm:px-6 py-4 sm:py-4.5 bg-slate-200/50 dark:bg-slate-950/40 text-left font-black text-xs uppercase tracking-wider text-slate-900 dark:text-white cursor-pointer select-none hover:bg-slate-200/80 dark:hover:bg-slate-800/60 transition-colors"
         >
           <span className="flex items-center gap-2">
             <MessageSquare size={16} className="text-indigo-600 dark:text-indigo-400" />
@@ -1116,7 +1118,7 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
           />
         </button>
         {openSections.reviews && (
-          <div className="p-6 sm:p-7 space-y-5 animate-fade-in text-left w-full">
+          <div className="p-4 sm:p-6 sm:p-7 space-y-5 animate-fade-in text-left w-full">
             {/* Reviews Header: Title, Sort, and Write Review Button */}
             <div className="flex justify-between items-center gap-3 flex-wrap pb-2">
               <div>
@@ -1188,12 +1190,33 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
       <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-indigo-500/5 dark:bg-indigo-500/5 rounded-full blur-3xl pointer-events-none -z-10" />
       <div className="absolute top-1/2 left-1/4 w-[650px] h-[650px] bg-violet-500/5 dark:bg-violet-500/5 rounded-full blur-3xl pointer-events-none -z-10" />
 
-      <div className="w-full max-w-full px-2 sm:px-4 lg:px-6 pt-3.5 sm:pt-4 lg:pt-5">
+      <div className="w-full max-w-full px-0 sm:px-4 lg:px-6 pt-2.5 sm:pt-4 lg:pt-5">
+
+        {/* Mobile Product Header: Product Name at Top on Mobile View */}
+        {product && (
+          <div className="block lg:hidden px-3.5 sm:px-4 mb-2.5 space-y-1 text-left">
+            {product.brand && (
+              <div className="flex items-center gap-1.5 text-[11px] font-bold tracking-wider uppercase text-blue-600 dark:text-blue-400">
+                <span>{product.brand}</span>
+                {product.category && (
+                  <>
+                    <span className="text-slate-300 dark:text-slate-700">•</span>
+                    <span className="text-slate-500 dark:text-slate-400 capitalize">{product.category}</span>
+                  </>
+                )}
+              </div>
+            )}
+            <h1 className="text-lg sm:text-xl font-black tracking-tight text-slate-900 dark:text-white leading-snug">
+              {product.name}
+            </h1>
+            <BadgeChips product={product} />
+          </div>
+        )}
 
         {/* 3-Column Split Showcase Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1.15fr)_minmax(0,0.85fr)] gap-3 lg:gap-4 items-start w-full max-w-full">
           {/* COLUMN 1: E-commerce Image Showcase */}
-          <div className="flex flex-col gap-2.5 min-w-0 max-w-full">
+          <div className="flex flex-col gap-3 min-w-0 max-w-full px-0">
             <div className="flex gap-2 items-stretch">
 
               {/* Vertical Thumbnail Deck (Desktop) */}
@@ -1272,28 +1295,13 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
               <div className="flex-1 relative aspect-[3/4] overflow-hidden rounded-none">
 
                 {/* Float overlays */}
-                <div className="absolute top-4 left-4 z-25 flex gap-2">
-                  <span className="inline-flex items-center gap-1.5 rounded-none bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-3 py-1 text-[9px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                    <Sparkles size={10} className="text-indigo-600 dark:text-indigo-400 animate-pulse" />
-                    <span>{mainImg === product?.bgRemovedImage ? "Studio Cutout" : "Premium Model"}</span>
-                  </span>
-                  <button
-                    onClick={() => setMediaMode(mediaMode === "360" ? "image" : "360")}
-                    className={`inline-flex items-center gap-1.5 rounded-none backdrop-blur-md px-3 py-1 text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer ${mediaMode === "360"
-                        ? "bg-indigo-600 text-white"
-                        : "bg-white/95 dark:bg-slate-900/95 text-slate-700 dark:text-slate-300 hover:text-indigo-500"
-                      }`}
-                    title="Toggle 360° Interactive View"
-                  >
-                    <Rotate3d size={11} className={mediaMode === "360" ? "animate-spin text-white" : "text-indigo-600 dark:text-indigo-400"} />
-                    <span>360° View</span>
-                  </button>
-                  {displayStock <= 5 && displayStock > 0 && (
+                {displayStock <= 5 && displayStock > 0 && (
+                  <div className="absolute top-4 left-4 z-25 flex gap-2">
                     <span className="inline-flex items-center gap-1 rounded-none bg-rose-100/90 dark:bg-rose-950/40 px-3 py-1 text-[9px] font-black uppercase tracking-wider text-rose-600 dark:text-rose-400 animate-pulse">
                       Low Stock
                     </span>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 {/* Action buttons on image */}
                 <div className="absolute top-4 right-4 z-25 flex flex-col gap-2">
@@ -1445,7 +1453,7 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
             </div>
 
             {/* Horizontal Swipeable thumbnails (Mobile view) */}
-            <div className="sm:hidden flex gap-2 overflow-x-auto pb-1.5 scrollbar-thin">
+            <div className="sm:hidden flex items-center gap-3 overflow-x-auto mt-3.5 pt-1.5 pb-3 px-1.5 scrollbar-thin">
               {displayImages?.map((img, i) => (
                 <button
                   key={i}
@@ -1477,10 +1485,11 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
                 <Rotate3d size={14} className="text-slate-500" />
                 <span className="text-[8px] font-bold mt-1">360°</span>
               </button>
+              <div className="w-2.5 shrink-0" aria-hidden="true" />
             </div>
 
-            {/* Trust Badges Card (Bottom of Image) */}
-            <div className="rounded-none p-5 bg-slate-100/70 dark:bg-slate-900/60 grid grid-cols-3 text-center gap-2">
+            {/* Trust Badges Card (Desktop only in Column 1, mobile places it at bottom below buy actions) */}
+            <div className="hidden lg:grid rounded-none p-4 sm:p-5 bg-slate-100/70 dark:bg-slate-900/60 grid-cols-3 text-center gap-2">
               <div className="flex flex-col items-center justify-center p-1.5">
                 <Truck size={18} className="text-slate-500 dark:text-indigo-400 mb-1" />
                 <span className="text-[10.5px] font-black text-blue-500 dark:text-blue-400 leading-tight">Free Shipping</span>
@@ -1502,13 +1511,35 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
               </div>
             </div>
 
+            {/* Review Rating Bar at bottom of image section (Mobile view) */}
+            <div className="sm:hidden px-3.5 py-1 flex items-center justify-between text-left">
+              <button
+                type="button"
+                onClick={() => {
+                  const revSection = document.getElementById("customer-reviews-section");
+                  if (revSection) {
+                    setOpenSections(prev => ({ ...prev, reviews: true }));
+                    revSection.scrollIntoView({ behavior: "smooth" });
+                  }
+                }}
+                className="inline-flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200 cursor-pointer active:scale-95 transition-all"
+              >
+                <div className="flex items-center gap-1 px-2 py-0.5 bg-emerald-600 text-white rounded-none text-[11px] font-black">
+                  <span>{averageRating ? averageRating.toFixed(1) : "4.6"}</span>
+                  <Star size={10} className="fill-white stroke-none" />
+                </div>
+                <span className="text-slate-300 dark:text-slate-700 font-normal">•</span>
+                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 underline decoration-slate-300 dark:decoration-slate-700 underline-offset-2">{reviewCount || "245"} Ratings & Reviews</span>
+              </button>
+            </div>
+
           </div>
 
           {/* COLUMN 2: Center Details Panel & Buying CTA options */}
-          <div className="space-y-3 text-left min-w-0 max-w-full px-2 sm:px-0">
+          <div className="space-y-3 text-left min-w-0 max-w-full px-4 sm:px-0">
 
-            {/* Title & Review stars metrics */}
-            <div className="space-y-0.5">
+            {/* Title & Review stars metrics (Desktop only, mobile has it at the top) */}
+            <div className="hidden lg:block space-y-0.5">
               <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
                 {product.name}
               </h1>
@@ -1714,13 +1745,36 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
             {/* Feature List (Product Features / Highlights) */}
             <FeatureList product={product} />
 
+            {/* Trust Badges Card (Mobile view: placed at bottom below buy actions & details) */}
+            <div className="block lg:hidden rounded-none p-4 sm:p-5 bg-slate-100/70 dark:bg-slate-900/60 grid grid-cols-3 text-center gap-2 mt-2">
+              <div className="flex flex-col items-center justify-center p-1.5">
+                <Truck size={18} className="text-slate-500 dark:text-indigo-400 mb-1" />
+                <span className="text-[10.5px] font-black text-blue-500 dark:text-blue-400 leading-tight">Free Shipping</span>
+                <span className="text-[9px] text-slate-400 leading-none mt-1">On all orders</span>
+              </div>
+              <div className="flex flex-col items-center justify-center p-1.5">
+                <Clock size={18} className="text-slate-500 dark:text-indigo-400 mb-1" />
+                <span className="text-[10.5px] font-black text-slate-800 dark:text-slate-200 leading-tight">
+                  {!isAvailable ? "No Delivery" : "3-5 Days Delivery"}
+                </span>
+                <span className="text-[9px] text-slate-400 leading-none mt-1">
+                  {!isAvailable ? "Out of stock" : "Estimated delivery"}
+                </span>
+              </div>
+              <div className="flex flex-col items-center justify-center p-1.5">
+                <RotateCcw size={18} className="text-slate-500 dark:text-indigo-400 mb-1" />
+                <span className="text-[10.5px] font-black text-slate-800 dark:text-slate-200 leading-tight">Easy Returns</span>
+                <span className="text-[9px] text-slate-400 leading-none mt-1">Within 7 days</span>
+              </div>
+            </div>
+
           </div>
 
           {/* COLUMN 3: Seller, Shipping, and Specifications Sidebar cards (Extreme Right Column) */}
-          <div className="space-y-2.5 text-left min-w-0 max-w-full px-2 sm:px-0">
+          <div className="space-y-2.5 text-left min-w-0 max-w-full -mx-2 sm:mx-0 px-0">
 
             {/* 1. Seller Info card */}
-            <div className="bg-slate-100/70 dark:bg-slate-900/60 rounded-none p-6 text-left space-y-4">
+            <div className="bg-slate-100/70 dark:bg-slate-900/60 rounded-none p-4 sm:p-6 text-left space-y-4">
               <h4 className="text-xs font-black uppercase text-slate-900 dark:text-white tracking-wider pb-1.5">
                 Seller Information
               </h4>
@@ -1757,7 +1811,7 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
             </div>
 
             {/* 2. Shipping Information card */}
-            <div className="bg-slate-100/70 dark:bg-slate-900/60 rounded-none p-6 text-left space-y-4">
+            <div className="bg-slate-100/70 dark:bg-slate-900/60 rounded-none p-4 sm:p-6 text-left space-y-4">
               <h4 className="text-xs font-black uppercase text-slate-900 dark:text-white tracking-wider pb-1.5">
                 Shipping Information
               </h4>
@@ -1785,7 +1839,7 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
             </div>
 
             {/* 4. Store brand / Category Badge & SKU Bar (Bottom of Column 3) */}
-            <div className="flex items-center justify-between pb-1.5 pt-1 px-1">
+            <div className="flex items-center justify-between pb-1.5 pt-1 px-3 sm:px-1">
               <div
                 onClick={() => navigate(`/brand/${encodeURIComponent(product.brand || "FashionAura")}`)}
                 className="flex items-center gap-2 cursor-pointer group"
@@ -1811,7 +1865,7 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
 
         {/* SECTION: Related Products Horizontal Carousel Slider */}
         {relatedProducts.length > 0 && (
-          <section className="mt-6 pt-4 text-left">
+          <section className="mt-6 pt-4 text-left px-2 sm:px-0">
             <div className="mb-3 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
               <div>
                 <span className="text-[10px] font-black uppercase tracking-wider text-indigo-600 dark:text-indigo-400 block">Related items</span>
@@ -1869,7 +1923,7 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
 
         {/* SECTION: Recently Viewed Products Horizontal Carousel Slider */}
         {recentlyViewed.length > 0 && (
-          <section className="mt-6 pt-4 text-left">
+          <section className="mt-6 pt-4 text-left px-2 sm:px-0">
             <div className="mb-3 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
               <div>
                 <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">Personal history</span>
@@ -1916,56 +1970,56 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
           </section>
         )}
 
-        {/* SECTION: Footer Features Bar */}
-        <div className="mt-6 pt-4 pb-2">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        {/* SECTION: Footer Features Bar (Compact 2x2 on Mobile, 4-col on Desktop) */}
+        <div className="mt-8 pt-4 pb-2 border-t border-slate-200/70 dark:border-slate-800/70 px-2 sm:px-0">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
             {[
               {
                 icon: ShieldCheck,
-                title: "100% Original Products",
-                desc: "Original products with warranty",
+                title: "100% Original",
+                desc: "Genuine with warranty",
                 color: "indigo"
               },
               {
                 icon: RotateCcw,
                 title: "Easy Returns",
-                desc: "7 days return policy",
+                desc: "7-day return policy",
                 color: "emerald"
               },
               {
-                icon: ShieldCheck,
-                title: "Secure Payments",
-                desc: "100% secure payments",
+                icon: CreditCard,
+                title: "Secure Pay",
+                desc: "100% secure checkout",
                 color: "sky"
               },
               {
-                icon: HelpCircle,
+                icon: Headphones,
                 title: "24/7 Support",
-                desc: "Dedicated support",
+                desc: "Dedicated helpdesk",
                 color: "amber"
               }
             ].map((feature, i) => {
               const Icon = feature.icon;
               const colorClasses = {
-                indigo: "bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400",
-                emerald: "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400",
-                sky: "bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400",
-                amber: "bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400"
+                indigo: "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/40",
+                emerald: "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/40",
+                sky: "bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 border-sky-100 dark:border-sky-900/40",
+                amber: "bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/40"
               }[feature.color];
 
               return (
                 <div
                   key={i}
-                  className="flex items-center gap-4 bg-slate-100/70 dark:bg-slate-900/60 rounded-none p-4 transition-all duration-300 hover:bg-slate-100 dark:hover:bg-slate-900 text-left"
+                  className="flex items-center gap-2.5 sm:gap-3.5 bg-white dark:bg-slate-900/50 border border-slate-200/90 dark:border-slate-800/80 p-3 sm:p-4 text-left transition-all duration-200 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-2xs rounded-none"
                 >
-                  <div className={`h-11 w-11 rounded-none flex items-center justify-center shrink-0 ${colorClasses}`}>
-                    <Icon size={20} />
+                  <div className={`h-9 w-9 sm:h-10 sm:w-10 rounded-none flex items-center justify-center shrink-0 border ${colorClasses}`}>
+                    <Icon size={18} className="stroke-[2.2]" />
                   </div>
-                  <div className="space-y-0.5">
-                    <span className="text-xs font-black text-slate-800 dark:text-slate-100 block uppercase tracking-wider">
+                  <div className="min-w-0 space-y-0.5">
+                    <span className="text-[11px] sm:text-xs font-black text-slate-800 dark:text-slate-100 block uppercase tracking-wider truncate">
                       {feature.title}
                     </span>
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 block leading-tight font-medium">
+                    <span className="text-[9.5px] sm:text-[10px] text-slate-400 dark:text-slate-500 block leading-tight font-medium truncate">
                       {feature.desc}
                     </span>
                   </div>
@@ -2176,24 +2230,6 @@ ${specsText ? `- Full Specifications: ${specsText}` : ""}
 
 
 
-      {/* Floating AI Stylist trigger badge */}
-      {!showAssistant && (
-        <button
-          onClick={() => setShowAssistant(true)}
-          className="fixed bottom-6 right-6 z-[90] flex items-center gap-2.5 rounded-none bg-gradient-to-r from-violet-600 to-indigo-600 p-4 text-slate-100 dark:text-white shadow-xl hover:shadow-indigo-500/35 transition-all duration-300 group cursor-pointer"
-        >
-          <div className="relative">
-            <MessageSquare size={20} />
-            <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
-            </span>
-          </div>
-          <span className="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-500 ease-out font-black text-[10px] uppercase tracking-wider block">
-            AI Stylist
-          </span>
-        </button>
-      )}
 
       {/* STICKY BOTTOM VIEWPORT CTA BAR */}
       {showStickyBar && (
