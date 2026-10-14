@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Zap, ArrowRight, ChevronLeft, ChevronRight, ShieldCheck } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, ShieldCheck } from "lucide-react";
 import { backendUrl } from "../../config";
 import { cachedGet } from "../../utils/apiCache";
 import { getOptimizedImageUrl } from "../../utils/imageOptimizer";
@@ -287,25 +287,6 @@ const FlashDealsSection = ({ homepageData }) => {
         {/* Section Top Header Row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3.5 px-3 sm:px-0">
           <div className="text-left space-y-1">
-            <div className="flex items-center gap-2">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-rose-50 dark:bg-rose-950/50 border border-rose-200/80 dark:border-rose-800/60 rounded-none text-[9px] font-black uppercase tracking-wider text-rose-700 dark:text-rose-300 shadow-2xs">
-                <Zap size={11} className="stroke-[2.5]" />
-                <span>FLASH DEALS</span>
-              </div>
-
-              {/* Countdown timer pill */}
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-none bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-bold shadow-2xs">
-                <span className="text-slate-500 dark:text-slate-400">Ends in</span>
-                <div className="flex items-center gap-0.5 font-mono font-black text-rose-600 dark:text-rose-400">
-                  <span>{formatDigits(timeLeft.hours)}</span>
-                  <span>:</span>
-                  <span>{formatDigits(timeLeft.minutes)}</span>
-                  <span>:</span>
-                  <span>{formatDigits(timeLeft.seconds)}</span>
-                </div>
-              </div>
-            </div>
-
             <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
               <span>Deals For You</span>
               <span className="h-1.5 w-1.5 rounded-none bg-rose-600 dark:bg-rose-400 animate-pulse" />
@@ -316,7 +297,7 @@ const FlashDealsSection = ({ homepageData }) => {
           <div className="flex items-center gap-2 shrink-0 self-start sm:self-center">
             <button
               onClick={() => navigate("/discover")}
-              className="px-3 py-1.5 rounded-none border border-slate-300 dark:border-slate-700 hover:border-slate-900 dark:hover:border-white text-slate-800 dark:text-slate-200 hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-950 font-black text-[11px] uppercase tracking-wider flex items-center gap-1.5 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 shadow-2xs"
+              className="px-3 py-1.5 rounded-[4px] border border-slate-300 dark:border-slate-700 hover:border-slate-900 dark:hover:border-white text-slate-800 dark:text-slate-200 hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-950 font-black text-[11px] uppercase tracking-wider flex items-center gap-1.5 transition-all duration-200 cursor-pointer bg-white dark:bg-slate-900 shadow-2xs"
             >
               <span>All Deals</span>
               <ArrowRight size={12} className="stroke-[2.5]" />
@@ -328,7 +309,7 @@ const FlashDealsSection = ({ homepageData }) => {
                 type="button"
                 onClick={() => handleScroll("left")}
                 aria-label="Previous deals"
-                className="w-8 h-8 rounded-none bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-slate-400 transition-colors shadow-2xs cursor-pointer"
+                className="w-8 h-8 rounded-[4px] bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-slate-400 transition-colors shadow-2xs cursor-pointer"
               >
                 <ChevronLeft size={15} className="stroke-[2.5]" />
               </button>
@@ -336,7 +317,7 @@ const FlashDealsSection = ({ homepageData }) => {
                 type="button"
                 onClick={() => handleScroll("right")}
                 aria-label="Next deals"
-                className="w-8 h-8 rounded-none bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-slate-400 transition-colors shadow-2xs cursor-pointer"
+                className="w-8 h-8 rounded-[4px] bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:border-slate-400 transition-colors shadow-2xs cursor-pointer"
               >
                 <ChevronRight size={15} className="stroke-[2.5]" />
               </button>
@@ -351,7 +332,7 @@ const FlashDealsSection = ({ homepageData }) => {
             onClick={() => handleScroll("left")}
             disabled={!canScrollLeft}
             aria-label="Previous deals"
-            className={`hidden md:flex absolute -left-2.5 sm:-left-3.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-9 sm:h-9 rounded-none bg-white/95 dark:bg-slate-800/95 backdrop-blur-xs border border-slate-200 dark:border-slate-700 shadow-md items-center justify-center text-slate-800 dark:text-white transition-all cursor-pointer ${
+            className={`hidden md:flex absolute -left-2.5 sm:-left-3.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-9 sm:h-9 rounded-[4px] bg-white/95 dark:bg-slate-800/95 backdrop-blur-xs border border-slate-200 dark:border-slate-700 shadow-md items-center justify-center text-slate-800 dark:text-white transition-all cursor-pointer ${
               canScrollLeft
                 ? "hover:bg-rose-600 hover:text-white hover:border-rose-600 hover:scale-105 active:scale-95 opacity-100"
                 : "opacity-0 pointer-events-none"
@@ -365,7 +346,7 @@ const FlashDealsSection = ({ homepageData }) => {
             onClick={() => handleScroll("right")}
             disabled={!canScrollRight}
             aria-label="Next deals"
-            className={`hidden md:flex absolute -right-2.5 sm:-right-3.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-9 sm:h-9 rounded-none bg-white/95 dark:bg-slate-800/95 backdrop-blur-xs border border-slate-200 dark:border-slate-700 shadow-md items-center justify-center text-slate-800 dark:text-white transition-all cursor-pointer ${
+            className={`hidden md:flex absolute -right-2.5 sm:-right-3.5 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-9 sm:h-9 rounded-[4px] bg-white/95 dark:bg-slate-800/95 backdrop-blur-xs border border-slate-200 dark:border-slate-700 shadow-md items-center justify-center text-slate-800 dark:text-white transition-all cursor-pointer ${
               canScrollRight
                 ? "hover:bg-rose-600 hover:text-white hover:border-rose-600 hover:scale-105 active:scale-95 opacity-100"
                 : "opacity-0 pointer-events-none"
@@ -378,30 +359,30 @@ const FlashDealsSection = ({ homepageData }) => {
           <div
             ref={scrollContainerRef}
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-            className="flex gap-3 sm:gap-3.5 lg:gap-4 overflow-x-auto no-scrollbar scrollbar-none [&::-webkit-scrollbar]:hidden pb-1 snap-x snap-mandatory scroll-smooth"
+            className="flex gap-2 sm:gap-2.5 md:gap-3 overflow-x-auto no-scrollbar scrollbar-none [&::-webkit-scrollbar]:hidden pb-1 snap-x snap-mandatory scroll-smooth"
           >
             {collections.map((group) => (
               <div
                 key={group.id}
-                className="w-full sm:w-[330px] md:w-[360px] lg:w-[calc((100%-32px)/3)] shrink-0 snap-start bg-slate-50/70 dark:bg-slate-800/50 rounded-none border border-slate-200/80 dark:border-slate-800 p-3.5 sm:p-4 shadow-2xs hover:shadow-xs transition-all duration-200 flex flex-col justify-between select-none"
+                className="w-full sm:w-[330px] md:w-[360px] lg:w-[calc((100%-1.25rem)/3)] shrink-0 snap-start bg-slate-50/70 dark:bg-slate-800/50 rounded-md border border-slate-200/80 dark:border-slate-800 p-2.5 sm:p-3 shadow-2xs hover:shadow-xs transition-all duration-200 flex flex-col justify-between select-none"
               >
                 {/* Parent Deal Box Header */}
-                <div className="mb-2.5 text-left">
+                <div className="mb-2 text-left">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[9.5px] sm:text-[10px] font-black uppercase tracking-wider text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 px-2 py-0.5 rounded-none inline-block border border-rose-200/60 dark:border-rose-900/40">
+                    <span className="text-[9.5px] sm:text-[10px] font-black uppercase tracking-wider text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 px-2 py-0.5 rounded-[3px] inline-block border border-rose-200/60 dark:border-rose-900/40">
                       {group.tag}
                     </span>
                     <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                       Flash Deals
                     </span>
                   </div>
-                  <h3 className="text-sm sm:text-base md:text-[17px] font-black text-slate-950 dark:text-white tracking-tight leading-snug truncate">
+                  <h3 className="text-sm sm:text-base md:text-[16px] font-black text-slate-950 dark:text-white tracking-tight leading-snug truncate">
                     {group.title}
                   </h3>
                 </div>
 
                 {/* 4 Inner Deal Boxes in a 2x2 Matrix */}
-                <div className="grid grid-cols-2 gap-2 sm:gap-2.5 mb-3 w-full">
+                <div className="grid grid-cols-2 gap-1.5 sm:gap-2 mb-2.5 w-full">
                   {group.items.slice(0, 4).map((deal) => (
                     <div
                       key={deal.id}
@@ -409,9 +390,9 @@ const FlashDealsSection = ({ homepageData }) => {
                       className="group/item cursor-pointer flex flex-col items-center select-none"
                     >
                       {/* Inner Deal Image Box */}
-                      <div className="w-full aspect-square rounded-none overflow-hidden bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-700/80 relative group-hover/item:border-rose-500 dark:group-hover/item:border-rose-400 group-hover/item:shadow-xs transition-all duration-200 flex items-center justify-center">
+                      <div className="w-full aspect-square rounded-[4px] overflow-hidden bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-700/80 relative group-hover/item:border-rose-500 dark:group-hover/item:border-rose-400 group-hover/item:shadow-xs transition-all duration-200 flex items-center justify-center">
                         {/* Discount Tag */}
-                        <span className="absolute top-1.5 right-1.5 z-10 px-1.5 py-0.5 rounded-none text-[7.5px] sm:text-[8.5px] font-black uppercase tracking-tight bg-rose-600 text-white shadow-2xs leading-none pointer-events-none">
+                        <span className="absolute top-1.5 right-1.5 z-10 px-1.5 py-0.5 rounded-[3px] text-[7.5px] sm:text-[8.5px] font-black uppercase tracking-tight bg-rose-600 text-white shadow-2xs leading-none pointer-events-none">
                           {deal.discount}
                         </span>
                         <img
@@ -451,7 +432,7 @@ const FlashDealsSection = ({ homepageData }) => {
                 {/* Parent Box Footer Link */}
                 <button
                   onClick={() => navigate(group.link)}
-                  className="group/btn w-full py-2 px-3 rounded-none bg-white dark:bg-slate-900 hover:bg-slate-900 dark:hover:bg-white hover:text-white dark:hover:text-slate-900 border border-slate-200 dark:border-slate-700 flex items-center justify-between text-slate-700 dark:text-slate-200 text-[11px] sm:text-xs font-black uppercase tracking-wider transition-all duration-200 cursor-pointer mt-auto shadow-2xs"
+                  className="group/btn w-full py-1.5 sm:py-2 px-3 rounded-[4px] bg-white dark:bg-slate-900 hover:bg-slate-900 dark:hover:bg-white hover:text-white dark:hover:text-slate-900 border border-slate-200 dark:border-slate-700 flex items-center justify-between text-slate-700 dark:text-slate-200 text-[11px] sm:text-xs font-black uppercase tracking-wider transition-all duration-200 cursor-pointer mt-auto shadow-2xs"
                 >
                   <span>{group.cta}</span>
                   <ArrowRight size={13} className="stroke-[2.5] group-hover/btn:translate-x-1 transition-transform duration-200" />

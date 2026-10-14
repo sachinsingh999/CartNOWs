@@ -7,10 +7,8 @@ import {
   ArrowRight,
   Sparkles,
   Heart,
-  Truck,
   Flame,
   Zap,
-  ShieldCheck,
   CheckCircle2
 } from "lucide-react";
 import { backendUrl } from "../../config";
@@ -25,175 +23,136 @@ import heroSlide2 from "../../assets/hero_slide_2.webp";
 import heroSlide3 from "../../assets/hero_slide_3.webp";
 import heroSlide4 from "../../assets/hero_slide_4.webp";
 
-const BAZAAR_SLOT_THEMES = [
-  {
-    badgeLabel: "Bestseller",
-    badgeIcon: Flame,
-    badgeBg: "bg-emerald-600 text-white",
-    badgeLightBg: "bg-emerald-50 text-emerald-800 border border-emerald-200/70 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/40",
-    cardBg: "bg-gradient-to-br from-white via-[#F5FAF7] to-[#EBF6F0] dark:from-slate-800/90 dark:via-slate-850 dark:to-emerald-950/25",
-    borderColor: "border-emerald-100/90 dark:border-slate-700/60 hover:border-emerald-300 dark:hover:border-emerald-600/50",
-    discountBg: "bg-emerald-100/80 text-emerald-800 border border-emerald-200/60 dark:bg-emerald-900/50 dark:text-emerald-200",
-    glowAccent: "bg-emerald-400/20"
-  },
-  {
-    badgeLabel: "Premium",
-    badgeIcon: Sparkles,
-    badgeBg: "bg-amber-600 text-white",
-    badgeLightBg: "bg-amber-50 text-amber-800 border border-amber-200/70 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800/40",
-    cardBg: "bg-gradient-to-br from-white via-[#FEFAF3] to-[#FDF3E5] dark:from-slate-800/90 dark:via-slate-850 dark:to-amber-950/25",
-    borderColor: "border-amber-100/90 dark:border-slate-700/60 hover:border-amber-300 dark:hover:border-amber-600/50",
-    discountBg: "bg-amber-100/80 text-amber-900 border border-amber-200/60 dark:bg-amber-900/50 dark:text-amber-200",
-    glowAccent: "bg-amber-400/20"
-  },
-  {
-    badgeLabel: "Most Loved",
-    badgeIcon: Heart,
-    badgeBg: "bg-rose-600 text-white",
-    badgeLightBg: "bg-rose-50 text-rose-800 border border-rose-200/70 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800/40",
-    cardBg: "bg-gradient-to-br from-white via-[#FFF5F7] to-[#FEEAEE] dark:from-slate-800/90 dark:via-slate-850 dark:to-rose-950/25",
-    borderColor: "border-rose-100/90 dark:border-slate-700/60 hover:border-rose-300 dark:hover:border-rose-600/50",
-    discountBg: "bg-rose-100/80 text-rose-900 border border-rose-200/60 dark:bg-rose-900/50 dark:text-rose-200",
-    glowAccent: "bg-rose-400/20"
-  },
-  {
-    badgeLabel: "Trending",
-    badgeIcon: Zap,
-    badgeBg: "bg-sky-600 text-white",
-    badgeLightBg: "bg-sky-50 text-sky-800 border border-sky-200/70 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800/40",
-    cardBg: "bg-gradient-to-br from-white via-[#F3F9FE] to-[#E4F2FD] dark:from-slate-800/90 dark:via-slate-850 dark:to-sky-950/25",
-    borderColor: "border-sky-100/90 dark:border-slate-700/60 hover:border-sky-300 dark:hover:border-sky-600/50",
-    discountBg: "bg-sky-100/80 text-sky-900 border border-sky-200/60 dark:bg-sky-900/50 dark:text-sky-200",
-    glowAccent: "bg-sky-400/20"
-  }
-];
-
-const getProductImage = (product) => {
-  if (!product) return "/favicon.webp";
-  const raw = product.images?.[0] || product.image;
-  if (!raw) return "/favicon.webp";
-  const rawUrl = typeof raw === "string" && (raw.startsWith("http://") || raw.startsWith("https://"))
-    ? raw
-    : `${backendUrl}${raw.startsWith("/") ? raw : `/${raw}`}`;
-  return getOptimizedImageUrl(rawUrl, { width: 220, quality: 70 }) || rawUrl;
-};
-
 const DEFAULT_MODEL_SLIDES = [
   {
-    id: "tech",
-    tag: "TECH EXTRAVAGANZA • GET UP TO 50% OFF",
-    tagColor: "text-purple-600 dark:text-purple-400",
-    tagPillBg: "bg-purple-100/90 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300 border-purple-200/80 dark:border-purple-800/40",
-    title: ["Smart Tech", "Special", "Mega Deals"],
-    highlightWord: "Mega Deals",
-    subtitle: "Immersive audio, flagship wearables & cutting-edge electronics at unbeatable prices.",
-    ctaText: "Shop Tech Deals",
-    ctaLink: "/product?category=electronics",
-    ctaBg: "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-[0_4px_16px_rgba(147,51,234,0.35)]",
-    bgGradient: "from-[#F7F5FF] via-[#EEE8FF] to-[#DFD5FE] dark:from-slate-900 dark:via-purple-950/40 dark:to-slate-900",
-    borderColor: "border-purple-200/70 dark:border-slate-800",
-    glowColor: "bg-purple-400/25 dark:bg-purple-500/15",
+    id: "style-limits",
+    tag: "NEW SEASON COLLECTION",
+    line1: "Style",
+    accentWord: "Without",
+    line2Remainder: "Limits",
+    title: ["Style", "Without Limits."],
+    subtitle: "Discover premium fashion, curated collections and everyday essentials for a better you — only at CartNow.",
+    ctaText: "Shop Now",
+    ctaLink: "/product",
+    secondaryCtaText: "Explore Collection",
+    secondaryCtaLink: "/product",
+    bgGradient: "from-[#FAF7F2] via-[#FAF7F2] to-[#FAF7F2] dark:from-slate-950 dark:via-slate-950 dark:to-slate-950",
+    borderColor: "border-stone-200/60 dark:border-slate-800",
+    glowColor: "bg-orange-300/20",
     image: heroSlide1,
-    alt: "Tech Special Campaign"
+    alt: "New Season Collection"
   },
   {
-    id: "beauty",
-    tag: "ORGANIC GLOW • LUXURY MINERAL SCIENCE",
-    tagColor: "text-rose-600 dark:text-rose-400",
-    tagPillBg: "bg-rose-100/90 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border-rose-200/80 dark:border-rose-800/40",
-    title: ["Organic Glow", "Skincare", "Collection"],
-    highlightWord: "Collection",
-    subtitle: "Revitalize your skin with natural mineral science & cellular restoration. 100% vegan formula.",
-    ctaText: "Explore Beauty",
+    id: "tech-extravaganza",
+    tag: "SMART TECH COLLECTION",
+    line1: "Future",
+    accentWord: "Beyond",
+    line2Remainder: "Reality",
+    title: ["Future", "Beyond Reality."],
+    subtitle: "Immersive audio, flagship wearables & cutting-edge electronics at unbeatable prices.",
+    ctaText: "Shop Now",
+    ctaLink: "/product?category=electronics",
+    secondaryCtaText: "Explore Collection",
+    secondaryCtaLink: "/product",
+    bgGradient: "from-[#FAF7F2] via-[#FAF7F2] to-[#FAF7F2] dark:from-slate-950 dark:via-slate-950 dark:to-slate-950",
+    borderColor: "border-stone-200/60 dark:border-slate-800",
+    glowColor: "bg-purple-300/20",
+    image: heroSlide4,
+    alt: "Smart Tech Collection"
+  },
+  {
+    id: "organic-glow",
+    tag: "LUXURY MINERAL SCIENCE",
+    line1: "Radiant",
+    accentWord: "Natural",
+    line2Remainder: "Glow",
+    title: ["Radiant", "Natural Glow."],
+    subtitle: "Revitalize your skin with cellular restoration and clean organic formulas curated for true vitality.",
+    ctaText: "Shop Now",
     ctaLink: "/product?category=beauty",
-    ctaBg: "bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white shadow-[0_4px_16px_rgba(244,63,94,0.35)]",
-    bgGradient: "from-[#FFF2F5] via-[#FFE5EC] to-[#FCCCD7] dark:from-slate-900 dark:via-rose-950/40 dark:to-slate-900",
-    borderColor: "border-rose-200/70 dark:border-slate-800",
-    glowColor: "bg-rose-400/25 dark:bg-rose-500/15",
+    secondaryCtaText: "Explore Collection",
+    secondaryCtaLink: "/product",
+    bgGradient: "from-[#FAF7F2] via-[#FAF7F2] to-[#FAF7F2] dark:from-slate-950 dark:via-slate-950 dark:to-slate-950",
+    borderColor: "border-stone-200/60 dark:border-slate-800",
+    glowColor: "bg-rose-300/20",
     image: heroSlide2,
     alt: "Organic Glow Collection"
   },
   {
-    id: "watches",
-    tag: "TIMELESS CRAFTSMANSHIP • OBSIDIAN EDIT",
-    tagColor: "text-amber-700 dark:text-amber-400",
-    tagPillBg: "bg-amber-100/90 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300 border-amber-200/80 dark:border-amber-800/40",
-    title: ["Chrono Luxury", "Watches &", "Accessories"],
-    highlightWord: "Accessories",
+    id: "chrono-luxury",
+    tag: "TIMELESS HOROLOGY EDIT",
+    line1: "Timeless",
+    accentWord: "Modern",
+    line2Remainder: "Craft",
+    title: ["Timeless", "Modern Craft."],
     subtitle: "Precision Swiss movement meets obsidian craftsmanship & timeless styling for the bold.",
-    ctaText: "Shop Watches",
+    ctaText: "Shop Now",
     ctaLink: "/product?category=watches",
-    ctaBg: "bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-700 hover:to-yellow-700 text-white shadow-[0_4px_16px_rgba(217,119,6,0.35)]",
-    bgGradient: "from-[#FFFDF5] via-[#FEF8E3] to-[#FDE8B5] dark:from-slate-900 dark:via-amber-950/40 dark:to-slate-900",
-    borderColor: "border-amber-200/70 dark:border-slate-800",
-    glowColor: "bg-amber-400/25 dark:bg-amber-500/15",
+    secondaryCtaText: "Explore Collection",
+    secondaryCtaLink: "/product",
+    bgGradient: "from-[#FAF7F2] via-[#FAF7F2] to-[#FAF7F2] dark:from-slate-950 dark:via-slate-950 dark:to-slate-950",
+    borderColor: "border-stone-200/60 dark:border-slate-800",
+    glowColor: "bg-amber-300/20",
     image: heroSlide3,
     alt: "Chrono Luxury Watch"
-  },
-  {
-    id: "audio",
-    tag: "ACOUSTIC FIDELITY • PRO WIRELESS SOUND",
-    tagColor: "text-sky-600 dark:text-sky-400",
-    tagPillBg: "bg-sky-100/90 text-sky-800 dark:bg-sky-950/60 dark:text-sky-300 border-sky-200/80 dark:border-sky-800/40",
-    title: ["Elite Audio", "Studio Sound", "Experience"],
-    highlightWord: "Experience",
-    subtitle: "Wireless high-fidelity audio with pro acoustic clarity & active noise canceling.",
-    ctaText: "Shop Audio",
-    ctaLink: "/product?category=electronics",
-    ctaBg: "bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-700 hover:to-blue-700 text-white shadow-[0_4px_16px_rgba(2,132,199,0.35)]",
-    bgGradient: "from-[#F2F9FF] via-[#E2F4FE] to-[#BFE7FD] dark:from-slate-900 dark:via-sky-950/40 dark:to-slate-900",
-    borderColor: "border-sky-200/70 dark:border-slate-800",
-    glowColor: "bg-sky-400/25 dark:bg-sky-500/15",
-    image: heroSlide4,
-    alt: "Elite Audio Series"
   }
 ];
 
-const bazaarTransitionVariants = {
-  enter: (direction) => ({
-    x: direction > 0 ? 32 : direction < 0 ? -32 : 0,
-    opacity: 0,
-    scale: 0.985,
-  }),
-  center: {
-    x: 0,
-    opacity: 1,
-    scale: 1,
-    transition: {
-      duration: 0.45,
-      ease: [0.22, 1, 0.36, 1],
-    },
-  },
-  exit: (direction) => ({
-    x: direction > 0 ? -32 : direction < 0 ? 32 : 0,
-    opacity: 0,
-    scale: 0.985,
-    transition: {
-      duration: 0.35,
-      ease: [0.22, 1, 0.36, 1],
-    },
-  }),
+const renderEditorialTitle = (slide) => {
+  if (slide.line1 && slide.accentWord) {
+    return (
+      <>
+        <span className="block">{slide.line1}</span>
+        <span className="block mt-0.5">
+          <span className="text-[#FF5722]">{slide.accentWord}</span>{" "}
+          <span>{slide.line2Remainder}</span>
+          <span className="text-[#FF5722]">.</span>
+        </span>
+      </>
+    );
+  }
+
+  const titleStr = Array.isArray(slide.title)
+    ? slide.title.join(" ")
+    : String(slide.title || "Style Without Limits");
+  const words = titleStr.replace(/\.$/, "").split(/\s+/).filter(Boolean);
+
+  if (words.length <= 1) {
+    return (
+      <span>
+        {words[0] || "Style"}
+        <span className="text-[#FF5722]">.</span>
+      </span>
+    );
+  }
+  if (words.length === 2) {
+    return (
+      <>
+        <span className="block">{words[0]}</span>
+        <span className="block mt-0.5">
+          <span className="text-[#FF5722]">{words[1]}</span>
+          <span className="text-[#FF5722]">.</span>
+        </span>
+      </>
+    );
+  }
+  return (
+    <>
+      <span className="block">{words[0]}</span>
+      <span className="block mt-0.5">
+        <span className="text-[#FF5722]">{words[1]}</span>{" "}
+        <span>{words.slice(2).join(" ")}</span>
+        <span className="text-[#FF5722]">.</span>
+      </span>
+    </>
+  );
 };
 
-const HeroSplitBanner = ({ homepageData }) => {
+const HeroSplitBanner = ({ homepageData, onAddToCart, wishlist: externalWishlist }) => {
   const navigate = useNavigate();
   const [slides, setSlides] = useState(DEFAULT_MODEL_SLIDES);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-
-  // 2x2 Bazaar Deal Products directly from DB with pure smooth transition
-  const [bazaarPages, setBazaarPages] = useState([]);
-  const [[currentBazaarPage, bazaarDirection], setBazaarPageState] = useState([0, 0]);
-  const [bazaarLoading, setBazaarLoading] = useState(true);
-  const [isBazaarPaused, setIsBazaarPaused] = useState(false);
-
-  const paginateBazaar = (newDirection) => {
-    if (bazaarPages.length <= 1) return;
-    setBazaarPageState(([prevPage]) => {
-      const nextPage = (prevPage + newDirection + bazaarPages.length) % bazaarPages.length;
-      return [nextPage, newDirection];
-    });
-  };
 
   // Local Wishlist Tracking
   const [wishlist, setWishlist] = useState(() => {
@@ -215,88 +174,6 @@ const HeroSplitBanner = ({ homepageData }) => {
       return next;
     });
   };
-
-  // Fetch real products from DB and chunk into pages of 4
-  useEffect(() => {
-    let isMounted = true;
-    const fetchDbBazaarProducts = async () => {
-      try {
-        setBazaarLoading(true);
-        const res = await cachedGet(`${backendUrl}/api/product/list?limit=20`);
-        let products = [];
-
-        if (res.data?.success && Array.isArray(res.data.products) && res.data.products.length > 0) {
-          products = res.data.products;
-        } else if (homepageData) {
-          const hpItems = [
-            ...(homepageData.dealsOfDay || []),
-            ...(homepageData.trending || []),
-            ...(homepageData.newArrivals || []),
-            ...(homepageData.bestSellers || [])
-          ];
-          const seen = new Set();
-          hpItems.forEach((p) => {
-            if (p && p._id && !seen.has(p._id.toString())) {
-              seen.add(p._id.toString());
-              products.push(p);
-            }
-          });
-        }
-
-        // Filter valid products that have real images and name
-        const seenNames = new Set();
-        const seenImages = new Set();
-        const valid = products.filter((p) => {
-          if (!p || !p.name) return false;
-          const firstImg = p.images?.[0] || p.image;
-          if (!firstImg || typeof firstImg !== "string") return false;
-          if (firstImg.startsWith("uploads/")) return false;
-          if (firstImg.includes("example.com")) return false;
-          const key = p.name.trim().toLowerCase();
-          const imgKey = firstImg.trim().toLowerCase();
-          if (seenNames.has(key) || seenImages.has(imgKey)) return false;
-          seenNames.add(key);
-          seenImages.add(imgKey);
-          return true;
-        });
-
-        if (isMounted && valid.length > 0) {
-          const pages = [];
-          for (let i = 0; i < valid.length; i += 4) {
-            const chunk = valid.slice(i, i + 4);
-            if (chunk.length === 4) {
-              pages.push(chunk);
-            }
-          }
-          if (pages.length > 0) {
-            setBazaarPages(pages);
-          } else {
-            setBazaarPages([valid.slice(0, 4)]);
-          }
-        }
-      } catch (err) {
-        console.warn("Hero Bazaar DB fetch error:", err);
-      } finally {
-        if (isMounted) setBazaarLoading(false);
-      }
-    };
-
-    fetchDbBazaarProducts();
-    return () => {
-      isMounted = false;
-    };
-  }, [homepageData]);
-
-  // Auto-rotate DB product pages every 6.5 seconds with forward direction
-  useEffect(() => {
-    if (isBazaarPaused || bazaarPages.length <= 1) return;
-    const interval = setInterval(() => {
-      paginateBazaar(1);
-    }, 6500);
-    return () => clearInterval(interval);
-  }, [isBazaarPaused, bazaarPages.length]);
-
-  const displayedBazaarProducts = bazaarPages[currentBazaarPage] || [];
 
   // Load dynamic hero models from /api/system/hero-assets (Admin Hero Slideshow)
   useEffect(() => {
@@ -417,9 +294,9 @@ const HeroSplitBanner = ({ homepageData }) => {
             }
 
               const rawImgUrl = asset.imageUrl?.startsWith("http") ? asset.imageUrl : `${backendUrl}${asset.imageUrl}`;
-              // Apply e_trim to eliminate empty transparent borders and deliver high-res trimmed image
-              const trimmedImgUrl = rawImgUrl.includes("res.cloudinary.com") && rawImgUrl.includes("/image/upload/") && !rawImgUrl.includes("e_trim")
-                ? rawImgUrl.replace("/image/upload/", "/image/upload/e_trim,f_auto,q_auto,w_1100/")
+              // Deliver high-res uncut image without trimming any borders or subjects
+              const trimmedImgUrl = rawImgUrl.includes("res.cloudinary.com") && rawImgUrl.includes("/image/upload/")
+                ? rawImgUrl.replace("/image/upload/", "/image/upload/f_auto,q_auto,w_1100/")
                 : getOptimizedImageUrl(rawImgUrl, { width: 1100, quality: 85 });
 
               return {
@@ -490,348 +367,125 @@ const HeroSplitBanner = ({ homepageData }) => {
   const activeSlide = slides[currentSlide] || slides[0];
 
   return (
-    <div
-      className="w-full px-0 py-0 select-none"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-    >
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-1.5 sm:gap-2 items-stretch">
-        
-        {/* ════════════════════════════════════════════════════════
-            LEFT: MAIN HERO CAROUSEL BANNER (~58% width on desktop)
-            ════════════════════════════════════════════════════════ */}
-        <div className="lg:col-span-7 xl:col-span-7 relative flex flex-col h-[370px] sm:h-[430px] lg:h-[490px]">
-          <div
-            className={`relative w-full h-full rounded-none border-0 lg:border-r ${activeSlide.borderColor} bg-gradient-to-r ${activeSlide.bgGradient} overflow-hidden shadow-none transition-colors duration-500`}
-          >
-            {/* Ambient Radial Backlight Glow Behind Cutout Model */}
-            <div className="absolute right-[-5%] top-1/2 -translate-y-1/2 w-[360px] sm:w-[440px] h-[360px] sm:h-[440px] rounded-full blur-[80px] pointer-events-none transition-colors duration-700 opacity-80 dark:opacity-40">
-              <div className={`w-full h-full rounded-full ${activeSlide.glowColor || "bg-orange-300/30"}`} />
-            </div>
+    <div className="w-full px-0 py-0 select-none flex flex-col">
+      {/* ════════════════════════════════════════════════════════
+          1. FULL-WIDTH HERO CAROUSEL BANNER (100% Page Width)
+          ════════════════════════════════════════════════════════ */}
+      <div
+        className="relative w-full h-[47vh] min-h-[390px] md:min-h-[420px] max-h-[530px] overflow-hidden group"
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+      >
+        <div
+          className="relative w-full h-full rounded-none border-b-0 bg-[#FAF7F2] dark:bg-slate-950 overflow-hidden shadow-none transition-colors duration-500"
+        >
+          {/* Subtle Ambient Radial Backlight Glow Centered Behind Cutout Model */}
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] sm:w-[440px] md:w-[540px] h-[340px] sm:h-[440px] md:h-[540px] rounded-full blur-[90px] sm:blur-[120px] pointer-events-none transition-colors duration-700 opacity-60 dark:opacity-30">
+            <div className={`w-full h-full rounded-full ${activeSlide.glowColor || "bg-orange-300/20"}`} />
+          </div>
 
-            {/* Subtle Luxury Pattern / Floating Sparkle Doodles */}
-            <div className="absolute inset-0 pointer-events-none opacity-30 dark:opacity-15 overflow-hidden">
-              <svg className="absolute top-10 left-[42%] w-8 h-8 text-amber-500 stroke-current fill-none stroke-[2]" viewBox="0 0 24 24">
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-              </svg>
-            </div>
-
-            {/* Slide Content */}
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeSlide.id}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-                className="absolute inset-0 w-full h-full flex flex-col md:flex-row items-stretch justify-between z-10 pointer-events-none"
-              >
-                {/* Right Model Cutout: Anchored by Height with e_trim so all subjects appear consistently tall & prominent */}
-                <div className="absolute right-0 bottom-0 top-0 h-full w-[62%] sm:w-[58%] md:w-[54%] lg:w-[52%] flex items-end justify-end pointer-events-none z-10 overflow-hidden">
-                  <img
-                    src={activeSlide.image}
-                    alt={activeSlide.alt}
-                    className="h-[92%] sm:h-[95%] lg:h-full w-auto max-w-full object-contain object-bottom select-none opacity-100"
-                    loading="eager"
-                    fetchPriority="high"
-                    decoding="async"
-                  />
-                </div>
-
-                {/* Left Text Block: Text positioned at Top, Action Button below at Bottom - All aligned to Left Side */}
-                <div className="relative w-[58%] min-[390px]:w-[56%] sm:w-[52%] md:w-[50%] lg:w-[48%] text-left z-20 flex flex-col justify-between items-start pl-3.5 sm:pl-6 lg:pl-8 pr-1.5 sm:pr-4 py-3.5 sm:py-6 lg:py-8 pointer-events-auto h-full">
-                  {/* TOP GROUP: Tagline Pill + Headline + Subtitle + Trust Strip */}
-                  <div className="space-y-1 sm:space-y-2 text-left">
-                    {/* Category Pill Tag */}
-                    <div className="inline-flex items-center gap-1.5 mb-0.5">
-                      <span className={`text-[9px] sm:text-xs font-black tracking-wider uppercase px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-none border shadow-2xs backdrop-blur-md ${activeSlide.tagPillBg || "bg-white/90 text-slate-800 border-slate-200"}`}>
-                        <Sparkles size={10} className="inline-block mr-1 text-amber-500 animate-pulse" />
-                        {activeSlide.tag}
-                      </span>
-                    </div>
-
-                    {/* High-Impact Headline */}
-                    <h1 className="text-lg min-[380px]:text-xl sm:text-2xl lg:text-[32px] xl:text-[36px] font-black text-slate-950 dark:text-white leading-[1.12] tracking-tight line-clamp-2 max-w-[260px] sm:max-w-[340px]">
-                      {Array.isArray(activeSlide.title) ? (
-                        activeSlide.title.join(" ")
-                      ) : (
-                        <span>{activeSlide.title}</span>
-                      )}
-                    </h1>
-
-                    {/* Subtitle */}
-                    <p className="text-[11px] min-[380px]:text-[11.5px] sm:text-xs md:text-sm text-slate-600 dark:text-slate-300 font-medium max-w-[250px] sm:max-w-[320px] leading-snug line-clamp-2">
-                      {activeSlide.subtitle}
-                    </p>
-
-                    {/* Trust Highlights Strip */}
-                    <div className="hidden min-[360px]:flex items-center gap-1.5 sm:gap-3 pt-0.5 text-[9.5px] sm:text-xs font-bold text-slate-700 dark:text-slate-300">
-                      <span className="flex items-center gap-1 bg-white/75 dark:bg-slate-900/75 backdrop-blur-xs px-1.5 sm:px-2 py-0.5 rounded-none border border-slate-200/50 dark:border-slate-800/50 shadow-2xs">
-                        <CheckCircle2 size={11} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
-                        Verified
-                      </span>
-                      <span className="flex items-center gap-1 bg-white/75 dark:bg-slate-900/75 backdrop-blur-xs px-1.5 sm:px-2 py-0.5 rounded-none border border-slate-200/50 dark:border-slate-800/50 shadow-2xs">
-                        <ShieldCheck size={11} className="text-blue-600 dark:text-blue-400 shrink-0" />
-                        Fast Delivery
-                      </span>
-                    </div>
+          {/* Slide Content */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeSlide.id}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+              className="absolute inset-0 w-full h-full flex flex-row items-center justify-between z-10 pointer-events-none"
+            >
+              {/* Left Column: Tagline + Grand Editorial Headline */}
+              <div className="relative w-[48%] sm:w-[32%] md:w-[32%] lg:w-[30%] text-left z-20 flex flex-col justify-center items-start pl-3 sm:pl-5 md:pl-7 lg:pl-10 pr-1 py-4 pointer-events-auto h-full">
+                <div className="space-y-2 sm:space-y-2.5 md:space-y-3 text-left max-w-[380px]">
+                  {/* Orange Dash + Tagline */}
+                  <div className="flex items-center gap-2">
+                    <span className="w-4 sm:w-5 h-[2px] bg-[#FF5722] rounded-full shrink-0" />
+                    <span className="text-[9.5px] sm:text-[10.5px] md:text-[11.5px] font-bold tracking-[0.2em] uppercase text-[#FF5722]">
+                      {activeSlide.tag || "NEW SEASON COLLECTION"}
+                    </span>
                   </div>
 
-                  {/* BOTTOM GROUP: Action Button strictly aligned to Left Side */}
-                  <div className="pt-2 pb-1 sm:pb-2 flex items-center justify-start">
+                  {/* Editorial Serif Headline */}
+                  <h1 className="font-editorial text-2xl min-[400px]:text-3xl sm:text-4xl md:text-[46px] lg:text-[54px] xl:text-[62px] font-bold text-slate-950 dark:text-white leading-[0.98] tracking-tight">
+                    {renderEditorialTitle(activeSlide)}
+                  </h1>
+                </div>
+              </div>
+
+              {/* Center Model Cutout: Standing proudly in the exact middle of the banner */}
+              <div className="absolute inset-0 w-full h-full flex items-end justify-center pointer-events-none z-10 overflow-hidden">
+                <img
+                  src={activeSlide.image}
+                  alt={activeSlide.alt}
+                  className="h-full max-h-full max-w-[210px] min-[440px]:max-w-[260px] sm:max-w-[400px] md:max-w-[460px] w-auto object-contain object-bottom select-none opacity-100 drop-shadow-[0_16px_36px_rgba(0,0,0,0.18)] dark:drop-shadow-[0_20px_42px_rgba(0,0,0,0.55)] transition-transform duration-500 scale-100 group-hover:scale-[1.02]"
+                  loading="eager"
+                  fetchPriority="high"
+                  decoding="async"
+                />
+              </div>
+
+              {/* Center Spacer: Ensures model has visual breathing room on wider viewports */}
+              <div className="hidden sm:block sm:w-[36%] md:w-[38%] lg:w-[42%] pointer-events-none" />
+
+              {/* Right Column: Subtitle + Dual Action Buttons (Pushed more to the right edge) */}
+              <div className="relative w-[48%] sm:w-[32%] md:w-[30%] lg:w-[28%] z-20 flex flex-col justify-center items-end pr-3 sm:pr-8 md:pr-12 lg:pr-16 pl-1 py-4 pointer-events-auto h-full ml-auto">
+                <div className="space-y-2.5 sm:space-y-3.5 md:space-y-4 max-w-[330px] text-left ml-auto">
+                  {/* Subtitle (Hidden on small mobile collapse so text does not collide with model) */}
+                  <p className="hidden min-[480px]:block text-[11px] sm:text-xs md:text-[13px] text-slate-700 dark:text-slate-300 font-normal leading-relaxed">
+                    {activeSlide.subtitle || "Discover premium fashion, curated collections and everyday essentials for a better you — only at CartNow."}
+                  </p>
+
+                  {/* Dual Action Pill Buttons */}
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-1.5 sm:gap-2.5 pt-0.5 relative z-30">
+                    {/* Button 1: Solid Orange Pill */}
                     <button
                       type="button"
-                      onClick={() => navigate(activeSlide.ctaLink)}
-                      className={`inline-flex items-center gap-2 ${activeSlide.ctaBg} active:scale-95 font-black text-xs sm:text-sm px-4 sm:px-6 py-2.5 sm:py-3.5 rounded-none cursor-pointer border-none shadow-md hover:shadow-lg transition-all duration-300 group`}
+                      onClick={() => navigate(activeSlide.ctaLink || "/product")}
+                      className="inline-flex items-center justify-center gap-1.5 sm:gap-2 bg-[#FF5722] hover:bg-[#E64A19] active:scale-95 text-white font-semibold text-[11px] sm:text-[12.5px] px-3.5 sm:px-5 py-1.5 sm:py-2.5 rounded-full cursor-pointer shadow-sm hover:shadow-md transition-all duration-200 group whitespace-nowrap"
                     >
-                      <span>{activeSlide.ctaText}</span>
-                      <ArrowRight size={13} className="stroke-[2.5] group-hover:translate-x-1 transition-transform" />
+                      <span>{activeSlide.ctaText || "Shop Now"}</span>
+                      <ArrowRight size={12} className="stroke-[2.5] group-hover:translate-x-1 transition-transform" />
+                    </button>
+
+                    {/* Button 2: Outline Pill */}
+                    <button
+                      type="button"
+                      onClick={() => navigate(activeSlide.secondaryCtaLink || "/product")}
+                      className="hidden min-[420px]:inline-flex sm:inline-flex items-center justify-center gap-1.5 sm:gap-2 bg-transparent hover:bg-slate-900/5 dark:hover:bg-white/10 active:scale-95 text-slate-950 dark:text-white border border-slate-900 dark:border-white font-semibold text-[11px] sm:text-[12.5px] px-3.5 sm:px-5 py-1.5 sm:py-2.5 rounded-full cursor-pointer transition-all duration-200 group whitespace-nowrap"
+                    >
+                      <span>{activeSlide.secondaryCtaText || "Explore"}</span>
+                      <ArrowRight size={12} className="stroke-[2.5] group-hover:translate-x-1 transition-transform" />
                     </button>
                   </div>
                 </div>
-              </motion.div>
-            </AnimatePresence>
+              </div>
+            </motion.div>
+          </AnimatePresence>
 
-            {/* Left / Right Carousel Arrow Buttons */}
-            <button
-              onClick={prevSlide}
-              aria-label="Previous Slide"
-              className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 z-30 w-7 h-7 sm:w-9 sm:h-9 rounded-none bg-white/90 dark:bg-slate-900/90 hover:bg-white dark:hover:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-md flex items-center justify-center cursor-pointer transition hover:scale-110 active:scale-95 border border-slate-200/70 dark:border-slate-800 backdrop-blur-md"
-            >
-              <ChevronLeft size={16} className="stroke-[2.5]" />
-            </button>
 
-            <button
-              onClick={nextSlide}
-              aria-label="Next Slide"
-              className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 z-30 w-7 h-7 sm:w-9 sm:h-9 rounded-none bg-white/90 dark:bg-slate-900/90 hover:bg-white dark:hover:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-md flex items-center justify-center cursor-pointer transition hover:scale-110 active:scale-95 border border-slate-200/70 dark:border-slate-800 backdrop-blur-md"
-            >
-              <ChevronRight size={16} className="stroke-[2.5]" />
-            </button>
-          </div>
+
+          {/* Left / Right Carousel Arrow Buttons */}
+          <button
+            onClick={prevSlide}
+            aria-label="Previous Slide"
+            className="absolute left-1.5 sm:left-2 top-1/2 -translate-y-1/2 z-30 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/85 dark:bg-slate-900/85 hover:bg-white dark:hover:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-md flex items-center justify-center cursor-pointer transition-all duration-200 opacity-0 group-hover:opacity-90 hover:scale-105 active:scale-95 border border-slate-200/70 dark:border-slate-800 backdrop-blur-md"
+          >
+            <ChevronLeft size={16} className="stroke-[2.5]" />
+          </button>
+
+          <button
+            onClick={nextSlide}
+            aria-label="Next Slide"
+            className="absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 z-30 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/85 dark:bg-slate-900/85 hover:bg-white dark:hover:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-md flex items-center justify-center cursor-pointer transition-all duration-200 opacity-0 group-hover:opacity-90 hover:scale-105 active:scale-95 border border-slate-200/70 dark:border-slate-800 backdrop-blur-md"
+          >
+            <ChevronRight size={16} className="stroke-[2.5]" />
+          </button>
+
         </div>
-
-        {/* ════════════════════════════════════════════════════════
-            RIGHT: QUICK BAZAAR DEALS & PERKS WIDGET (2x2 GRID)
-            High-Contrast, Ultra-Clean Light Mode Layout
-            ════════════════════════════════════════════════════════ */}
-        <div
-          className="lg:col-span-5 xl:col-span-5 relative flex flex-col h-[370px] sm:h-[430px] lg:h-[490px] overflow-hidden"
-          onMouseEnter={() => setIsBazaarPaused(true)}
-          onMouseLeave={() => setIsBazaarPaused(false)}
-        >
-          <div className="w-full h-full bg-white dark:bg-slate-900 rounded-none p-3 sm:p-3.5 border-0 lg:border-l border-slate-200/90 dark:border-slate-800 shadow-none flex flex-col justify-between overflow-hidden">
-            
-            {/* Header: Delivery Perks + Extra Cashback Banner */}
-            <div className="flex items-center justify-between select-none mb-2 sm:mb-2.5 shrink-0">
-              <div className="flex items-center gap-2 sm:gap-2.5">
-                {/* Yellow Amber Delivery Truck Icon */}
-                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-none bg-gradient-to-br from-amber-400/20 to-orange-400/20 border border-amber-300/50 dark:border-amber-700/50 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0 shadow-2xs">
-                  <Truck size={19} className="stroke-[2.5]" />
-                </div>
-
-                <div>
-                  <div
-                    onClick={() => {
-                      toast.success("Free delivery & ₹100 cashback unlocked! 🎉");
-                      navigate("/product");
-                    }}
-                    className="flex items-center gap-1 cursor-pointer group"
-                  >
-                    <h2 className="text-sm sm:text-base lg:text-[15px] xl:text-[16px] font-black text-slate-950 dark:text-white tracking-tight leading-tight group-hover:text-primary transition-colors">
-                      Free delivery always <span className="bg-gradient-to-r from-amber-600 to-orange-600 dark:from-amber-400 dark:to-orange-400 bg-clip-text text-transparent font-extrabold">+ Extra ₹100 cashback</span>
-                    </h2>
-                    <ChevronRight
-                      size={15}
-                      className="stroke-[3] text-slate-900 dark:text-white shrink-0 group-hover:translate-x-1 transition-transform"
-                    />
-                  </div>
-                  <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-semibold leading-none mt-0.5">
-                    Shop more. Save more. Exclusive CartNOW Bazaar.
-                  </p>
-                </div>
-              </div>
-
-              {/* DB Products Pagination Controls */}
-              {bazaarPages.length > 1 && (
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <button
-                    onClick={() => paginateBazaar(-1)}
-                    aria-label="Previous Deals"
-                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-none bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center justify-center transition cursor-pointer border border-slate-200/80 dark:border-slate-700 shadow-2xs active:scale-95"
-                  >
-                    <ChevronLeft size={15} className="stroke-[2.5]" />
-                  </button>
-                  <button
-                    onClick={() => paginateBazaar(1)}
-                    aria-label="Next Deals"
-                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-none bg-slate-950 hover:bg-black active:scale-95 text-white flex items-center justify-center transition cursor-pointer shadow-2xs"
-                  >
-                    <ChevronRight size={15} className="stroke-[2.5]" />
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* 2x2 Grid of 4 Real Products from DB with Pure Smooth Directional Transition */}
-            {bazaarLoading && displayedBazaarProducts.length === 0 ? (
-              <div className="grid grid-cols-2 gap-1.5 sm:gap-2 flex-1 min-h-0 animate-pulse">
-                {[1, 2, 3, 4].map((n) => (
-                  <div
-                    key={n}
-                    className="relative w-full h-full rounded-none border border-slate-200/80 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-850/80 p-2.5 sm:p-3 flex flex-col justify-between overflow-hidden"
-                  >
-                    <div className="h-3.5 w-16 bg-slate-200 dark:bg-slate-800 rounded-none" />
-                    <div className="space-y-1.5 my-auto">
-                      <div className="flex items-center gap-1">
-                        <div className="w-3.5 h-3.5 rounded-none bg-slate-200 dark:bg-slate-800" />
-                        <div className="h-2.5 w-14 bg-slate-200 dark:bg-slate-800 rounded-none" />
-                      </div>
-                      <div className="h-3.5 w-4/5 bg-slate-200 dark:bg-slate-800 rounded-none" />
-                      <div className="h-2.5 w-3/5 bg-slate-100 dark:bg-slate-800/60 rounded-none" />
-                    </div>
-                    <div className="space-y-1">
-                      <div className="h-4 w-16 bg-slate-300 dark:bg-slate-700 rounded-none" />
-                      <div className="h-3 w-14 bg-emerald-100 dark:bg-emerald-950/60 rounded-none" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="relative flex-1 min-h-0 w-full overflow-hidden">
-                <AnimatePresence initial={false} custom={bazaarDirection}>
-                  <motion.div
-                    key={currentBazaarPage}
-                    custom={bazaarDirection}
-                    variants={bazaarTransitionVariants}
-                    initial="enter"
-                    animate="center"
-                    exit="exit"
-                    className="absolute inset-0 grid grid-cols-2 gap-1.5 sm:gap-2 h-full w-full"
-                  >
-                    {displayedBazaarProducts.map((product, idx) => {
-                      const theme = BAZAAR_SLOT_THEMES[idx % BAZAAR_SLOT_THEMES.length];
-                      const BadgeIcon = theme.badgeIcon;
-                      const imgSrc = getProductImage(product);
-                      const price = Number(product.price || 0);
-                      const origPrice = Number(product.originalPrice || (price > 0 ? Math.round(price * 1.35) : 0));
-                      const discountPercent = Number(
-                        product.discountPercentage || (origPrice > price ? Math.round(((origPrice - price) / origPrice) * 100) : 30)
-                      );
-                      const isWishlisted = wishlist.includes(product._id);
-                      const brandName = product.brand || product.category || "CartNOW";
-                      const subtitle = product.shortDescription || product.description || "Everyday comfort & style.";
-
-                      return (
-                        <div
-                          key={product._id || `bazaar-prod-${idx}`}
-                          onClick={() => navigate(`/product/${product._id}`)}
-                          className={`group relative w-full h-full rounded-none border ${theme.borderColor} shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)] dark:shadow-none hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between select-none overflow-hidden cursor-pointer`}
-                          title={product.name}
-                        >
-                          {/* Full Cover Background Image */}
-                          <img
-                            src={imgSrc}
-                            alt={product.name}
-                            className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out z-0"
-                            loading="lazy"
-                            decoding="async"
-                            onError={(e) => {
-                              e.target.onerror = null;
-                              e.target.src = "/favicon.png";
-                            }}
-                          />
-
-                          {/* Full Background Readability Gradient Overlay */}
-                          <div className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/80 to-white/20 dark:from-slate-950/95 dark:via-slate-950/80 dark:to-slate-950/20 z-10 pointer-events-none" />
-
-                          {/* Foreground Product Content (Left Aligned) */}
-                          <div className="relative z-20 w-[68%] sm:w-[62%] flex flex-col justify-between p-2.5 sm:p-3 h-full text-left">
-                            {/* Top: Status Badge */}
-                            <div className="flex items-center">
-                              <span
-                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-none text-[9px] sm:text-[10px] font-black tracking-wide shadow-2xs ${theme.badgeLightBg}`}
-                              >
-                                <BadgeIcon size={10} className="stroke-[2.5]" />
-                                <span>{theme.badgeLabel}</span>
-                              </span>
-                            </div>
-
-                            {/* Middle: Brand + Product Title */}
-                            <div className="my-auto py-0.5">
-                              <div className="flex items-center gap-1">
-                                <BrandLogo
-                                  brand={brandName}
-                                  brandDomain={product.brandDomain}
-                                  className="w-3.5 h-3.5 rounded-none shrink-0"
-                                />
-                                <span className="text-[10px] sm:text-[11px] font-bold text-slate-600 dark:text-slate-300 block truncate">
-                                  {brandName}
-                                </span>
-                              </div>
-                              <h3 className="text-xs sm:text-[13px] font-black text-slate-950 dark:text-white leading-[1.18] tracking-tight line-clamp-2 mt-0.5 group-hover:text-primary transition-colors">
-                                {product.name}
-                              </h3>
-                              <p className="text-[10px] sm:text-[11px] text-slate-600 dark:text-slate-400 font-medium line-clamp-1 mt-0.5 leading-snug">
-                                {subtitle}
-                              </p>
-                            </div>
-
-                            {/* Bottom: Price + Discount Badge */}
-                            <div className="pt-0.5">
-                              <div className="flex items-baseline gap-1.5 flex-wrap">
-                                <span className="text-sm sm:text-base font-black text-slate-950 dark:text-white">
-                                  ₹{price.toLocaleString()}
-                                </span>
-                                {origPrice > price && (
-                                  <span className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 line-through font-semibold">
-                                    ₹{origPrice.toLocaleString()}
-                                  </span>
-                                )}
-                              </div>
-
-                              {discountPercent > 0 && (
-                                <span
-                                  className={`inline-block text-[9px] sm:text-[10px] font-black uppercase px-2 py-0.5 rounded-none mt-0.5 shadow-2xs ${theme.discountBg}`}
-                                >
-                                  {discountPercent}% OFF
-                                </span>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Wishlist Heart Button (Top-Right z-30) */}
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleWishlist(product._id);
-                            }}
-                            className="absolute top-2 right-2 z-30 w-6 h-6 sm:w-7 sm:h-7 rounded-none bg-white/95 dark:bg-slate-900/95 shadow-xs flex items-center justify-center cursor-pointer border border-slate-200/80 dark:border-slate-700 hover:scale-110 active:scale-95 transition"
-                            title="Add to Wishlist"
-                          >
-                            <Heart
-                              size={12}
-                              className={
-                                isWishlisted
-                                  ? "fill-rose-500 text-rose-500"
-                                  : "text-slate-600 dark:text-slate-300 stroke-[2.2]"
-                              }
-                            />
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-            )}
-          </div>
-        </div>
-
       </div>
     </div>
   );
 };
 
 export default HeroSplitBanner;
+

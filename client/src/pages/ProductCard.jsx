@@ -231,7 +231,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
         } catch (e) { }
         navigate(`/product/${product._id}`);
       }}
-      className="group relative flex flex-col bg-white dark:bg-slate-900 rounded-none overflow-hidden shadow-2xs hover:shadow-md transition-all duration-300 cursor-pointer text-left w-full h-full animate-fadeIn"
+      className="group relative flex flex-col bg-white dark:bg-slate-900 rounded-[4px] border border-slate-200/90 dark:border-slate-800 overflow-hidden shadow-2xs hover:shadow-md transition-all duration-300 cursor-pointer text-left w-full h-full animate-fadeIn"
     >
       
       {/* Category Promo discount header row (Matches top of mockup card) */}
@@ -288,7 +288,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
                 type="button"
                 onClick={toggleFavorite}
                 aria-label={isFavorite ? "Remove from wishlist" : "Add to wishlist"}
-                className="absolute top-2 right-2 h-7 w-7 bg-white/95 dark:bg-slate-900/95 rounded-none flex items-center justify-center shadow-xs cursor-pointer transition-all duration-200 active:scale-90 z-30 border-none"
+                className="absolute top-2 right-2 h-7 w-7 bg-white/95 dark:bg-slate-900/95 rounded-[3px] flex items-center justify-center shadow-xs cursor-pointer transition-all duration-200 active:scale-90 z-30 border-none"
               >
                 <Heart
                   size={12}
@@ -308,7 +308,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
                   }
                 }}
                 aria-label={isComparing ? "Remove from product comparison" : "Compare product"}
-                className={`absolute top-10 right-2 h-7 w-7 backdrop-blur-md rounded-none flex items-center justify-center shadow-xs z-30 cursor-pointer transition-all duration-200 active:scale-90 ${isComparing ? "bg-indigo-600 border-none text-white" : "bg-white/95 dark:bg-slate-900/95 border-none text-slate-500 dark:text-slate-400 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/20" }`}
+                className={`absolute top-10 right-2 h-7 w-7 backdrop-blur-md rounded-[3px] flex items-center justify-center shadow-xs z-30 cursor-pointer transition-all duration-200 active:scale-90 ${isComparing ? "bg-indigo-600 border-none text-white" : "bg-white/95 dark:bg-slate-900/95 border-none text-slate-500 dark:text-slate-400 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/20" }`}
                 title="Compare product"
               >
                 <BarChart2 size={12} className={isComparing ? "stroke-[2.5px]" : ""} />
@@ -436,7 +436,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
             type="button"
             disabled={isOOS || isAdding}
             onClick={handleAddToCart}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-none text-[10px] font-black uppercase tracking-wider transition-all duration-200 active:scale-95 cursor-pointer border-none ${isOOS || isAdding ? "bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 cursor-not-allowed" : "bg-slate-900 dark:bg-indigo-600 text-white hover:bg-slate-800 dark:hover:bg-indigo-500 shadow-3xs"}`}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-[4px] text-[10px] font-black uppercase tracking-wider transition-all duration-200 active:scale-95 cursor-pointer border-none ${isOOS || isAdding ? "bg-slate-100 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 cursor-not-allowed" : "bg-slate-900 dark:bg-indigo-600 text-white hover:bg-slate-800 dark:hover:bg-indigo-500 shadow-3xs"}`}
           >
             {isAdding ? (
               <>
@@ -457,7 +457,7 @@ const ProductCard = ({ product, compact = false, onQuickView }) => {
               e.stopPropagation();
               if (onQuickView) onQuickView(product);
             }}
-            className="h-8 w-8 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-none flex items-center justify-center text-slate-600 dark:text-slate-300 transition duration-150 active:scale-95 border-none cursor-pointer"
+            className="h-8 w-8 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-[4px] flex items-center justify-center text-slate-600 dark:text-slate-300 transition duration-150 active:scale-95 border-none cursor-pointer"
             title="Quick View"
           >
             <Eye size={12} className="stroke-[2.5]" />

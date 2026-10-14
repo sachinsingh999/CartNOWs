@@ -8,6 +8,8 @@ import { cachedGet, getSyncCachedData } from "../utils/apiCache";
 
 // Home Components (Directly imported for rock-solid zero-CLS touch scrolling)
 import HeroSplitBanner from "../components/Home/HeroSplitBanner";
+import DealOfTheDayBanner from "../components/Home/DealOfTheDayBanner";
+import TrendingProductsSection from "../components/Home/TrendingProductsSection";
 import QuickViewModal from "../components/Home/QuickViewModal";
 import PremiumDealBanner from "../components/Home/PremiumDealBanner";
 import FlashDealsSection from "../components/Home/FlashDealsSection";
@@ -284,10 +286,22 @@ const Home = () => {
         .animate-float-slow { animation: float-slow 4.5s ease-in-out infinite; }
       `}</style>
 
-      {/* 1. SPLIT HERO BANNER (Campaign Models on Left + 2x2 Bazaar Deals on Right) */}
-      <HeroSplitBanner homepageData={homepageData} />
+      {/* 1. HERO BANNER SECTION */}
+      <HeroSplitBanner
+        homepageData={homepageData}
+        onAddToCart={onAddToCart}
+        wishlist={wishlist}
+      />
 
-      {/* 2. DYNAMIC TECH / PROMOTIONAL AD BANNER (Directly Below Hero Section) */}
+      {/* 2. DEAL OF THE DAY SPOTLIGHT BANNER */}
+      <DealOfTheDayBanner
+        deals={homepageData.dealsOfDay}
+        activeDeal={activeDeal}
+        onAddToCart={onAddToCart}
+        wishlist={wishlist}
+      />
+
+      {/* 3. DYNAMIC TECH / PROMOTIONAL AD BANNER */}
       <TechAdBanner />
 
       {/* REVEALED PREMIUM DEAL SPOTLIGHT OVERLAY */}
@@ -316,8 +330,15 @@ const Home = () => {
         )}
       </AnimatePresence>
 
-      {/* 3. FEATURED DEALS CAROUSEL (Daily Spotlight & Interactive Angles) */}
+      {/* 4. FEATURED DEALS CAROUSEL (Daily Spotlight & Interactive Angles) */}
       <FeaturedDealsCarousel />
+
+      {/* 5. TRENDING PRODUCTS SHOWCASE (3D PEDESTAL SHOWCASE) */}
+      <TrendingProductsSection
+        homepageData={homepageData}
+        onAddToCartProp={onAddToCart}
+        wishlistProp={wishlist}
+      />
 
       {/* 4. FLASH DEALS 3x3 MATRIX SECTION */}
       <FlashDealsSection homepageData={homepageData} />
@@ -386,16 +407,6 @@ const Home = () => {
           {/* Section Top Header Row */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3.5 px-3 sm:px-0">
             <div className="text-left space-y-1">
-              <div className="flex items-center gap-2">
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-amber-50 dark:bg-amber-950/50 border border-amber-200/80 dark:border-amber-800/60 rounded-none text-[9px] font-black uppercase tracking-wider text-amber-700 dark:text-amber-300 shadow-2xs">
-                  <span>DAILY HIGHLIGHTS</span>
-                </div>
-
-                <span className="px-2 py-0.5 rounded-none bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold">
-                  3-in-1 Feature Hub
-                </span>
-              </div>
-
               <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
                 <span>Deals, Spotlight & AI Assistant</span>
                 <span className="h-1.5 w-1.5 rounded-none bg-amber-500 dark:bg-amber-400 animate-pulse" />

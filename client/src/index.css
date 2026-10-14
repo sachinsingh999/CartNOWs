@@ -6,6 +6,10 @@
   font-family: 'Caveat', 'Dancing Script', cursive;
 }
 
+.font-editorial {
+  font-family: 'Playfair Display', Georgia, Cambria, 'Times New Roman', serif;
+}
+
 html {
   scrollbar-gutter: stable;
   scroll-padding-top: var(--navbar-height, 80px);

@@ -81,17 +81,6 @@ const RecommendedProducts = ({
       {/* Section Top Header Row */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3.5 px-3 sm:px-0">
         <div className="text-left space-y-1">
-          <div className="flex items-center gap-2">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-blue-50 dark:bg-blue-950/50 border border-blue-200/80 dark:border-blue-800/60 rounded-none text-[9px] font-black uppercase tracking-wider text-blue-700 dark:text-blue-300 shadow-2xs">
-              <Sparkles size={11} className="stroke-[2.5]" />
-              <span>AI PICKS</span>
-            </div>
-
-            <span className="px-2 py-0.5 rounded-none bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold">
-              8 Discovery Feeds
-            </span>
-          </div>
-
           <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
             <span>For You & Curated Picks</span>
             <span className="h-1.5 w-1.5 rounded-none bg-blue-600 dark:bg-blue-400 animate-pulse" />

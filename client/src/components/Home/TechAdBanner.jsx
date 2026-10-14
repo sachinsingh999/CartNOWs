@@ -406,8 +406,8 @@ const TechAdBanner = () => {
         role="region"
         aria-label={title}
       >
-        {/* Dynamic Card Body Container (Compact & Widescreen Balanced) */}
-        <div className="relative w-full overflow-hidden min-h-[300px] min-[400px]:min-h-[320px] sm:min-h-[360px] md:min-h-[400px] lg:min-h-[430px] xl:min-h-[440px] flex flex-col justify-between">
+        {/* Dynamic Card Body Container */}
+        <div className="relative w-full overflow-hidden min-h-[320px] min-[400px]:min-h-[350px] sm:min-h-[390px] md:min-h-[430px] lg:min-h-[460px] flex flex-col justify-between">
           <AnimatePresence initial={false} custom={direction} mode="wait">
             <motion.div
               key={currentBanner._id || currentIndex}
@@ -420,23 +420,27 @@ const TechAdBanner = () => {
               className="absolute inset-0 w-full h-full overflow-hidden"
             >
               {/* ═════════════════════════════════════════════════════════════
-                  CLEAN SOLID MINIMAL BACKGROUND (NO EDGE COLOR GRADIENTS)
+                  ATMOSPHERIC LUXURY CANVAS BACKGROUND
                   ═════════════════════════════════════════════════════════════ */}
               <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden select-none">
-                {/* 1. Base Clean Solid Canvas */}
-                <div className="absolute inset-0 bg-[#F9FAFC] dark:bg-[#0B0D17]" />
+                {/* 1. Base Subtle Canvas */}
+                <div className="absolute inset-0 bg-[#FAF9F6] dark:bg-[#0B0D17] transition-colors duration-500" />
 
-                {/* 2. Subtle Neutral Dotted Matrix (Top-Left) */}
-                <svg className="absolute top-4 left-6 w-20 h-14 opacity-25 dark:opacity-15 text-slate-400 dark:text-slate-700" viewBox="0 0 96 64" fill="currentColor">
+                {/* 2. Ambient Studio Aura Glow Behind Model */}
+                <div className="absolute right-8 sm:right-28 top-1/2 -translate-y-1/2 w-[300px] sm:w-[420px] md:w-[500px] h-[300px] sm:h-[420px] md:h-[500px] rounded-full bg-gradient-to-tr from-rose-200/35 via-purple-200/25 to-amber-200/20 dark:from-purple-900/20 dark:via-rose-900/15 dark:to-amber-900/10 blur-[100px] pointer-events-none" />
+
+                {/* 3. Subtle Atmospheric Left Glow */}
+                <div className="absolute left-[-10%] top-[-10%] w-[350px] h-[350px] rounded-full bg-gradient-to-br from-indigo-200/20 to-transparent dark:from-indigo-900/15 blur-[90px] pointer-events-none" />
+
+                {/* 4. Elegant Geometric Dot Matrices */}
+                <svg className="absolute top-6 left-8 w-20 h-14 opacity-20 dark:opacity-10 text-slate-400 dark:text-slate-600" viewBox="0 0 96 64" fill="currentColor">
                   {[0, 16, 32, 48, 64, 80].map((x) =>
                     [0, 16, 32, 48].map((y) => (
                       <circle key={`tl-${x}-${y}`} cx={x + 6} cy={y + 6} r="1.5" />
                     ))
                   )}
                 </svg>
-
-                {/* 3. Subtle Neutral Dotted Matrix (Bottom-Right) */}
-                <svg className="absolute bottom-12 right-10 w-24 h-16 opacity-25 dark:opacity-15 text-slate-400 dark:text-slate-700" viewBox="0 0 112 72" fill="currentColor">
+                <svg className="absolute bottom-16 right-10 w-24 h-16 opacity-20 dark:opacity-10 text-slate-400 dark:text-slate-600" viewBox="0 0 112 72" fill="currentColor">
                   {[0, 16, 32, 48, 64, 80, 96].map((x) =>
                     [0, 16, 32, 48].map((y) => (
                       <circle key={`br-${x}-${y}`} cx={x + 6} cy={y + 6} r="1.5" />
@@ -446,48 +450,47 @@ const TechAdBanner = () => {
               </div>
 
               {/* ═════════════════════════════════════════════════════════════
-                  MAIN 2-COLUMN SPLIT: BALANCED RESPONSIVE SIDE-BY-SIDE
+                  MAIN CONTENT ROW
                   ═════════════════════════════════════════════════════════════ */}
-              <div className="relative z-10 w-full h-full flex flex-row items-center justify-between px-3.5 sm:px-8 md:px-10 lg:px-12 pt-3.5 sm:pt-6 md:pt-7 pb-10 sm:pb-14 lg:pb-14">
+              <div className="relative z-10 w-full h-full flex flex-row items-center justify-between px-4 sm:px-10 md:px-12 lg:px-16 pt-4 sm:pt-7 pb-12 sm:pb-16">
                 
                 {/* ── LEFT COLUMN: CAMPAIGN EDITORIAL & ACTIONS ── */}
-                <div className="relative z-20 w-[58%] min-[480px]:w-[54%] sm:w-[50%] lg:w-[44%] text-left flex flex-col justify-center pointer-events-auto pr-2 sm:pr-4">
+                <div className="relative z-20 w-[60%] min-[480px]:w-[55%] sm:w-[50%] lg:w-[46%] text-left flex flex-col justify-center pointer-events-auto pr-3 sm:pr-6">
                   
-                  {/* Eyebrow Pill Badge (Sharp Corner) */}
-                  <div className="inline-flex items-center gap-1 mb-1 sm:mb-2 w-fit">
-                    <span className={`inline-flex items-center gap-1 sm:gap-1.5 px-2 py-0.5 sm:px-3 sm:py-1 rounded-none text-[9px] min-[400px]:text-[9.5px] sm:text-[11px] font-black tracking-wider uppercase backdrop-blur-md border shadow-2xs transition-all ${theme.eyebrowBadge} bg-white/80 dark:bg-slate-800/80`}>
-                      {/* Live Pulsating LED */}
-                      <span className="relative flex h-1.5 w-1.5 sm:h-2 sm:w-2">
+                  {/* Eyebrow Pill Badge */}
+                  <div className="inline-flex items-center gap-1.5 mb-2 sm:mb-2.5 w-fit">
+                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9.5px] sm:text-[11px] font-black tracking-wider uppercase backdrop-blur-md border shadow-2xs transition-all ${theme.eyebrowBadge} bg-white/90 dark:bg-slate-800/90`}>
+                      <span className="relative flex h-2 w-2">
                         <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${theme.eyebrowDot}`} />
-                        <span className={`relative inline-flex rounded-full h-1.5 w-1.5 sm:h-2 sm:w-2 ${theme.eyebrowDot}`} />
+                        <span className={`relative inline-flex rounded-full h-2 w-2 ${theme.eyebrowDot}`} />
                       </span>
-                      <Sparkles size={11} className="shrink-0 hidden min-[380px]:inline-block" />
-                      <span className="truncate max-w-[140px] min-[400px]:max-w-[180px] sm:max-w-none">{tagline}</span>
+                      <Sparkles size={11} className="shrink-0" />
+                      <span className="truncate max-w-[200px] sm:max-w-none">{tagline}</span>
                     </span>
                   </div>
 
-                  {/* High-Impact Headline */}
-                  <h2 className={`text-base min-[380px]:text-lg min-[440px]:text-xl sm:text-2xl md:text-3xl lg:text-[36px] xl:text-[40px] font-black tracking-tight leading-[1.1] sm:leading-[1.08] ${theme.headlineSolid} line-clamp-2`}>
-                    {firstPart ? <span className="mr-1.5 sm:mr-2">{firstPart}</span> : null}
+                  {/* High-Impact Editorial Headline */}
+                  <h2 className="text-xl min-[400px]:text-2xl sm:text-3xl md:text-4xl lg:text-[44px] font-black tracking-tight leading-[1.08] text-slate-950 dark:text-white line-clamp-2">
+                    {firstPart ? <span className="mr-2">{firstPart}</span> : null}
                     <span className={`bg-gradient-to-r ${theme.headlineGradient} bg-clip-text text-transparent drop-shadow-2xs`}>
                       {highlightPart}
                     </span>
                   </h2>
 
                   {/* Subtitle */}
-                  <p className="text-[10px] min-[380px]:text-[11px] sm:text-[13px] md:text-sm font-medium text-slate-600 dark:text-slate-300 line-clamp-1 min-[480px]:line-clamp-2 mt-1 sm:mt-2 max-w-lg leading-relaxed">
+                  <p className="text-[11px] sm:text-[13px] md:text-sm font-medium text-slate-600 dark:text-slate-300 line-clamp-2 mt-1.5 sm:mt-2.5 max-w-md leading-relaxed">
                     {subtitle}
                   </p>
 
-                  {/* 3–4 Compact Feature Chips (Sharp Corners) */}
-                  <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-1.5 sm:mt-3">
+                  {/* Compact Feature Chips (Rounded Luxury Pills) */}
+                  <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mt-2.5 sm:mt-3.5">
                     {theme.chips.map((chip, cIdx) => {
                       const IconComponent = chip.icon;
                       const isExtraOnMobile = cIdx >= 2;
                       return (
                         <span
                           key={cIdx}
-                          className={`${isExtraOnMobile ? "hidden sm:inline-flex" : "inline-flex"} items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-none text-[8.5px] min-[380px]:text-[9.5px] sm:text-[11px] font-bold bg-white/85 dark:bg-slate-800/85 backdrop-blur-md border border-slate-200/80 dark:border-slate-700/80 text-slate-700 dark:text-slate-200 shadow-2xs hover:scale-105 hover:bg-white dark:hover:bg-slate-800 transition-all cursor-default`}
+                          className={`${isExtraOnMobile ? "hidden sm:inline-flex" : "inline-flex"} items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full text-[9px] sm:text-[11px] font-bold bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border border-slate-200/90 dark:border-slate-700/80 text-slate-700 dark:text-slate-200 shadow-2xs hover:shadow-xs transition-all`}
                         >
                           <IconComponent size={11} className="text-indigo-600 dark:text-indigo-400 stroke-[2.5]" />
                           <span>{chip.label}</span>
@@ -496,63 +499,58 @@ const TechAdBanner = () => {
                     })}
                   </div>
 
-                  {/* Action CTA Button (Sharp Corners) */}
-                  <div className="flex items-center gap-1.5 sm:gap-3.5 mt-2 min-[380px]:mt-2.5 sm:mt-4.5">
-                    {/* Primary CTA */}
+                  {/* Primary CTA + Carousel Controls Row */}
+                  <div className="flex flex-wrap items-center gap-3 sm:gap-4 mt-3.5 sm:mt-5">
+                    {/* Primary Button */}
                     <button
                       type="button"
                       onClick={handlePrimaryAction}
-                      className={`inline-flex items-center gap-1 sm:gap-2 px-3.5 min-[380px]:px-4.5 sm:px-6 py-1.5 min-[380px]:py-2 sm:py-3 rounded-none bg-gradient-to-r ${theme.ctaGradient} text-white font-black text-[10px] min-[380px]:text-[11.5px] sm:text-[13px] ${theme.ctaShadow} hover:-translate-y-0.5 active:scale-95 transition-all duration-300 cursor-pointer group/btn shrink-0`}
+                      className="inline-flex items-center gap-2 px-6 sm:px-7 py-2.5 sm:py-3 rounded-full bg-slate-950 hover:bg-indigo-600 dark:bg-white dark:hover:bg-indigo-500 text-white dark:text-slate-950 dark:hover:text-white font-black text-[11px] sm:text-xs uppercase tracking-wider shadow-md hover:shadow-xl hover:shadow-indigo-500/20 active:scale-95 transition-all duration-300 cursor-pointer group/btn shrink-0 border-none"
                     >
                       <span>{smartCtaText}</span>
-                      <ArrowRight size={13} className="stroke-[2.5] group-hover/btn:translate-x-1.5 transition-transform duration-300" />
+                      <ArrowRight size={13} className="stroke-[2.5] group-hover/btn:translate-x-1 transition-transform duration-300" />
                     </button>
-                  </div>
 
-                  {/* Campaign Carousel Navigation Controls (Sharp Corners) */}
-                  <div className="flex items-center gap-1.5 sm:gap-2.5 mt-2 min-[380px]:mt-2.5 sm:mt-5">
-                    {/* Square Prev/Next Buttons */}
-                    <div className="flex items-center gap-1 sm:gap-1.5">
+                    {/* Circular Slide Controls */}
+                    <div className="flex items-center gap-1.5">
                       <button
                         type="button"
                         onClick={handlePrev}
                         aria-label="Previous Campaign"
-                        className="w-6 h-6 min-[380px]:w-7 min-[380px]:h-7 sm:w-9 sm:h-9 rounded-none bg-white/90 dark:bg-slate-800/90 text-slate-700 dark:text-slate-200 hover:bg-slate-950 hover:text-white dark:hover:bg-white dark:hover:text-slate-950 backdrop-blur-md border border-slate-200/80 dark:border-slate-700/80 shadow-sm hover:shadow-md flex items-center justify-center transition-all duration-300 cursor-pointer active:scale-90"
+                        className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/90 dark:bg-slate-800/90 text-slate-700 dark:text-slate-200 hover:bg-slate-950 hover:text-white dark:hover:bg-white dark:hover:text-slate-950 border border-slate-200/90 dark:border-slate-700/80 shadow-2xs flex items-center justify-center transition-all cursor-pointer active:scale-90"
                       >
-                        <ChevronLeft size={14} className="stroke-[2.5]" />
+                        <ChevronLeft size={13} className="stroke-[2.5]" />
                       </button>
 
                       <button
                         type="button"
                         onClick={handleNext}
                         aria-label="Next Campaign"
-                        className="w-6 h-6 min-[380px]:w-7 min-[380px]:h-7 sm:w-9 sm:h-9 rounded-none bg-white/90 dark:bg-slate-800/90 text-slate-700 dark:text-slate-200 hover:bg-slate-950 hover:text-white dark:hover:bg-white dark:hover:text-slate-950 backdrop-blur-md border border-slate-200/80 dark:border-slate-700/80 shadow-sm hover:shadow-md flex items-center justify-center transition-all duration-300 cursor-pointer active:scale-90"
+                        className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/90 dark:bg-slate-800/90 text-slate-700 dark:text-slate-200 hover:bg-slate-950 hover:text-white dark:hover:bg-white dark:hover:text-slate-950 border border-slate-200/90 dark:border-slate-700/80 shadow-2xs flex items-center justify-center transition-all cursor-pointer active:scale-90"
                       >
-                        <ChevronRight size={14} className="stroke-[2.5]" />
+                        <ChevronRight size={13} className="stroke-[2.5]" />
                       </button>
                     </div>
 
-                    {/* Active Campaign Progress Indicator (Sharp Edges) */}
-                    <div className="flex items-center gap-1 sm:gap-1.5 bg-white/85 dark:bg-slate-800/85 backdrop-blur-md px-1.5 sm:px-2.5 py-1 sm:py-1.5 rounded-none border border-slate-200/80 dark:border-slate-700/80 shadow-xs">
+                    {/* Smooth Progress Pills */}
+                    <div className="flex items-center gap-1 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md px-2 py-1.5 rounded-full border border-slate-200/80 dark:border-slate-700/80 shadow-2xs">
                       {activeBanners.map((b, idx) => {
                         const isActive = idx === currentIndex;
-                        const isPassed = idx < currentIndex;
-
                         return (
                           <button
                             key={b._id || idx}
                             type="button"
                             onClick={(e) => handleDotClick(idx, e)}
                             aria-label={`Slide ${idx + 1}`}
-                            className="relative h-1 sm:h-1.5 rounded-none overflow-hidden cursor-pointer transition-all duration-300 border-none p-0 bg-slate-200 dark:bg-slate-700"
-                            style={{ width: isActive ? "18px" : "5px" }}
+                            className="relative h-1.5 rounded-full overflow-hidden cursor-pointer transition-all duration-300 border-none p-0 bg-slate-300 dark:bg-slate-700"
+                            style={{ width: isActive ? "20px" : "6px" }}
                           >
-                            <div
-                              className="h-full bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 rounded-none transition-all duration-100"
-                              style={{
-                                width: isActive ? `${progress}%` : isPassed ? "100%" : "0%"
-                              }}
-                            />
+                            {isActive && (
+                              <div
+                                className="h-full bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full transition-all duration-100"
+                                style={{ width: `${progress}%` }}
+                              />
+                            )}
                           </button>
                         );
                       })}
@@ -561,123 +559,69 @@ const TechAdBanner = () => {
 
                 </div>
 
-                {/* ── RIGHT COLUMN: 3D DYNAMIC ADMIN PRODUCT STAGE ── */}
-                <div className="relative w-[42%] min-[480px]:w-[46%] sm:w-[50%] lg:w-[56%] h-full flex items-end justify-center pointer-events-none z-10 overflow-visible">
+                {/* ── RIGHT COLUMN: ELEGANT GROUNDED MODEL SHOWCASE ── */}
+                <div className="relative w-[40%] min-[480px]:w-[45%] sm:w-[50%] lg:w-[54%] h-full flex items-end justify-center pointer-events-none">
                   
-                  {/* Stage Floor Reflection Line */}
-                  <div className="absolute bottom-1 right-1/4 w-3/5 h-3 sm:h-4 bg-black/10 dark:bg-black/40 blur-md sm:blur-lg rounded-full pointer-events-none" />
+                  {/* Floating Discount Pill Badge (Top Right) */}
+                  <div className="absolute top-1 sm:top-2 right-0 sm:right-4 z-30 pointer-events-auto">
+                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-rose-600 text-white font-black text-[10px] sm:text-xs tracking-wide shadow-md shadow-orange-500/20">
+                      <Flame size={11} className="fill-white" />
+                      <span>{discountTag || "UP TO 50% OFF"}</span>
+                    </span>
+                  </div>
 
-                  {/* Sharp Geometric "UP TO 50% OFF" Badge (Top Right) */}
-                  <div className="absolute top-1 sm:top-2 right-0 sm:right-3 z-30 pointer-events-auto">
-                    <div className="relative group/discount px-2 sm:px-3.5 py-1 sm:py-2 rounded-none bg-gradient-to-br from-amber-400 via-orange-500 to-rose-600 text-white shadow-[0_4px_16px_rgba(245,158,11,0.35)] flex flex-col items-center justify-center text-center -rotate-3 hover:rotate-0 transition-transform duration-500 font-black leading-tight border border-white/50 backdrop-blur-md cursor-pointer">
-                      <div className="flex items-center gap-0.5 sm:gap-1">
-                        <Flame size={11} className="fill-white animate-pulse" />
-                        <span className="text-[8px] sm:text-[9px] uppercase tracking-wider font-extrabold opacity-95">Save</span>
-                      </div>
-                      <span className="text-[10px] min-[380px]:text-[11px] sm:text-xs md:text-sm font-black mt-0.5">{discountTag.replace("UP TO", "").trim() || "50% OFF"}</span>
+                  {/* Floor Grounding Shadow Under Model */}
+                  <div className="absolute bottom-0 right-1/4 w-3/5 h-4 sm:h-5 bg-black/15 dark:bg-black/50 blur-lg rounded-full pointer-events-none" />
+
+                  {/* Grounded Model (Anchored to Floor, Perfectly Sized) */}
+                  {displayImages[0] && (
+                    <div className="relative z-20 h-full w-full flex items-end justify-center">
+                      <img
+                        src={displayImages[0]}
+                        alt={title}
+                        className="h-[92%] sm:h-[95%] lg:h-[98%] max-h-[420px] w-auto max-w-full object-contain object-bottom select-none drop-shadow-[0_16px_36px_rgba(0,0,0,0.18)] dark:drop-shadow-[0_20px_42px_rgba(0,0,0,0.6)] transition-transform duration-700 group-hover:scale-[1.02]"
+                        loading="eager"
+                        fetchPriority="high"
+                        decoding="async"
+                        onError={(e) => {
+                          e.target.src = techHeroPerson;
+                        }}
+                      />
                     </div>
-                  </div>
+                  )}
 
-                  {/* Floating Micro Label: Top Left (Sharp Corners) */}
-                  <div className="hidden min-[600px]:flex items-center gap-1 absolute top-2 left-2 sm:left-4 z-30 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md px-2.5 py-1 rounded-none border border-white/80 dark:border-slate-700/80 shadow-md text-[10.5px] font-extrabold text-slate-800 dark:text-slate-100 animate-bounce" style={{ animationDuration: "5s" }}>
-                    <Sparkles size={11} className="text-indigo-600 dark:text-indigo-400" />
-                    <span>Latest Arrivals</span>
-                  </div>
-
-                  {/* ═════════════════════════════════════════════════════════════
-                      DYNAMIC ADMIN IMAGES SHOWCASE (RENDERED FROM ADMIN PANEL)
-                      ═════════════════════════════════════════════════════════════ */}
-                  <div className="relative z-20 w-full h-full flex items-end justify-center pb-0.5">
-                    
-                    {/* Primary Hero Image Uploaded by Admin */}
-                    {displayImages[0] && (
-                      <div className="relative z-20 max-h-[190px] min-[380px]:max-h-[210px] min-[440px]:max-h-[235px] sm:max-h-[270px] md:max-h-[310px] lg:max-h-[340px] xl:max-h-[360px] w-full flex items-end justify-center transition-transform duration-700 hover:scale-105">
-                        <img
-                          src={displayImages[0]}
-                          alt={title}
-                          className="max-h-[190px] min-[380px]:max-h-[210px] min-[440px]:max-h-[235px] sm:max-h-[270px] md:max-h-[310px] lg:max-h-[340px] xl:max-h-[360px] w-auto max-w-full object-contain object-bottom select-none drop-shadow-[0_12px_28px_rgba(0,0,0,0.20)] dark:drop-shadow-[0_16px_36px_rgba(0,0,0,0.6)]"
-                          loading="eager"
-                          fetchPriority="high"
-                          decoding="async"
-                          onError={(e) => {
-                            e.target.src = techHeroPerson;
-                          }}
-                        />
-                      </div>
-                    )}
-
-                    {/* Secondary Image 1 (If Admin uploaded 2+ images - Bottom/Mid Right) */}
-                    {displayImages.length >= 2 && displayImages[1] && (
-                      <div className="hidden md:block absolute right-2 lg:right-6 bottom-1 sm:bottom-2 z-25 max-w-[150px] lg:max-w-[210px] xl:max-w-[240px] max-h-[180px] lg:max-h-[240px] xl:max-h-[270px] transition-transform duration-500 hover:-translate-y-2 group/sec1">
-                        {/* Floating "Trending" Badge attached to Image 1 */}
-                        <div className="absolute -top-3 right-2 z-30 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md px-2.5 py-0.5 rounded-none border border-white/90 dark:border-slate-700/90 shadow-md text-[10px] font-extrabold text-slate-800 dark:text-slate-100 flex items-center gap-1">
-                          <Flame size={11} className="text-orange-500 fill-orange-500 animate-pulse" />
-                          <span>Trending</span>
-                        </div>
-                        <img
-                          src={displayImages[1]}
-                          alt={`${title} 2`}
-                          className="w-auto h-auto max-h-[180px] lg:max-h-[240px] xl:max-h-[270px] object-contain drop-shadow-[0_16px_30px_rgba(0,0,0,0.20)]"
-                          onError={(e) => {
-                            e.target.style.display = "none";
-                          }}
-                        />
-                      </div>
-                    )}
-
-                    {/* Secondary Image 2 (If Admin uploaded 3+ images - Bottom/Mid Left) */}
-                    {displayImages.length >= 3 && displayImages[2] && (
-                      <div className="hidden lg:block absolute left-1 lg:left-4 bottom-1 sm:bottom-2 z-25 max-w-[150px] lg:max-w-[180px] xl:max-w-[210px] max-h-[190px] lg:max-h-[220px] xl:max-h-[250px] transition-transform duration-500 hover:-translate-y-2 group/sec2">
-                        {/* Floating "Top Rated 4.9" Badge attached to Image 2 */}
-                        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 z-30 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md px-2.5 py-0.5 rounded-none border border-white/90 dark:border-slate-700/90 shadow-md text-[10px] font-extrabold text-slate-800 dark:text-slate-100 flex items-center gap-1 whitespace-nowrap">
-                          <Star size={11} className="text-amber-500 fill-amber-500" />
-                          <span>Top Rated 4.9</span>
-                        </div>
-                        <img
-                          src={displayImages[2]}
-                          alt={`${title} 3`}
-                          className="w-auto h-auto max-h-[190px] lg:max-h-[220px] xl:max-h-[250px] object-contain drop-shadow-[0_16px_30px_rgba(0,0,0,0.18)]"
-                          onError={(e) => {
-                            e.target.style.display = "none";
-                          }}
-                        />
-                      </div>
-                    )}
-
-                    {/* Secondary Image 3 (If Admin uploaded 4+ images - Top Right) */}
-                    {displayImages.length >= 4 && displayImages[3] && (
-                      <div className="hidden xl:block absolute right-14 xl:right-18 top-2 sm:top-4 z-15 max-w-[140px] xl:max-w-[170px] max-h-[160px] xl:max-h-[190px] opacity-95 transition-transform duration-500 hover:-translate-y-2">
-                        <img
-                          src={displayImages[3]}
-                          alt={`${title} 4`}
-                          className="w-auto h-auto max-h-[160px] xl:max-h-[190px] object-contain drop-shadow-[0_14px_24px_rgba(0,0,0,0.18)]"
-                          onError={(e) => {
-                            e.target.style.display = "none";
-                          }}
-                        />
-                      </div>
-                    )}
-
-                  </div>
+                  {/* Secondary Image 1 if present */}
+                  {displayImages.length >= 2 && displayImages[1] && (
+                    <div className="hidden md:block absolute right-2 lg:right-6 bottom-2 z-25 max-w-[150px] lg:max-w-[210px] max-h-[180px] lg:max-h-[240px] transition-transform duration-500 hover:-translate-y-2">
+                      <img
+                        src={displayImages[1]}
+                        alt={`${title} 2`}
+                        className="w-auto h-auto max-h-[180px] lg:max-h-[240px] object-contain drop-shadow-[0_14px_28px_rgba(0,0,0,0.20)]"
+                        onError={(e) => {
+                          e.target.style.display = "none";
+                        }}
+                      />
+                    </div>
+                  )}
 
                 </div>
 
               </div>
 
               {/* ═════════════════════════════════════════════════════════════
-                  BOTTOM BRAND STRIP (SLIM GLASS / WHITE FLOATING BAR)
+                  BOTTOM BRAND STRIP (PRESTIGIOUS BRAND SHOWCASE)
                   ═════════════════════════════════════════════════════════════ */}
-              <div className="absolute bottom-0 left-0 right-0 z-20 w-full px-3 sm:px-8 py-1.5 sm:py-2.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-t border-slate-200/70 dark:border-slate-800/70 flex items-center justify-between overflow-x-auto scrollbar-none">
-                <div className="flex items-center gap-1 text-[9.5px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider shrink-0 mr-2 sm:mr-3">
-                  <Sparkles size={10} className="text-indigo-500" />
+              <div className="absolute bottom-0 left-0 right-0 z-20 w-full px-4 sm:px-10 py-2 sm:py-2.5 bg-white/85 dark:bg-slate-950/85 backdrop-blur-md border-t border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between overflow-x-auto scrollbar-none">
+                <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest shrink-0 mr-3">
+                  <Sparkles size={11} className="text-indigo-500" />
                   <span>Featured Brands</span>
                 </div>
 
-                <div className="flex items-center gap-3 min-[380px]:gap-4 sm:gap-6 md:gap-8 overflow-x-auto scrollbar-none">
+                <div className="flex items-center gap-3 sm:gap-6 md:gap-8 overflow-x-auto scrollbar-none">
                   {theme.brands.map((brandName, bIdx) => (
                     <span
                       key={bIdx}
-                      className="text-[10.5px] sm:text-xs md:text-[13px] font-extrabold text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors tracking-wide shrink-0 cursor-pointer"
+                      className="text-[11px] sm:text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors tracking-wide shrink-0 cursor-pointer"
                       onClick={(e) => {
                         e.stopPropagation();
                         navigate(`/product?search=${encodeURIComponent(brandName)}`);

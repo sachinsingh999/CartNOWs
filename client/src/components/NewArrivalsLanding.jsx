@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowRight, 
@@ -59,6 +59,10 @@ const NewArrivalsLanding = ({
   const [direction, setDirection] = useState(1);
   const [isHovered, setIsHovered] = useState(false);
 
+  // Touch Swipe State Refs for Mobile/Tablet Gesture
+  const touchStartX = useRef(null);
+  const touchEndX = useRef(null);
+
   // Fetch admin-managed dynamic hero banners
   useEffect(() => {
     cachedGet(`${backendUrl}/api/promo-banners/active?placement=new_arrivals_hero`, {}, 60000)
@@ -113,6 +117,30 @@ const NewArrivalsLanding = ({
     e?.stopPropagation();
     setDirection(1);
     setCurrentSlide((prev) => (prev + 1) % totalSlides);
+  };
+
+  // Touch swipe gesture handlers (Swipe left/right)
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchMove = (e) => {
+    touchEndX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStartX.current === null || touchEndX.current === null) return;
+    const diff = touchStartX.current - touchEndX.current;
+    const minSwipeDistance = 45;
+
+    if (diff > minSwipeDistance) {
+      handleNextSlide();
+    } else if (diff < -minSwipeDistance) {
+      handlePrevSlide();
+    }
+
+    touchStartX.current = null;
+    touchEndX.current = null;
   };
 
   // Live Drop Countdown Timer (7 Days campaign cycle)
@@ -254,17 +282,41 @@ const NewArrivalsLanding = ({
     <div className="min-h-screen bg-slate-50/70 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 pb-20 font-sans">
       
 
-      {/* FULL WIDTH CONTAINER WITH RESPONSIVE PADDING */}
-      <div className="w-full px-3 sm:px-6 lg:px-8 pt-2.5">
-        
-        {/* 1. HERO SECTION SPLIT IN TWO HALVES (50% LEFT WHITISH-YELLOWISH TEXT / 50% RIGHT FULL IMAGE VIEWER) */}
-        <div 
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-          className="relative w-full rounded-sm overflow-hidden bg-[#FAF7EE] dark:bg-stone-950 border border-amber-200/70 dark:border-slate-800 shadow-md flex flex-col lg:flex-row items-stretch h-[calc(100vh-230px)] min-h-[460px] max-h-[590px] mb-3 group"
-        >
-          {/* Left Half (50% Column): Whitish-Yellowish Text Content */}
-          <div className="w-full lg:w-1/2 p-6 sm:p-10 lg:p-12 flex flex-col justify-center relative z-10 bg-[#FAF7EE] dark:bg-stone-950 text-slate-900 dark:text-white transition-colors duration-300">
+      {/* 1. HERO SECTION SPLIT IN TWO HALVES (FULL-WIDTH TOUCHING LEFT AND RIGHT SCREEN EDGES) */}
+      <div 
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        className="relative w-full rounded-none overflow-hidden bg-[#FAF7EE] dark:bg-stone-950 border-b border-amber-200/70 dark:border-slate-800 shadow-none flex flex-col lg:flex-row items-stretch h-[calc(100vh-220px)] min-h-[460px] max-h-[580px] mb-4 group select-none"
+      >
+        {/* Floating Left Touch Button (Touch Left) */}
+        {totalSlides > 1 && (
+          <button
+            type="button"
+            onClick={handlePrevSlide}
+            aria-label="Previous slide"
+            className="absolute left-2.5 sm:left-4 top-1/2 -translate-y-1/2 z-30 w-9 h-9 sm:w-10 sm:h-10 rounded-[4px] bg-slate-950/70 hover:bg-slate-950 text-white flex items-center justify-center backdrop-blur-md border border-white/20 shadow-lg transition-all active:scale-90 cursor-pointer"
+          >
+            <ChevronLeft size={20} className="stroke-[2.5]" />
+          </button>
+        )}
+
+        {/* Floating Right Touch Button (Touch Right) */}
+        {totalSlides > 1 && (
+          <button
+            type="button"
+            onClick={handleNextSlide}
+            aria-label="Next slide"
+            className="absolute right-2.5 sm:right-4 top-1/2 -translate-y-1/2 z-30 w-9 h-9 sm:w-10 sm:h-10 rounded-[4px] bg-slate-950/70 hover:bg-slate-950 text-white flex items-center justify-center backdrop-blur-md border border-white/20 shadow-lg transition-all active:scale-90 cursor-pointer"
+          >
+            <ChevronRight size={20} className="stroke-[2.5]" />
+          </button>
+        )}
+
+        {/* Left Half (50% Column): Whitish-Yellowish Text Content */}
+        <div className="w-full lg:w-1/2 p-6 sm:p-10 lg:p-14 flex flex-col justify-center relative z-10 bg-[#FAF7EE] dark:bg-stone-950 text-slate-900 dark:text-white transition-colors duration-300">
             
             <AnimatePresence mode="wait" custom={direction}>
               <motion.div
@@ -357,22 +409,10 @@ const NewArrivalsLanding = ({
             </div>
           </div>
 
-          {/* Right Half (50% Column): FULL IMAGE VIEW (Uncropped, Complete View with Motion Transition) */}
-          <div className="w-full lg:w-1/2 relative min-h-[380px] sm:min-h-[440px] lg:min-h-[460px] overflow-hidden bg-slate-950 flex items-end justify-center">
-            {/* Ambient Blurred Backdrop with Crossfade */}
-            <AnimatePresence mode="popLayout">
-              <motion.img
-                key={`ambient-${currentBanner?.imageUrl || currentBanner?.images?.[0] || currentSlide}`}
-                src={currentBanner?.imageUrl || currentBanner?.images?.[0] || heroImg}
-                alt=""
-                aria-hidden="true"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 0.4 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.5 }}
-                className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110 pointer-events-none select-none"
-              />
-            </AnimatePresence>
+          {/* Right Half (50% Column): FULL IMAGE VIEW (Seamless background matching left half) */}
+          <div className="w-full lg:w-1/2 relative min-h-[380px] sm:min-h-[440px] lg:min-h-[460px] overflow-hidden bg-[#FAF7EE] dark:bg-stone-950 flex items-end justify-center">
+            {/* Subtle Warm Radial Glow Behind Cutout Model */}
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] sm:w-[480px] h-[340px] sm:h-[480px] rounded-full blur-[90px] sm:blur-[120px] pointer-events-none opacity-50 dark:opacity-25 bg-amber-400/20 dark:bg-amber-500/10 transition-colors duration-700" />
 
             {/* Complete Uncropped Image Container Touching Base */}
             <div className="absolute inset-0 flex items-end justify-center pointer-events-none z-10 pt-2 px-2 sm:px-4 pb-0">
@@ -401,17 +441,17 @@ const NewArrivalsLanding = ({
                     filter: "blur(2px)"
                   }}
                   transition={{ duration: 0.48, ease: [0.16, 1, 0.3, 1] }}
-                  className="w-auto h-full max-h-full max-w-full object-contain object-bottom select-none contrast-[105%] group-hover:scale-[1.02] drop-shadow-2xl transition-transform duration-300"
+                  className="w-auto h-full max-h-full max-w-full object-contain object-bottom select-none group-hover:scale-[1.02] drop-shadow-[0_16px_36px_rgba(0,0,0,0.14)] dark:drop-shadow-[0_20px_42px_rgba(0,0,0,0.5)] transition-transform duration-300"
                 />
               </AnimatePresence>
             </div>
 
             {/* Floating Glass Circular Editorial Stamp (Bottom Right) */}
-            <div className="hidden sm:flex absolute bottom-6 right-6 sm:bottom-8 sm:right-8 w-26 h-26 sm:w-30 sm:h-30 rounded-full bg-slate-950/85 backdrop-blur-md border border-slate-700/60 items-center justify-center shadow-2xl hover:scale-105 transition-transform cursor-pointer z-20">
+            <div className="hidden sm:flex absolute bottom-6 right-6 sm:bottom-8 sm:right-8 w-26 h-26 sm:w-30 sm:h-30 rounded-full bg-white/85 dark:bg-stone-900/85 backdrop-blur-md border border-stone-300/80 dark:border-stone-700/80 items-center justify-center shadow-lg hover:scale-105 transition-transform cursor-pointer z-20">
               <div className="relative w-full h-full flex items-center justify-center">
                 <svg className="w-full h-full animate-[spin_20s_linear_infinite]" viewBox="0 0 100 100">
                   <path id="sharpStampPath" d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" fill="none" />
-                  <text className="text-[8px] font-bold uppercase tracking-[0.24em] fill-white">
+                  <text className="text-[8px] font-bold uppercase tracking-[0.24em] fill-stone-800 dark:fill-stone-100">
                     <textPath href="#sharpStampPath" startOffset="0%">
                       • NEW STYLES • JUST LANDED
                     </textPath>
@@ -420,28 +460,28 @@ const NewArrivalsLanding = ({
               </div>
             </div>
 
-            {/* Slideshow Arrow Navigation on Image */}
+            {/* Slideshow Counter Pill on Image */}
             {totalSlides > 1 && (
               <div className="absolute top-4 left-4 flex items-center gap-1.5 z-20">
                 <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={handlePrevSlide}
-                  className="w-8 h-8 rounded-full bg-slate-950/80 hover:bg-slate-950 text-white flex items-center justify-center backdrop-blur-md border border-white/20 shadow-md transition cursor-pointer"
+                  className="w-7 h-7 rounded-[4px] bg-white/90 hover:bg-white text-slate-800 dark:bg-slate-900/90 dark:hover:bg-slate-900 dark:text-white flex items-center justify-center backdrop-blur-md border border-slate-200/80 dark:border-slate-800 shadow-sm transition cursor-pointer"
                   title="Previous banner"
                 >
-                  <ChevronLeft size={16} />
+                  <ChevronLeft size={14} className="stroke-[2.5]" />
                 </motion.button>
                 <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={handleNextSlide}
-                  className="w-8 h-8 rounded-full bg-slate-950/80 hover:bg-slate-950 text-white flex items-center justify-center backdrop-blur-md border border-white/20 shadow-md transition cursor-pointer"
+                  className="w-7 h-7 rounded-[4px] bg-white/90 hover:bg-white text-slate-800 dark:bg-slate-900/90 dark:hover:bg-slate-900 dark:text-white flex items-center justify-center backdrop-blur-md border border-slate-200/80 dark:border-slate-800 shadow-sm transition cursor-pointer"
                   title="Next banner"
                 >
-                  <ChevronRight size={16} />
+                  <ChevronRight size={14} className="stroke-[2.5]" />
                 </motion.button>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-950/80 text-white backdrop-blur-md border border-white/10 ml-1">
+                <span className="px-2.5 py-0.5 rounded-[4px] text-[10px] font-bold bg-white/90 dark:bg-slate-900/90 text-slate-800 dark:text-white backdrop-blur-md border border-slate-200/80 dark:border-slate-800 shadow-sm ml-0.5">
                   {(currentSlide % totalSlides) + 1} / {totalSlides}
                 </span>
               </div>
@@ -449,7 +489,9 @@ const NewArrivalsLanding = ({
           </div>
         </div>
 
-        {/* 2. FRAMELESS CATEGORY TICKER WITH SMOOTH DROP ANIMATION */}
+        {/* MAIN PAGE CONTAINER WITH TIGHT RESPONSIVE PADDING */}
+        <div className="w-full px-2.5 sm:px-4.5 lg:px-5">
+          {/* 2. FRAMELESS CATEGORY TICKER WITH SMOOTH DROP ANIMATION */}
         <div className="mb-5 space-y-2">
           
           <div className="flex items-center justify-between px-1">
@@ -680,7 +722,7 @@ const NewArrivalsLanding = ({
           </div>
         ) : (
           <>
-            <div className={`grid ${getGridColsClass()} gap-5 animate-fade-in`}>
+            <div className={`grid ${getGridColsClass()} gap-2 sm:gap-2.5 md:gap-3 animate-fade-in`}>
               {paginatedProducts.map((p) => (
                 <ProductCard key={p._id} product={p} />
               ))}

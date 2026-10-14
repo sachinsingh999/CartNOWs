@@ -9,107 +9,85 @@ export const SkeletonPulse = ({ className = "" }) => (
 
 /* ─────────────── 1. HERO SPLIT BANNER SKELETON (EXACT 1-TO-1) ─────────────── */
 export const HeroSplitBannerSkeleton = () => (
-  <div className="w-full px-0 pt-0 pb-1 sm:pb-1.5 select-none animate-pulse">
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-1.5 sm:gap-2 items-stretch">
-      
-      {/* Left: Main Hero Banner Skeleton (~58% desktop width, 490px height) */}
-      <div className="lg:col-span-7 xl:col-span-7 relative flex flex-col h-[460px] sm:h-[480px] lg:h-[490px]">
-        <div className="relative w-full h-full rounded-none border border-x-0 lg:border-l-0 lg:border-r border-slate-200/90 dark:border-slate-800 bg-gradient-to-r from-[#F8FAFC] via-[#EEF4FF] to-[#E2ECFF] dark:from-slate-900 dark:via-slate-850 dark:to-slate-900 overflow-hidden flex flex-col md:flex-row items-stretch justify-between p-6 sm:p-8 lg:p-10">
-          
-          {/* Left Text Block */}
-          <div className="w-full md:w-[50%] lg:w-[48%] flex flex-col justify-center h-full z-10 space-y-3 sm:space-y-4">
-            {/* Tag pill */}
-            <div className="h-5 w-36 bg-slate-200 dark:bg-slate-800 rounded-sm" />
-            
-            {/* Title (2 lines) */}
-            <div className="space-y-2">
-              <div className="h-8 sm:h-9 w-4/5 bg-slate-300/80 dark:bg-slate-700/80 rounded-sm" />
-              <div className="h-8 sm:h-9 w-3/5 bg-slate-300/80 dark:bg-slate-700/80 rounded-sm" />
+  <div className="w-full px-0 pt-0 pb-1 sm:pb-1.5 select-none animate-pulse flex flex-col">
+    {/* 1. Full-Width Main Hero Banner Skeleton */}
+    <div className="relative w-full h-[47vh] min-h-[390px] md:min-h-[420px] max-h-[530px] overflow-hidden">
+      <div className="relative w-full h-full rounded-none border-b border-stone-200/70 dark:border-slate-800 bg-[#FAF7F2] dark:bg-slate-950 overflow-hidden flex flex-row items-stretch justify-between pl-3 sm:pl-5 md:pl-6 lg:pl-7 xl:pl-8 pr-2 py-3.5 sm:py-5 md:py-6">
+        {/* Left Text Block */}
+        <div className="relative w-[75%] sm:w-[68%] md:w-[62%] lg:w-[58%] xl:w-[56%] flex flex-col justify-between h-full z-10 max-w-[580px]">
+          <div className="space-y-3 sm:space-y-4">
+            {/* Orange dash + Tagline */}
+            <div className="flex items-center gap-2.5">
+              <div className="w-5 sm:w-6 h-[2px] bg-orange-400 rounded-full" />
+              <div className="h-3 w-36 bg-orange-200/80 dark:bg-orange-950/70 rounded-none" />
+            </div>
+
+            {/* Editorial Title (2 large lines) */}
+            <div className="space-y-2 pt-1">
+              <div className="h-10 sm:h-12 md:h-14 lg:h-16 w-3/5 bg-slate-300/80 dark:bg-slate-700/80 rounded-none" />
+              <div className="h-10 sm:h-12 md:h-14 lg:h-16 w-4/5 bg-slate-300/80 dark:bg-slate-700/80 rounded-none" />
             </div>
 
             {/* Subtitle */}
             <div className="space-y-1.5 pt-1">
-              <div className="h-3.5 w-full max-w-[280px] bg-slate-200 dark:bg-slate-800 rounded-sm" />
-              <div className="h-3.5 w-4/5 max-w-[240px] bg-slate-200 dark:bg-slate-800 rounded-sm" />
+              <div className="h-3.5 w-full max-w-[420px] bg-slate-200 dark:bg-slate-800 rounded-none" />
+              <div className="h-3.5 w-4/5 max-w-[340px] bg-slate-200 dark:bg-slate-800 rounded-none" />
             </div>
 
-            {/* Trust Badges Strip */}
-            <div className="flex items-center gap-3 pt-1">
-              <div className="h-3.5 w-24 bg-slate-200 dark:bg-slate-800 rounded-sm" />
-              <div className="h-3.5 w-24 bg-slate-200 dark:bg-slate-800 rounded-sm" />
-            </div>
-
-            {/* CTA Button */}
-            <div className="pt-2">
-              <div className="h-11 w-36 bg-slate-300 dark:bg-slate-700 rounded-sm shadow-xs" />
+            {/* Dual Action Pill Buttons */}
+            <div className="flex items-center gap-3 sm:gap-4 pt-2">
+              <div className="h-9 sm:h-10 w-28 sm:w-32 bg-orange-400/80 dark:bg-orange-600/80 rounded-full" />
+              <div className="h-9 sm:h-10 w-36 sm:w-40 border border-slate-300 dark:border-slate-700 bg-transparent rounded-full" />
             </div>
           </div>
-
-          {/* Right Model Silhouette Cutout */}
-          <div className="absolute right-0 bottom-0 top-0 h-full w-[56%] sm:w-[58%] md:w-[60%] lg:w-[62%] flex items-end justify-end pointer-events-none pr-4 sm:pr-8">
-            <div className="h-[92%] w-[75%] max-w-[340px] bg-gradient-to-t from-slate-300/80 via-slate-200/60 to-transparent dark:from-slate-700/80 dark:via-slate-800/60 rounded-t-3xl" />
-          </div>
-
-          {/* Left/Right Arrow Skeleton Controls */}
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-sm bg-white/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700" />
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-sm bg-white/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700" />
         </div>
-      </div>
 
-      {/* Right: Quick Bazaar 2x2 Grid Skeleton (~42% desktop width, 490px height) */}
-      <div className="lg:col-span-5 xl:col-span-5 relative flex flex-col h-[460px] sm:h-[480px] lg:h-[490px] overflow-hidden">
-        <div className="w-full h-full bg-white dark:bg-slate-900 rounded-none p-3 sm:p-3.5 border border-x-0 lg:border-l lg:border-r-0 border-slate-200/90 dark:border-slate-800 flex flex-col justify-between">
-          
-          {/* Header Strip */}
-          <div className="flex items-center justify-between mb-2 sm:mb-2.5 shrink-0">
-            <div className="flex items-center gap-2 sm:gap-2.5">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-sm bg-amber-100 dark:bg-amber-950/60" />
-              <div className="space-y-1">
-                <div className="h-4 w-44 bg-slate-200 dark:bg-slate-800 rounded-sm" />
-                <div className="h-2.5 w-32 bg-slate-100 dark:bg-slate-800/60 rounded-sm" />
+        {/* Right Model Silhouette Cutout */}
+        <div className="absolute right-0 bottom-0 top-0 h-full w-[80%] sm:w-[75%] md:w-[68%] lg:w-[62%] xl:w-[58%] flex items-end justify-end pointer-events-none pr-2 md:pr-4 overflow-hidden">
+          <div className="h-[96%] w-[65%] max-w-[420px] bg-gradient-to-t from-slate-300/80 via-slate-200/50 to-transparent dark:from-slate-700/80 dark:via-slate-850/50 rounded-t-3xl" />
+        </div>
+
+        {/* Left/Right Arrow Skeleton Controls */}
+        <div className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-none bg-white/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700" />
+        <div className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-none bg-white/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700" />
+      </div>
+    </div>
+
+    {/* 2. Products Showcase Skeleton (Below Hero Banner) */}
+    <div className="w-full bg-[#FAFAFA] dark:bg-slate-950 border-b border-slate-200/90 dark:border-slate-800 px-1 sm:px-1.5 md:px-2 pt-1 pb-3 sm:pb-3.5">
+      {/* 4 Cards Grid */}
+      <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-1.5 sm:gap-2">
+        {[1, 2, 3, 4].map((n) => (
+          <div
+            key={n}
+            className="flex flex-col justify-between bg-white dark:bg-slate-900 rounded-[3px] border border-slate-200/80 dark:border-slate-800 p-2.5 sm:p-3"
+          >
+            <div>
+              {/* 3D Stage Box */}
+              <div className="w-full h-[205px] rounded-[2px] bg-slate-100 dark:bg-slate-800/60" />
+              {/* 4 Thumbnails */}
+              <div className="grid grid-cols-4 gap-1.5 pt-2 pb-1.5">
+                {[1, 2, 3, 4].map((t) => (
+                  <div key={t} className="h-10 rounded-[2px] bg-slate-100 dark:bg-slate-800/80" />
+                ))}
+              </div>
+              {/* Info */}
+              <div className="space-y-1.5 pt-1">
+                <div className="h-2.5 w-14 bg-slate-200 dark:bg-slate-800 rounded-[2px]" />
+                <div className="h-4 w-3/4 bg-slate-300 dark:bg-slate-700 rounded-[2px]" />
+                <div className="h-3 w-1/2 bg-slate-200 dark:bg-slate-800 rounded-[2px]" />
+                <div className="h-3.5 w-24 bg-slate-200 dark:bg-slate-800 rounded-[2px]" />
+                <div className="h-4.5 w-28 bg-orange-200 dark:bg-orange-950/70 rounded-[2px]" />
               </div>
             </div>
-            <div className="flex gap-1.5">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-sm bg-slate-100 dark:bg-slate-800" />
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-sm bg-slate-200 dark:bg-slate-700" />
+            {/* Buttons */}
+            <div className="grid grid-cols-[1fr_auto] gap-1.5 pt-2.5">
+              <div className="h-8 bg-orange-400/80 dark:bg-orange-600/80 rounded-[3px]" />
+              <div className="h-8 w-16 bg-slate-200 dark:bg-slate-800 rounded-[3px]" />
             </div>
           </div>
-
-          {/* 2x2 Grid of 4 Product Deal Cards */}
-          <div className="grid grid-cols-2 gap-1.5 sm:gap-2 flex-1 min-h-0">
-            {[1, 2, 3, 4].map((n) => (
-              <div
-                key={n}
-                className="relative w-full h-full rounded-sm border border-slate-200/80 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-850/80 p-2.5 sm:p-3 flex flex-col justify-between overflow-hidden"
-              >
-                {/* Status badge */}
-                <div className="h-3.5 w-16 bg-slate-200 dark:bg-slate-800 rounded-sm" />
-
-                {/* Middle: Brand + Title */}
-                <div className="space-y-1.5 my-auto">
-                  <div className="flex items-center gap-1">
-                    <div className="w-3.5 h-3.5 rounded-sm bg-slate-200 dark:bg-slate-800" />
-                    <div className="h-2.5 w-14 bg-slate-200 dark:bg-slate-800 rounded-sm" />
-                  </div>
-                  <div className="h-3.5 w-4/5 bg-slate-200 dark:bg-slate-800 rounded-sm" />
-                  <div className="h-2.5 w-3/5 bg-slate-100 dark:bg-slate-800/60 rounded-sm" />
-                </div>
-
-                {/* Bottom: Price + Discount Badge */}
-                <div className="space-y-1">
-                  <div className="h-4 w-16 bg-slate-300 dark:bg-slate-700 rounded-sm" />
-                  <div className="h-3 w-14 bg-emerald-100 dark:bg-emerald-950/60 rounded-sm" />
-                </div>
-
-                {/* Top Right Heart */}
-                <div className="absolute top-2 right-2 w-6 h-6 rounded-sm bg-slate-200/60 dark:bg-slate-800/60" />
-              </div>
-            ))}
-          </div>
-
-        </div>
+        ))}
       </div>
-
     </div>
   </div>
 );
