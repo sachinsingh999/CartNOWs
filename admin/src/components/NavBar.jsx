@@ -181,7 +181,7 @@ const NavBar = ({ setToken, toggleSidebar, isCollapsed, theme, setTheme, token }
             className="flex items-center gap-2.5 cursor-pointer select-none group"
             title="Go to Home"
           >
-            <Logo className="h-8 sm:h-9 w-auto" />
+            <Logo className="h-9 sm:h-10 w-auto" />
             <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800/60">
               Admin
             </span>

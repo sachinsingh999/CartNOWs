@@ -578,100 +578,70 @@ export const generateProductImage = async (req, res) => {
       return res.status(400).json({ success: false, message: "Product name is required for image generation." });
     }
 
+    const cleanPrompt = `Professional commercial studio photography of ${name.trim()}. ${description ? description.slice(0, 150) : ""}. Isolated on clean neutral studio backdrop, high-end commercial e-commerce product shot, soft cinematic lighting, 8k resolution, photorealistic.`;
+
+    // 1. Try Gemini Imagen 3 if API key has image generation permissions
     const geminiApiKey = process.env.GEMINI_API_KEY;
-    if (!geminiApiKey) {
-      throw new Error("GEMINI_API_KEY is not configured in server .env");
-    }
+    if (geminiApiKey) {
+      try {
+        console.log("Attempting Gemini Imagen 3.0 generation for:", name);
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${geminiApiKey}`;
+        const response = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            instances: [{ prompt: cleanPrompt }],
+            parameters: { sampleCount: 1, aspectRatio: "1:1", outputMimeType: "image/png" }
+          })
+        });
 
-    const prompt = `Professional studio product photography of a ${name}. ${description || ""}. Clean background, high-end commercial packaging, soft cinematic lighting, 8k resolution, photorealistic.`;
-    
-    console.log("Starting Gemini Imagen 4.0 Image Generation with prompt:", prompt);
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${geminiApiKey}`;
-    
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        instances: [
-          {
-            prompt
+        if (response.ok) {
+          const data = await response.json();
+          const prediction = data?.predictions?.[0];
+          if (prediction?.bytesBase64Encoded) {
+            const uploadResult = await cloudinary.uploader.upload(`data:image/png;base64,${prediction.bytesBase64Encoded}`, {
+              folder: "products/ai-generated",
+              resource_type: "image"
+            });
+            return res.json({
+              success: true,
+              imageUrl: uploadResult.secure_url,
+              demo: false,
+              message: "AI product image generated successfully via Gemini."
+            });
           }
-        ],
-        parameters: {
-          sampleCount: 1,
-          aspectRatio: "1:1",
-          outputMimeType: "image/png"
         }
-      })
-    });
-
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data?.error?.message || `Gemini API returned status ${response.status}`);
-    }
-
-    const prediction = data?.predictions?.[0];
-    if (!prediction || !prediction.bytesBase64Encoded) {
-      throw new Error("No image prediction bytes returned from Gemini");
-    }
-
-    console.log("Gemini generation successful. Uploading base64 image to Cloudinary...");
-    const uploadResult = await cloudinary.uploader.upload(`data:image/png;base64,${prediction.bytesBase64Encoded}`, {
-      folder: "products",
-      resource_type: "image"
-    });
-
-    console.log("Cloudinary upload successful:", uploadResult.secure_url);
-    res.json({
-      success: true,
-      imageUrl: uploadResult.secure_url,
-      demo: false,
-      message: "AI product image generated successfully."
-    });
-  } catch (error) {
-    console.error("Gemini AI image geneareration failed. Falling back to mock/demo image. Error:", error.message);
-    
-    // Pick a mock image as fallback
-    const mockImages = [
-      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800", // Nike Shoes
-      "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800", // Watch
-      "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800", // Headphones
-      "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=800", // Sunglasses
-      "https://images.unsplash.com/photo-1560343090-f0409e92791a?w=800"  // Boot/shoes
-    ];
-    let index = 0;
-    const name = req.body.name || "";
-    if (name) {
-      let hash = 0;
-      for (let i = 0; i < name.length; i++) {
-        hash = name.charCodeAt(i) + ((hash << 5) - hash);
+      } catch (geminiErr) {
+        console.warn("Gemini Imagen generation not available, using Flux AI:", geminiErr.message);
       }
-      index = Math.abs(hash) % mockImages.length;
     }
-    const mockImageUrl = mockImages[index];
 
-    // Upload fallback to Cloudinary
-    let cloudinaryUrl = mockImageUrl;
+    // 2. High-Quality Flux AI Image Generation strictly matching the product name
+    console.log("Generating tailored product visual using Flux AI for:", name);
+    const pollinationsPrompt = encodeURIComponent(`Professional commercial studio photography of ${name}, isolated on clean neutral white studio backdrop, pristine catalog presentation, centered composition, sharp focus, 8k resolution`);
+    const pollinationsUrl = `https://image.pollinations.ai/prompt/${pollinationsPrompt}?width=800&height=800&nologo=true&model=flux&seed=${Math.floor(Math.random() * 100000)}`;
+
+    let finalImageUrl = pollinationsUrl;
     try {
-      console.log("Uploading fallback image to Cloudinary...");
-      const uploadResult = await cloudinary.uploader.upload(mockImageUrl, {
-        folder: "products",
+      const uploadResult = await cloudinary.uploader.upload(pollinationsUrl, {
+        folder: "products/ai-generated",
         resource_type: "image"
       });
-      cloudinaryUrl = uploadResult.secure_url;
-      console.log("Cloudinary fallback upload successful:", cloudinaryUrl);
-    } catch (uploadErr) {
-      console.error("Cloudinary upload of fallback image failed:", uploadErr.message);
+      finalImageUrl = uploadResult.secure_url;
+      console.log("Uploaded AI image to Cloudinary:", finalImageUrl);
+    } catch (cErr) {
+      console.warn("Cloudinary upload failed, using direct Pollinations AI URL:", cErr.message);
     }
 
     res.json({
       success: true,
-      imageUrl: cloudinaryUrl,
-      demo: true,
-      message: `Gemini failed (${error.message}). Fell back to demo mode.`
+      imageUrl: finalImageUrl,
+      demo: false,
+      message: `AI product image generated successfully for "${name}".`
     });
+  } catch (error) {
+    console.error("AI image generation error:", error.message);
+    res.status(500).json({ success: false, message: "AI image generation failed: " + error.message });
   }
 };
 

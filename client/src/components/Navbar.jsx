@@ -1370,8 +1370,8 @@ const Navbar = () => {
           <div className="w-full px-2 sm:px-4 lg:px-6">
             <div className="flex h-16 items-center gap-3 lg:gap-5 w-full">
               {/* ── Logo ── */}
-              <Link to="/" className="-ml-1 group flex shrink-0 items-center select-none">
-                <Logo className="h-9 sm:h-10 w-auto text-slate-900 dark:text-white group-hover:scale-105 transition-transform duration-300" />
+              <Link to="/" id="main-navbar-logo" className="-ml-1 group flex shrink-0 items-center select-none">
+                <Logo className="h-10 sm:h-11 md:h-12 w-auto text-slate-900 dark:text-white group-hover:scale-105 transition-transform duration-300" />
               </Link>
 
               {/* ── Integrated Search Capsule ── */}
@@ -2727,7 +2727,7 @@ const Navbar = () => {
               {/* Drawer Header */}
               <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 shrink-0">
                 <div className="flex items-center gap-2">
-                  <Logo className="h-7 w-auto text-slate-900 dark:text-white" />
+                  <Logo className="h-8 w-auto text-slate-900 dark:text-white" />
                   <span className="text-[10px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full">
                     Menu
                   </span>

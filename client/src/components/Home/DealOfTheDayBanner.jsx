@@ -1,12 +1,16 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import {
   Flame,
   Zap,
   ShoppingCart,
   Truck,
   ShieldCheck,
-  ArrowRight
+  ArrowRight,
+  Sparkles,
+  RefreshCw,
+  Loader2
 } from "lucide-react";
 import { backendUrl } from "../../config";
 
@@ -87,7 +91,7 @@ const DealOfTheDayBanner = ({
 
   const brandName = (currentDeal.brand || "CARTNOW JEWELS").toUpperCase();
 
-  // Determine stage image url
+  // Determine fallback stage image url
   const stageImgUrl =
     currentDeal.stageImage ||
     (currentDeal.image?.startsWith("/") || currentDeal.image?.startsWith("http")
@@ -97,6 +101,92 @@ const DealOfTheDayBanner = ({
             ? currentDeal.images[0]
             : `${backendUrl}/${currentDeal.images[0]}`)
         : "/deals/celestial_necklace_stage.png");
+
+  // AI-Generated Product Image State (Cached by product name)
+  const [aiImageUrl, setAiImageUrl] = useState(() => {
+    try {
+      const cacheKey = `ai_deal_img_${currentDeal.name || currentDeal._id}`;
+      const cached = localStorage.getItem(cacheKey);
+      // Automatically evict old static Unsplash placeholder mock images (like the sunglasses)
+      if (cached && (cached.includes("unsplash.com") || cached.includes("celestial_necklace"))) {
+        localStorage.removeItem(cacheKey);
+        return null;
+      }
+      return cached || null;
+    } catch {
+      return null;
+    }
+  });
+  const [isGeneratingAi, setIsGeneratingAi] = useState(false);
+
+  // Auto-generate AI image from product name if not cached
+  useEffect(() => {
+    const productName = currentDeal?.name;
+    if (!productName) return;
+
+    const cacheKey = `ai_deal_img_${productName}`;
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached && !cached.includes("unsplash.com")) {
+        setAiImageUrl(cached);
+        return;
+      } else if (cached) {
+        localStorage.removeItem(cacheKey);
+      }
+    } catch (e) {}
+
+    let isMounted = true;
+    const fetchAiImage = async () => {
+      setIsGeneratingAi(true);
+      try {
+        const res = await axios.post(`${backendUrl}/api/ai/generate-image`, {
+          name: productName,
+          description: currentDeal.description || ""
+        });
+        if (isMounted && res.data?.success && res.data.imageUrl) {
+          setAiImageUrl(res.data.imageUrl);
+          try {
+            localStorage.setItem(cacheKey, res.data.imageUrl);
+          } catch (e) {}
+        }
+      } catch (err) {
+        console.warn("AI deal image generation error:", err?.response?.data?.message || err.message);
+      } finally {
+        if (isMounted) setIsGeneratingAi(false);
+      }
+    };
+
+    fetchAiImage();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [currentDeal?.name, currentDeal?.description]);
+
+  const handleRegenerateAi = async (e) => {
+    e.stopPropagation();
+    if (isGeneratingAi || !currentDeal?.name) return;
+    setIsGeneratingAi(true);
+    try {
+      const res = await axios.post(`${backendUrl}/api/ai/generate-image`, {
+        name: currentDeal.name,
+        description: currentDeal.description || ""
+      });
+      if (res.data?.success && res.data.imageUrl) {
+        setAiImageUrl(res.data.imageUrl);
+        try {
+          localStorage.setItem(`ai_deal_img_${currentDeal.name}`, res.data.imageUrl);
+        } catch (e) {}
+      }
+    } catch (err) {
+      console.warn("AI deal image regeneration error:", err);
+    } finally {
+      setIsGeneratingAi(false);
+    }
+  };
+
+  // Final displayed image: AI-generated URL if ready, otherwise fallback stage image
+  const displayImageUrl = aiImageUrl || stageImgUrl;
 
   const formatDigit = (num) => String(num).padStart(2, "0");
 
@@ -117,179 +207,208 @@ const DealOfTheDayBanner = ({
   };
 
   return (
-    <section className="w-full max-w-full p-0 m-0 border-0 select-none block overflow-hidden">
+    <section className="w-full h-full max-w-full p-0 m-0 border-0 select-none block overflow-hidden">
       <div
         onClick={handleNavigate}
-        className="group relative w-full rounded-none overflow-hidden cursor-pointer border-0 shadow-none bg-[#FAF7F2] dark:bg-slate-900 text-slate-900 dark:text-white transition-colors duration-300"
+        className="group relative w-full h-full min-h-[380px] sm:min-h-[420px] lg:min-h-[470px] rounded-none overflow-hidden cursor-pointer border-0 shadow-none bg-[#FAF7F2] dark:bg-slate-900 text-slate-900 dark:text-white transition-colors duration-300 flex flex-col justify-between"
       >
         {/* Floating Top-Right Discount Badge */}
-        <div className="absolute top-2.5 sm:top-3 right-3 sm:right-6 z-20 px-2.5 py-0.5 rounded-full bg-[#FF5722] text-white font-black text-[11px] sm:text-xs tracking-wide shadow-md pointer-events-none">
+        <div className="absolute top-2.5 sm:top-3 right-3 sm:right-4 z-20 px-2.5 py-0.5 rounded-full bg-[#FF5722] text-white font-black text-[11px] sm:text-xs tracking-wide shadow-md pointer-events-none">
           -{discountPercent}%
         </div>
 
-        {/* ── MAIN HORIZONTAL BANNER CONTENT (Comfortable Height & Zero Edge Gaps) ── */}
-        <div className="relative z-10 w-full min-h-[195px] sm:min-h-[230px] lg:min-h-[250px] flex items-stretch overflow-hidden">
-          
-          {/* Left Column: Details, Live Timer, Price, Progress & CTAs (Strictly constrained so no text runs behind image) */}
-          <div className="relative z-10 w-[58%] min-[480px]:w-[62%] sm:w-[68%] md:w-[62%] lg:w-[58%] xl:w-[54%] max-w-[58%] min-[480px]:max-w-[62%] sm:max-w-none flex flex-col justify-center text-left py-2.5 sm:py-4.5 pl-3 sm:pl-7 lg:px-10 pr-1.5 sm:pr-6 space-y-1.5 sm:space-y-2.5 overflow-hidden">
-            
-            {/* 1. Badges Row */}
-            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-              <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-0.5 rounded-full border border-amber-500/80 bg-amber-500/10 text-amber-800 dark:text-amber-300 text-[9px] sm:text-[10.5px] font-black uppercase tracking-wider shrink-0">
-                <Flame size={11} className="fill-amber-500 text-amber-500 shrink-0" />
-                <span>DEAL OF THE DAY</span>
+        {/* ── 1. TOP SECTION: Badges, Title & Subtitle ── */}
+        <div className="relative z-10 w-full pt-3.5 sm:pt-4 px-3.5 sm:px-5 pr-14 text-left">
+          {/* Badges Row */}
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+            <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-0.5 rounded-full border border-amber-500/80 bg-amber-500/10 text-amber-800 dark:text-amber-300 text-[9px] sm:text-[10px] font-black uppercase tracking-wider shrink-0">
+              <Flame size={11} className="fill-amber-500 text-amber-500 shrink-0" />
+              <span>DEAL OF THE DAY</span>
+            </span>
+
+            {aiImageUrl && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-300 text-[9px] font-bold shrink-0">
+                <Sparkles size={9} className="text-purple-500" />
+                <span>AI Visual</span>
               </span>
+            )}
 
-              <span className="hidden min-[420px]:inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[9px] sm:text-[10px] font-semibold shadow-2xs shrink-0">
-                <Zap size={10} className="text-amber-500" />
-                <span>Limited Stock</span>
-              </span>
-
-              <span className="text-[10px] sm:text-[10.5px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest hidden sm:inline-block truncate">
-                • {brandName}
-              </span>
-            </div>
-
-            {/* 2. Product Title (High-Impact Editorial Heading - strictly clamped within column) */}
-            <h2 className="text-xs min-[400px]:text-sm sm:text-lg lg:text-xl xl:text-[22px] font-black text-slate-950 dark:text-white leading-snug tracking-tight line-clamp-2 break-words">
-              {currentDeal.name}
-            </h2>
-
-            {/* 3. Subtitle / Description (Hidden on mobile collapse so it never runs behind image) */}
-            <p className="hidden sm:block text-[11px] sm:text-xs text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-2 font-normal max-w-xl">
-              {currentDeal.description}
-            </p>
-
-            {/* 4. Timer & Price Row (Combined Horizontal) */}
-            <div className="flex flex-wrap items-center gap-2 sm:gap-5 pt-0.5">
-              
-              {/* Countdown Digits */}
-              <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-                <div className="flex flex-col items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xs rounded px-1.5 sm:px-2 py-0.5 min-w-[28px] sm:min-w-[38px]">
-                  <span className="text-[11px] sm:text-base font-black font-mono text-slate-950 dark:text-white leading-tight">
-                    {formatDigit(timeLeft.hours)}
-                  </span>
-                  <span className="text-[6.5px] sm:text-[7px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 leading-none mt-0.5">HRS</span>
-                </div>
-                <span className="text-amber-500 font-bold text-[10px] sm:text-xs leading-none">:</span>
-                <div className="flex flex-col items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xs rounded px-1.5 sm:px-2 py-0.5 min-w-[28px] sm:min-w-[38px]">
-                  <span className="text-[11px] sm:text-base font-black font-mono text-slate-950 dark:text-white leading-tight">
-                    {formatDigit(timeLeft.minutes)}
-                  </span>
-                  <span className="text-[6.5px] sm:text-[7px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 leading-none mt-0.5">MIN</span>
-                </div>
-                <span className="text-amber-500 font-bold text-[10px] sm:text-xs leading-none">:</span>
-                <div className="flex flex-col items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xs rounded px-1.5 sm:px-2 py-0.5 min-w-[28px] sm:min-w-[38px]">
-                  <span className="text-[11px] sm:text-base font-black font-mono text-[#FF5722] leading-tight">
-                    {formatDigit(timeLeft.seconds)}
-                  </span>
-                  <span className="text-[6.5px] sm:text-[7px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 leading-none mt-0.5">SEC</span>
-                </div>
-              </div>
-
-              {/* Price & Discount */}
-              <div className="flex items-baseline gap-1.5 sm:gap-2 shrink-0">
-                <span className="text-base min-[400px]:text-lg sm:text-2xl font-black text-slate-950 dark:text-white font-mono tracking-tight leading-none">
-                  ₹{price.toLocaleString("en-IN")}
-                </span>
-                {originalPrice > price && (
-                  <span className="text-[10px] sm:text-sm text-slate-400 line-through font-mono leading-none">
-                    ₹{originalPrice.toLocaleString("en-IN")}
-                  </span>
-                )}
-                <span className="hidden min-[440px]:inline-block px-1.5 sm:px-2 py-0.5 rounded bg-[#FF5722] text-white text-[9px] sm:text-[11px] font-black tracking-wide leading-none shadow-2xs">
-                  {discountPercent}% OFF
-                </span>
-              </div>
-
-            </div>
-
-            {/* 5. Claimed Bar + CTAs Group */}
-            <div className="flex flex-wrap items-center gap-2 sm:gap-5 pt-0.5 sm:pt-1">
-              
-              {/* Claimed Status */}
-              <div className="space-y-0.5 w-full min-[400px]:w-auto min-w-[120px] sm:min-w-[170px] max-w-[190px] sm:max-w-[220px]">
-                <div className="flex justify-between text-[8.5px] sm:text-[10.5px] font-semibold text-slate-600 dark:text-slate-300">
-                  <span className="flex items-center gap-1 text-amber-700 dark:text-amber-400 font-bold">
-                    <Flame size={10} className="fill-amber-500 text-amber-500" />
-                    <span>84% Claimed</span>
-                  </span>
-                  <span className="text-slate-500 dark:text-slate-400 text-[8px] sm:text-[9.5px]">Few units left!</span>
-                </div>
-                <div className="w-full h-1.5 sm:h-2 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden border border-slate-300/60 dark:border-white/10">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-[#FF5722]"
-                    style={{ width: "84%" }}
-                  />
-                </div>
-              </div>
-
-              {/* CTAs */}
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleAddToCart}
-                  disabled={isAdding}
-                  className="px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-md bg-gradient-to-r from-[#FF5722] via-[#FF6D00] to-[#FF9100] hover:brightness-105 text-white font-black text-[10.5px] sm:text-xs shadow-sm transition-all duration-200 active:scale-95 flex items-center gap-1.5 cursor-pointer border-none shrink-0"
-                >
-                  <ShoppingCart size={12} />
-                  <span>{isAdding ? "Adding..." : "Claim Deal Now"}</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleNavigate();
-                  }}
-                  className="hidden sm:flex px-3 sm:px-4 py-2 rounded-md bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-bold text-[11px] sm:text-xs transition-all duration-200 active:scale-95 items-center gap-1.5 cursor-pointer border border-slate-300/90 dark:border-slate-600 shadow-2xs shrink-0"
-                >
-                  <span>View Details</span>
-                  <ArrowRight size={12} />
-                </button>
-              </div>
-
-            </div>
-
+            <span className="text-[10px] sm:text-[10.5px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest hidden sm:inline-block truncate">
+              • {brandName}
+            </span>
           </div>
 
-          {/* Right Column: Stage / Product Image (Pinned Right with Smooth Fade to Canvas) */}
-          <div className="absolute right-0 top-0 bottom-0 w-[42%] sm:w-[42%] md:w-[45%] lg:w-[48%] xl:w-[50%] overflow-hidden pointer-events-none">
-            {/* Smooth Ambient Gradient Fade from Left Background to Image */}
-            <div className="absolute inset-y-0 left-0 w-24 sm:w-36 md:w-52 bg-gradient-to-r from-[#FAF7F2] dark:from-slate-900 via-[#FAF7F2]/80 dark:via-slate-900/80 to-transparent z-10 pointer-events-none" />
+          {/* Product Title */}
+          <h2 className="text-sm sm:text-base lg:text-[17px] font-black text-slate-950 dark:text-white leading-snug tracking-tight line-clamp-1 mt-1.5">
+            {currentDeal.name}
+          </h2>
 
-            {/* Product Image */}
-            <img
-              src={stageImgUrl}
-              alt={currentDeal.name}
-              className="w-full h-full object-cover object-center sm:object-right transition-transform duration-700 group-hover:scale-105"
-              loading="eager"
-              decoding="async"
-              onError={(e) => {
-                e.currentTarget.onerror = null;
-                e.currentTarget.src = "/deals/celestial_necklace_stage.png";
-              }}
-            />
-          </div>
-
+          {/* Short Subtitle */}
+          <p className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-300 line-clamp-1 font-normal mt-0.5">
+            {currentDeal.description || "Official brand deal with warranty & fast express delivery."}
+          </p>
         </div>
 
-        {/* ── BOTTOM TRUST STRIP (Zero Gap, Clean Light Surface) ── */}
-        <div className="relative z-10 w-full border-t border-stone-200/80 dark:border-slate-800 bg-stone-100/70 dark:bg-black/50 px-4 sm:px-7 lg:px-10 py-1.5 flex flex-wrap items-center justify-between text-[10px] sm:text-[10.5px] text-slate-600 dark:text-slate-300">
-          <div className="flex items-center gap-3 sm:gap-5">
+        {/* ── 2. MIDDLE SECTION: AI Generated Image Centered (Pure image, no outer box) ── */}
+        <div className="relative z-10 w-full flex-1 min-h-[170px] sm:min-h-[190px] max-h-[230px] mx-auto px-4 sm:px-6 py-1 flex items-center justify-center overflow-visible">
+          {isGeneratingAi ? (
+            <div className="flex flex-col items-center justify-center gap-2 p-3 text-center pointer-events-none select-none">
+              <div className="relative">
+                <div className="w-11 h-11 rounded-full bg-gradient-to-tr from-purple-500/20 via-pink-500/20 to-amber-500/20 animate-pulse flex items-center justify-center border border-purple-500/30">
+                  <Sparkles className="w-5 h-5 text-purple-500 animate-spin" style={{ animationDuration: "3s" }} />
+                </div>
+                <Loader2 className="w-3.5 h-3.5 text-amber-500 animate-spin absolute -bottom-0.5 -right-0.5" />
+              </div>
+              <div className="space-y-0.5">
+                <p className="text-[10px] font-black tracking-wide text-purple-600 dark:text-purple-400 uppercase">
+                  Generating AI Image
+                </p>
+                <p className="text-[8.5px] text-slate-500 dark:text-slate-400 font-medium line-clamp-1 max-w-[200px]">
+                  from &quot;{currentDeal.name}&quot;
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="relative w-full h-full flex items-center justify-center">
+              <img
+                src={displayImageUrl}
+                alt={currentDeal.name}
+                className="w-full h-full max-h-[190px] sm:max-h-[210px] object-contain object-center transition-transform duration-500 group-hover:scale-105 select-none drop-shadow-[0_10px_20px_rgba(0,0,0,0.12)] dark:drop-shadow-[0_12px_24px_rgba(0,0,0,0.4)]"
+                loading="eager"
+                decoding="async"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = "/deals/celestial_necklace_stage.png";
+                }}
+              />
+
+              {/* Floating AI Badge + Regenerate Button */}
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="absolute bottom-1 right-2 z-20 flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-900/85 dark:bg-slate-800/90 text-white border border-white/10 text-[8.5px] sm:text-[9px] font-bold shadow-md backdrop-blur-md pointer-events-auto"
+              >
+                <Sparkles size={9} className="text-amber-400 fill-amber-400" />
+                <span>AI Art</span>
+                <button
+                  type="button"
+                  onClick={handleRegenerateAi}
+                  disabled={isGeneratingAi}
+                  title="Regenerate image from product name with AI"
+                  className="p-0.5 hover:text-amber-400 transition-colors cursor-pointer border-none bg-transparent"
+                >
+                  <RefreshCw size={8.5} className={isGeneratingAi ? "animate-spin" : ""} />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ── 3. BOTTOM SECTION: Pricing, Timer, Claimed & Actions ── */}
+        <div className="relative z-10 w-full px-3.5 sm:px-5 pb-3 pt-1 space-y-2 text-left">
+          {/* Timer & Price Combined Row */}
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-0.5">
+            {/* Price & Discount */}
+            <div className="flex items-baseline gap-1.5 sm:gap-2">
+              <span className="text-lg sm:text-xl font-black text-slate-950 dark:text-white font-mono tracking-tight leading-none">
+                ₹{price.toLocaleString("en-IN")}
+              </span>
+              {originalPrice > price && (
+                <span className="text-[11px] sm:text-xs text-slate-400 line-through font-mono leading-none">
+                  ₹{originalPrice.toLocaleString("en-IN")}
+                </span>
+              )}
+              <span className="px-1.5 py-0.5 rounded bg-[#FF5722] text-white text-[9px] sm:text-[10px] font-black tracking-wide leading-none shadow-2xs">
+                {discountPercent}% OFF
+              </span>
+            </div>
+
+            {/* Countdown Digits */}
+            <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+              <div className="flex flex-col items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xs rounded px-1.5 py-0.5 min-w-[26px]">
+                <span className="text-[11px] sm:text-xs font-black font-mono text-slate-950 dark:text-white leading-tight">
+                  {formatDigit(timeLeft.hours)}
+                </span>
+                <span className="text-[6.5px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 leading-none mt-0.5">H</span>
+              </div>
+              <span className="text-amber-500 font-bold text-[10px] leading-none">:</span>
+              <div className="flex flex-col items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xs rounded px-1.5 py-0.5 min-w-[26px]">
+                <span className="text-[11px] sm:text-xs font-black font-mono text-slate-950 dark:text-white leading-tight">
+                  {formatDigit(timeLeft.minutes)}
+                </span>
+                <span className="text-[6.5px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 leading-none mt-0.5">M</span>
+              </div>
+              <span className="text-amber-500 font-bold text-[10px] leading-none">:</span>
+              <div className="flex flex-col items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xs rounded px-1.5 py-0.5 min-w-[26px]">
+                <span className="text-[11px] sm:text-xs font-black font-mono text-[#FF5722] leading-tight">
+                  {formatDigit(timeLeft.seconds)}
+                </span>
+                <span className="text-[6.5px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 leading-none mt-0.5">S</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Claimed Progress Bar + Action Button Row */}
+          <div className="flex items-center justify-between gap-3 pt-0.5">
+            {/* Claimed Status */}
+            <div className="space-y-1 flex-1 max-w-[170px]">
+              <div className="flex justify-between text-[8.5px] sm:text-[9.5px] font-semibold text-slate-600 dark:text-slate-300">
+                <span className="flex items-center gap-1 text-amber-700 dark:text-amber-400 font-bold">
+                  <Flame size={10} className="fill-amber-500 text-amber-500" />
+                  <span>84% Claimed</span>
+                </span>
+                <span className="text-slate-500 dark:text-slate-400 text-[8px]">Few left!</span>
+              </div>
+              <div className="w-full h-1.5 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden border border-slate-300/60 dark:border-white/10">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-[#FF5722]"
+                  style={{ width: "84%" }}
+                />
+              </div>
+            </div>
+
+            {/* CTAs */}
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                type="button"
+                onClick={handleAddToCart}
+                disabled={isAdding}
+                className="px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-md bg-gradient-to-r from-[#FF5722] via-[#FF6D00] to-[#FF9100] hover:brightness-105 text-white font-black text-[10.5px] sm:text-xs shadow-sm transition-all duration-200 active:scale-95 flex items-center gap-1.5 cursor-pointer border-none shrink-0"
+              >
+                <ShoppingCart size={12} />
+                <span>{isAdding ? "Adding..." : "Claim Deal"}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleNavigate();
+                }}
+                className="hidden min-[420px]:flex px-2.5 py-1.5 sm:py-2 rounded-md bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-bold text-[10.5px] sm:text-xs transition-all duration-200 active:scale-95 items-center gap-1 cursor-pointer border border-slate-300/90 dark:border-slate-600 shadow-2xs shrink-0"
+              >
+                <span>Details</span>
+                <ArrowRight size={11} />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* ── 4. BOTTOM TRUST STRIP ── */}
+        <div className="relative z-10 w-full border-t border-stone-200/80 dark:border-slate-800 bg-stone-100/70 dark:bg-black/50 px-3.5 sm:px-5 py-1.5 flex flex-wrap items-center justify-between text-[9px] sm:text-[9.5px] text-slate-600 dark:text-slate-300 shrink-0">
+          <div className="flex items-center gap-3 sm:gap-4">
             <span className="flex items-center gap-1 text-slate-700 dark:text-slate-300">
-              <Truck size={11} className="text-amber-600 dark:text-amber-400" />
-              <span>Free Express Delivery Tomorrow</span>
+              <Truck size={10} className="text-amber-600 dark:text-amber-400" />
+              <span>Free Delivery</span>
             </span>
             <span className="flex items-center gap-1 text-slate-700 dark:text-slate-300 hidden sm:inline-flex">
-              <ShieldCheck size={11} className="text-emerald-600 dark:text-emerald-400" />
-              <span>Official 1-Year Brand Warranty</span>
+              <ShieldCheck size={10} className="text-emerald-600 dark:text-emerald-400" />
+              <span>1-Year Warranty</span>
             </span>
           </div>
 
           <span className="text-amber-700 dark:text-amber-400 font-semibold tracking-wide flex items-center gap-1">
-            <Zap size={9.5} className="text-amber-600 dark:text-amber-400" />
-            <span>Refreshes Daily at Midnight</span>
+            <Zap size={9} className="text-amber-600 dark:text-amber-400" />
+            <span>Refreshes at Midnight</span>
           </span>
         </div>
 

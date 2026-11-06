@@ -286,20 +286,29 @@ const Home = () => {
         .animate-float-slow { animation: float-slow 4.5s ease-in-out infinite; }
       `}</style>
 
-      {/* 1. HERO BANNER SECTION */}
-      <HeroSplitBanner
-        homepageData={homepageData}
-        onAddToCart={onAddToCart}
-        wishlist={wishlist}
-      />
+      {/* 1. HERO & DEAL OF THE DAY ROW (Side-by-Side Split Banner) */}
+      <section className="w-full px-0 py-0 select-none">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-1.5 sm:gap-2 items-stretch">
+          {/* LEFT: HERO CAROUSEL BANNER (7 Columns on Desktop) */}
+          <div className="lg:col-span-7 xl:col-span-7 relative flex flex-col h-full min-h-[380px] sm:min-h-[420px] lg:min-h-[470px]">
+            <HeroSplitBanner
+              homepageData={homepageData}
+              onAddToCart={onAddToCart}
+              wishlist={wishlist}
+            />
+          </div>
 
-      {/* 2. DEAL OF THE DAY SPOTLIGHT BANNER */}
-      <DealOfTheDayBanner
-        deals={homepageData.dealsOfDay}
-        activeDeal={activeDeal}
-        onAddToCart={onAddToCart}
-        wishlist={wishlist}
-      />
+          {/* RIGHT: DEAL OF THE DAY SPOTLIGHT (5 Columns on Desktop) */}
+          <div className="lg:col-span-5 xl:col-span-5 relative flex flex-col h-full min-h-[380px] sm:min-h-[420px] lg:min-h-[470px]">
+            <DealOfTheDayBanner
+              deals={homepageData.dealsOfDay}
+              activeDeal={activeDeal}
+              onAddToCart={onAddToCart}
+              wishlist={wishlist}
+            />
+          </div>
+        </div>
+      </section>
 
       {/* 3. DYNAMIC TECH / PROMOTIONAL AD BANNER */}
       <TechAdBanner />

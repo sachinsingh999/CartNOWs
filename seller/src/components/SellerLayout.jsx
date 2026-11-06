@@ -327,7 +327,7 @@ const SellerLayout = () => {
             className="-ml-1 flex items-center gap-2 cursor-pointer group select-none"
             title="CartNOW Seller Hub"
           >
-            <Logo className="h-8 sm:h-9 w-28 sm:w-36 text-slate-900 dark:text-white group-hover:scale-105 transition-transform duration-200" />
+            <Logo className="h-9 sm:h-10 w-32 sm:w-40 text-slate-900 dark:text-white group-hover:scale-105 transition-transform duration-200" />
           </div>
 
           <div className="h-4 w-[1px] bg-slate-200 dark:bg-slate-800 hidden sm:block" />

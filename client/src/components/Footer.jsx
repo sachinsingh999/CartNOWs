@@ -80,7 +80,7 @@ const Footer = () => {
               <Logo
                 variant="horizontal"
                 forceWhite={true}
-                className="h-9 w-auto text-slate-100 dark:text-white"
+                className="h-10 sm:h-11 w-auto text-slate-100 dark:text-white"
               />
             </Link>
             <p className="max-w-xs text-xs leading-relaxed text-gray-400">

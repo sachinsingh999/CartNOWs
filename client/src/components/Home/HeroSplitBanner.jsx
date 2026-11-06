@@ -367,20 +367,20 @@ const HeroSplitBanner = ({ homepageData, onAddToCart, wishlist: externalWishlist
   const activeSlide = slides[currentSlide] || slides[0];
 
   return (
-    <div className="w-full px-0 py-0 select-none flex flex-col">
+    <div className="w-full h-full px-0 py-0 select-none flex flex-col">
       {/* ════════════════════════════════════════════════════════
-          1. FULL-WIDTH HERO CAROUSEL BANNER (100% Page Width)
+          HERO CAROUSEL BANNER (Row Split Layout)
           ════════════════════════════════════════════════════════ */}
       <div
-        className="relative w-full h-[47vh] min-h-[390px] md:min-h-[420px] max-h-[530px] overflow-hidden group"
+        className="relative w-full h-full min-h-[380px] sm:min-h-[420px] lg:min-h-[470px] overflow-hidden group"
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
       >
         <div
-          className="relative w-full h-full rounded-none border-b-0 bg-[#FAF7F2] dark:bg-slate-950 overflow-hidden shadow-none transition-colors duration-500"
+          className="relative w-full h-full rounded-none border-0 bg-[#FAF7F2] dark:bg-slate-950 overflow-hidden shadow-none transition-colors duration-500"
         >
-          {/* Subtle Ambient Radial Backlight Glow Centered Behind Cutout Model */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] sm:w-[440px] md:w-[540px] h-[340px] sm:h-[440px] md:h-[540px] rounded-full blur-[90px] sm:blur-[120px] pointer-events-none transition-colors duration-700 opacity-60 dark:opacity-30">
+          {/* Subtle Ambient Radial Backlight Glow Behind Cutout Model */}
+          <div className="absolute right-[5%] top-1/2 -translate-y-1/2 w-[320px] sm:w-[420px] h-[320px] sm:h-[420px] rounded-full blur-[80px] sm:blur-[110px] pointer-events-none transition-colors duration-700 opacity-60 dark:opacity-30">
             <div className={`w-full h-full rounded-full ${activeSlide.glowColor || "bg-orange-300/20"}`} />
           </div>
 
@@ -392,11 +392,23 @@ const HeroSplitBanner = ({ homepageData, onAddToCart, wishlist: externalWishlist
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-              className="absolute inset-0 w-full h-full flex flex-row items-center justify-between z-10 pointer-events-none"
+              className="absolute inset-0 w-full h-full flex flex-row items-stretch justify-between z-10 pointer-events-none"
             >
-              {/* Left Column: Tagline + Grand Editorial Headline */}
-              <div className="relative w-[48%] sm:w-[32%] md:w-[32%] lg:w-[30%] text-left z-20 flex flex-col justify-center items-start pl-3 sm:pl-5 md:pl-7 lg:pl-10 pr-1 py-4 pointer-events-auto h-full">
-                <div className="space-y-2 sm:space-y-2.5 md:space-y-3 text-left max-w-[380px]">
+              {/* Right Model Cutout: Standing on the right side */}
+              <div className="absolute right-0 bottom-0 top-0 h-full w-[52%] sm:w-[50%] md:w-[48%] flex items-end justify-end pointer-events-none z-10 overflow-hidden">
+                <img
+                  src={activeSlide.image}
+                  alt={activeSlide.alt}
+                  className="h-full max-h-full w-auto max-w-full object-contain object-bottom select-none opacity-100 drop-shadow-[0_16px_36px_rgba(0,0,0,0.18)] dark:drop-shadow-[0_20px_42px_rgba(0,0,0,0.55)] transition-transform duration-500 scale-100 group-hover:scale-[1.02]"
+                  loading="eager"
+                  fetchPriority="high"
+                  decoding="async"
+                />
+              </div>
+
+              {/* Left Column: Tagline + Headline + Subtitle + CTAs */}
+              <div className="relative w-[58%] sm:w-[56%] md:w-[54%] text-left z-20 flex flex-col justify-between items-start pl-3.5 sm:pl-6 lg:pl-8 pr-2 py-4 sm:py-6 lg:py-8 pointer-events-auto h-full">
+                <div className="space-y-2 sm:space-y-3 text-left max-w-[360px]">
                   {/* Orange Dash + Tagline */}
                   <div className="flex items-center gap-2">
                     <span className="w-4 sm:w-5 h-[2px] bg-[#FF5722] rounded-full shrink-0" />
@@ -406,63 +418,41 @@ const HeroSplitBanner = ({ homepageData, onAddToCart, wishlist: externalWishlist
                   </div>
 
                   {/* Editorial Serif Headline */}
-                  <h1 className="font-editorial text-2xl min-[400px]:text-3xl sm:text-4xl md:text-[46px] lg:text-[54px] xl:text-[62px] font-bold text-slate-950 dark:text-white leading-[0.98] tracking-tight">
+                  <h1 className="font-editorial text-2xl min-[400px]:text-3xl sm:text-4xl md:text-[42px] lg:text-[44px] font-bold text-slate-950 dark:text-white leading-[1.02] tracking-tight">
                     {renderEditorialTitle(activeSlide)}
                   </h1>
-                </div>
-              </div>
 
-              {/* Center Model Cutout: Standing proudly in the exact middle of the banner */}
-              <div className="absolute inset-0 w-full h-full flex items-end justify-center pointer-events-none z-10 overflow-hidden">
-                <img
-                  src={activeSlide.image}
-                  alt={activeSlide.alt}
-                  className="h-full max-h-full max-w-[210px] min-[440px]:max-w-[260px] sm:max-w-[400px] md:max-w-[460px] w-auto object-contain object-bottom select-none opacity-100 drop-shadow-[0_16px_36px_rgba(0,0,0,0.18)] dark:drop-shadow-[0_20px_42px_rgba(0,0,0,0.55)] transition-transform duration-500 scale-100 group-hover:scale-[1.02]"
-                  loading="eager"
-                  fetchPriority="high"
-                  decoding="async"
-                />
-              </div>
-
-              {/* Center Spacer: Ensures model has visual breathing room on wider viewports */}
-              <div className="hidden sm:block sm:w-[36%] md:w-[38%] lg:w-[42%] pointer-events-none" />
-
-              {/* Right Column: Subtitle + Dual Action Buttons (Pushed more to the right edge) */}
-              <div className="relative w-[48%] sm:w-[32%] md:w-[30%] lg:w-[28%] z-20 flex flex-col justify-center items-end pr-3 sm:pr-8 md:pr-12 lg:pr-16 pl-1 py-4 pointer-events-auto h-full ml-auto">
-                <div className="space-y-2.5 sm:space-y-3.5 md:space-y-4 max-w-[330px] text-left ml-auto">
-                  {/* Subtitle (Hidden on small mobile collapse so text does not collide with model) */}
-                  <p className="hidden min-[480px]:block text-[11px] sm:text-xs md:text-[13px] text-slate-700 dark:text-slate-300 font-normal leading-relaxed">
+                  {/* Subtitle */}
+                  <p className="text-[11px] sm:text-xs md:text-[13px] text-slate-700 dark:text-slate-300 font-normal leading-relaxed line-clamp-2 max-w-[320px]">
                     {activeSlide.subtitle || "Discover premium fashion, curated collections and everyday essentials for a better you — only at CartNow."}
                   </p>
+                </div>
 
-                  {/* Dual Action Pill Buttons */}
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-1.5 sm:gap-2.5 pt-0.5 relative z-30">
-                    {/* Button 1: Solid Orange Pill */}
-                    <button
-                      type="button"
-                      onClick={() => navigate(activeSlide.ctaLink || "/product")}
-                      className="inline-flex items-center justify-center gap-1.5 sm:gap-2 bg-[#FF5722] hover:bg-[#E64A19] active:scale-95 text-white font-semibold text-[11px] sm:text-[12.5px] px-3.5 sm:px-5 py-1.5 sm:py-2.5 rounded-full cursor-pointer shadow-sm hover:shadow-md transition-all duration-200 group whitespace-nowrap"
-                    >
-                      <span>{activeSlide.ctaText || "Shop Now"}</span>
-                      <ArrowRight size={12} className="stroke-[2.5] group-hover:translate-x-1 transition-transform" />
-                    </button>
+                {/* Dual Action Pill Buttons */}
+                <div className="flex flex-wrap items-center gap-2 pt-2 relative z-30">
+                  {/* Button 1: Solid Orange Pill */}
+                  <button
+                    type="button"
+                    onClick={() => navigate(activeSlide.ctaLink || "/product")}
+                    className="inline-flex items-center justify-center gap-1.5 sm:gap-2 bg-[#FF5722] hover:bg-[#E64A19] active:scale-95 text-white font-semibold text-[11px] sm:text-[12.5px] px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full cursor-pointer shadow-sm hover:shadow-md transition-all duration-200 group whitespace-nowrap"
+                  >
+                    <span>{activeSlide.ctaText || "Shop Now"}</span>
+                    <ArrowRight size={12} className="stroke-[2.5] group-hover:translate-x-1 transition-transform" />
+                  </button>
 
-                    {/* Button 2: Outline Pill */}
-                    <button
-                      type="button"
-                      onClick={() => navigate(activeSlide.secondaryCtaLink || "/product")}
-                      className="hidden min-[420px]:inline-flex sm:inline-flex items-center justify-center gap-1.5 sm:gap-2 bg-transparent hover:bg-slate-900/5 dark:hover:bg-white/10 active:scale-95 text-slate-950 dark:text-white border border-slate-900 dark:border-white font-semibold text-[11px] sm:text-[12.5px] px-3.5 sm:px-5 py-1.5 sm:py-2.5 rounded-full cursor-pointer transition-all duration-200 group whitespace-nowrap"
-                    >
-                      <span>{activeSlide.secondaryCtaText || "Explore"}</span>
-                      <ArrowRight size={12} className="stroke-[2.5] group-hover:translate-x-1 transition-transform" />
-                    </button>
-                  </div>
+                  {/* Button 2: Outline Pill */}
+                  <button
+                    type="button"
+                    onClick={() => navigate(activeSlide.secondaryCtaLink || "/product")}
+                    className="hidden min-[380px]:inline-flex sm:inline-flex items-center justify-center gap-1.5 sm:gap-2 bg-transparent hover:bg-slate-900/5 dark:hover:bg-white/10 active:scale-95 text-slate-950 dark:text-white border border-slate-900 dark:border-white font-semibold text-[11px] sm:text-[12.5px] px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-full cursor-pointer transition-all duration-200 group whitespace-nowrap"
+                  >
+                    <span>{activeSlide.secondaryCtaText || "Explore"}</span>
+                    <ArrowRight size={12} className="stroke-[2.5] group-hover:translate-x-1 transition-transform" />
+                  </button>
                 </div>
               </div>
             </motion.div>
           </AnimatePresence>
-
-
 
           {/* Left / Right Carousel Arrow Buttons */}
           <button
