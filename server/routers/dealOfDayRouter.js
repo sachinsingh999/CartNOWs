@@ -1,5 +1,5 @@
 import express from "express";
-import { getDeals, createDeal, updateDeal, deleteDeal } from "../controllers/dealOfDayController.js";
+import { getDeals, createDeal, updateDeal, deleteDeal, getTodayDealAiImage } from "../controllers/dealOfDayController.js";
 import upload from "../middleware/multer.js";
 import adminAuth, { requirePermission } from "../middleware/adminAuth.js";
 
@@ -7,6 +7,7 @@ const dealOfDayRouter = express.Router();
 
 // Public routes
 dealOfDayRouter.get("/", getDeals);
+dealOfDayRouter.get("/today-ai-image", getTodayDealAiImage);
 
 // Admin routes
 const adminDealOfDayRouter = express.Router();

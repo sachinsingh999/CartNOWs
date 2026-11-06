@@ -2,6 +2,7 @@ import dealOfDayModel from "../models/dealOfDayModel.js";
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
 import path from "path";
+import { getTodayCachedDealImage } from "../services/dealCronService.js";
 
 // @desc    Get Deal of the Day listings
 // @route   GET /api/dealofday
@@ -27,12 +28,34 @@ export const getDeals = async (req, res) => {
 
     // Filter out if product doesn't exist
     if (!activeDeal || !activeDeal.productId || activeDeal.productId.isDeleted || activeDeal.productId.status !== "approved") {
-      return res.json({ success: true, deal: null });
+      const cachedAi = await getTodayCachedDealImage();
+      return res.json({ success: true, deal: null, todayAiImage: cachedAi?.aiImageUrl || null });
     }
 
-    res.json({ success: true, deal: activeDeal });
+    const cachedAi = await getTodayCachedDealImage();
+    const dealData = activeDeal.toObject ? activeDeal.toObject() : { ...activeDeal };
+    if (!dealData.aiImage && cachedAi?.aiImageUrl) {
+      dealData.aiImage = cachedAi.aiImageUrl;
+    }
+
+    res.json({ success: true, deal: dealData, todayAiImage: cachedAi?.aiImageUrl || dealData.aiImage || null });
   } catch (error) {
     console.error("Error fetching Deal of the Day:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Get Today's preloaded AI deal visual
+// @route   GET /api/dealofday/today-ai-image
+// @access  Public
+export const getTodayDealAiImage = async (req, res) => {
+  try {
+    const cached = await getTodayCachedDealImage();
+    res.json({
+      success: true,
+      data: cached || null
+    });
+  } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };

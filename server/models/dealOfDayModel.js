@@ -4,6 +4,7 @@ const dealOfDaySchema = new mongoose.Schema(
   {
     productId: { type: mongoose.Schema.Types.ObjectId, ref: "product", required: true },
     modelImage: { type: String, required: false }, // Professional model image URL
+    aiImage: { type: String, default: "" }, // AI-generated deal visual preloaded at midnight
     title: { type: String, required: true, trim: true }, // Promotional Heading
     subtitle: { type: String, default: "", trim: true }, // Promotional Description
     discountLabel: { type: String, default: "", trim: true }, // Discount Badge (e.g. "40% OFF")

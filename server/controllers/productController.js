@@ -1647,10 +1647,16 @@ const getHomepageData = async (req, res) => {
       const topRated = topRatedList.map(formatProductResponse);
       const dealsOfDay = dealsRaw.map(formatProductResponse);
 
+      const { getTodayCachedDealImage } = await import("../services/dealCronService.js");
+      const todayCachedAi = await getTodayCachedDealImage();
+
       let activeDeal = null;
       if (activeDealRaw && activeDealRaw.productId) {
         const deal = { ...activeDealRaw };
         deal.productId = formatProductResponse(deal.productId);
+        if (todayCachedAi?.aiImageUrl) {
+          deal.aiImage = todayCachedAi.aiImageUrl;
+        }
         activeDeal = deal;
       }
 
@@ -1668,7 +1674,8 @@ const getHomepageData = async (req, res) => {
         trendingCollections,
         popularCategories,
         searchSuggestions,
-        activeDeal
+        activeDeal,
+        todayDealAiImage: todayCachedAi?.aiImageUrl || null
       };
 
       // Set public homepage cache with 5-minute TTL

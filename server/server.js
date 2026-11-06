@@ -23,6 +23,7 @@ import promoBannerRouter from "./routers/promoBannerRouter.js";
 import brandPosterRouter from "./routers/brandPosterRouter.js";
 import { createServer } from "http";
 import { startTryOnWorker } from "./workers/tryOnWorker.js";
+import { initDealCron } from "./services/dealCronService.js";
 import maintenanceMiddleware from "./middleware/maintenanceMiddleware.js";
 import systemRouter from "./routers/systemRouter.js";
 import communicationRouter from "./routers/communicationRouter.js";
@@ -154,6 +155,9 @@ app.get("/api/socket-debug", async (req, res) => {
 
 // start worker
 startTryOnWorker(io);
+
+// start midnight deal cron (loads AI visual at 12:00 AM)
+initDealCron();
 
 // start server
 httpServer.listen(port, () => {

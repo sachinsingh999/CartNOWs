@@ -7,10 +7,7 @@ import {
   ShoppingCart,
   Truck,
   ShieldCheck,
-  ArrowRight,
-  Sparkles,
-  RefreshCw,
-  Loader2
+  ArrowRight
 } from "lucide-react";
 import { backendUrl } from "../../config";
 
@@ -102,12 +99,13 @@ const DealOfTheDayBanner = ({
             : `${backendUrl}/${currentDeal.images[0]}`)
         : "/deals/celestial_necklace_stage.png");
 
-  // AI-Generated Product Image State (Cached by product name)
+  // Preloaded Deal Image (preloaded at midnight or cached)
   const [aiImageUrl, setAiImageUrl] = useState(() => {
+    if (currentDeal?.aiImage) return currentDeal.aiImage;
     try {
       const cacheKey = `ai_deal_img_${currentDeal.name || currentDeal._id}`;
       const cached = localStorage.getItem(cacheKey);
-      // Automatically evict old static Unsplash placeholder mock images (like the sunglasses)
+      // Evict old static mock images if any
       if (cached && (cached.includes("unsplash.com") || cached.includes("celestial_necklace"))) {
         localStorage.removeItem(cacheKey);
         return null;
@@ -117,10 +115,14 @@ const DealOfTheDayBanner = ({
       return null;
     }
   });
-  const [isGeneratingAi, setIsGeneratingAi] = useState(false);
 
-  // Auto-generate AI image from product name if not cached
+  // Ensure Deal visual is loaded silently in the background without any user-visible loading state
   useEffect(() => {
+    if (currentDeal?.aiImage) {
+      setAiImageUrl(currentDeal.aiImage);
+      return;
+    }
+
     const productName = currentDeal?.name;
     if (!productName) return;
 
@@ -136,9 +138,25 @@ const DealOfTheDayBanner = ({
     } catch (e) {}
 
     let isMounted = true;
-    const fetchAiImage = async () => {
-      setIsGeneratingAi(true);
+    const fetchDealVisualSilently = async () => {
       try {
+        // 1. Check if midnight cron has preloaded today's AI deal visual
+        const todayRes = await axios.get(`${backendUrl}/api/dealofday/today-ai-image`);
+        if (
+          isMounted &&
+          todayRes.data?.success &&
+          todayRes.data?.data?.aiImageUrl &&
+          (!todayRes.data?.data?.productName || todayRes.data.data.productName === productName)
+        ) {
+          const img = todayRes.data.data.aiImageUrl;
+          setAiImageUrl(img);
+          try {
+            localStorage.setItem(cacheKey, img);
+          } catch (e) {}
+          return;
+        }
+
+        // 2. Otherwise generate silently in the background
         const res = await axios.post(`${backendUrl}/api/ai/generate-image`, {
           name: productName,
           description: currentDeal.description || ""
@@ -150,42 +168,18 @@ const DealOfTheDayBanner = ({
           } catch (e) {}
         }
       } catch (err) {
-        console.warn("AI deal image generation error:", err?.response?.data?.message || err.message);
-      } finally {
-        if (isMounted) setIsGeneratingAi(false);
+        // Silent catch: authentic catalog product image remains seamlessly visible
       }
     };
 
-    fetchAiImage();
+    fetchDealVisualSilently();
 
     return () => {
       isMounted = false;
     };
-  }, [currentDeal?.name, currentDeal?.description]);
+  }, [currentDeal?.name, currentDeal?.description, currentDeal?.aiImage]);
 
-  const handleRegenerateAi = async (e) => {
-    e.stopPropagation();
-    if (isGeneratingAi || !currentDeal?.name) return;
-    setIsGeneratingAi(true);
-    try {
-      const res = await axios.post(`${backendUrl}/api/ai/generate-image`, {
-        name: currentDeal.name,
-        description: currentDeal.description || ""
-      });
-      if (res.data?.success && res.data.imageUrl) {
-        setAiImageUrl(res.data.imageUrl);
-        try {
-          localStorage.setItem(`ai_deal_img_${currentDeal.name}`, res.data.imageUrl);
-        } catch (e) {}
-      }
-    } catch (err) {
-      console.warn("AI deal image regeneration error:", err);
-    } finally {
-      setIsGeneratingAi(false);
-    }
-  };
-
-  // Final displayed image: AI-generated URL if ready, otherwise fallback stage image
+  // Final displayed image: preloaded deal visual or authentic product stage image
   const displayImageUrl = aiImageUrl || stageImgUrl;
 
   const formatDigit = (num) => String(num).padStart(2, "0");
@@ -226,13 +220,6 @@ const DealOfTheDayBanner = ({
               <span>DEAL OF THE DAY</span>
             </span>
 
-            {aiImageUrl && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-300 text-[9px] font-bold shrink-0">
-                <Sparkles size={9} className="text-purple-500" />
-                <span>AI Visual</span>
-              </span>
-            )}
-
             <span className="text-[10px] sm:text-[10.5px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest hidden sm:inline-block truncate">
               • {brandName}
             </span>
@@ -249,58 +236,19 @@ const DealOfTheDayBanner = ({
           </p>
         </div>
 
-        {/* ── 2. MIDDLE SECTION: AI Generated Image Centered (Pure image, no outer box) ── */}
+        {/* ── 2. MIDDLE SECTION: Deal Product Image Centered (Pure image, no outer box, no AI badges) ── */}
         <div className="relative z-10 w-full flex-1 min-h-[170px] sm:min-h-[190px] max-h-[230px] mx-auto px-4 sm:px-6 py-1 flex items-center justify-center overflow-visible">
-          {isGeneratingAi ? (
-            <div className="flex flex-col items-center justify-center gap-2 p-3 text-center pointer-events-none select-none">
-              <div className="relative">
-                <div className="w-11 h-11 rounded-full bg-gradient-to-tr from-purple-500/20 via-pink-500/20 to-amber-500/20 animate-pulse flex items-center justify-center border border-purple-500/30">
-                  <Sparkles className="w-5 h-5 text-purple-500 animate-spin" style={{ animationDuration: "3s" }} />
-                </div>
-                <Loader2 className="w-3.5 h-3.5 text-amber-500 animate-spin absolute -bottom-0.5 -right-0.5" />
-              </div>
-              <div className="space-y-0.5">
-                <p className="text-[10px] font-black tracking-wide text-purple-600 dark:text-purple-400 uppercase">
-                  Generating AI Image
-                </p>
-                <p className="text-[8.5px] text-slate-500 dark:text-slate-400 font-medium line-clamp-1 max-w-[200px]">
-                  from &quot;{currentDeal.name}&quot;
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="relative w-full h-full flex items-center justify-center">
-              <img
-                src={displayImageUrl}
-                alt={currentDeal.name}
-                className="w-full h-full max-h-[190px] sm:max-h-[210px] object-contain object-center transition-transform duration-500 group-hover:scale-105 select-none drop-shadow-[0_10px_20px_rgba(0,0,0,0.12)] dark:drop-shadow-[0_12px_24px_rgba(0,0,0,0.4)]"
-                loading="eager"
-                decoding="async"
-                onError={(e) => {
-                  e.currentTarget.onerror = null;
-                  e.currentTarget.src = "/deals/celestial_necklace_stage.png";
-                }}
-              />
-
-              {/* Floating AI Badge + Regenerate Button */}
-              <div
-                onClick={(e) => e.stopPropagation()}
-                className="absolute bottom-1 right-2 z-20 flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-900/85 dark:bg-slate-800/90 text-white border border-white/10 text-[8.5px] sm:text-[9px] font-bold shadow-md backdrop-blur-md pointer-events-auto"
-              >
-                <Sparkles size={9} className="text-amber-400 fill-amber-400" />
-                <span>AI Art</span>
-                <button
-                  type="button"
-                  onClick={handleRegenerateAi}
-                  disabled={isGeneratingAi}
-                  title="Regenerate image from product name with AI"
-                  className="p-0.5 hover:text-amber-400 transition-colors cursor-pointer border-none bg-transparent"
-                >
-                  <RefreshCw size={8.5} className={isGeneratingAi ? "animate-spin" : ""} />
-                </button>
-              </div>
-            </div>
-          )}
+          <img
+            src={displayImageUrl}
+            alt={currentDeal.name}
+            className="w-full h-full max-h-[190px] sm:max-h-[210px] object-contain object-center transition-transform duration-500 group-hover:scale-105 select-none drop-shadow-[0_10px_20px_rgba(0,0,0,0.12)] dark:drop-shadow-[0_12px_24px_rgba(0,0,0,0.4)]"
+            loading="eager"
+            decoding="async"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = stageImgUrl;
+            }}
+          />
         </div>
 
         {/* ── 3. BOTTOM SECTION: Pricing, Timer, Claimed & Actions ── */}
